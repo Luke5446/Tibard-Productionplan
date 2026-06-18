@@ -173,6 +173,7 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
         <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Add live works orders. The due date feeds into the days-of-stock projection. Click a WO tile to see its contents. Delete individual SKUs as manufacturing completes.</p>
         <div id="woCards" class="wo-cards"></div>
         <button class="btn btn-p" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
+        <button class="btn" style="font-size:12px" onclick="showBulkForm()">&#128229; Bulk import works orders</button>
         <div id="woForm" class="pbox hidden" style="margin-top:10px">
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px">
             <div><label style="display:block;font-size:11px;color:#4b5563;font-weight:600;margin-bottom:3px">Works order reference</label>
@@ -187,6 +188,17 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
           <div style="display:flex;gap:6px">
             <button class="btn btn-p" style="font-size:12px" onclick="saveWO()">&#10003; Save works order</button>
             <button class="btn" style="font-size:12px" onclick="hideWOForm()">Cancel</button>
+          </div>
+        </div>
+        <div id="bulkForm" class="pbox hidden" style="margin-top:10px">
+          <h3 style="font-size:13px;font-weight:600;margin-bottom:6px;color:#7A1F3D">&#128229; Bulk import works orders</h3>
+          <p style="font-size:11px;color:#4b5563;margin-bottom:7px">Paste rows from your sheet — one works order per line. Each becomes its own auto-numbered WO (WO-0001, WO-0002…). Due date is set to <strong>today + 14 days</strong> automatically.</p>
+          <p style="font-size:11px;color:#4b5563;margin-bottom:5px">Format per line: <code>start date &nbsp; code &nbsp; quantity</code> (tab, comma, or space separated)<br>
+          e.g. <code>12/06/2026 &nbsp; OHHICAPP062803DEN &nbsp; 50</code></p>
+          <textarea id="bulkTA" placeholder="Paste your start date / code / qty rows here..."></textarea>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-p" style="font-size:12px" onclick="saveBulk()">&#10003; Import works orders</button>
+            <button class="btn" style="font-size:12px" onclick="hideBulkForm()">Cancel</button>
           </div>
         </div>
         <div id="woProjWrap" class="hidden" style="margin-top:12px">
@@ -409,6 +421,60 @@ function nextWORef(){
     if(m){ var n=parseInt(m[1],10); if(n>max) max=n; }
   });
   return 'WO-'+String(max+1).padStart(4,'0');
+}
+
+function showBulkForm(){ document.getElementById('bulkForm').classList.remove('hidden'); document.getElementById('bulkTA').focus(); }
+function hideBulkForm(){ document.getElementById('bulkForm').classList.add('hidden'); }
+
+// Parse a date in common formats (dd/mm/yyyy, yyyy-mm-dd, dd-mm-yyyy) to yyyy-mm-dd
+function parseDate(s){
+  s=(s||'').trim();
+  if(!s) return '';
+  // already ISO yyyy-mm-dd
+  var iso=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(iso) return iso[1]+'-'+iso[2].padStart(2,'0')+'-'+iso[3].padStart(2,'0');
+  // dd/mm/yyyy or dd-mm-yyyy (UK format)
+  var uk=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if(uk){
+    var d=uk[1].padStart(2,'0'), m=uk[2].padStart(2,'0'), y=uk[3];
+    if(y.length===2) y='20'+y;
+    return y+'-'+m+'-'+d;
+  }
+  return ''; // unrecognised
+}
+
+function saveBulk(){
+  var txt=document.getElementById('bulkTA').value.trim();
+  if(!txt){ alert('Nothing pasted — paste your rows first.'); return; }
+  var lines=txt.split('\n');
+  // Due date = today + 14 days
+  var due=new Date(now().getTime()+14*24*60*60*1000);
+  var dueStr=d2s(due);
+  var created=0, skipped=0, errors=[];
+  lines.forEach(function(line,idx){
+    line=line.trim();
+    if(!line) return;
+    // Split on tab, comma, or whitespace
+    var parts=line.split(/[\t,]+|\s+/).filter(function(p){return p!=='';});
+    if(parts.length<3){ skipped++; errors.push('Line '+(idx+1)+': need start date, code, qty'); return; }
+    // Expected: [startdate, code, qty]  — but date may itself contain no spaces
+    var start=parseDate(parts[0]);
+    var code=(parts[1]||'').trim();
+    var qty=pn(parts[parts.length-1]);
+    if(code.toLowerCase()==='code'||(parts[0].toLowerCase()==='start')) return; // header row
+    if(!start){ skipped++; errors.push('Line '+(idx+1)+': unrecognised date "'+parts[0]+'"'); return; }
+    if(!code||qty<=0){ skipped++; errors.push('Line '+(idx+1)+': missing code or qty'); return; }
+    WOs.push({ref:nextWORef(), start:start, due:dueStr, items:[{code:code, qty:qty}]});
+    created++;
+  });
+  if(!created){ alert('No valid rows imported.\n\n'+errors.slice(0,8).join('\n')); return; }
+  document.getElementById('bulkTA').value='';
+  hideBulkForm();
+  document.getElementById('woPB').classList.add('open');
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); renderCompleted(); saveState();
+  var msg=created+' works order(s) created (due '+fmtD(dueStr)+').';
+  if(skipped) msg+='\n\n'+skipped+' line(s) skipped:\n'+errors.slice(0,8).join('\n')+(errors.length>8?'\n…and '+(errors.length-8)+' more':'');
+  alert(msg);
 }
 
 function saveWO(){
