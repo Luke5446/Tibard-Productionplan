@@ -170,10 +170,13 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
     <div class="panel">
       <div class="ph" onclick="togglePB('woPB')"><h2>&#128296; Works Order Tracker</h2><span class="sub" id="woSub">Click to expand</span></div>
       <div class="pb" id="woPB">
-        <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Add live works orders. The due date feeds into the days-of-stock projection. Click a WO tile to see its contents. Delete individual SKUs as manufacturing completes.</p>
-        <div id="woCards" class="wo-cards"></div>
-        <button class="btn btn-p" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
-        <button class="btn" style="font-size:12px" onclick="showBulkForm()">&#128229; Bulk import works orders</button>
+        <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Add live works orders. The due date feeds into the days-of-stock projection. Click a WO tile to see its contents in a popup. Delete individual SKUs as manufacturing completes.</p>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <button class="btn btn-p" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
+          <button class="btn" style="font-size:12px" onclick="showBulkForm()">&#128229; Bulk import works orders</button>
+          <input type="text" id="woSearch" placeholder="&#128269; Search works orders by SKU code..." oninput="renderWOCards()" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;min-width:230px;font-family:Arial,sans-serif">
+          <span style="font-size:11px;color:#6b7280;margin-left:auto" id="woSearchCount"></span>
+        </div>
         <div id="woForm" class="pbox hidden" style="margin-top:10px">
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px">
             <div><label style="display:block;font-size:11px;color:#4b5563;font-weight:600;margin-bottom:3px">Works order reference</label>
@@ -201,20 +204,7 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
             <button class="btn" style="font-size:12px" onclick="hideBulkForm()">Cancel</button>
           </div>
         </div>
-        <div id="woProjWrap" class="hidden" style="margin-top:12px">
-          <div style="display:flex;align-items:center;gap:9px;margin-bottom:6px;flex-wrap:wrap">
-            <strong id="woProjTitle" style="font-size:12px;color:#7A1F3D">&#128296; Works order contents</strong>
-            <button class="btn" style="font-size:10px;padding:3px 8px" onclick="selectWO(selectedWO)">&#10005; Close</button>
-          </div>
-          <div style="overflow-x:auto;border:1px solid #dde3ed;border-radius:7px">
-            <table class="main" style="min-width:auto"><thead><tr>
-              <th style="text-align:left">SKU</th><th style="text-align:left">Description</th>
-              <th style="text-align:right">In stock</th><th style="text-align:right">WO qty</th>
-              <th style="text-align:right">Due</th><th style="text-align:right">Days cover on completion</th>
-              <th class="ns" style="text-align:center">Action</th>
-            </tr></thead><tbody id="woProjBody"></tbody></table>
-          </div>
-        </div>
+        <div id="woCards" class="wo-cards"></div>
       </div>
     </div>
 
@@ -302,6 +292,27 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
   </div>
 </div>
 
+<!-- WO contents popup modal -->
+<div class="modal-bg" id="woModal">
+  <div class="modal-box">
+    <div class="mhdr"><h3 id="woModalTitle">Works Order</h3><button class="mclose" id="woModalClose">&times;</button></div>
+    <div class="mbody">
+      <div id="woModalMeta" style="font-size:12px;color:#4b5563;margin-bottom:10px"></div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #dde3ed;border-radius:7px">
+        <table class="main" style="min-width:680px"><thead><tr>
+          <th style="text-align:left">SKU</th><th style="text-align:left">Description</th>
+          <th style="text-align:right">In stock</th><th style="text-align:right">WO qty</th>
+          <th style="text-align:right">Days cover on completion</th>
+          <th class="ns" style="text-align:center">Action</th>
+        </tr></thead><tbody id="woModalBody"></tbody></table>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px;justify-content:flex-end">
+        <button class="btn" style="color:#065f46;border-color:#a7d4bb" id="woModalCompleteAll">&#10003; Complete whole WO</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Create works orders modal -->
 <div class="modal-bg" id="createModal">
   <div class="modal-box sm">
@@ -380,7 +391,7 @@ function showData(){
   document.getElementById('uzone').classList.add('hidden');
   document.getElementById('dataWrap').classList.remove('hidden');
   document.getElementById('lastUpdated').textContent='Loaded: '+now().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-  updateStats(); renderTable(); renderWOCards(); renderWOProj(); renderCompleted();
+  updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted();
 }
 
 // ── WOP recommendation ─────────────────────────────────────────────────────
@@ -471,7 +482,7 @@ function saveBulk(){
   document.getElementById('bulkTA').value='';
   hideBulkForm();
   document.getElementById('woPB').classList.add('open');
-  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); renderCompleted(); saveState();
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
   var msg=created+' works order(s) created (due '+fmtD(dueStr)+').';
   if(skipped) msg+='\n\n'+skipped+' line(s) skipped:\n'+errors.slice(0,8).join('\n')+(errors.length>8?'\n…and '+(errors.length-8)+' more':'');
   alert(msg);
@@ -505,13 +516,13 @@ function saveWO(){
   document.getElementById('woDue').value='';
   document.getElementById('woTA').value='';
   hideWOForm();
-  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); saveState();
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); saveState();
 }
 
 function delWO(i){
   if(!confirm('Remove works order "'+WOs[i].ref+'"?')) return;
   WOs.splice(i,1);
-  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); saveState();
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); saveState();
 }
 
 // Delete a single SKU line from a works order (manufacturing complete)
@@ -526,7 +537,7 @@ function delWOItem(woIdx, code){
     WOs.splice(woIdx,1);
     selectedWO=null;
   }
-  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); renderCompleted(); saveState();
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
 }
 
 // Complete an entire works order at once
@@ -537,7 +548,7 @@ function completeWholeWO(woIdx){
   wo.items.forEach(function(it){ recordCompleted(wo, it); });
   WOs.splice(woIdx,1);
   if(selectedWO===wo.ref) selectedWO=null;
-  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); renderCompleted(); saveState();
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
 }
 
 // Record a completed line into history
@@ -556,27 +567,82 @@ function recordCompleted(wo, it){
 
 function renderWOCards(){
   var w=document.getElementById('woCards');
-  if(!WOs.length){ w.innerHTML=''; return; }
-  w.innerHTML=WOs.map(function(wo,i){
+  var srch=(document.getElementById('woSearch')?document.getElementById('woSearch').value:'').toLowerCase().trim();
+  var list=WOs.map(function(wo,i){ return {wo:wo, i:i}; });
+  if(srch){
+    list=list.filter(function(o){
+      return o.wo.items.some(function(it){ return it.code.toLowerCase().indexOf(srch)>=0; })
+        || (o.wo.ref||'').toLowerCase().indexOf(srch)>=0;
+    });
+  }
+  var sc=document.getElementById('woSearchCount');
+  if(sc) sc.textContent = WOs.length ? (srch? list.length+' of '+WOs.length+' WOs' : WOs.length+' works orders') : '';
+  if(!WOs.length){ w.innerHTML='<p style="font-size:12px;color:#6b7280;padding:8px">No works orders yet. Use Add or Bulk import above.</p>'; return; }
+  if(!list.length){ w.innerHTML='<p style="font-size:12px;color:#6b7280;padding:8px">No works orders contain "'+esc(srch)+'".</p>'; return; }
+  w.innerHTML=list.map(function(o){
+    var wo=o.wo, i=o.i;
     var dys=daysUntil(wo.due);
     var wl=dys<1?'Due now':dys.toFixed(0)+' days away';
     var wbg=dys<7?'#fde8e8;color:#b91c1c':dys<14?'#fef3c7;color:#92400e':'#d1fae5;color:#065f46';
     var tot=Math.round(wo.items.reduce(function(s,it){return s+it.qty;},0));
-    var sel=(selectedWO===wo.ref)?' woc-selected':'';
-    return '<div class="woc'+sel+'" onclick="selectWO(\''+esc(wo.ref).replace(/'/g,"\\'")+'\')" style="cursor:pointer">'
+    return '<div class="woc" onclick="openWOModal('+i+')" style="cursor:pointer">'
       +'<button class="woc-del" onclick="event.stopPropagation();delWO('+i+')" title="Remove WO (without completing)">&#10005;</button>'
       +'<button class="woc-edit" onclick="event.stopPropagation();editWODate('+i+')" title="Change dates">&#9998;</button>'
       +'<div class="woc-ref">'+esc(wo.ref)+'</div>'
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
       +'<span class="woc-wks" style="background:'+wbg+'">'+wl+'</span>'
       +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
-      +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">'+((selectedWO===wo.ref)?'&#9650; Hide contents':'&#9660; Click to view contents')+'</div>'
+      +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
       +'<button class="btn" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button>'
       +'</div>';
   }).join('');
 }
 
-function selectWO(ref){ selectedWO=(selectedWO===ref)?null:ref; renderWOCards(); renderWOProj(); }
+function openWOModal(i){
+  var wo=WOs[i];
+  if(!wo) return;
+  selectedWO=wo.ref;
+  document.getElementById('woModalTitle').textContent=wo.ref+' — Contents';
+  var dueDays=daysUntil(wo.due);
+  var tot=Math.round(wo.items.reduce(function(s,it){return s+it.qty;},0));
+  document.getElementById('woModalMeta').innerHTML=
+    (wo.start?'Start: <strong>'+fmtD(wo.start)+'</strong> &nbsp;|&nbsp; ':'')
+    +'Due: <strong>'+fmtD(wo.due)+'</strong> &nbsp;|&nbsp; '
+    +'<strong>'+wo.items.length+'</strong> SKU(s) &nbsp;|&nbsp; <strong>'+tot.toLocaleString()+'</strong> units total';
+  var body=document.getElementById('woModalBody');
+  body.innerHTML=wo.items.map(function(it){
+    var r=rows.find(function(x){return x.code===it.code;});
+    var desc=r?r.desc:'(not in current stock data)';
+    var inStock=r?r.inStock:0;
+    var daily=r?r.dailyUsage:0;
+    var projStock=r?(r.available - daily*dueDays + it.qty):it.qty;
+    var daysCover=daily>0?(projStock/daily):999;
+    var dc=daysCover>=999?'—':daysCover.toFixed(0)+' days';
+    var col=daysCover<7?'#b91c1c':daysCover<14?'#92400e':daysCover<28?'#1e40af':'#065f46';
+    return '<tr><td style="font-family:monospace;font-size:11px">'+esc(it.code)+'</td>'
+      +'<td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(desc)+'">'+esc(desc)+'</td>'
+      +'<td style="text-align:right">'+inStock.toLocaleString()+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:#6d28d9">'+Math.round(it.qty).toLocaleString()+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:'+col+'">'+dc+'</td>'
+      +'<td style="text-align:center"><button class="btn" style="font-size:10px;padding:2px 7px;color:#065f46;border-color:#a7d4bb" onclick="delWOItem('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\')">&#10003; Complete</button></td>'
+      +'</tr>';
+  }).join('');
+  // Wire the complete-all button for this WO
+  document.getElementById('woModalCompleteAll').onclick=function(){ completeWholeWO(i); };
+  document.getElementById('woModal').classList.add('open');
+}
+
+function closeWOModal(){ document.getElementById('woModal').classList.remove('open'); selectedWO=null; }
+
+// If the WO modal is open, re-render its contents (after a completion etc.)
+function refreshWOModal(){
+  var m=document.getElementById('woModal');
+  if(!m || !m.classList.contains('open')) return;
+  if(!selectedWO){ closeWOModal(); return; }
+  var i=WOs.findIndex(function(w){return w.ref===selectedWO;});
+  if(i<0){ closeWOModal(); return; }   // WO fully completed/removed
+  openWOModal(i);
+}
 
 function editWODate(i){
   var wo=WOs[i]; if(!wo) return;
@@ -593,39 +659,7 @@ function saveWODate(i){
   var start=document.getElementById('woc-se-'+i).value;
   if(!due){ alert('Please choose a due date.'); return; }
   wo.due=due; wo.start=start;
-  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); saveState();
-}
-
-function renderWOProj(){
-  var w=document.getElementById('woProjWrap');
-  if(!WOs.length || !selectedWO){ w.classList.add('hidden'); return; }
-  w.classList.remove('hidden');
-  var ttl=document.getElementById('woProjTitle');
-  var woIdx=WOs.findIndex(function(wo){return wo.ref===selectedWO;});
-  var wo=WOs[woIdx];
-  if(!wo){ w.classList.add('hidden'); return; }
-  if(ttl) ttl.innerHTML='&#128296; '+esc(wo.ref)+' — contents (Due '+fmtD(wo.due)+')';
-  var dueDays=daysUntil(wo.due);
-  var body=document.getElementById('woProjBody');
-  body.innerHTML=wo.items.map(function(it){
-    var r=rows.find(function(x){return x.code===it.code;});
-    var desc=r?r.desc:'(not in current stock data)';
-    var inStock=r?r.inStock:0;
-    var daily=r?r.dailyUsage:0;
-    // Days cover on completion = (available now - usage until due + this WO qty) / daily
-    var projStock=r?(r.available - daily*dueDays + it.qty):it.qty;
-    var daysCover=daily>0?(projStock/daily):999;
-    var dc=daysCover>=999?'—':daysCover.toFixed(0)+' days';
-    var col=daysCover<7?'#b91c1c':daysCover<14?'#92400e':daysCover<28?'#1e40af':'#065f46';
-    return '<tr><td style="font-family:monospace;font-size:11px">'+esc(it.code)+'</td>'
-      +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(desc)+'">'+esc(desc)+'</td>'
-      +'<td style="text-align:right">'+inStock.toLocaleString()+'</td>'
-      +'<td style="text-align:right;font-weight:700;color:#6d28d9">'+Math.round(it.qty).toLocaleString()+'</td>'
-      +'<td style="text-align:right">'+fmtD(wo.due)+'</td>'
-      +'<td style="text-align:right;font-weight:700;color:'+col+'">'+dc+'</td>'
-      +'<td style="text-align:center"><button class="btn" style="font-size:10px;padding:2px 7px;color:#065f46;border-color:#a7d4bb" onclick="delWOItem('+woIdx+',\''+esc(it.code).replace(/'/g,"\\'")+'\')">&#10003; Complete</button></td>'
-      +'</tr>';
-  }).join('');
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
 }
 
 // ── Completed works orders history ─────────────────────────────────────────
@@ -677,7 +711,7 @@ function undoCompleted(idx){
     WOs.push({ref:c.ref, start:c.start, due:c.due, items:[{code:c.code, qty:c.qty}]});
   }
   completedWOs.splice(idx,1);
-  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); renderCompleted(); saveState();
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
 }
 
 function exportCompleted(){
@@ -919,7 +953,7 @@ function doCreateWOs(){
   closeCreate();
   // Open the WO tracker panel so they can see the result
   document.getElementById('woPB').classList.add('open');
-  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); saveState();
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); saveState();
   alert(er.length+' works order(s) created and added to the tracker.');
 }
 
@@ -968,6 +1002,8 @@ document.addEventListener('DOMContentLoaded',function(){
   });
   document.getElementById('rwClose').addEventListener('click',function(){document.getElementById('rwModal').classList.remove('open');});
   document.getElementById('rwModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+  document.getElementById('woModalClose').addEventListener('click',closeWOModal);
+  document.getElementById('woModal').addEventListener('click',function(e){if(e.target===this)closeWOModal();});
   document.getElementById('createModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 });
 </script>
