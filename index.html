@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tibard – Production Buffer Stock</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f4f6f9;color:#111827;font-size:14px}
+header{background:#7A1F3D;color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+header h1{font-size:16px;font-weight:600}
+.toolbar{background:#fff;border-bottom:1px solid #dde3ed;padding:8px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;border:1px solid #c8d0df;background:#fff;color:#111827;font-size:13px;cursor:pointer;font-family:Arial,sans-serif;transition:background .1s}
+.btn:hover{background:#f0f3f8}
+.btn-p{background:#7A1F3D;color:#fff;border-color:#7A1F3D}
+.btn-p:hover{background:#641832}
+.main{padding:14px 20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px}
+.stat{background:#fff;border-radius:7px;padding:9px 12px;border:1px solid #dde3ed}
+.stat.tile{cursor:pointer;transition:all .12s}
+.stat.tile:hover{border-color:#a13a5c;background:#fdf2f6;transform:translateY(-1px)}
+.stat.tile-active{border-color:#7A1F3D;border-width:2px;background:#fbe9f0;box-shadow:0 1px 4px rgba(122,31,61,.15)}
+.stat-lbl{font-size:10px;color:#4b5563;margin-bottom:2px;line-height:1.3}
+.stat-val{font-size:20px;font-weight:700}
+.panel{background:#fff;border-radius:8px;border:1px solid #dde3ed;margin-bottom:12px;overflow:hidden}
+.ph{background:#7A1F3D;color:#fff;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.ph h2{font-size:13px;font-weight:600}
+.ph .sub{font-size:11px;opacity:.75}
+.pb{padding:12px 14px;display:none}
+.pb.open{display:block}
+/* WO cards */
+.wo-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-bottom:10px}
+.woc{background:#f8fafc;border:1px solid #dde3ed;border-radius:7px;padding:10px 12px;position:relative}
+.woc-ref{font-size:13px;font-weight:700;color:#7A1F3D}
+.woc-date{font-size:11px;color:#4b5563;margin:2px 0}
+.woc-wks{display:inline-block;font-size:10px;padding:1px 7px;border-radius:12px;font-weight:600;margin-bottom:4px}
+.woc-del{position:absolute;top:6px;right:7px;background:none;border:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:1px 4px;border-radius:3px}
+.woc-del:hover{background:#fee2e2;color:#b91c1c}
+.woc-edit{position:absolute;top:6px;right:28px;background:none;border:none;cursor:pointer;color:#9ca3af;font-size:12px;padding:1px 4px;border-radius:3px}
+.woc-edit:hover{background:#fbe9f0;color:#7A1F3D}
+.woc-selected{border-color:#7A1F3D;border-width:2px;background:#fbe9f0}
+/* filters */
+.filters{display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+.filters input,.filters select{font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;color:#111827;font-family:Arial,sans-serif}
+.filters input{min-width:180px}
+.rc{font-size:11px;color:#6b7280;margin-left:auto}
+.twrap{background:#fff;border-radius:7px;border:1px solid #dde3ed;overflow:hidden}
+.tscroll{overflow-x:auto}
+table.main{width:100%;border-collapse:collapse;font-size:12px;min-width:1000px}
+table.main th{background:#f0f3f8;color:#4b5563;font-weight:600;font-size:10px;padding:7px 8px;text-align:left;border-bottom:1px solid #dde3ed;white-space:nowrap;cursor:pointer;user-select:none;text-transform:uppercase;letter-spacing:.3px}
+table.main th:hover{color:#111827;background:#e6eaf2}
+table.main th.ns{cursor:default}
+table.main th.ns:hover{color:#4b5563;background:#f0f3f8}
+table.main td{padding:6px 8px;border-bottom:1px solid #f0f3f8;vertical-align:middle;color:#111827}
+table.main tr:last-child td{border-bottom:none}
+table.main tr.clickable:hover td{background:#fdf2f6;cursor:pointer}
+.row-excl{opacity:.4}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:15px;font-weight:600;white-space:nowrap}
+.br{background:#fde8e8;color:#b91c1c}
+.ba{background:#fef3c7;color:#92400e}
+.bb{background:#dbeafe;color:#1e40af}
+.bg{background:#d1fae5;color:#065f46}
+.days-bar{display:flex;align-items:center;gap:5px}
+.days-track{flex:1;height:5px;border-radius:2px;background:#e5e7eb;min-width:35px}
+.days-fill{height:100%;border-radius:2px}
+.days-num{font-size:11px;min-width:34px;text-align:right;font-weight:700}
+.wop-rec{font-weight:700;color:#7A1F3D}
+.on-wop{color:#6d28d9;font-weight:600;font-size:12px}
+.inc-btn{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:3px;border:1px solid #c8d0df;background:#fff;color:#111827;font-size:12px;cursor:pointer;font-family:Arial,sans-serif;line-height:1;padding:0}
+.inc-btn:hover{background:#fbe9f0;border-color:#a13a5c}
+.wop-input{width:48px;text-align:center;font-weight:700;font-size:12px;border:1px solid #c8d0df;border-radius:3px;padding:1px 2px;font-family:Arial,sans-serif;color:#111827}
+.cc{display:flex;align-items:center;justify-content:center;gap:2px}
+.inc-cb{width:14px;height:14px;cursor:pointer;accent-color:#7A1F3D}
+.pbox{background:#fff;border-radius:7px;border:1px solid #dde3ed;padding:12px 14px;margin-bottom:12px}
+.pbox h3{font-size:13px;font-weight:600;margin-bottom:6px;color:#7A1F3D}
+.pbox p{font-size:11px;color:#4b5563;margin-bottom:7px;line-height:1.6}
+.pbox code{background:#f0f3f8;padding:1px 4px;border-radius:3px;font-family:monospace;font-size:11px;color:#7A1F3D}
+textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding:8px;border:1px solid #c8d0df;border-radius:5px;background:#fafbfd;color:#111827;resize:vertical;margin-bottom:7px}
+.uzone{background:#fff;border:2px dashed #c8d0df;border-radius:7px;padding:22px;text-align:center;margin-bottom:12px}
+.uzone h2{font-size:14px;margin-bottom:5px;color:#7A1F3D}
+.uzone p{font-size:12px;color:#4b5563;margin-bottom:2px}
+.uzone small{font-size:10px;color:#6b7280;line-height:1.5;display:block}
+.foot{font-size:10px;color:#6b7280;margin-top:5px;line-height:1.5}
+.hidden{display:none}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal-box{background:#fff;border-radius:9px;width:min(1000px,98vw);max-height:92vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-box.sm{width:min(500px,96vw)}
+.mhdr{background:#7A1F3D;color:#fff;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.mhdr h3{font-size:14px;font-weight:600}
+.mclose{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0 2px;opacity:.8}
+.mclose:hover{opacity:1}
+.mbody{padding:14px 16px;overflow-y:auto}
+.egrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.egrid label{display:block;font-size:11px;color:#4b5563;font-weight:600;margin-bottom:3px}
+.egrid input{width:100%;padding:6px 9px;border:1px solid #c8d0df;border-radius:5px;font-size:12px;font-family:Arial,sans-serif}
+.proj-note{background:#fbe9f0;border:1px solid #e8b8c9;border-radius:6px;padding:9px;margin-bottom:10px;font-size:12px;color:#7A1F3D}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>&#127981; Tibard — Production Buffer Stock</h1>
+    <span id="lastUpdated" style="font-size:11px;opacity:.7"></span>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <span id="saveInd" style="font-size:10px;opacity:.6"></span>
+    <button class="btn" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="showExport()">&#8659; Export works order</button>
+    <button class="btn" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="clearAll()">&#128465; Clear</button>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button class="btn btn-p" id="pasteBtn" onclick="togglePaste()">&#9998; Paste buffer stock data</button>
+  <span id="skuCount" style="font-size:13px;font-weight:700;color:#7A1F3D;padding:0 4px"></span>
+  <div style="margin-left:auto;font-size:11px;color:#4b5563">Buffer target: <strong>28 days (4 wks)</strong> &nbsp;|&nbsp; Usage = 6-month sales ÷ 182 days</div>
+</div>
+
+<div class="main">
+
+  <div id="pastePanel" class="pbox hidden">
+    <h3>&#9998; Paste buffer stock data</h3>
+    <p>Select your buffer sheet range → Ctrl+C → click below → Ctrl+V<br>
+    Columns: <code>A</code>=Code &nbsp;<code>B</code>=Desc &nbsp;<code>M</code>=In Stock &nbsp;<code>O</code>=On SOP &nbsp;<code>P</code>=On POP &nbsp;<code>T</code>=1mth &nbsp;<code>U</code>=3mth &nbsp;<code>V</code>=6mth &nbsp;<code>W</code>=12mth sales</p>
+    <textarea id="pasteTA" placeholder="Click here then Ctrl+V..."></textarea>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-p" onclick="loadPaste()">&#10003; Load data</button>
+      <button class="btn" onclick="togglePaste()">Cancel</button>
+    </div>
+  </div>
+
+  <div id="uzone" class="uzone">
+    <h2>&#127981; Ready to load buffer stock data</h2>
+    <p>Click <strong>Paste buffer stock data</strong> above</p>
+    <small>Columns A, B, M, O, P, T, U, V, W (the visible columns from your buffer sheet)</small>
+  </div>
+
+  <div id="dataWrap" class="hidden">
+
+    <div class="stats" id="statsBar"></div>
+
+    <!-- Works Order Tracker -->
+    <div class="panel">
+      <div class="ph" onclick="togglePB('woPB')"><h2>&#128296; Works Order Tracker</h2><span class="sub" id="woSub">Click to expand</span></div>
+      <div class="pb" id="woPB">
+        <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Add live works orders. The due date feeds into the days-of-stock projection. Click a WO tile to see its contents. Delete individual SKUs as manufacturing completes.</p>
+        <div id="woCards" class="wo-cards"></div>
+        <button class="btn btn-p" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
+        <div id="woForm" class="pbox hidden" style="margin-top:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px">
+            <div><label style="display:block;font-size:11px;color:#4b5563;font-weight:600;margin-bottom:3px">Works order reference</label>
+            <input type="text" id="woRef" placeholder="e.g. WO-1234" style="width:100%;padding:6px 9px;border:1px solid #c8d0df;border-radius:5px;font-size:12px;font-family:Arial,sans-serif"></div>
+            <div><label style="display:block;font-size:11px;color:#4b5563;font-weight:600;margin-bottom:3px">Start date</label>
+            <input type="date" id="woStart" style="width:100%;padding:6px 9px;border:1px solid #c8d0df;border-radius:5px;font-size:12px;font-family:Arial,sans-serif"></div>
+            <div><label style="display:block;font-size:11px;color:#4b5563;font-weight:600;margin-bottom:3px">Due date (completion)</label>
+            <input type="date" id="woDue" style="width:100%;padding:6px 9px;border:1px solid #c8d0df;border-radius:5px;font-size:12px;font-family:Arial,sans-serif"></div>
+          </div>
+          <p style="font-size:11px;color:#4b5563;margin-bottom:5px">Paste SKUs and quantities (two columns: <code>Code [tab] Qty</code>), one per line. Or type them in.</p>
+          <textarea id="woTA" placeholder="Paste or type: code [tab] quantity, one per line..."></textarea>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-p" style="font-size:12px" onclick="saveWO()">&#10003; Save works order</button>
+            <button class="btn" style="font-size:12px" onclick="hideWOForm()">Cancel</button>
+          </div>
+        </div>
+        <div id="woProjWrap" class="hidden" style="margin-top:12px">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:6px;flex-wrap:wrap">
+            <strong id="woProjTitle" style="font-size:12px;color:#7A1F3D">&#128296; Works order contents</strong>
+            <button class="btn" style="font-size:10px;padding:3px 8px" onclick="selectWO(selectedWO)">&#10005; Close</button>
+          </div>
+          <div style="overflow-x:auto;border:1px solid #dde3ed;border-radius:7px">
+            <table class="main" style="min-width:auto"><thead><tr>
+              <th style="text-align:left">SKU</th><th style="text-align:left">Description</th>
+              <th style="text-align:right">In stock</th><th style="text-align:right">WO qty</th>
+              <th style="text-align:right">Due</th><th style="text-align:right">Days cover on completion</th>
+              <th class="ns" style="text-align:center">Action</th>
+            </tr></thead><tbody id="woProjBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input type="text" id="srch" placeholder="&#128269; Search code or description..." oninput="renderTable()">
+      <select id="sfilt" onchange="renderTable()">
+        <option value="">All items</option>
+        <option value="critical">Critical (≤7 days)</option>
+        <option value="low">Low (7–14 days)</option>
+        <option value="ok">OK (14–28 days)</option>
+        <option value="healthy">Healthy (28+ days)</option>
+      </select>
+      <select id="ofilt" onchange="renderTable()">
+        <option value="">All items</option>
+        <option value="needswo">Needs making (WOP REC > 0)</option>
+        <option value="onwop">On a works order</option>
+        <option value="onsop">Has On SOP</option>
+      </select>
+      <button class="btn" onclick="clearFilt()" style="font-size:11px;padding:4px 9px">&#10005; Clear filters</button>
+      <button class="btn" onclick="resetWops()" style="font-size:11px;padding:4px 9px">&#8635; Reset to rec</button>
+      <button class="btn" onclick="tickAll(false)" style="font-size:11px;padding:4px 9px">&#9744; Untick all</button>
+      <button class="btn" onclick="tickAll(true)" style="font-size:11px;padding:4px 9px">&#9745; Tick all</button>
+      <span class="rc" id="rc"></span>
+    </div>
+
+    <div class="twrap"><div class="tscroll">
+      <table class="main" id="mainTbl">
+        <thead><tr>
+          <th class="ns" style="width:28px;text-align:center">&#10003;</th>
+          <th onclick="sBy('code')" style="width:120px">Code &#8597;</th>
+          <th onclick="sBy('desc')" style="width:200px">Description &#8597;</th>
+          <th onclick="sBy('inStock')" style="width:55px;text-align:right">In stock &#8597;</th>
+          <th onclick="sBy('onSOP')" style="width:50px;text-align:right">On SOP &#8597;</th>
+          <th onclick="sBy('onPOP')" style="width:50px;text-align:right">On POP &#8597;</th>
+          <th onclick="sBy('s3m')" style="width:55px;text-align:right">3m sales &#8597;</th>
+          <th onclick="sBy('s6m')" style="width:55px;text-align:right">6m sales &#8597;</th>
+          <th onclick="sBy('dailyUsage')" style="width:52px;text-align:right">Daily use &#8597;</th>
+          <th onclick="sBy('daysOfStock')" style="width:115px">Days stock &#8597;</th>
+          <th class="ns" style="width:80px">Status</th>
+          <th onclick="sBy('onWOP')" style="width:55px;text-align:right;color:#6d28d9">On WOP &#8597;</th>
+          <th onclick="sBy('wopRec')" style="width:60px;text-align:right;color:#7A1F3D">WOP REC &#8597;</th>
+          <th class="ns" style="width:135px;text-align:center">ACT WOP</th>
+        </tr></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div></div>
+    <p class="foot">
+      &#128296; <strong style="color:#7A1F3D">WOP REC</strong> = recommended make qty for 28 days (4 wks) cover, based on 6-month sales, less stock/On POP/On WOP.
+      <strong>ACT WOP</strong> = your adjusted make qty (used in export). Days stock = (In stock − On SOP) ÷ daily usage. Click a row for the stock runway.
+    </p>
+
+  </div>
+</div>
+
+<!-- Runway modal -->
+<div class="modal-bg" id="rwModal">
+  <div class="modal-box">
+    <div class="mhdr"><h3 id="rwTitle">Stock Runway</h3><button class="mclose" id="rwClose">&times;</button></div>
+    <div class="mbody"><div id="rwContent"></div></div>
+  </div>
+</div>
+
+<!-- Export modal -->
+<div class="modal-bg" id="expModal">
+  <div class="modal-box sm">
+    <div class="mhdr"><h3>&#8659; Export Works Order</h3><button class="mclose" onclick="closeExp()">&times;</button></div>
+    <div class="mbody">
+      <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Exports all ticked rows with an ACT WOP > 0.</p>
+      <div class="egrid">
+        <div><label>Works order reference</label><input type="text" id="expRef" placeholder="e.g. WO batch 12 Jun"></div>
+        <div><label>Date raised</label><input type="date" id="expDate"></div>
+      </div>
+      <div class="proj-note"><strong id="expSum"></strong></div>
+      <div style="display:flex;gap:6px;justify-content:flex-end">
+        <button class="btn" onclick="closeExp()">Cancel</button>
+        <button class="btn btn-p" onclick="doExport()">&#8659; Download CSV</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+var rows = [], WOs = [], sortCol = 'daysOfStock', sortAsc = true;
+var BUFFER_DAYS = 28;            // 4 weeks target
+var DAILY_DIVISOR = 182;         // 6-month sales / 182 days
+var selectedWO = null;
+var activeTile = null;
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function pn(s){ return parseFloat((s||'').toString().replace(/[",\s]/g,''))||0; }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function sid(c){ return c.replace(/[^a-zA-Z0-9]/g,'_'); }
+function now(){ return new Date(); }
+function daysUntil(ds){ return Math.max(0,(new Date(ds)-now())/(1000*60*60*24)); }
+function fmtD(ds){ if(!ds)return''; return new Date(ds).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+function dash(){ return '<span style="color:#e5e7eb">&mdash;</span>'; }
+function d2s(d){ var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0'); return y+'-'+m+'-'+dd; }
+
+// ── UI ─────────────────────────────────────────────────────────────────────
+function togglePaste(){ var p=document.getElementById('pastePanel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')) document.getElementById('pasteTA').focus(); }
+function togglePB(id){ document.getElementById(id).classList.toggle('open'); }
+function showWOForm(){ document.getElementById('woForm').classList.remove('hidden'); document.getElementById('woRef').focus(); }
+function hideWOForm(){ document.getElementById('woForm').classList.add('hidden'); }
+function closeExp(){ document.getElementById('expModal').classList.remove('open'); }
+
+// ── Load buffer data ───────────────────────────────────────────────────────
+function loadPaste(){
+  var txt=document.getElementById('pasteTA').value.trim();
+  if(!txt){ alert('Nothing pasted — click in the box then Ctrl+V.'); return; }
+  var lines=txt.split('\n'), built=[];
+  for(var i=0;i<lines.length;i++){
+    var c=lines[i].split('\t');
+    if(c.length<3) continue;
+    var code=(c[0]||'').trim();
+    if(!code||code.toLowerCase()==='code'||code.toLowerCase()==='stock code') continue;
+    // [0]A=Code [1]B=Desc [2]M=InStock [3]O=OnSOP [4]P=OnPOP [5]T=1m [6]U=3m [7]V=6m [8]W=12m
+    built.push(mkRow(code,(c[1]||'').trim(),pn(c[2]),pn(c[3]),pn(c[4]),pn(c[5]),pn(c[6]),pn(c[7]),pn(c[8])));
+  }
+  if(!built.length){ alert('No valid rows found.\n\nSelect your buffer sheet rows, Ctrl+C, then paste here.'); return; }
+  rows=built;
+  document.getElementById('pasteTA').value='';
+  document.getElementById('pastePanel').classList.add('hidden');
+  recalcWOs(); recalcQtys(); showData(); saveState();
+}
+
+function mkRow(code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m){
+  var daily=s6m/DAILY_DIVISOR;
+  var avail=inStock-onSOP;
+  var days=daily>0?(avail/daily):999;
+  var status=daily===0?'healthy':days<=7?'critical':days<=14?'low':days<=28?'ok':'healthy';
+  return { code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m,
+    dailyUsage:daily, available:avail, daysOfStock:days, status,
+    onWOP:0, wopRec:0, actWop:0, included:true, manAdj:false };
+}
+
+function showData(){
+  document.getElementById('uzone').classList.add('hidden');
+  document.getElementById('dataWrap').classList.remove('hidden');
+  document.getElementById('lastUpdated').textContent='Loaded: '+now().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  updateStats(); renderTable(); renderWOCards(); renderWOProj();
+}
+
+// ── WOP recommendation ─────────────────────────────────────────────────────
+// Recommended make qty so available stock reaches BUFFER_DAYS cover,
+// accounting for On POP (incoming purchase) and On WOP (already being made).
+function calcQtys(r){
+  if(r.dailyUsage<=0) return {wop:0};
+  var targetUnits = r.dailyUsage * BUFFER_DAYS;
+  var have = r.available + r.onPOP + r.onWOP;
+  var need = targetUnits - have;
+  var wop = need>0 ? Math.ceil(need) : 0;
+  return {wop:wop};
+}
+function recalcQtys(){
+  rows.forEach(function(r){
+    var q=calcQtys(r);
+    r.wopRec=q.wop;
+    if(!r.manAdj) r.actWop=q.wop;
+  });
+}
+
+// ── Works Orders ───────────────────────────────────────────────────────────
+function recalcWOs(){
+  rows.forEach(function(r){ r.onWOP=0; });
+  WOs.forEach(function(wo){
+    wo.items.forEach(function(it){
+      var r=rows.find(function(x){return x.code===it.code;});
+      if(r) r.onWOP+=it.qty;
+    });
+  });
+}
+
+function saveWO(){
+  var ref=(document.getElementById('woRef').value||'').trim();
+  var start=document.getElementById('woStart').value;
+  var due=document.getElementById('woDue').value;
+  var txt=document.getElementById('woTA').value.trim();
+  if(!ref){ alert('Enter a works order reference.'); return; }
+  if(!due){ alert('Enter a due (completion) date.'); return; }
+  if(!txt){ alert('Paste or type the SKU/quantity lines.'); return; }
+  var lines=txt.split('\n'), items=[];
+  for(var i=0;i<lines.length;i++){
+    var parts=lines[i].trim().split('\t');
+    if(parts.length<2){ parts=lines[i].trim().split(/\s{2,}|,/); }
+    if(parts.length<2) continue;
+    var code=(parts[0]||'').trim();
+    if(!code||code.toLowerCase()==='code') continue;
+    var qty=pn(parts[parts.length-1]);
+    if(qty<=0) continue;
+    items.push({code:code, qty:qty});
+  }
+  if(!items.length){ alert('No valid SKU/quantity lines found.\n\nUse: code [tab] quantity, one per line.'); return; }
+  WOs.push({ref:ref, start:start, due:due, items:items});
+  document.getElementById('woRef').value='';
+  document.getElementById('woStart').value='';
+  document.getElementById('woDue').value='';
+  document.getElementById('woTA').value='';
+  hideWOForm();
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); saveState();
+}
+
+function delWO(i){
+  if(!confirm('Remove works order "'+WOs[i].ref+'"?')) return;
+  WOs.splice(i,1);
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); saveState();
+}
+
+// Delete a single SKU line from a works order (manufacturing complete)
+function delWOItem(woIdx, code){
+  var wo=WOs[woIdx];
+  if(!wo) return;
+  if(!confirm('Mark '+code+' as complete and remove it from '+wo.ref+'?')) return;
+  wo.items=wo.items.filter(function(it){ return it.code!==code; });
+  if(!wo.items.length){
+    // No items left - remove the whole WO
+    WOs.splice(woIdx,1);
+    selectedWO=null;
+  }
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); saveState();
+}
+
+function renderWOCards(){
+  var w=document.getElementById('woCards');
+  if(!WOs.length){ w.innerHTML=''; return; }
+  w.innerHTML=WOs.map(function(wo,i){
+    var dys=daysUntil(wo.due);
+    var wl=dys<1?'Due now':dys.toFixed(0)+' days away';
+    var wbg=dys<7?'#fde8e8;color:#b91c1c':dys<14?'#fef3c7;color:#92400e':'#d1fae5;color:#065f46';
+    var tot=Math.round(wo.items.reduce(function(s,it){return s+it.qty;},0));
+    var sel=(selectedWO===wo.ref)?' woc-selected':'';
+    return '<div class="woc'+sel+'" onclick="selectWO(\''+esc(wo.ref).replace(/'/g,"\\'")+'\')" style="cursor:pointer">'
+      +'<button class="woc-del" onclick="event.stopPropagation();delWO('+i+')" title="Remove WO">&#10005;</button>'
+      +'<button class="woc-edit" onclick="event.stopPropagation();editWODate('+i+')" title="Change dates">&#9998;</button>'
+      +'<div class="woc-ref">'+esc(wo.ref)+'</div>'
+      +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
+      +'<span class="woc-wks" style="background:'+wbg+'">'+wl+'</span>'
+      +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
+      +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">'+((selectedWO===wo.ref)?'&#9650; Hide contents':'&#9660; Click to view contents')+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function selectWO(ref){ selectedWO=(selectedWO===ref)?null:ref; renderWOCards(); renderWOProj(); }
+
+function editWODate(i){
+  var wo=WOs[i]; if(!wo) return;
+  var el=document.getElementById('woc-date-'+i); if(!el) return;
+  el.innerHTML='<div style="display:flex;flex-direction:column;gap:3px">'
+    +'<label style="font-size:9px;color:#6b7280">Start <input type="date" id="woc-se-'+i+'" value="'+(wo.start||'')+'" onclick="event.stopPropagation()" style="font-size:10px;padding:1px 3px;border:1px solid #a13a5c;border-radius:3px"></label>'
+    +'<label style="font-size:9px;color:#6b7280">Due <input type="date" id="woc-de-'+i+'" value="'+wo.due+'" onclick="event.stopPropagation()" style="font-size:10px;padding:1px 3px;border:1px solid #a13a5c;border-radius:3px"></label>'
+    +'<div style="display:flex;gap:4px;margin-top:2px"><button class="btn btn-p" style="font-size:10px;padding:2px 6px" onclick="event.stopPropagation();saveWODate('+i+')">Save</button>'
+    +'<button class="btn" style="font-size:10px;padding:2px 6px" onclick="event.stopPropagation();renderWOCards()">Cancel</button></div></div>';
+}
+function saveWODate(i){
+  var wo=WOs[i]; if(!wo) return;
+  var due=document.getElementById('woc-de-'+i).value;
+  var start=document.getElementById('woc-se-'+i).value;
+  if(!due){ alert('Please choose a due date.'); return; }
+  wo.due=due; wo.start=start;
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); saveState();
+}
+
+function renderWOProj(){
+  var w=document.getElementById('woProjWrap');
+  if(!WOs.length || !selectedWO){ w.classList.add('hidden'); return; }
+  w.classList.remove('hidden');
+  var ttl=document.getElementById('woProjTitle');
+  var woIdx=WOs.findIndex(function(wo){return wo.ref===selectedWO;});
+  var wo=WOs[woIdx];
+  if(!wo){ w.classList.add('hidden'); return; }
+  if(ttl) ttl.innerHTML='&#128296; '+esc(wo.ref)+' — contents (Due '+fmtD(wo.due)+')';
+  var dueDays=daysUntil(wo.due);
+  var body=document.getElementById('woProjBody');
+  body.innerHTML=wo.items.map(function(it){
+    var r=rows.find(function(x){return x.code===it.code;});
+    var desc=r?r.desc:'(not in current stock data)';
+    var inStock=r?r.inStock:0;
+    var daily=r?r.dailyUsage:0;
+    // Days cover on completion = (available now - usage until due + this WO qty) / daily
+    var projStock=r?(r.available - daily*dueDays + it.qty):it.qty;
+    var daysCover=daily>0?(projStock/daily):999;
+    var dc=daysCover>=999?'—':daysCover.toFixed(0)+' days';
+    var col=daysCover<7?'#b91c1c':daysCover<14?'#92400e':daysCover<28?'#1e40af':'#065f46';
+    return '<tr><td style="font-family:monospace;font-size:11px">'+esc(it.code)+'</td>'
+      +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(desc)+'">'+esc(desc)+'</td>'
+      +'<td style="text-align:right">'+inStock.toLocaleString()+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:#6d28d9">'+Math.round(it.qty).toLocaleString()+'</td>'
+      +'<td style="text-align:right">'+fmtD(wo.due)+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:'+col+'">'+dc+'</td>'
+      +'<td style="text-align:center"><button class="btn" style="font-size:10px;padding:2px 7px;color:#065f46;border-color:#a7d4bb" onclick="delWOItem('+woIdx+',\''+esc(it.code).replace(/'/g,"\\'")+'\')">&#10003; Complete</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+// ── Stats / tiles ──────────────────────────────────────────────────────────
+function updateStats(){
+  var sc=document.getElementById('skuCount');
+  if(sc) sc.textContent=rows.length?rows.length.toLocaleString()+' SKUs':'';
+  var tiles=[
+    {key:'critical', label:'Critical (≤7 days)', color:'#b91c1c', n:rows.filter(function(r){return r.status==='critical';}).length},
+    {key:'low',      label:'Low (7–14 days)',    color:'#92400e', n:rows.filter(function(r){return r.status==='low';}).length},
+    {key:'ok',       label:'OK (14–28 days)',    color:'#1e40af', n:rows.filter(function(r){return r.status==='ok';}).length},
+    {key:'healthy',  label:'Healthy (28+ days)', color:'#065f46', n:rows.filter(function(r){return r.status==='healthy';}).length},
+    {key:'needswo',  label:'Needs making',       color:'#7A1F3D', n:rows.filter(function(r){return r.wopRec>0;}).length},
+    {key:'onwop',    label:'On a works order',   color:'#6d28d9', n:rows.filter(function(r){return r.onWOP>0;}).length},
+  ];
+  document.getElementById('statsBar').innerHTML=tiles.map(function(t){
+    var active=(activeTile===t.key)?' tile-active':'';
+    return '<div class="stat tile'+active+'" onclick="tileFilter(\''+t.key+'\')"><div class="stat-lbl">'+t.label+'</div><div class="stat-val" style="color:'+t.color+'">'+t.n+'</div></div>';
+  }).join('');
+}
+function tileFilter(key){
+  if(activeTile===key){ clearFilt(); return; }
+  activeTile=key;
+  document.getElementById('sfilt').value='';
+  document.getElementById('ofilt').value='';
+  document.getElementById('srch').value='';
+  if(['critical','low','ok','healthy'].indexOf(key)>=0) document.getElementById('sfilt').value=key;
+  else if(key==='needswo') document.getElementById('ofilt').value='needswo';
+  else if(key==='onwop') document.getElementById('ofilt').value='onwop';
+  renderTable(); updateStats();
+}
+
+// ── Row controls ───────────────────────────────────────────────────────────
+function toggleIncl(code,checked){
+  var r=rows.find(function(x){return x.code===code;});
+  if(!r) return;
+  r.included=checked;
+  var el=document.getElementById('row-'+sid(code));
+  if(el){ checked?el.classList.remove('row-excl'):el.classList.add('row-excl'); }
+  updateStats(); dbSave();
+}
+function adjWop(code,delta){
+  var r=rows.find(function(x){return x.code===code;});
+  if(!r) return;
+  r.actWop=Math.max(0,Math.round(r.actWop+delta));
+  r.manAdj=true;
+  var el=document.getElementById('wop-'+sid(code));
+  if(el) el.value=r.actWop;
+  updateStats(); dbSave();
+}
+function setWop(code,val){
+  var r=rows.find(function(x){return x.code===code;});
+  if(!r) return;
+  var n=parseFloat(val.replace(/[^0-9.]/g,''));
+  if(isNaN(n)||n<0) n=0;
+  r.actWop=Math.round(n);
+  r.manAdj=true;
+  var el=document.getElementById('wop-'+sid(code));
+  if(el) el.value=r.actWop;
+  updateStats(); dbSave();
+}
+
+function resetWops(){
+  var srch=(document.getElementById('srch').value||'').toLowerCase();
+  var sf=document.getElementById('sfilt').value;
+  var of=document.getElementById('ofilt').value;
+  var n=0;
+  rows.forEach(function(r){
+    if(srch&&r.code.toLowerCase().indexOf(srch)<0&&r.desc.toLowerCase().indexOf(srch)<0) return;
+    if(sf&&r.status!==sf) return;
+    if(of==='needswo'&&r.wopRec<=0) return;
+    if(of==='onwop'&&r.onWOP<=0) return;
+    if(of==='onsop'&&r.onSOP<=0) return;
+    r.actWop=r.wopRec; r.manAdj=false; n++;
+  });
+  renderTable(); updateStats(); dbSave();
+  alert(n+' item(s) reset to the recommended make quantity.');
+}
+function tickAll(state){
+  var srch=(document.getElementById('srch').value||'').toLowerCase();
+  var sf=document.getElementById('sfilt').value;
+  var of=document.getElementById('ofilt').value;
+  rows.forEach(function(r){
+    if(srch&&r.code.toLowerCase().indexOf(srch)<0&&r.desc.toLowerCase().indexOf(srch)<0) return;
+    if(sf&&r.status!==sf) return;
+    if(of==='needswo'&&r.wopRec<=0) return;
+    if(of==='onwop'&&r.onWOP<=0) return;
+    if(of==='onsop'&&r.onSOP<=0) return;
+    r.included=state;
+  });
+  renderTable(); updateStats(); dbSave();
+}
+
+// ── Sort / filter / table ──────────────────────────────────────────────────
+function sBy(col){ if(sortCol===col)sortAsc=!sortAsc; else{sortCol=col;sortAsc=(col==='daysOfStock');} renderTable(); }
+function clearFilt(){ activeTile=null; document.getElementById('srch').value=''; document.getElementById('sfilt').value=''; document.getElementById('ofilt').value=''; renderTable(); updateStats(); }
+
+function renderTable(){
+  var srch=(document.getElementById('srch').value||'').toLowerCase();
+  var sf=document.getElementById('sfilt').value;
+  var of=document.getElementById('ofilt').value;
+  var data=rows.filter(function(r){
+    if(srch&&r.code.toLowerCase().indexOf(srch)<0&&r.desc.toLowerCase().indexOf(srch)<0) return false;
+    if(sf&&r.status!==sf) return false;
+    if(of==='needswo'&&r.wopRec<=0) return false;
+    if(of==='onwop'&&r.onWOP<=0) return false;
+    if(of==='onsop'&&r.onSOP<=0) return false;
+    return true;
+  });
+  data.sort(function(a,b){
+    var av=a[sortCol],bv=b[sortCol];
+    if(av===undefined||av===null)av=0; if(bv===undefined||bv===null)bv=0;
+    if(typeof av==='string') return sortAsc?av.localeCompare(bv):bv.localeCompare(av);
+    return sortAsc?av-bv:bv-av;
+  });
+  document.getElementById('rc').textContent=data.length.toLocaleString()+' items shown';
+  var tb=document.getElementById('tBody');
+  if(!data.length){ tb.innerHTML='<tr><td colspan="14" style="text-align:center;padding:1.5rem;color:#6b7280">No items match</td></tr>'; return; }
+  tb.innerHTML=data.map(rowHTML).join('');
+}
+
+function rowHTML(r){
+  var days=r.daysOfStock, ds=days>=999?'∞':days.toFixed(0);
+  var pct=Math.min(days/BUFFER_DAYS,1)*100;
+  var bc=days<=7?'#ef4444':days<=14?'#f59e0b':days<=28?'#3b82f6':'#10b981';
+  var id=sid(r.code);
+  var statusLbl={critical:'Critical',low:'Low',ok:'OK',healthy:'Healthy'};
+  var statusCls={critical:'br',low:'ba',ok:'bb',healthy:'bg'};
+  var onWopH=r.onWOP>0?'<span class="on-wop">'+Math.round(r.onWOP).toLocaleString()+'</span>':dash();
+  var recH=r.wopRec>0?'<span class="wop-rec">'+r.wopRec.toLocaleString()+'</span>':'<span style="color:#065f46;font-weight:600">✓ OK</span>';
+  if(r.dailyUsage===0) recH='<span style="color:#6b7280;font-size:11px">No sales</span>';
+  var ctrlH='<div class="cc">'
+    +'<button class="inc-btn" title="-1" onclick="event.stopPropagation();adjWop(\''+esc(r.code)+'\',-1)">−</button>'
+    +'<input type="text" class="wop-input" id="wop-'+id+'" value="'+r.actWop+'" onclick="event.stopPropagation()" onchange="event.stopPropagation();setWop(\''+esc(r.code)+'\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()">'
+    +'<button class="inc-btn" title="+1" onclick="event.stopPropagation();adjWop(\''+esc(r.code)+'\',1)">+</button>'
+    +'</div>';
+  var sopH=r.onSOP>0?'<span style="font-weight:600">'+r.onSOP.toLocaleString()+'</span>':dash();
+  var popH=r.onPOP>0?'<span style="font-weight:600;color:#1e40af">'+r.onPOP.toLocaleString()+'</span>':dash();
+  var rowCls='clickable'+(!r.included?' row-excl':'');
+  var cbH='<input type="checkbox" class="inc-cb"'+(r.included?' checked':'')+' onclick="event.stopPropagation()" onchange="toggleIncl(\''+esc(r.code)+'\',this.checked)">';
+  return '<tr class="'+rowCls+'" id="row-'+id+'" data-code="'+esc(r.code)+'">'
+    +'<td style="text-align:center">'+cbH+'</td>'
+    +'<td>'+esc(r.code)+'</td>'
+    +'<td title="'+esc(r.desc)+'" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.desc)+'</td>'
+    +'<td style="text-align:right">'+r.inStock.toLocaleString()+'</td>'
+    +'<td style="text-align:right">'+sopH+'</td>'
+    +'<td style="text-align:right">'+popH+'</td>'
+    +'<td style="text-align:right">'+r.s3m.toLocaleString()+'</td>'
+    +'<td style="text-align:right">'+r.s6m.toLocaleString()+'</td>'
+    +'<td style="text-align:right">'+r.dailyUsage.toFixed(1)+'</td>'
+    +'<td><div class="days-bar"><div class="days-track"><div class="days-fill" style="width:'+pct.toFixed(0)+'%;background:'+bc+'"></div></div><span class="days-num" style="color:'+bc+'">'+ds+'</span></div></td>'
+    +'<td><span class="badge '+(statusCls[r.status]||'')+'">'+statusLbl[r.status]+'</span></td>'
+    +'<td style="text-align:right">'+onWopH+'</td>'
+    +'<td style="text-align:right">'+recH+'</td>'
+    +'<td>'+ctrlH+'</td>'
+    +'</tr>';
+}
+
+// ── Runway popup (day-by-day, weekly steps) ────────────────────────────────
+function openRWModal(code){
+  var r=rows.find(function(x){return x.code===code;});
+  if(!r) return;
+  // WOs landing for this SKU
+  var landings=[];
+  WOs.forEach(function(wo){
+    var it=wo.items.find(function(i){return i.code===code;});
+    if(it) landings.push({ref:wo.ref, days:daysUntil(wo.due), qty:it.qty});
+  });
+  landings.sort(function(a,b){return a.days-b.days;});
+  document.getElementById('rwTitle').textContent=r.code+' — Stock Runway';
+  var html='<div style="font-size:12px;color:#4b5563;margin-bottom:10px">'+esc(r.desc)
+    +' &nbsp;|&nbsp; In stock: <strong>'+r.inStock.toLocaleString()+'</strong>'
+    +' &nbsp;|&nbsp; Available: <strong>'+r.available.toLocaleString()+'</strong>'
+    +' &nbsp;|&nbsp; Daily use: <strong>'+r.dailyUsage.toFixed(1)+'</strong>'
+    +' &nbsp;|&nbsp; Days stock: <strong>'+(r.daysOfStock>=999?'∞':r.daysOfStock.toFixed(0))+'</strong></div>';
+  html+='<div style="overflow-x:auto"><table class="main" style="min-width:auto"><thead><tr>'
+    +'<th style="text-align:left">Week</th><th style="text-align:left">Date</th><th style="text-align:right">Opening</th>'
+    +'<th style="text-align:left">WO completes</th><th style="text-align:right">Used</th><th style="text-align:right">Closing</th><th style="text-align:right">Days cover</th></tr></thead><tbody>';
+  var stock=r.available, n=now();
+  for(var wk=0;wk<=12;wk++){
+    var wd=new Date(n.getTime()+wk*7*24*60*60*1000);
+    var land=landings.filter(function(l){return Math.round(l.days/7)===wk;});
+    var prev=stock;
+    land.forEach(function(l){stock+=l.qty;});
+    var use=wk===0?0:Math.round(r.dailyUsage*7);
+    if(wk>0) stock-=use;
+    var closing=Math.round(stock);
+    var daysCover=r.dailyUsage>0?(closing/r.dailyUsage):999;
+    var rc=closing<0?'background:#fef2f2':land.length?'background:#f0fdf4':'';
+    var cc=closing<0?'#b91c1c':daysCover<7?'#92400e':'#065f46';
+    var landH=land.length?land.map(function(l){return '<span style="background:#ede9fe;color:#6d28d9;font-size:10px;padding:1px 5px;border-radius:10px;font-weight:600">+'+Math.round(l.qty)+' '+esc(l.ref)+'</span>';}).join(' '):'<span style="color:#e5e7eb">—</span>';
+    html+='<tr style="'+rc+'"><td>Wk '+wk+'</td><td>'+wd.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+'</td>'
+      +'<td style="text-align:right">'+Math.round(wk===0?r.available:prev).toLocaleString()+'</td>'
+      +'<td>'+landH+'</td>'
+      +'<td style="text-align:right;color:#92400e">'+(wk===0?'<span style="color:#d1d5db">Today</span>':use.toLocaleString())+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:'+(closing<0?'#b91c1c':'#111827')+'">'+closing.toLocaleString()+'</td>'
+      +'<td style="text-align:right;font-weight:600;color:'+cc+'">'+(daysCover>=999?'∞':Math.round(daysCover)+'d')+'</td></tr>';
+  }
+  html+='</tbody></table></div>';
+  document.getElementById('rwContent').innerHTML=html;
+  document.getElementById('rwModal').classList.add('open');
+}
+
+// ── Export works order ─────────────────────────────────────────────────────
+function showExport(){
+  if(!rows.length){ alert('Load buffer data first.'); return; }
+  var er=rows.filter(function(r){return r.included&&r.actWop>0;});
+  if(!er.length){ alert('No ticked rows with ACT WOP > 0.'); return; }
+  var tu=Math.round(er.reduce(function(s,r){return s+r.actWop;},0));
+  document.getElementById('expSum').innerHTML=er.length+' SKUs &nbsp;|&nbsp; '+tu.toLocaleString()+' units to make';
+  document.getElementById('expRef').value='';
+  document.getElementById('expDate').value=d2s(now());
+  document.getElementById('expModal').classList.add('open');
+}
+function doExport(){
+  var ref=(document.getElementById('expRef').value||'').trim();
+  var dt=document.getElementById('expDate').value;
+  if(!ref){ alert('Enter a works order reference.'); return; }
+  if(!dt){ alert('Enter a date.'); return; }
+  var er=rows.filter(function(r){return r.included&&r.actWop>0;});
+  if(!er.length){ alert('No items to export.'); return; }
+  var lines=[ref+' (WORKS ORDER)','Date raised:,'+dt,'','Stock Code,Description,In Stock,Days Cover,Quantity To Make'];
+  var tu=0;
+  er.forEach(function(r){
+    tu+=r.actWop;
+    lines.push([r.code,'"'+r.desc.replace(/"/g,'')+'"',r.inStock,(r.daysOfStock>=999?'':r.daysOfStock.toFixed(0)),r.actWop].join(','));
+  });
+  lines.push(['"TOTAL"','','','',tu].join(','));
+  var blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=ref.replace(/\s+/g,'_')+'_WO_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  closeExp();
+}
+
+// ── Storage ────────────────────────────────────────────────────────────────
+var saveTimer=null;
+function dbSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveState,1200); }
+function saveState(){
+  try{
+    localStorage.setItem('tibard_production',JSON.stringify({rows:rows,WOs:WOs,savedAt:new Date().toISOString()}));
+    var ind=document.getElementById('saveInd'); if(ind){ind.innerHTML='✓ Saved';setTimeout(function(){ind.textContent='';},2000);}
+  }catch(e){console.log('Save failed:',e);}
+}
+function loadState(){
+  try{
+    var raw=localStorage.getItem('tibard_production');
+    if(!raw) return false;
+    var s=JSON.parse(raw);
+    if(!s.rows||!s.rows.length) return false;
+    rows=s.rows; WOs=s.WOs||[];
+    var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    document.getElementById('lastUpdated').textContent='Last saved: '+sa;
+    recalcWOs(); recalcQtys(); showData();
+    return true;
+  }catch(e){console.log('Load failed:',e);return false;}
+}
+function clearAll(){
+  if(!confirm('Clear all saved data?')) return;
+  try{
+    localStorage.removeItem('tibard_production');
+    rows=[];WOs=[];
+    document.getElementById('dataWrap').classList.add('hidden');
+    document.getElementById('uzone').classList.remove('hidden');
+    document.getElementById('lastUpdated').textContent='';
+  }catch(e){alert('Clear failed: '+e);}
+}
+
+// ── Event listeners ────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',function(){
+  loadState();
+  document.getElementById('tBody').addEventListener('click',function(e){
+    if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
+    var tr=e.target.closest('tr');
+    if(!tr) return;
+    var code=tr.getAttribute('data-code');
+    if(code) openRWModal(code);
+  });
+  document.getElementById('rwClose').addEventListener('click',function(){document.getElementById('rwModal').classList.remove('open');});
+  document.getElementById('rwModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+  document.getElementById('expModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+});
+</script>
+</body>
+</html>
