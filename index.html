@@ -55,6 +55,7 @@ table.main td{padding:6px 8px;border-bottom:1px solid #f0f3f8;vertical-align:mid
 table.main tr:last-child td{border-bottom:none}
 table.main tr.clickable:hover td{background:#fdf2f6;cursor:pointer}
 .row-excl{opacity:.4}
+tr.row-ticked td{background:#fbe9f0 !important}
 .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:15px;font-weight:600;white-space:nowrap}
 .br{background:#fde8e8;color:#b91c1c}
 .ba{background:#fef3c7;color:#92400e}
@@ -336,7 +337,7 @@ function mkRow(code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m){
   var status=daily===0?'healthy':days<=7?'critical':days<=14?'low':days<=28?'ok':'healthy';
   return { code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m,
     dailyUsage:daily, available:avail, daysOfStock:days, status,
-    onWOP:0, wopRec:0, actWop:0, included:true, manAdj:false };
+    onWOP:0, wopRec:0, actWop:0, included:false, manAdj:false };
 }
 
 function showData(){
@@ -545,7 +546,7 @@ function toggleIncl(code,checked){
   if(!r) return;
   r.included=checked;
   var el=document.getElementById('row-'+sid(code));
-  if(el){ checked?el.classList.remove('row-excl'):el.classList.add('row-excl'); }
+  if(el){ checked?el.classList.add('row-ticked'):el.classList.remove('row-ticked'); }
   updateStats(); dbSave();
 }
 function adjWop(code,delta){
@@ -622,7 +623,8 @@ function renderTable(){
     if(typeof av==='string') return sortAsc?av.localeCompare(bv):bv.localeCompare(av);
     return sortAsc?av-bv:bv-av;
   });
-  document.getElementById('rc').textContent=data.length.toLocaleString()+' items shown';
+  var tickedCount=rows.filter(function(r){return r.included;}).length;
+  document.getElementById('rc').innerHTML=data.length.toLocaleString()+' items shown'+(tickedCount>0?' &nbsp;|&nbsp; <strong style="color:#7A1F3D">'+tickedCount+' ticked to make</strong>':'');
   var tb=document.getElementById('tBody');
   if(!data.length){ tb.innerHTML='<tr><td colspan="14" style="text-align:center;padding:1.5rem;color:#6b7280">No items match</td></tr>'; return; }
   tb.innerHTML=data.map(rowHTML).join('');
@@ -645,7 +647,7 @@ function rowHTML(r){
     +'</div>';
   var sopH=r.onSOP>0?'<span style="font-weight:600">'+r.onSOP.toLocaleString()+'</span>':dash();
   var popH=r.onPOP>0?'<span style="font-weight:600;color:#1e40af">'+r.onPOP.toLocaleString()+'</span>':dash();
-  var rowCls='clickable'+(!r.included?' row-excl':'');
+  var rowCls='clickable'+(r.included?' row-ticked':'');
   var cbH='<input type="checkbox" class="inc-cb"'+(r.included?' checked':'')+' onclick="event.stopPropagation()" onchange="toggleIncl(\''+esc(r.code)+'\',this.checked)">';
   return '<tr class="'+rowCls+'" id="row-'+id+'" data-code="'+esc(r.code)+'">'
     +'<td style="text-align:center">'+cbH+'</td>'
