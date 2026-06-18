@@ -45,7 +45,7 @@ header h1{font-size:16px;font-weight:600}
 .filters input{min-width:180px}
 .rc{font-size:11px;color:#6b7280;margin-left:auto}
 .twrap{background:#fff;border-radius:7px;border:1px solid #dde3ed;overflow:hidden}
-.tscroll{overflow-x:auto}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table.main{width:100%;border-collapse:collapse;font-size:12px;min-width:1000px}
 table.main th{background:#f0f3f8;color:#4b5563;font-weight:600;font-size:10px;padding:7px 8px;text-align:left;border-bottom:1px solid #dde3ed;white-space:nowrap;cursor:pointer;user-select:none;text-transform:uppercase;letter-spacing:.3px}
 table.main th:hover{color:#111827;background:#e6eaf2}
@@ -95,6 +95,31 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
 .egrid label{display:block;font-size:11px;color:#4b5563;font-weight:600;margin-bottom:3px}
 .egrid input{width:100%;padding:6px 9px;border:1px solid #c8d0df;border-radius:5px;font-size:12px;font-family:Arial,sans-serif}
 .proj-note{background:#fbe9f0;border:1px solid #e8b8c9;border-radius:6px;padding:9px;margin-bottom:10px;font-size:12px;color:#7A1F3D}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px){
+  header{padding:10px 12px}
+  header h1{font-size:14px}
+  header > div:last-child{flex-wrap:wrap;justify-content:flex-end;gap:4px}
+  header .btn{font-size:11px;padding:5px 8px}
+  .toolbar{padding:7px 12px}
+  .main{padding:10px 12px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat-val{font-size:18px}
+  .ph{padding:9px 12px}
+  .ph h2{font-size:12px}
+  .ph .sub{display:none}
+  .filters input{min-width:140px;flex:1}
+  .filters{gap:5px}
+  .wo-cards{grid-template-columns:1fr}
+  .modal-box{max-height:94vh}
+  table.main{min-width:1000px}
+}
+@media (max-width: 420px){
+  .stats{grid-template-columns:1fr 1fr}
+  header h1{font-size:13px}
+}
+
 </style>
 </head>
 <body>
@@ -106,7 +131,7 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
   </div>
   <div style="display:flex;gap:6px;align-items:center">
     <span id="saveInd" style="font-size:10px;opacity:.6"></span>
-    <button class="btn" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="showExport()">&#8659; Export works order</button>
+    <button class="btn" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="showCreateWO()">&#128296; Create works orders</button>
     <button class="btn" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="clearAll()">&#128465; Clear</button>
   </div>
 </header>
@@ -156,7 +181,7 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
             <div><label style="display:block;font-size:11px;color:#4b5563;font-weight:600;margin-bottom:3px">Due date (completion)</label>
             <input type="date" id="woDue" style="width:100%;padding:6px 9px;border:1px solid #c8d0df;border-radius:5px;font-size:12px;font-family:Arial,sans-serif"></div>
           </div>
-          <p style="font-size:11px;color:#4b5563;margin-bottom:5px">Paste SKUs and quantities (two columns: <code>Code [tab] Qty</code>), one per line. Or type them in.</p>
+          <p style="font-size:11px;color:#4b5563;margin-bottom:5px">Type or paste one SKU per line as <code>code&nbsp;quantity</code> — separated by a space, comma, or tab. E.g. <code>OHHICAPP062803DEN 50</code></p>
           <textarea id="woTA" placeholder="Paste or type: code [tab] quantity, one per line..."></textarea>
           <div style="display:flex;gap:6px">
             <button class="btn btn-p" style="font-size:12px" onclick="saveWO()">&#10003; Save works order</button>
@@ -240,20 +265,20 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
   </div>
 </div>
 
-<!-- Export modal -->
-<div class="modal-bg" id="expModal">
+<!-- Create works orders modal -->
+<div class="modal-bg" id="createModal">
   <div class="modal-box sm">
-    <div class="mhdr"><h3>&#8659; Export Works Order</h3><button class="mclose" onclick="closeExp()">&times;</button></div>
+    <div class="mhdr"><h3>&#128296; Create Works Orders</h3><button class="mclose" onclick="closeCreate()">&times;</button></div>
     <div class="mbody">
-      <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Exports all ticked rows with an ACT WOP > 0.</p>
+      <p style="font-size:12px;color:#4b5563;margin-bottom:10px">This creates <strong>one works order per ticked SKU</strong> (with ACT WOP &gt; 0), straight into the tracker. References auto-generate (WO-0001, WO-0002…). You can edit each one's dates afterwards.</p>
       <div class="egrid">
-        <div><label>Works order reference</label><input type="text" id="expRef" placeholder="e.g. WO batch 12 Jun"></div>
-        <div><label>Date raised</label><input type="date" id="expDate"></div>
+        <div><label>Start date (all)</label><input type="date" id="createStart"></div>
+        <div><label>Due date (all)</label><input type="date" id="createDue"></div>
       </div>
-      <div class="proj-note"><strong id="expSum"></strong></div>
+      <div class="proj-note"><strong id="createSum"></strong></div>
       <div style="display:flex;gap:6px;justify-content:flex-end">
-        <button class="btn" onclick="closeExp()">Cancel</button>
-        <button class="btn btn-p" onclick="doExport()">&#8659; Download CSV</button>
+        <button class="btn" onclick="closeCreate()">Cancel</button>
+        <button class="btn btn-p" onclick="doCreateWOs()">&#128296; Create works orders</button>
       </div>
     </div>
   </div>
@@ -280,9 +305,9 @@ function d2s(d){ var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),
 // ── UI ─────────────────────────────────────────────────────────────────────
 function togglePaste(){ var p=document.getElementById('pastePanel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')) document.getElementById('pasteTA').focus(); }
 function togglePB(id){ document.getElementById(id).classList.toggle('open'); }
-function showWOForm(){ document.getElementById('woForm').classList.remove('hidden'); document.getElementById('woRef').focus(); }
+function showWOForm(){ document.getElementById('woForm').classList.remove('hidden'); document.getElementById('woRef').value=nextWORef(); document.getElementById('woStart').value=d2s(now()); document.getElementById('woRef').focus(); }
 function hideWOForm(){ document.getElementById('woForm').classList.add('hidden'); }
-function closeExp(){ document.getElementById('expModal').classList.remove('open'); }
+function closeCreate(){ document.getElementById('createModal').classList.remove('open'); }
 
 // ── Load buffer data ───────────────────────────────────────────────────────
 function loadPaste(){
@@ -351,6 +376,16 @@ function recalcWOs(){
   });
 }
 
+function nextWORef(){
+  // Find the highest existing WO-#### number and increment
+  var max=0;
+  WOs.forEach(function(wo){
+    var m=(wo.ref||'').match(/WO-(\d+)/i);
+    if(m){ var n=parseInt(m[1],10); if(n>max) max=n; }
+  });
+  return 'WO-'+String(max+1).padStart(4,'0');
+}
+
 function saveWO(){
   var ref=(document.getElementById('woRef').value||'').trim();
   var start=document.getElementById('woStart').value;
@@ -361,8 +396,10 @@ function saveWO(){
   if(!txt){ alert('Paste or type the SKU/quantity lines.'); return; }
   var lines=txt.split('\n'), items=[];
   for(var i=0;i<lines.length;i++){
-    var parts=lines[i].trim().split('\t');
-    if(parts.length<2){ parts=lines[i].trim().split(/\s{2,}|,/); }
+    var line=lines[i].trim();
+    if(!line) continue;
+    // Accept code separated from qty by tab, comma, or spaces
+    var parts=line.split(/[\t,]+|\s+/).filter(function(p){return p!=='';});
     if(parts.length<2) continue;
     var code=(parts[0]||'').trim();
     if(!code||code.toLowerCase()==='code') continue;
@@ -673,35 +710,33 @@ function openRWModal(code){
   document.getElementById('rwModal').classList.add('open');
 }
 
-// ── Export works order ─────────────────────────────────────────────────────
-function showExport(){
+// ── Create works orders (one per ticked SKU) ───────────────────────────────
+function showCreateWO(){
   if(!rows.length){ alert('Load buffer data first.'); return; }
   var er=rows.filter(function(r){return r.included&&r.actWop>0;});
-  if(!er.length){ alert('No ticked rows with ACT WOP > 0.'); return; }
+  if(!er.length){ alert('No ticked rows with ACT WOP > 0.\n\nTick the items you want to make and set their ACT WOP quantity first.'); return; }
   var tu=Math.round(er.reduce(function(s,r){return s+r.actWop;},0));
-  document.getElementById('expSum').innerHTML=er.length+' SKUs &nbsp;|&nbsp; '+tu.toLocaleString()+' units to make';
-  document.getElementById('expRef').value='';
-  document.getElementById('expDate').value=d2s(now());
-  document.getElementById('expModal').classList.add('open');
+  document.getElementById('createSum').innerHTML='This will create <strong>'+er.length+'</strong> works order(s) — one per SKU — totalling <strong>'+tu.toLocaleString()+'</strong> units to make.';
+  document.getElementById('createStart').value=d2s(now());
+  document.getElementById('createDue').value='';
+  document.getElementById('createModal').classList.add('open');
 }
-function doExport(){
-  var ref=(document.getElementById('expRef').value||'').trim();
-  var dt=document.getElementById('expDate').value;
-  if(!ref){ alert('Enter a works order reference.'); return; }
-  if(!dt){ alert('Enter a date.'); return; }
+function doCreateWOs(){
+  var start=document.getElementById('createStart').value;
+  var due=document.getElementById('createDue').value;
+  if(!due){ alert('Enter a due (completion) date.'); return; }
   var er=rows.filter(function(r){return r.included&&r.actWop>0;});
-  if(!er.length){ alert('No items to export.'); return; }
-  var lines=[ref+' (WORKS ORDER)','Date raised:,'+dt,'','Stock Code,Description,In Stock,Days Cover,Quantity To Make'];
-  var tu=0;
+  if(!er.length){ alert('No items to create.'); return; }
+  // Create one works order per SKU, auto-referenced
   er.forEach(function(r){
-    tu+=r.actWop;
-    lines.push([r.code,'"'+r.desc.replace(/"/g,'')+'"',r.inStock,(r.daysOfStock>=999?'':r.daysOfStock.toFixed(0)),r.actWop].join(','));
+    var ref=nextWORef();
+    WOs.push({ref:ref, start:start, due:due, items:[{code:r.code, qty:r.actWop}]});
   });
-  lines.push(['"TOTAL"','','','',tu].join(','));
-  var blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download=ref.replace(/\s+/g,'_')+'_WO_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
-  closeExp();
+  closeCreate();
+  // Open the WO tracker panel so they can see the result
+  document.getElementById('woPB').classList.add('open');
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderWOProj(); saveState();
+  alert(er.length+' works order(s) created and added to the tracker.');
 }
 
 // ── Storage ────────────────────────────────────────────────────────────────
@@ -749,7 +784,7 @@ document.addEventListener('DOMContentLoaded',function(){
   });
   document.getElementById('rwClose').addEventListener('click',function(){document.getElementById('rwModal').classList.remove('open');});
   document.getElementById('rwModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
-  document.getElementById('expModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+  document.getElementById('createModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 });
 </script>
 </body>
