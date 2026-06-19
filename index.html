@@ -83,6 +83,15 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
 .uzone small{font-size:10px;color:#6b7280;line-height:1.5;display:block}
 .foot{font-size:10px;color:#6b7280;margin-top:5px;line-height:1.5}
 .hidden{display:none}
+/* Viewer mode */
+body.viewer-mode .edit-only{display:none !important}
+body.viewer-mode .inc-cb{display:none}
+body.viewer-mode .cc{display:none}
+body.viewer-mode .woc-del,body.viewer-mode .woc-edit{display:none}
+body.viewer-mode .wop-input{pointer-events:none;background:#f8fafc;border-color:#eee}
+.viewer-banner{display:none;background:#dbeafe;border-bottom:1px solid #93c5fd;padding:8px 20px;font-size:12px;color:#1e40af;text-align:center}
+body.viewer-mode .viewer-banner{display:block}
+body.viewer-mode .view-only{display:block !important}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
 .modal-box{background:#fff;border-radius:9px;width:min(1000px,98vw);max-height:92vh;overflow:hidden;display:flex;flex-direction:column}
@@ -131,17 +140,21 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
     <span id="lastUpdated" style="font-size:11px;opacity:.7"></span>
   </div>
   <div style="display:flex;gap:6px;align-items:center">
+    <span id="modeBadge" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;background:#1e40af"></span>
     <span id="saveInd" style="font-size:10px;opacity:.6"></span>
-    <button class="btn" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="showCreateWO()">&#128296; Create works orders</button>
-    <button class="btn" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="clearAll()">&#128465; Clear</button>
+    <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:#16a34a;font-size:12px" onclick="publishData()">&#128228; Publish for team</button>
+    <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="showCreateWO()">&#128296; Create works orders</button>
+    <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="clearAll()">&#128465; Clear</button>
   </div>
 </header>
 
 <div class="toolbar">
-  <button class="btn btn-p" id="pasteBtn" onclick="togglePaste()">&#9998; Paste buffer stock data</button>
+  <button class="btn btn-p edit-only" id="pasteBtn" onclick="togglePaste()">&#9998; Paste buffer stock data</button>
   <span id="skuCount" style="font-size:13px;font-weight:700;color:#7A1F3D;padding:0 4px"></span>
   <div style="margin-left:auto;font-size:11px;color:#4b5563">Buffer target: <strong>28 days (4 wks)</strong> &nbsp;|&nbsp; Usage = 6-month sales ÷ 182 days</div>
 </div>
+
+<div class="viewer-banner">&#128065; Read-only view of the production buffer plan published by the production team. Tap any row for its stock runway. <span id="bannerDate" style="font-weight:700"></span></div>
 
 <div class="main">
 
@@ -157,9 +170,11 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
   </div>
 
   <div id="uzone" class="uzone">
-    <h2>&#127981; Ready to load buffer stock data</h2>
-    <p>Click <strong>Paste buffer stock data</strong> above</p>
-    <small>Columns A, B, M, O, P, T, U, V, W (the visible columns from your buffer sheet)</small>
+    <h2 class="edit-only">&#127981; Ready to load buffer stock data</h2>
+    <p class="edit-only">Click <strong>Paste buffer stock data</strong> above</p>
+    <small class="edit-only">Columns A, B, M, O, P, T, U, V, W (the visible columns from your buffer sheet)</small>
+    <h2 class="view-only" style="display:none">&#9203; Waiting for data</h2>
+    <p class="view-only" style="display:none">No production data has been published yet. Please check back shortly.</p>
   </div>
 
   <div id="dataWrap" class="hidden">
@@ -172,8 +187,8 @@ textarea{width:100%;min-height:80px;font-size:11px;font-family:monospace;padding
       <div class="pb" id="woPB">
         <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Add live works orders. The due date feeds into the days-of-stock projection. Click a WO tile to see its contents in a popup. Delete individual SKUs as manufacturing completes.</p>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-          <button class="btn btn-p" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
-          <button class="btn" style="font-size:12px" onclick="showBulkForm()">&#128229; Bulk import works orders</button>
+          <button class="btn btn-p edit-only" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
+          <button class="btn edit-only" style="font-size:12px" onclick="showBulkForm()">&#128229; Bulk import works orders</button>
           <input type="text" id="woSearch" placeholder="&#128269; Search works orders by SKU code..." oninput="renderWOCards()" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;min-width:230px;font-family:Arial,sans-serif">
           <span style="font-size:11px;color:#6b7280;margin-left:auto" id="woSearchCount"></span>
         </div>
@@ -339,6 +354,7 @@ var BUFFER_DAYS = 28;            // 4 weeks target
 var DAILY_DIVISOR = 182;         // 6-month sales / 182 days
 var selectedWO = null;
 var activeTile = null;
+var IS_EDITOR = /[?&]edit\b/.test(window.location.search);
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function pn(s){ return parseFloat((s||'').toString().replace(/[",\s]/g,''))||0; }
@@ -454,7 +470,7 @@ function parseDate(s){
   return ''; // unrecognised
 }
 
-function saveBulk(){
+function saveBulk(){ if(!IS_EDITOR) return;
   var txt=document.getElementById('bulkTA').value.trim();
   if(!txt){ alert('Nothing pasted — paste your rows first.'); return; }
   var lines=txt.split('\n');
@@ -488,7 +504,7 @@ function saveBulk(){
   alert(msg);
 }
 
-function saveWO(){
+function saveWO(){ if(!IS_EDITOR) return;
   var ref=(document.getElementById('woRef').value||'').trim();
   var start=document.getElementById('woStart').value;
   var due=document.getElementById('woDue').value;
@@ -519,14 +535,14 @@ function saveWO(){
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); saveState();
 }
 
-function delWO(i){
+function delWO(i){ if(!IS_EDITOR) return;
   if(!confirm('Remove works order "'+WOs[i].ref+'"?')) return;
   WOs.splice(i,1);
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); saveState();
 }
 
 // Delete a single SKU line from a works order (manufacturing complete)
-function delWOItem(woIdx, code){
+function delWOItem(woIdx, code){ if(!IS_EDITOR) return;
   var wo=WOs[woIdx];
   if(!wo) return;
   if(!confirm('Mark '+code+' as complete?\n\nIt will move to the Completed Works Orders history.')) return;
@@ -541,7 +557,7 @@ function delWOItem(woIdx, code){
 }
 
 // Complete an entire works order at once
-function completeWholeWO(woIdx){
+function completeWholeWO(woIdx){ if(!IS_EDITOR) return;
   var wo=WOs[woIdx];
   if(!wo) return;
   if(!confirm('Mark the ENTIRE works order '+wo.ref+' as complete?\n\nAll '+wo.items.length+' SKU(s) will move to the Completed Works Orders history.')) return;
@@ -644,7 +660,7 @@ function refreshWOModal(){
   openWOModal(i);
 }
 
-function editWODate(i){
+function editWODate(i){ if(!IS_EDITOR) return;
   var wo=WOs[i]; if(!wo) return;
   var el=document.getElementById('woc-date-'+i); if(!el) return;
   el.innerHTML='<div style="display:flex;flex-direction:column;gap:3px">'
@@ -653,7 +669,7 @@ function editWODate(i){
     +'<div style="display:flex;gap:4px;margin-top:2px"><button class="btn btn-p" style="font-size:10px;padding:2px 6px" onclick="event.stopPropagation();saveWODate('+i+')">Save</button>'
     +'<button class="btn" style="font-size:10px;padding:2px 6px" onclick="event.stopPropagation();renderWOCards()">Cancel</button></div></div>';
 }
-function saveWODate(i){
+function saveWODate(i){ if(!IS_EDITOR) return;
   var wo=WOs[i]; if(!wo) return;
   var due=document.getElementById('woc-de-'+i).value;
   var start=document.getElementById('woc-se-'+i).value;
@@ -698,7 +714,7 @@ function renderCompleted(){
 }
 
 // Undo a completion - put it back as a works order
-function undoCompleted(idx){
+function undoCompleted(idx){ if(!IS_EDITOR) return;
   var c=completedWOs[idx];
   if(!c) return;
   if(!confirm('Move '+c.code+' (from '+c.ref+') back into the active works order tracker?')) return;
@@ -757,7 +773,7 @@ function tileFilter(key){
 }
 
 // ── Row controls ───────────────────────────────────────────────────────────
-function toggleIncl(code,checked){
+function toggleIncl(code,checked){ if(!IS_EDITOR) return;
   var r=rows.find(function(x){return x.code===code;});
   if(!r) return;
   r.included=checked;
@@ -765,7 +781,7 @@ function toggleIncl(code,checked){
   if(el){ checked?el.classList.add('row-ticked'):el.classList.remove('row-ticked'); }
   updateStats(); dbSave();
 }
-function adjWop(code,delta){
+function adjWop(code,delta){ if(!IS_EDITOR) return;
   var r=rows.find(function(x){return x.code===code;});
   if(!r) return;
   r.actWop=Math.max(0,Math.round(r.actWop+delta));
@@ -774,7 +790,7 @@ function adjWop(code,delta){
   if(el) el.value=r.actWop;
   updateStats(); dbSave();
 }
-function setWop(code,val){
+function setWop(code,val){ if(!IS_EDITOR) return;
   var r=rows.find(function(x){return x.code===code;});
   if(!r) return;
   var n=parseFloat(val.replace(/[^0-9.]/g,''));
@@ -786,7 +802,7 @@ function setWop(code,val){
   updateStats(); dbSave();
 }
 
-function resetWops(){
+function resetWops(){ if(!IS_EDITOR) return;
   var srch=(document.getElementById('srch').value||'').toLowerCase();
   var sf=document.getElementById('sfilt').value;
   var of=document.getElementById('ofilt').value;
@@ -802,7 +818,7 @@ function resetWops(){
   renderTable(); updateStats(); dbSave();
   alert(n+' item(s) reset to the recommended make quantity.');
 }
-function tickAll(state){
+function tickAll(state){ if(!IS_EDITOR) return;
   var srch=(document.getElementById('srch').value||'').toLowerCase();
   var sf=document.getElementById('sfilt').value;
   var of=document.getElementById('ofilt').value;
@@ -939,7 +955,7 @@ function showCreateWO(){
   document.getElementById('createDue').value='';
   document.getElementById('createModal').classList.add('open');
 }
-function doCreateWOs(){
+function doCreateWOs(){ if(!IS_EDITOR) return;
   var start=document.getElementById('createStart').value;
   var due=document.getElementById('createDue').value;
   if(!due){ alert('Enter a due (completion) date.'); return; }
@@ -955,6 +971,44 @@ function doCreateWOs(){
   document.getElementById('woPB').classList.add('open');
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); saveState();
   alert(er.length+' works order(s) created and added to the tracker.');
+}
+
+// ── Mode: editor vs viewer ─────────────────────────────────────────────────
+function applyMode(){
+  var badge=document.getElementById('modeBadge');
+  if(IS_EDITOR){
+    if(badge){ badge.textContent='EDITOR'; badge.style.background='#065f46'; }
+  } else {
+    document.body.classList.add('viewer-mode');
+    if(badge){ badge.textContent='VIEW ONLY'; badge.style.background='#1e40af'; }
+  }
+}
+
+// Fetch the shared published data.json (what viewers see)
+function fetchShared(cb){
+  fetch('data.json?t='+Date.now()).then(function(r){
+    if(!r.ok) throw new Error('no data.json');
+    return r.json();
+  }).then(function(s){
+    if(s && s.rows && s.rows.length){
+      rows=s.rows; WOs=s.WOs||[]; completedWOs=s.completedWOs||[];
+      var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+      document.getElementById('lastUpdated').textContent='Published: '+sa;
+      var bd=document.getElementById('bannerDate'); if(bd&&sa) bd.textContent='(published '+sa+')';
+      recalcWOs(); recalcQtys(); showData();
+    }
+    if(cb) cb(true);
+  }).catch(function(){ if(cb) cb(false); });
+}
+
+// Publish current data for the team (editor only)
+function publishData(){
+  if(!IS_EDITOR){ alert('View-only mode.'); return; }
+  if(!rows.length){ alert('Load buffer data first.'); return; }
+  var state={rows:rows,WOs:WOs,completedWOs:completedWOs,savedAt:new Date().toISOString()};
+  var blob=new Blob([JSON.stringify(state)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
+  alert('data.json downloaded.\n\nNow upload it to your GitHub repo (replacing the old data.json) and commit. Viewers will see the update within a minute.');
 }
 
 // ── Storage ────────────────────────────────────────────────────────────────
@@ -979,7 +1033,7 @@ function loadState(){
     return true;
   }catch(e){console.log('Load failed:',e);return false;}
 }
-function clearAll(){
+function clearAll(){ if(!IS_EDITOR) return;
   if(!confirm('Clear all saved data?')) return;
   try{
     localStorage.removeItem('tibard_production');
@@ -992,7 +1046,12 @@ function clearAll(){
 
 // ── Event listeners ────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',function(){
-  loadState();
+  applyMode();
+  if(IS_EDITOR){
+    if(!loadState()) fetchShared();
+  } else {
+    fetchShared();
+  }
   document.getElementById('tBody').addEventListener('click',function(e){
     if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
     var tr=e.target.closest('tr');
