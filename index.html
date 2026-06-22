@@ -603,7 +603,7 @@ function renderWOCards(){
     var tot=Math.round(wo.items.reduce(function(s,it){return s+it.qty;},0));
     return '<div class="woc" onclick="openWOModal('+i+')" style="cursor:pointer">'
       +'<button class="woc-del" onclick="event.stopPropagation();delWO('+i+')" title="Remove WO (without completing)">&#10005;</button>'
-      +'<button class="woc-edit" onclick="event.stopPropagation();editWODate('+i+')" title="Change dates">&#9998;</button>'
+      +'<button class="woc-edit" onclick="event.stopPropagation();editWODate('+i+')" title="Edit dates &amp; quantities">&#9998;</button>'
       +'<div class="woc-ref">'+esc(wo.ref)+'</div>'
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
       +'<span class="woc-wks" style="background:'+wbg+'">'+wl+'</span>'
@@ -663,9 +663,18 @@ function refreshWOModal(){
 function editWODate(i){ if(!IS_EDITOR) return;
   var wo=WOs[i]; if(!wo) return;
   var el=document.getElementById('woc-date-'+i); if(!el) return;
-  el.innerHTML='<div style="display:flex;flex-direction:column;gap:3px">'
+  // Build editable quantity rows (one per SKU on this WO)
+  var qtyRows=wo.items.map(function(it,j){
+    return '<label style="font-size:9px;color:#6b7280;display:flex;align-items:center;gap:4px;justify-content:space-between">'
+      +'<span style="font-family:monospace;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px" title="'+esc(it.code)+'">'+esc(it.code)+'</span>'
+      +'<input type="number" min="0" id="woc-qty-'+i+'-'+j+'" value="'+it.qty+'" onclick="event.stopPropagation()" style="font-size:10px;padding:1px 3px;border:1px solid #a13a5c;border-radius:3px;width:60px;text-align:right">'
+      +'</label>';
+  }).join('');
+  el.innerHTML='<div style="display:flex;flex-direction:column;gap:3px" onclick="event.stopPropagation()">'
     +'<label style="font-size:9px;color:#6b7280">Start <input type="date" id="woc-se-'+i+'" value="'+(wo.start||'')+'" onclick="event.stopPropagation()" style="font-size:10px;padding:1px 3px;border:1px solid #a13a5c;border-radius:3px"></label>'
     +'<label style="font-size:9px;color:#6b7280">Due <input type="date" id="woc-de-'+i+'" value="'+wo.due+'" onclick="event.stopPropagation()" style="font-size:10px;padding:1px 3px;border:1px solid #a13a5c;border-radius:3px"></label>'
+    +'<div style="font-size:9px;color:#7A1F3D;font-weight:600;margin-top:2px">Quantities:</div>'
+    +qtyRows
     +'<div style="display:flex;gap:4px;margin-top:2px"><button class="btn btn-p" style="font-size:10px;padding:2px 6px" onclick="event.stopPropagation();saveWODate('+i+')">Save</button>'
     +'<button class="btn" style="font-size:10px;padding:2px 6px" onclick="event.stopPropagation();renderWOCards()">Cancel</button></div></div>';
 }
@@ -675,6 +684,17 @@ function saveWODate(i){ if(!IS_EDITOR) return;
   var start=document.getElementById('woc-se-'+i).value;
   if(!due){ alert('Please choose a due date.'); return; }
   wo.due=due; wo.start=start;
+  // Save any edited quantities
+  wo.items.forEach(function(it,j){
+    var qel=document.getElementById('woc-qty-'+i+'-'+j);
+    if(qel){
+      var q=parseFloat(qel.value);
+      if(!isNaN(q)&&q>=0) it.qty=Math.round(q);
+    }
+  });
+  // Drop any lines set to 0
+  wo.items=wo.items.filter(function(it){ return it.qty>0; });
+  if(!wo.items.length){ WOs.splice(i,1); if(selectedWO===wo.ref) selectedWO=null; }
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
 }
 
