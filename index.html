@@ -92,6 +92,20 @@ body.viewer-mode .wop-input{pointer-events:none;background:#f8fafc;border-color:
 .viewer-banner{display:none;background:#dbeafe;border-bottom:1px solid #93c5fd;padding:8px 20px;font-size:12px;color:#1e40af;text-align:center}
 body.viewer-mode .viewer-banner{display:block}
 body.viewer-mode .view-only{display:block !important}
+/* Warehouse mode: hide the normal production UI, show warehouse panel */
+body.warehouse-mode .non-warehouse{display:none !important}
+.warehouse-wrap{display:none}
+body.warehouse-mode .warehouse-wrap{display:block}
+.wh-section{background:#fff;border-radius:8px;border:1px solid #dde3ed;margin-bottom:14px;overflow:hidden}
+.wh-hdr{background:#1f6b4a;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.wh-hdr h2{font-size:14px;font-weight:600}
+.wh-body{padding:14px 16px}
+.wh-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}
+.wh-tbl th{background:#f0f3f8;color:#4b5563;font-weight:600;font-size:10px;padding:7px 8px;text-align:left;border-bottom:1px solid #dde3ed;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
+.wh-tbl td{padding:6px 8px;border-bottom:1px solid #f0f3f8;vertical-align:middle}
+.wh-tbl tr:last-child td{border-bottom:none}
+.wh-tbl tr.booked-row td{background:#f0fdf4;color:#15803d}
+.wh-cb{width:15px;height:15px;cursor:pointer;accent-color:#1f6b4a}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
 .modal-box{background:#fff;border-radius:9px;width:min(1000px,98vw);max-height:92vh;overflow:hidden;display:flex;flex-direction:column}
@@ -134,7 +148,7 @@ body.viewer-mode .view-only{display:block !important}
 </head>
 <body>
 
-<header>
+<header class="non-warehouse">
   <div>
     <h1>&#127981; Tibard — Production Buffer Stock</h1>
     <span id="lastUpdated" style="font-size:11px;opacity:.7"></span>
@@ -156,7 +170,59 @@ body.viewer-mode .view-only{display:block !important}
 
 <div class="viewer-banner">&#128065; Read-only view of the production buffer plan published by the production team. Tap any row for its stock runway. <span id="bannerDate" style="font-weight:700"></span></div>
 
-<div class="main">
+<!-- WAREHOUSE VIEW -->
+<header class="warehouse-wrap" style="background:#1f6b4a">
+  <div>
+    <h1>&#128230; Tibard — Warehouse Booking In</h1>
+    <span id="whUpdated" style="font-size:11px;opacity:.7"></span>
+  </div>
+  <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;background:#0f4d33">WAREHOUSE</span>
+</header>
+<div class="warehouse-wrap" style="padding:14px 20px">
+  <p style="font-size:12px;color:#4b5563;margin-bottom:14px">Items completed by production, ready to book into Sage. Copy the pending list into your stock sheet, then mark them booked so they aren't entered twice. Booked status is saved on this PC.</p>
+
+  <div class="wh-section">
+    <div class="wh-hdr">
+      <h2>&#128203; Ready to Book In <span id="whPendingCount" style="font-size:11px;opacity:.8"></span></h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn" style="font-size:12px;background:#fff" onclick="whCopyPending()">&#128203; Copy pending list</button>
+        <button class="btn" style="font-size:12px;background:#fff" onclick="whExportPending()">&#8659; Export CSV</button>
+        <button class="btn" style="font-size:12px;background:#fff" onclick="whMarkSelected()">&#10003; Mark selected booked</button>
+        <button class="btn" style="font-size:12px;background:#fff" onclick="whMarkAll()">&#10003; Mark ALL booked</button>
+      </div>
+    </div>
+    <div class="wh-body">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <table class="wh-tbl"><thead><tr>
+          <th style="width:28px;text-align:center"><input type="checkbox" class="wh-cb" id="whSelectAll" onclick="whToggleAll(this.checked)"></th>
+          <th>Completed</th><th>WO Ref</th><th>Code</th><th>Description</th>
+          <th style="text-align:right">Qty</th><th class="ns" style="text-align:center">Action</th>
+        </tr></thead><tbody id="whPendingBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div class="wh-section">
+    <div class="wh-hdr" style="background:#15803d">
+      <h2>&#9989; Booked In History <span id="whBookedCount" style="font-size:11px;opacity:.8"></span></h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <input type="text" id="whBookedSearch" placeholder="&#128269; Search booked..." oninput="renderWarehouse()" style="font-size:12px;padding:5px 9px;border-radius:5px;border:1px solid #c8d0df;min-width:160px;font-family:Arial,sans-serif">
+        <button class="btn" style="font-size:12px;background:#fff" onclick="whExportBooked()">&#8659; Export booked CSV</button>
+      </div>
+    </div>
+    <div class="wh-body">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <table class="wh-tbl"><thead><tr>
+          <th>Booked</th><th>Completed</th><th>WO Ref</th><th>Code</th><th>Description</th>
+          <th style="text-align:right">Qty</th><th class="ns" style="text-align:center">Action</th>
+        </tr></thead><tbody id="whBookedBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="main non-warehouse">
 
   <div id="pastePanel" class="pbox hidden">
     <h3>&#9998; Paste buffer stock data</h3>
@@ -355,6 +421,8 @@ var DAILY_DIVISOR = 182;         // 6-month sales / 182 days
 var selectedWO = null;
 var activeTile = null;
 var IS_EDITOR = /[?&]edit\b/.test(window.location.search);
+var IS_WAREHOUSE = /[?&]warehouse\b/.test(window.location.search);
+var bookedMap = {}; // local-only: completionKey -> {booked:ISO}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function pn(s){ return parseFloat((s||'').toString().replace(/[",\s]/g,''))||0; }
@@ -407,7 +475,7 @@ function showData(){
   document.getElementById('uzone').classList.add('hidden');
   document.getElementById('dataWrap').classList.remove('hidden');
   document.getElementById('lastUpdated').textContent='Loaded: '+now().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-  updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted();
+  updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); renderWarehouse();
 }
 
 // ── WOP recommendation ─────────────────────────────────────────────────────
@@ -737,7 +805,7 @@ function renderCompleted(){
 function undoCompleted(idx){ if(!IS_EDITOR) return;
   var c=completedWOs[idx];
   if(!c) return;
-  if(!confirm('Move '+c.code+' (from '+c.ref+') back into the active works order tracker?')) return;
+  if(!confirm('⚠ IMPORTANT: Only undo if this has NOT been booked into Sage by the warehouse.\n\nUndoing '+c.code+' (from '+c.ref+') after it has been booked in will cause a stock discrepancy. Check with the warehouse manager first.\n\nProceed with undo?')) return;
   // Re-create or merge into a WO with the same ref
   var existing=WOs.find(function(w){ return w.ref===c.ref; });
   if(existing){
@@ -996,6 +1064,11 @@ function doCreateWOs(){ if(!IS_EDITOR) return;
 // ── Mode: editor vs viewer ─────────────────────────────────────────────────
 function applyMode(){
   var badge=document.getElementById('modeBadge');
+  if(IS_WAREHOUSE){
+    document.body.classList.add('warehouse-mode');
+    loadBooked();
+    return;
+  }
   if(IS_EDITOR){
     if(badge){ badge.textContent='EDITOR'; badge.style.background='#065f46'; }
   } else {
@@ -1010,12 +1083,14 @@ function fetchShared(cb){
     if(!r.ok) throw new Error('no data.json');
     return r.json();
   }).then(function(s){
-    if(s && s.rows && s.rows.length){
-      rows=s.rows; WOs=s.WOs||[]; completedWOs=s.completedWOs||[];
+    if(s && s.rows){
+      rows=s.rows||[]; WOs=s.WOs||[]; completedWOs=s.completedWOs||[];
       var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-      document.getElementById('lastUpdated').textContent='Published: '+sa;
+      var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+sa;
+      var wu=document.getElementById('whUpdated'); if(wu) wu.textContent='Data published: '+sa;
       var bd=document.getElementById('bannerDate'); if(bd&&sa) bd.textContent='(published '+sa+')';
-      recalcWOs(); recalcQtys(); showData();
+      recalcWOs(); recalcQtys();
+      if(IS_WAREHOUSE){ renderWarehouse(); } else if(rows.length){ showData(); }
     }
     if(cb) cb(true);
   }).catch(function(){ if(cb) cb(false); });
@@ -1029,6 +1104,144 @@ function publishData(){
   var blob=new Blob([JSON.stringify(state)],{type:'application/json'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
   alert('data.json downloaded.\n\nNow upload it to your GitHub repo (replacing the old data.json) and commit. Viewers will see the update within a minute.');
+}
+
+// ── Warehouse booking-in (Option A: booked status saved locally) ───────────
+// Each completed line gets a stable key so we can track booked status locally
+function whKey(c){ return (c.ref||'')+'|'+(c.code||'')+'|'+(c.completed||'')+'|'+(c.qty||0); }
+
+function loadBooked(){
+  try{ var raw=localStorage.getItem('tibard_production_booked'); bookedMap=raw?JSON.parse(raw):{}; }
+  catch(e){ bookedMap={}; }
+}
+function saveBooked(){
+  try{ localStorage.setItem('tibard_production_booked',JSON.stringify(bookedMap)); }catch(e){}
+}
+
+function renderWarehouse(){
+  if(!IS_WAREHOUSE) return;
+  var sa=document.getElementById('whUpdated');
+  // Pending = completed items NOT yet booked locally
+  var pending=completedWOs.filter(function(c){ return !bookedMap[whKey(c)]; });
+  var booked=completedWOs.filter(function(c){ return bookedMap[whKey(c)]; });
+
+  // Pending table
+  var pb=document.getElementById('whPendingBody');
+  document.getElementById('whPendingCount').textContent=pending.length?'('+pending.length+')':'';
+  if(!pending.length){
+    pb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:1.4rem;color:#6b7280">Nothing waiting to be booked in</td></tr>';
+  } else {
+    // newest first
+    pending.sort(function(a,b){ return (b.completed||'').localeCompare(a.completed||''); });
+    pb.innerHTML=pending.map(function(c){
+      var k=esc(whKey(c));
+      return '<tr><td style="text-align:center"><input type="checkbox" class="wh-cb wh-pend" data-k="'+k+'"></td>'
+        +'<td style="font-weight:600">'+fmtD(c.completed)+'</td>'
+        +'<td style="font-family:monospace;font-size:11px">'+esc(c.ref)+'</td>'
+        +'<td style="font-family:monospace;font-size:11px">'+esc(c.code)+'</td>'
+        +'<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(c.desc)+'">'+esc(c.desc)+'</td>'
+        +'<td style="text-align:right;font-weight:700">'+Math.round(c.qty).toLocaleString()+'</td>'
+        +'<td style="text-align:center"><button class="btn" style="font-size:10px;padding:2px 8px;color:#15803d;border-color:#a7d4bb" onclick="whMarkOne(\''+k+'\')">&#10003; Booked</button></td></tr>';
+    }).join('');
+  }
+
+  // Booked history table
+  var srch=(document.getElementById('whBookedSearch')?document.getElementById('whBookedSearch').value:'').toLowerCase();
+  var bshow=booked.filter(function(c){
+    if(!srch) return true;
+    return c.code.toLowerCase().indexOf(srch)>=0||(c.desc||'').toLowerCase().indexOf(srch)>=0||(c.ref||'').toLowerCase().indexOf(srch)>=0;
+  });
+  bshow.sort(function(a,b){ var ba=bookedMap[whKey(a)].booked||'', bb=bookedMap[whKey(b)].booked||''; return bb.localeCompare(ba); });
+  var bb=document.getElementById('whBookedBody');
+  document.getElementById('whBookedCount').textContent=booked.length?'('+booked.length+')':'';
+  if(!bshow.length){
+    bb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:1.4rem;color:#6b7280">'+(booked.length?'No matches':'Nothing booked in yet')+'</td></tr>';
+  } else {
+    bb.innerHTML=bshow.map(function(c){
+      var k=whKey(c); var info=bookedMap[k]||{};
+      return '<tr class="booked-row"><td style="font-weight:600">'+fmtD(info.booked)+'</td>'
+        +'<td>'+fmtD(c.completed)+'</td>'
+        +'<td style="font-family:monospace;font-size:11px">'+esc(c.ref)+'</td>'
+        +'<td style="font-family:monospace;font-size:11px">'+esc(c.code)+'</td>'
+        +'<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(c.desc)+'">'+esc(c.desc)+'</td>'
+        +'<td style="text-align:right;font-weight:700">'+Math.round(c.qty).toLocaleString()+'</td>'
+        +'<td style="text-align:center"><button class="btn" style="font-size:10px;padding:2px 7px" onclick="whUnbook(\''+esc(k)+'\')">&#8634; Undo</button></td></tr>';
+    }).join('');
+  }
+  if(sa){
+    // show when the underlying data was published
+    sa.textContent='';
+  }
+}
+
+function whMarkOne(k){
+  bookedMap[k]={booked:new Date().toISOString()};
+  saveBooked(); renderWarehouse();
+}
+function whUnbook(k){
+  if(!confirm('Move this back to the pending list?')) return;
+  delete bookedMap[k]; saveBooked(); renderWarehouse();
+}
+function whToggleAll(state){
+  document.querySelectorAll('.wh-pend').forEach(function(cb){ cb.checked=state; });
+}
+function whMarkSelected(){
+  var sel=document.querySelectorAll('.wh-pend:checked');
+  if(!sel.length){ alert('Tick the lines you want to mark as booked first.'); return; }
+  var ts=new Date().toISOString();
+  sel.forEach(function(cb){ bookedMap[cb.getAttribute('data-k')]={booked:ts}; });
+  saveBooked();
+  var selAll=document.getElementById('whSelectAll'); if(selAll) selAll.checked=false;
+  renderWarehouse();
+}
+function whMarkAll(){
+  var pending=completedWOs.filter(function(c){ return !bookedMap[whKey(c)]; });
+  if(!pending.length){ alert('Nothing pending to mark.'); return; }
+  if(!confirm('Mark ALL '+pending.length+' pending item(s) as booked in?')) return;
+  var ts=new Date().toISOString();
+  pending.forEach(function(c){ bookedMap[whKey(c)]={booked:ts}; });
+  saveBooked(); renderWarehouse();
+}
+
+function whPendingList(){
+  return completedWOs.filter(function(c){ return !bookedMap[whKey(c)]; })
+    .sort(function(a,b){ return (b.completed||'').localeCompare(a.completed||''); });
+}
+function whCopyPending(){
+  var p=whPendingList();
+  if(!p.length){ alert('Nothing pending to copy.'); return; }
+  // Tab-separated so it pastes cleanly into Excel: Code, Qty, Description, Completed date
+  var text=p.map(function(c){ return c.code+'\t'+Math.round(c.qty)+'\t'+(c.desc||'')+'\t'+fmtD(c.completed); }).join('\n');
+  copyText(text, p.length+' line(s) copied. Paste into your Sage stock sheet, then mark them booked.');
+}
+function copyText(text,msg){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ alert(msg); }).catch(function(){ fallbackCopy(text,msg); });
+  } else { fallbackCopy(text,msg); }
+}
+function fallbackCopy(text,msg){
+  var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); alert(msg); }catch(e){ prompt('Copy the list below:',text); }
+  document.body.removeChild(ta);
+}
+function whExportPending(){ whExportRows(whPendingList(), 'Ready_To_Book_In'); }
+function whExportBooked(){
+  var booked=completedWOs.filter(function(c){ return bookedMap[whKey(c)]; });
+  whExportRows(booked, 'Booked_In', true);
+}
+function whExportRows(list, name, withBooked){
+  if(!list.length){ alert('Nothing to export.'); return; }
+  var hdr=withBooked?'Booked Date,Completed Date,WO Ref,Stock Code,Description,Qty':'Completed Date,WO Ref,Stock Code,Description,Qty';
+  var lines=[hdr];
+  list.forEach(function(c){
+    var base=[c.completed,c.ref,c.code,'"'+(c.desc||'').replace(/"/g,'')+'"',Math.round(c.qty)];
+    if(withBooked){ var info=bookedMap[whKey(c)]||{}; base.unshift((info.booked||'').slice(0,10)); }
+    lines.push(base.join(','));
+  });
+  var blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
 }
 
 // ── Storage ────────────────────────────────────────────────────────────────
@@ -1067,7 +1280,9 @@ function clearAll(){ if(!IS_EDITOR) return;
 // ── Event listeners ────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',function(){
   applyMode();
-  if(IS_EDITOR){
+  if(IS_WAREHOUSE){
+    fetchShared();          // warehouse reads the published data
+  } else if(IS_EDITOR){
     if(!loadState()) fetchShared();
   } else {
     fetchShared();
