@@ -100,6 +100,10 @@ body.warehouse-mode .warehouse-wrap{display:block}
 .wh-hdr{background:#1f6b4a;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .wh-hdr h2{font-size:14px;font-weight:600}
 .wh-body{padding:14px 16px}
+.wh-body.collapsed{display:none}
+.wh-hdr{cursor:pointer}
+.wh-hdr .wh-chev{font-size:11px;transition:transform .15s}
+.wh-hdr.collapsed-hdr .wh-chev{transform:rotate(-90deg)}
 .wh-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}
 .wh-tbl th{background:#f0f3f8;color:#4b5563;font-weight:600;font-size:10px;padding:7px 8px;text-align:left;border-bottom:1px solid #dde3ed;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
 .wh-tbl td{padding:6px 8px;border-bottom:1px solid #f0f3f8;vertical-align:middle}
@@ -182,16 +186,15 @@ body.warehouse-mode .warehouse-wrap{display:block}
   <p style="font-size:12px;color:#4b5563;margin-bottom:14px">Items completed by production, ready to book into Sage. Copy the pending list into your stock sheet, then mark them booked so they aren't entered twice. Booked status is saved on this PC.</p>
 
   <div class="wh-section">
-    <div class="wh-hdr">
-      <h2>&#128203; Ready to Book In <span id="whPendingCount" style="font-size:11px;opacity:.8"></span></h2>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn" style="font-size:12px;background:#fff" onclick="whCopyPending()">&#128203; Copy pending list</button>
+    <div class="wh-hdr" onclick="whToggleSection('whPendingBodyWrap',this)">
+      <h2><span class="wh-chev">&#9660;</span> &#128203; Ready to Book In <span id="whPendingCount" style="font-size:11px;opacity:.8"></span></h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" onclick="event.stopPropagation()">
+        <button class="btn" style="font-size:12px;background:#fff" onclick="whCopyPending()">&#128203; Copy ticked</button>
         <button class="btn" style="font-size:12px;background:#fff" onclick="whExportPending()">&#8659; Export CSV</button>
         <button class="btn" style="font-size:12px;background:#fff" onclick="whMarkSelected()">&#10003; Mark selected booked</button>
-        <button class="btn" style="font-size:12px;background:#fff" onclick="whMarkAll()">&#10003; Mark ALL booked</button>
       </div>
     </div>
-    <div class="wh-body">
+    <div class="wh-body" id="whPendingBodyWrap">
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table class="wh-tbl"><thead><tr>
           <th style="width:28px;text-align:center"><input type="checkbox" class="wh-cb" id="whSelectAll" onclick="whToggleAll(this.checked)"></th>
@@ -203,14 +206,14 @@ body.warehouse-mode .warehouse-wrap{display:block}
   </div>
 
   <div class="wh-section">
-    <div class="wh-hdr" style="background:#15803d">
-      <h2>&#9989; Booked In History <span id="whBookedCount" style="font-size:11px;opacity:.8"></span></h2>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <div class="wh-hdr" style="background:#15803d" onclick="whToggleSection('whBookedBodyWrap',this)">
+      <h2><span class="wh-chev">&#9660;</span> &#9989; Booked In History <span id="whBookedCount" style="font-size:11px;opacity:.8"></span></h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center" onclick="event.stopPropagation()">
         <input type="text" id="whBookedSearch" placeholder="&#128269; Search booked..." oninput="renderWarehouse()" style="font-size:12px;padding:5px 9px;border-radius:5px;border:1px solid #c8d0df;min-width:160px;font-family:Arial,sans-serif">
         <button class="btn" style="font-size:12px;background:#fff" onclick="whExportBooked()">&#8659; Export booked CSV</button>
       </div>
     </div>
-    <div class="wh-body">
+    <div class="wh-body" id="whBookedBodyWrap">
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table class="wh-tbl"><thead><tr>
           <th>Booked</th><th>Completed</th><th>WO Ref</th><th>Code</th><th>Description</th>
@@ -827,8 +830,7 @@ function renderCompleted(){
     body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:#6b7280">'+(completedWOs.length?'No matches':'No completed works orders yet')+'</td></tr>';
     return;
   }
-  body.innerHTML=list.map(function(c){
-    // Find the real index in completedWOs for the undo action
+  function compRow(c){
     var realIdx=completedWOs.indexOf(c);
     return '<tr>'
       +'<td style="font-weight:600">'+fmtD(c.completed)+'</td>'
@@ -838,9 +840,29 @@ function renderCompleted(){
       +'<td style="text-align:right;font-weight:700;color:#065f46">'+Math.round(c.qty).toLocaleString()+'</td>'
       +'<td>'+(c.start?fmtD(c.start):'<span style="color:#e5e7eb">&mdash;</span>')+'</td>'
       +'<td>'+(c.due?fmtD(c.due):'<span style="color:#e5e7eb">&mdash;</span>')+'</td>'
-      +'<td style="text-align:center"><button class="btn" style="font-size:10px;padding:2px 7px" onclick="undoCompleted('+realIdx+')" title="Put back into the tracker">&#8634; Undo</button></td>'
+      +'<td style="text-align:center"><button class="btn edit-only" style="font-size:10px;padding:2px 7px" onclick="undoCompleted('+realIdx+')" title="Put back into the tracker">&#8634; Undo</button></td>'
       +'</tr>';
-  }).join('');
+  }
+  // Group by completion date: today shown, older into monthly folders
+  var todayRows=[], months={};
+  list.forEach(function(c){
+    if(isToday(c.completed)) todayRows.push(c);
+    else { var mk=monthKey(c.completed); (months[mk]=months[mk]||[]).push(c); }
+  });
+  var out='';
+  if(todayRows.length){
+    out+='<tr style="background:#d1fae5"><td colspan="8" style="font-weight:700;color:#065f46;padding:6px 8px">&#128197; Today ('+todayRows.length+')</td></tr>';
+    out+=todayRows.map(compRow).join('');
+  } else if(!srch){
+    out+='<tr><td colspan="8" style="text-align:center;padding:1rem;color:#6b7280">Nothing completed today</td></tr>';
+  }
+  var mkeys=Object.keys(months).sort(function(a,b){ return b.localeCompare(a); });
+  mkeys.forEach(function(mk){
+    var open=openMonths['comp-'+mk]||srch;
+    out+='<tr style="background:#f0f3f8;cursor:pointer" onclick="toggleMonth(\'comp-'+mk+'\')"><td colspan="8" style="font-weight:700;color:#374151;padding:6px 8px">'+(open?'&#9660;':'&#9654;')+' &#128193; '+monthLabel(mk)+' ('+months[mk].length+')</td></tr>';
+    if(open){ out+=months[mk].map(compRow).join(''); }
+  });
+  body.innerHTML=out;
 }
 
 // Undo a completion - put it back as a works order
@@ -1151,6 +1173,21 @@ function publishData(){
   alert('data.json downloaded.\n\nNow upload it to your GitHub repo (replacing the old data.json) and commit. Viewers will see the update within a minute.');
 }
 
+// ── Date grouping helpers (today vs monthly folders) ───────────────────────
+function isToday(iso){
+  if(!iso) return false;
+  return (iso.slice(0,10)) === d2s(now());
+}
+function monthKey(iso){ return iso ? iso.slice(0,7) : 'unknown'; }   // yyyy-mm
+function monthLabel(mk){
+  if(mk==='unknown') return 'Undated';
+  var parts=mk.split('-');
+  var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,1);
+  return d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+}
+var openMonths={};   // tracks which month folders are expanded
+function toggleMonth(mk){ openMonths[mk]=!openMonths[mk]; renderWarehouse(); renderCompleted(); }
+
 // ── Warehouse booking-in (Option A: booked status saved locally) ───────────
 // Each completed line gets a stable key so we can track booked status locally
 function whKey(c){ return (c.ref||'')+'|'+(c.code||'')+'|'+(c.completed||'')+'|'+(c.qty||0); }
@@ -1196,13 +1233,19 @@ function renderWarehouse(){
     if(!srch) return true;
     return c.code.toLowerCase().indexOf(srch)>=0||(c.desc||'').toLowerCase().indexOf(srch)>=0||(c.ref||'').toLowerCase().indexOf(srch)>=0;
   });
-  bshow.sort(function(a,b){ var ba=bookedMap[whKey(a)].booked||'', bb=bookedMap[whKey(b)].booked||''; return bb.localeCompare(ba); });
   var bb=document.getElementById('whBookedBody');
   document.getElementById('whBookedCount').textContent=booked.length?'('+booked.length+')':'';
   if(!bshow.length){
     bb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:1.4rem;color:#6b7280">'+(booked.length?'No matches':'Nothing booked in yet')+'</td></tr>';
   } else {
-    bb.innerHTML=bshow.map(function(c){
+    // Group by booked date: today shown, older into monthly folders (by booked date)
+    var todayRows=[], months={};
+    bshow.forEach(function(c){
+      var info=bookedMap[whKey(c)]||{}; var bd=(info.booked||'').slice(0,10);
+      if(isToday(bd)) todayRows.push(c);
+      else { var mk=monthKey(bd); (months[mk]=months[mk]||[]).push(c); }
+    });
+    function whRow(c){
       var k=whKey(c); var info=bookedMap[k]||{};
       return '<tr class="booked-row"><td style="font-weight:600">'+fmtD(info.booked)+'</td>'
         +'<td>'+fmtD(c.completed)+'</td>'
@@ -1211,7 +1254,22 @@ function renderWarehouse(){
         +'<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(c.desc)+'">'+esc(c.desc)+'</td>'
         +'<td style="text-align:right;font-weight:700">'+Math.round(c.qty).toLocaleString()+'</td>'
         +'<td style="text-align:center"><button class="btn" style="font-size:10px;padding:2px 7px" onclick="whUnbook(\''+esc(k)+'\')">&#8634; Undo</button></td></tr>';
-    }).join('');
+    }
+    function sortByBooked(a,b){ var ba=bookedMap[whKey(a)].booked||'', bb2=bookedMap[whKey(b)].booked||''; return bb2.localeCompare(ba); }
+    var out='';
+    if(todayRows.length){
+      out+='<tr style="background:#dcfce7"><td colspan="7" style="font-weight:700;color:#15803d;padding:6px 8px">&#128197; Today ('+todayRows.length+')</td></tr>';
+      todayRows.sort(sortByBooked); out+=todayRows.map(whRow).join('');
+    } else if(!srch){
+      out+='<tr><td colspan="7" style="text-align:center;padding:1rem;color:#6b7280">Nothing booked in today</td></tr>';
+    }
+    var mkeys=Object.keys(months).sort(function(a,b){ return b.localeCompare(a); }); // newest month first
+    mkeys.forEach(function(mk){
+      var open=openMonths[mk]||srch;   // auto-open when searching
+      out+='<tr style="background:#f0f3f8;cursor:pointer" onclick="toggleMonth(\''+mk+'\')"><td colspan="7" style="font-weight:700;color:#374151;padding:6px 8px">'+(open?'&#9660;':'&#9654;')+' &#128193; '+monthLabel(mk)+' ('+months[mk].length+')</td></tr>';
+      if(open){ months[mk].sort(sortByBooked); out+=months[mk].map(whRow).join(''); }
+    });
+    bb.innerHTML=out;
   }
   if(sa){
     // show when the underlying data was published
@@ -1219,6 +1277,12 @@ function renderWarehouse(){
   }
 }
 
+function whToggleSection(id, hdr){
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.classList.toggle('collapsed');
+  if(hdr) hdr.classList.toggle('collapsed-hdr');
+}
 function whMarkOne(k){
   bookedMap[k]={booked:new Date().toISOString()};
   saveBooked(); renderWarehouse();
@@ -1239,25 +1303,24 @@ function whMarkSelected(){
   var selAll=document.getElementById('whSelectAll'); if(selAll) selAll.checked=false;
   renderWarehouse();
 }
-function whMarkAll(){
-  var pending=completedWOs.filter(function(c){ return !bookedMap[whKey(c)]; });
-  if(!pending.length){ alert('Nothing pending to mark.'); return; }
-  if(!confirm('Mark ALL '+pending.length+' pending item(s) as booked in?')) return;
-  var ts=new Date().toISOString();
-  pending.forEach(function(c){ bookedMap[whKey(c)]={booked:ts}; });
-  saveBooked(); renderWarehouse();
-}
+
 
 function whPendingList(){
   return completedWOs.filter(function(c){ return !bookedMap[whKey(c)]; })
     .sort(function(a,b){ return (b.completed||'').localeCompare(a.completed||''); });
 }
 function whCopyPending(){
-  var p=whPendingList();
-  if(!p.length){ alert('Nothing pending to copy.'); return; }
+  // Copy only the TICKED pending lines
+  var sel=document.querySelectorAll('.wh-pend:checked');
+  if(!sel.length){ alert('Tick the lines you want to copy first.\n\n(Leave any queried items unticked and they won\'t be copied.)'); return; }
+  var byKey={};
+  whPendingList().forEach(function(c){ byKey[whKey(c)]=c; });
+  var picked=[];
+  sel.forEach(function(cb){ var c=byKey[cb.getAttribute('data-k')]; if(c) picked.push(c); });
+  if(!picked.length){ alert('Nothing matching ticked lines to copy.'); return; }
   // Tab-separated so it pastes cleanly into Excel: Code, Qty, Description, Completed date
-  var text=p.map(function(c){ return c.code+'\t'+Math.round(c.qty)+'\t'+(c.desc||'')+'\t'+fmtD(c.completed); }).join('\n');
-  copyText(text, p.length+' line(s) copied. Paste into your Sage stock sheet, then mark them booked.');
+  var text=picked.map(function(c){ return c.code+'\t'+Math.round(c.qty)+'\t'+(c.desc||'')+'\t'+fmtD(c.completed); }).join('\n');
+  copyText(text, picked.length+' ticked line(s) copied. Paste into your Sage stock sheet, then mark them booked.');
 }
 function copyText(text,msg){
   if(navigator.clipboard&&navigator.clipboard.writeText){
