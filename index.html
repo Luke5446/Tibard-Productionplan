@@ -351,6 +351,7 @@ body.warehouse-mode .warehouse-wrap{display:block}
           <th onclick="sBy('daysOfStock')" style="width:115px">Days stock &#8597;</th>
           <th class="ns" style="width:80px">Status</th>
           <th onclick="sBy('onWOP')" style="width:55px;text-align:right;color:#6d28d9">On WOP &#8597;</th>
+          <th onclick="sBy('pipeline')" style="width:62px;text-align:right;color:#0369a1">Pipeline &#8597;</th>
           <th onclick="sBy('wopRec')" style="width:60px;text-align:right;color:#7A1F3D">WOP REC &#8597;</th>
           <th class="ns" style="width:135px;text-align:center">ACT WOP</th>
         </tr></thead>
@@ -358,8 +359,8 @@ body.warehouse-mode .warehouse-wrap{display:block}
       </table>
     </div></div>
     <p class="foot">
-      &#128296; <strong style="color:#7A1F3D">WOP REC</strong> = recommended make qty for 28 days (4 wks) cover, based on 6-month sales, less stock/On POP/On WOP.
-      <strong>ACT WOP</strong> = your adjusted make qty (used in export). Days stock = (In stock − On SOP) ÷ daily usage. Click a row for the stock runway.
+      &#128296; <strong style="color:#7A1F3D">WOP REC</strong> = recommended make qty for 28 days (4 wks) cover, based on 6-month sales, less stock/On POP/On WOP/Pipeline.
+      <strong style="color:#0369a1">Pipeline</strong> = units completed but not yet in Sage (counts towards stock until 7am the next day). <strong>ACT WOP</strong> = your adjusted make qty. Days stock = (In stock − On SOP + Pipeline) ÷ daily usage. Click a row for the stock runway.
     </p>
 
   </div>
@@ -468,7 +469,7 @@ function mkRow(code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m){
   var status=daily===0?'healthy':days<=7?'critical':days<=14?'low':days<=28?'ok':'healthy';
   return { code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m,
     dailyUsage:daily, available:avail, daysOfStock:days, status,
-    onWOP:0, wopRec:0, actWop:0, included:false, manAdj:false };
+    onWOP:0, pipeline:0, wopRec:0, actWop:0, included:false, manAdj:false };
 }
 
 function showData(){
@@ -478,18 +479,59 @@ function showData(){
   updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); renderWarehouse();
 }
 
+// ── Pipeline stock: completed WOPs not yet reflected in Sage ────────────────
+// A completed WOP counts as pipeline stock until the next 7am UK after completion.
+// (Sage's overnight routine assumed to have run by then, so the next pasted
+//  stock figure already includes those units.)
+function pipelineExpiry(completedISO){
+  // completedISO is 'yyyy-mm-dd' (date completed). Expiry = 7am UK the day AFTER.
+  // We treat completion as that calendar day, so it stays pipeline until next-day 07:00.
+  var d=new Date(completedISO+'T00:00:00');
+  // expiry = next day 07:00 local
+  var exp=new Date(d.getTime());
+  exp.setDate(exp.getDate()+1);
+  exp.setHours(7,0,0,0);
+  return exp;
+}
+function isPipelineActive(completedISO){
+  if(!completedISO) return false;
+  var exp=pipelineExpiry(completedISO);
+  return now() < exp;   // still counts as pipeline until expiry passes
+}
+// Sum of completed-but-not-yet-in-Sage units per SKU code
+function pipelineForCode(code){
+  var total=0;
+  completedWOs.forEach(function(c){
+    if(c.code===code && isPipelineActive(c.completed)) total+=c.qty;
+  });
+  return total;
+}
+// Recompute pipeline + derived figures for every row
+function recalcPipeline(){
+  rows.forEach(function(r){
+    r.pipeline = pipelineForCode(r.code);
+    // Effective available = (in stock - SOP) + pipeline (completed, awaiting Sage)
+    var effAvail = (r.inStock - r.onSOP) + r.pipeline;
+    r.available = effAvail;
+    r.daysOfStock = r.dailyUsage>0 ? (effAvail/r.dailyUsage) : 999;
+    r.status = r.dailyUsage===0?'healthy':r.daysOfStock<=7?'critical':r.daysOfStock<=14?'low':r.daysOfStock<=28?'ok':'healthy';
+  });
+}
+
 // ── WOP recommendation ─────────────────────────────────────────────────────
 // Recommended make qty so available stock reaches BUFFER_DAYS cover,
 // accounting for On POP (incoming purchase) and On WOP (already being made).
 function calcQtys(r){
   if(r.dailyUsage<=0) return {wop:0};
   var targetUnits = r.dailyUsage * BUFFER_DAYS;
+  // r.available already includes pipeline (completed, awaiting Sage) via recalcPipeline
   var have = r.available + r.onPOP + r.onWOP;
   var need = targetUnits - have;
   var wop = need>0 ? Math.ceil(need) : 0;
   return {wop:wop};
 }
 function recalcQtys(){
+  recalcPipeline();   // refresh pipeline + days-of-stock before recommending
   rows.forEach(function(r){
     var q=calcQtys(r);
     r.wopRec=q.wop;
@@ -946,7 +988,7 @@ function renderTable(){
   var tickedCount=rows.filter(function(r){return r.included;}).length;
   document.getElementById('rc').innerHTML=data.length.toLocaleString()+' items shown'+(tickedCount>0?' &nbsp;|&nbsp; <strong style="color:#7A1F3D">'+tickedCount+' ticked to make</strong>':'');
   var tb=document.getElementById('tBody');
-  if(!data.length){ tb.innerHTML='<tr><td colspan="14" style="text-align:center;padding:1.5rem;color:#6b7280">No items match</td></tr>'; return; }
+  if(!data.length){ tb.innerHTML='<tr><td colspan="15" style="text-align:center;padding:1.5rem;color:#6b7280">No items match</td></tr>'; return; }
   tb.innerHTML=data.map(rowHTML).join('');
 }
 
@@ -956,8 +998,10 @@ function rowHTML(r){
   var bc=days<=7?'#ef4444':days<=14?'#f59e0b':days<=28?'#3b82f6':'#10b981';
   var id=sid(r.code);
   var statusLbl={critical:'Critical',low:'Low',ok:'OK',healthy:'Healthy'};
+  var pipeFlag=r.pipeline>0?'<div style="font-size:9px;color:#0369a1;font-weight:600;margin-top:2px">&#9201; Awaiting Sage</div>':'';
   var statusCls={critical:'br',low:'ba',ok:'bb',healthy:'bg'};
   var onWopH=r.onWOP>0?'<span class="on-wop">'+Math.round(r.onWOP).toLocaleString()+'</span>':dash();
+  var pipeH=r.pipeline>0?'<span style="font-weight:700;color:#0369a1" title="Completed, awaiting Sage update">'+Math.round(r.pipeline).toLocaleString()+'</span>':dash();
   var recH=r.wopRec>0?'<span class="wop-rec">'+r.wopRec.toLocaleString()+'</span>':'<span style="color:#065f46;font-weight:600">✓ OK</span>';
   if(r.dailyUsage===0) recH='<span style="color:#6b7280;font-size:11px">No sales</span>';
   var ctrlH='<div class="cc">'
@@ -980,8 +1024,9 @@ function rowHTML(r){
     +'<td style="text-align:right">'+r.s6m.toLocaleString()+'</td>'
     +'<td style="text-align:right">'+r.dailyUsage.toFixed(1)+'</td>'
     +'<td><div class="days-bar"><div class="days-track"><div class="days-fill" style="width:'+pct.toFixed(0)+'%;background:'+bc+'"></div></div><span class="days-num" style="color:'+bc+'">'+ds+'</span></div></td>'
-    +'<td><span class="badge '+(statusCls[r.status]||'')+'">'+statusLbl[r.status]+'</span></td>'
+    +'<td><span class="badge '+(statusCls[r.status]||'')+'">'+statusLbl[r.status]+'</span>'+pipeFlag+'</td>'
     +'<td style="text-align:right">'+onWopH+'</td>'
+    +'<td style="text-align:right">'+pipeH+'</td>'
     +'<td style="text-align:right">'+recH+'</td>'
     +'<td>'+ctrlH+'</td>'
     +'</tr>';
@@ -1299,6 +1344,10 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('woModalClose').addEventListener('click',closeWOModal);
   document.getElementById('woModal').addEventListener('click',function(e){if(e.target===this)closeWOModal();});
   document.getElementById('createModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+  // Refresh every 10 min so completed-WOP pipeline expires at 7am even if left open
+  setInterval(function(){
+    if(rows.length){ recalcQtys(); if(!IS_WAREHOUSE) renderTable(); updateStats(); }
+  }, 600000);
 });
 </script>
 </body>
