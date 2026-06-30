@@ -177,6 +177,8 @@ body.warehouse-mode .warehouse-wrap{display:block}
 #plnr .stepc{cursor:pointer;border:1px solid transparent;user-select:none}
 #plnr .stepc:hover{border-color:var(--maroon-l)}
 #plnr .chip.sdone{background:#EAEAEA;color:#9b9b9b;text-decoration:line-through}
+#plnr .plsearch{font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:7px;min-width:210px;font-family:inherit;color:var(--ink)}
+#plnr .plsearch:focus{outline:2px solid var(--maroon-l);border-color:var(--maroon-l)}
 #plnr .chip.x{background:#EFE6DF;color:#8a6d3b}
 #plnr .pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:20px}
 #plnr .pill.run{background:var(--g2);color:#8a6d18}
@@ -1510,6 +1512,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <section class="panel on" id="p-wo"><h2>Work orders</h2>
 <p class="hint">Live works orders from the buffer app — each SKU on a WO becomes its own routed job. They run first-come-first-served in the order below; drag the grip to push a job up the queue, or set a sewing machine.</p>
 <div class="card" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="act" onclick="plnrRefresh()">&#8635; Refresh from works orders</button><button class="ghost act" onclick="autoAll()">Auto-assign all sewing</button><span id="pl_syncinfo" class="hint" style="margin:0"></span></div>
+<div style="margin-bottom:12px"><input class="plsearch" id="pl_se_wo" type="search" oninput="plSetSearch(this.value)" placeholder="Search WO number, e.g. 12"></div>
 <div class="card" style="padding:0;overflow-x:auto"><table id="woTbl"></table></div></section>
 
 <section class="panel" id="p-board"><h2>Load board</h2>
@@ -1518,16 +1521,16 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="legend"><span><span class="sw" style="background:var(--g1)"></span>quiet</span><span><span class="sw" style="background:var(--g2)"></span>busy</span><span><span class="sw" style="background:var(--g3)"></span>tight</span><span><span class="sw" style="background:var(--g4)"></span>full</span><span>· % of that day's capacity</span></div></section>
 
 <section class="panel" id="p-pipe"><h2>Pipeline</h2><p class="hint">Where each order sits today and its forecast finish against the due date.</p>
-<div class="kpis" id="pipeKpis"></div><div class="card" style="padding:0;overflow-x:auto"><table id="pipeTbl"></table></div></section>
+<div style="margin-bottom:12px"><input class="plsearch" id="pl_se_pipe" type="search" oninput="plSetSearch(this.value)" placeholder="Search WO number, e.g. 12"></div><div class="kpis" id="pipeKpis"></div><div class="card" style="padding:0;overflow-x:auto"><table id="pipeTbl"></table></div></section>
 
 <section class="panel" id="p-cut"><h2>Cutting</h2><p class="hint">Hours and the queue of work orders per day. Drag a WO chip onto another to change the cutting order.</p>
-<div class="gridbar"><label><input type="checkbox" id="wk-cut" onchange="toggleWk('cut',this.checked)"> Show weekly set hours</label></div><div id="cutGrid"></div></section>
+<div class="gridbar"><label><input type="checkbox" id="wk-cut" onchange="toggleWk('cut',this.checked)"> Show weekly set hours</label><input class="plsearch" id="pl_se_cut" type="search" oninput="plSetSearch(this.value)" placeholder="Search WO number, e.g. 12"></div><div id="cutGrid"></div></section>
 
 <section class="panel" id="p-sew"><h2>Sewing</h2><p class="hint">Machines grouped by line, each showing the orders queued on it per day. Drag chips to reorder. Hats run on apron or flex at 85/day.</p>
-<div class="gridbar"><label><input type="checkbox" id="wk-sew" onchange="toggleWk('sew',this.checked)"> Show weekly set hours</label></div><div id="sewGrid"></div></section>
+<div class="gridbar"><label><input type="checkbox" id="wk-sew" onchange="toggleWk('sew',this.checked)"> Show weekly set hours</label><input class="plsearch" id="pl_se_sew" type="search" oninput="plSetSearch(this.value)" placeholder="Search WO number, e.g. 12"></div><div id="sewGrid"></div></section>
 
 <section class="panel" id="p-fin"><h2>Finishing</h2><p class="hint">One team — set each person's hours individually for holidays. Stud 1 and Stud 2 each take a person off the tables when running.</p>
-<div class="gridbar"><label><input type="checkbox" id="wk-fin" onchange="toggleWk('fin',this.checked)"> Show weekly set hours</label></div><div id="finGrid"></div></section>
+<div class="gridbar"><label><input type="checkbox" id="wk-fin" onchange="toggleWk('fin',this.checked)"> Show weekly set hours</label><input class="plsearch" id="pl_se_fin" type="search" oninput="plSetSearch(this.value)" placeholder="Search WO number, e.g. 12"></div><div id="finGrid"></div></section>
 <section class="panel" id="p-rates"><h2>Master times</h2><p class="hint">The standard throughput each station runs at. These drive every forecast — change one and the whole plan recalculates. Friday and holidays scale automatically from the hours you set per machine.</p><div id="rateWrap"></div></section>
 </main></div>
 <script>
@@ -1557,7 +1560,9 @@ function M(id){return MACH.find(m=>m.id===id)}
 function hoursOn(m,d){if(!m.on)return 0;const i=iso(d);if(i in m.ex)return m.ex[i];return m.master[d.getDay()]||0}
 function canRun(m,sc){if(m.centre!=='sewing')return false;if(m.line==='flex')return m.caps.includes(sc)||sc==='other';if(sc==='hat')return m.line==='apron';return m.line===sc}
 function sewCandidates(sc){return MACH.filter(m=>canRun(m,sc))}
-let WOS=[];
+let WOS=[];let plSearch='';
+function plMatch(no){return !plSearch||(''+no).toLowerCase().includes(plSearch.toLowerCase())}
+function plSetSearch(v){plSearch=(v||'').trim();['pl_se_wo','pl_se_pipe','pl_se_cut','pl_se_sew','pl_se_fin'].forEach(function(id){var e=document.getElementById(id);if(e&&e.value!==plSearch)e.value=plSearch;});renderWO();renderPipe();renderGrids();}
 function routeOf(w){const r=ROUTING[w.code];if(!r)return [];if(r.l==='outsourced')return ['fin'];const s=[];if(r.cut)s.push('cut');if(r.s1)s.push('s1');if(r.sew)s.push('sew');if(r.s2)s.push('s2');if(r.fin)s.push('fin');return s}
 function lab(k){return {cut:'Cut',s1:'Stud 1',sew:'Sew',s2:'Stud 2',fin:'Finish'}[k]}
 function stepHours(k,w){const q=w.qty,r=ROUTING[w.code];if(k==='cut')return Math.ceil(q/RATE.cut.batch)*RATE.cut.mins/60;if(k==='s1'||k==='s2')return q/RATE.stud*STD;if(k==='sew')return q/RATE.sew[r.sc]*STD;if(k==='fin')return q/RATE.fin[r.sc]*STD}
@@ -1599,7 +1604,7 @@ function chip(no){return `<span class="woc" draggable="true" ondragstart="dStart
 // ---- WO tab (queue + assignment) ----
 function stepChips(idx,w){return routeOf(w).map(k=>{const d=w.stepDone&&w.stepDone[k];return `<span class="chip stepc${d?' sdone':''}" onclick="toggleStep(${idx},'${k}')" title="${d?'done at this station — click to reopen':'click to mark already done at this station'}">${d?'✓ ':''}${lab(k)}</span>`}).join('')}
 function toggleStep(i,k){const w=WOS[i];if(!w)return;w.stepDone=w.stepDone||{};w.stepDone[k]=!w.stepDone[k];recalc()}
-function renderWO(){let rows=WOS.map((w,idx)=>{const r=ROUTING[w.code];
+function renderWO(){let rows=WOS.map((w,idx)=>{if(plSearch&&!plMatch(w.woNo))return '';const r=ROUTING[w.code];
    if(!r)return `<tr><td class="grip">≡</td><td><b>${w.woNo}</b></td><td>${w.code}</td><td>${w.qty}</td><td colspan=5 class=flag>Not in routing master</td></tr>`;
    const route=stepChips(idx,w);
    const hasSew=routeOf(w).includes('sew');
@@ -1630,7 +1635,7 @@ function renderBoard(){const days=workDays(15);
 function curStep(w){if(w.done)return ['done','Done'];const rt=routeOf(w);if(rt.length&&rt.every(k=>w.stepDone&&w.stepDone[k]))return ['done','All steps done'];if(!w.steps||!w.steps.length)return ['q','—'];const inc=w.steps.filter(s=>!s.sdone);for(const s of inc){if(s.start&&s.end&&TODAY>=sd(s.start)&&TODAY<=sd(s.end))return ['run','On: '+s.label]}const f=inc[0];if(f&&f.start&&TODAY<sd(f.start))return ['q','Queued · '+fmt(f.start)];return ['done','Past plan']}
 function renderPipe(){const act=WOS.filter(w=>!w.done&&ROUTING[w.code]);let late=0;act.forEach(w=>{if(w.due&&w.finish&&w.finish>w.due)late++});
   document.getElementById('pipeKpis').innerHTML=`<div class=kpi><b>${act.length}</b><span>open orders</span></div><div class=kpi><b>${act.reduce((a,w)=>a+w.qty,0)}</b><span>units</span></div><div class=kpi><b>${late}</b><span>forecast late</span></div><div class=kpi><b>${WOS.filter(w=>w.over).length}</b><span>over horizon</span></div>`;
-  let rows=WOS.map((w,idx)=>{const r=ROUTING[w.code];if(!r)return `<tr><td>${w.woNo}</td><td colspan=8 class=flag>${w.code} not in routing master</td></tr>`;const [cls,l]=curStep(w);const fin=w.over?'<span class=flag>beyond horizon</span>':fmt(w.finish);const lateF=(w.due&&w.finish&&w.finish>w.due)?'<span class="pill late">late</span>':(w.due&&w.finish?'<span class="good">on time</span>':'');return `<tr><td><b>${w.woNo}</b><br><small style="color:var(--muted)">${w.code}</small></td><td>${w.qty}</td><td>${r.g}</td><td>${stepChips(idx,w)}</td><td>${w.due?fmt(w.due):'—'}</td><td><span class="pill ${cls}">${l}</span></td><td>${w.sewResolved||'—'}</td><td>${fin} ${lateF}</td><td style="display:flex;gap:6px"><button class=mini onclick=markDone(${idx})>${w.done?'Reopen':'Complete'}</button><button class=mini onclick=addDay(${idx})>+ day</button></td></tr>`}).join('');
+  let rows=WOS.map((w,idx)=>{if(plSearch&&!plMatch(w.woNo))return '';const r=ROUTING[w.code];if(!r)return `<tr><td>${w.woNo}</td><td colspan=8 class=flag>${w.code} not in routing master</td></tr>`;const [cls,l]=curStep(w);const fin=w.over?'<span class=flag>beyond horizon</span>':fmt(w.finish);const lateF=(w.due&&w.finish&&w.finish>w.due)?'<span class="pill late">late</span>':(w.due&&w.finish?'<span class="good">on time</span>':'');return `<tr><td><b>${w.woNo}</b><br><small style="color:var(--muted)">${w.code}</small></td><td>${w.qty}</td><td>${r.g}</td><td>${stepChips(idx,w)}</td><td>${w.due?fmt(w.due):'—'}</td><td><span class="pill ${cls}">${l}</span></td><td>${w.sewResolved||'—'}</td><td>${fin} ${lateF}</td><td style="display:flex;gap:6px"><button class=mini onclick=markDone(${idx})>${w.done?'Reopen':'Complete'}</button><button class=mini onclick=addDay(${idx})>+ day</button></td></tr>`}).join('');
   document.getElementById('pipeTbl').innerHTML=`<thead><tr><th>WO</th><th>Qty</th><th>Garment</th><th>Steps done</th><th>Due</th><th>Status</th><th>Sew m/c</th><th>Forecast</th><th>Actions</th></tr></thead><tbody>${rows}</tbody>`}
 function markDone(i){WOS[i].done=!WOS[i].done;recalc()}
 function addDay(i){const w=WOS[i];const cs=(w.steps||[]).find(s=>s.start&&s.end&&TODAY>=sd(s.start)&&TODAY<=sd(s.end))||(w.steps||[])[0];if(cs){w.extraStep=cs.k;w.extra=(w.extra||0)+1}recalc()}
@@ -1642,13 +1647,13 @@ function machineTable(list,occ){const days=workDays(8);
   let body='<tbody>'+list.map(m=>{
     let on=`<td class=wkcol><input type=checkbox ${m.on?'checked':''} onchange="toggleM('${m.id}',this.checked)"></td>`;
     let wk=[1,2,3,4,5].map(dw=>`<td class=wkcol><input class=h value="${m.master[dw]}" onchange="setMaster('${m.id}',${dw},this.value)"></td>`).join('')+'<td class=wkcol></td>';
-    let dd=days.map(d=>{const i=iso(d);const ov=(i in m.ex);const v=hoursOn(m,d);const list2=occ?((LED.occ[m.id]&&LED.occ[m.id][i])||[]):[];const chips=list2.map(chip).join('');
+    let dd=days.map(d=>{const i=iso(d);const ov=(i in m.ex);const v=hoursOn(m,d);const list2=occ?((LED.occ[m.id]&&LED.occ[m.id][i])||[]):[];const chips=list2.filter(plMatch).map(chip).join('');
       return `<td class=daycol><input class="h ${ov?'dim':''}" value="${v}" onchange="setDay('${m.id}','${i}',this.value)"><div class="wos">${chips}</div></td>`}).join('');
     return `<tr class="${m.on?'':'off'}"><td class=mname>${m.name}<small> · ${m.id}</small></td>${on}${wk}${dd}</tr>`}).join('')+'</tbody>';
   return head+body}
 function finQueueTable(){const days=workDays(8);
   let head='<thead><tr><th class=mname>Finishing queue</th><th class=wkcol></th>'+[0,0,0,0,0].map(_=>'<th class=wkcol></th>').join('')+'<th class=wkcol></th>'+days.map(d=>`<th class=daycol>${DOW[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}</th>`).join('')+'</tr></thead>';
-  let dd=days.map(d=>{const i=iso(d);const chips=((LED.occ.FINPOOL&&LED.occ.FINPOOL[i])||[]).map(chip).join('');return `<td class=daycol><div class="wos">${chips}</div></td>`}).join('');
+  let dd=days.map(d=>{const i=iso(d);const chips=((LED.occ.FINPOOL&&LED.occ.FINPOOL[i])||[]).filter(plMatch).map(chip).join('');return `<td class=daycol><div class="wos">${chips}</div></td>`}).join('');
   return head+`<tbody><tr><td class=mname>Tables (pool) <small>order in finishing</small></td><td class=wkcol></td>${[0,0,0,0,0].map(_=>'<td class=wkcol></td>').join('')}<td class=wkcol></td>${dd}</tr></tbody>`}
 function renderGrids(){
   document.getElementById('cutGrid').innerHTML=gridWrap('cut',machineTable(MACH.filter(m=>m.centre==='cutting'),true));
@@ -1685,7 +1690,7 @@ function plnrParseDate(s){if(!s)return null;var d=new Date(s);return isNaN(d)?nu
 function plnrSync(){var src=(window.WOs||[]);var keep={};WOS.forEach(function(w){keep[w.woNo]={done:w.done,sewPin:w.sewPin,extra:w.extra,extraStep:w.extraStep,stepDone:w.stepDone};});var jobs=[];src.forEach(function(wo){var items=wo.items||[];items.forEach(function(it,idx){var no=wo.ref+(items.length>1?('/'+(idx+1)):'');var j={woNo:no,code:(it.code||'').toUpperCase(),qty:+it.qty||0,due:plnrParseDate(wo.due),start:plnrParseDate(wo.start),done:false,extra:0,extraStep:null,sewPin:null,stepDone:{}};var k=keep[no];if(k)Object.assign(j,k);jobs.push(j);});});WOS=jobs;var si=document.getElementById('pl_syncinfo');if(si)si.textContent=jobs.length+' job(s) from '+src.length+' works order(s)';recalc();}
 function openPlanner(){document.body.classList.add('planner-mode');plnrSync();window.scrollTo(0,0);}
 function closePlanner(){document.body.classList.remove('planner-mode');}
-Object.assign(window,{openPlanner:openPlanner,closePlanner:closePlanner,plnrRefresh:plnrSync,autoAll:autoAll,setPin:setPin,markDone:markDone,addDay:addDay,toggleStep:toggleStep,setMaster:setMaster,setDay:setDay,toggleM:toggleM,toggleWk:toggleWk,setRate:setRate,dStart:dStart,dEnd:dEnd,dOver:dOver,dDrop:dDrop});
+Object.assign(window,{openPlanner:openPlanner,closePlanner:closePlanner,plnrRefresh:plnrSync,autoAll:autoAll,setPin:setPin,markDone:markDone,addDay:addDay,toggleStep:toggleStep,plSetSearch:plSetSearch,setMaster:setMaster,setDay:setDay,toggleM:toggleM,toggleWk:toggleWk,setRate:setRate,dStart:dStart,dEnd:dEnd,dOver:dOver,dDrop:dDrop});
 
 })();
 </script>
