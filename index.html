@@ -174,6 +174,9 @@ body.warehouse-mode .warehouse-wrap{display:block}
 #plnr th, #plnr td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 #plnr th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
 #plnr .chip{display:inline-block;font-size:11px;padding:2px 7px;border-radius:20px;background:#F3E9E9;color:var(--maroon);margin-right:3px;white-space:nowrap}
+#plnr .stepc{cursor:pointer;border:1px solid transparent;user-select:none}
+#plnr .stepc:hover{border-color:var(--maroon-l)}
+#plnr .chip.sdone{background:#EAEAEA;color:#9b9b9b;text-decoration:line-through}
 #plnr .chip.x{background:#EFE6DF;color:#8a6d3b}
 #plnr .pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:20px}
 #plnr .pill.run{background:var(--g2);color:#8a6d18}
@@ -1571,7 +1574,7 @@ function trialFinish(m,need,from){let cur=new Date(from),end=null,g=0,n=need;whi
 function schedule(){freshLED();const ord=WOS.filter(w=>!w.done);
   WOS.forEach(w=>{w.steps=[];w.finish=null;w.over=false;w.sewResolved=null});
   for(const w of ord){const r=ROUTING[w.code];if(!r)continue;let ready=sd((w.start&&w.start>TODAY)?w.start:TODAY);let prev=null;
-    for(const k of routeOf(w)){let need=stepHours(k,w);if(w.extra&&k===w.extraStep)need+=w.extra*STD;const from=prev?ad(prev,1):ready;let res;
+    for(const k of routeOf(w)){if(w.stepDone&&w.stepDone[k]){w.steps.push({k,label:lab(k),start:null,end:null,sdone:true});continue;}let need=stepHours(k,w);if(w.extra&&k===w.extraStep)need+=w.extra*STD;const from=prev?ad(prev,1):ready;let res;
       if(k==='cut')res=consumeMachine(M('CUT1'),need,from,w.woNo);
       else if(k==='s1')res=consumeStud(M('STUD1'),need,from,w.woNo);
       else if(k==='s2')res=consumeStud(M('STUD2'),need,from,w.woNo);
@@ -1579,8 +1582,8 @@ function schedule(){freshLED();const ord=WOS.filter(w=>!w.done);
       else{let mm;if(w.sewPin&&M(w.sewPin)&&canRun(M(w.sewPin),r.sc))mm=M(w.sewPin);else{const c=sewCandidates(r.sc);mm=c.sort((a,b)=>trialFinish(a,need,from)-trialFinish(b,need,from))[0]}if(!mm){w.over=true;w.steps.push({k,label:'Sew',start:null,end:null});prev=from;continue}w.sewResolved=mm.id;res=consumeMachine(mm,need,from,w.woNo)}
       if(res.over)w.over=true;w.steps.push({k,label:lab(k),start:res.s0,end:res.s1});prev=res.s1||from}
     w.finish=w.steps.length?w.steps[w.steps.length-1].end:null}}
-function parseInput(t){const out=[];t.split(/\n/).forEach((ln,i)=>{ln=ln.trim();if(!ln)return;const p=ln.split(/[,\s]+/).filter(Boolean);let woNo='',idx=0;if(/^WO[-_]?\w+/i.test(p[0])){woNo=p[0];idx=1}const code=(p[idx]||'').toUpperCase();const qty=parseInt(p[idx+1]||'0',10)||0;let due=null;const dm=p.find(x=>/^\d{4}-\d{2}-\d{2}$/.test(x));if(dm)due=sd(new Date(dm));out.push({woNo:woNo||('WO-'+String(i+1).padStart(4,'0')),code,qty,due,start:null,done:false,extra:0,extraStep:null,sewPin:null})});return out}
-function loadWO(){const keep={};WOS.forEach(w=>keep[w.woNo]={done:w.done,sewPin:w.sewPin,extra:w.extra,extraStep:w.extraStep});const fresh=parseInput(document.getElementById('woInput').value);fresh.forEach(w=>{const k=keep[w.woNo];if(k)Object.assign(w,k)});WOS=fresh;recalc()}
+function parseInput(t){const out=[];t.split(/\n/).forEach((ln,i)=>{ln=ln.trim();if(!ln)return;const p=ln.split(/[,\s]+/).filter(Boolean);let woNo='',idx=0;if(/^WO[-_]?\w+/i.test(p[0])){woNo=p[0];idx=1}const code=(p[idx]||'').toUpperCase();const qty=parseInt(p[idx+1]||'0',10)||0;let due=null;const dm=p.find(x=>/^\d{4}-\d{2}-\d{2}$/.test(x));if(dm)due=sd(new Date(dm));out.push({woNo:woNo||('WO-'+String(i+1).padStart(4,'0')),code,qty,due,start:null,done:false,extra:0,extraStep:null,sewPin:null,stepDone:{}})});return out}
+function loadWO(){const keep={};WOS.forEach(w=>keep[w.woNo]={done:w.done,sewPin:w.sewPin,extra:w.extra,extraStep:w.extraStep,stepDone:w.stepDone});const fresh=parseInput(document.getElementById('woInput').value);fresh.forEach(w=>{const k=keep[w.woNo];if(k)Object.assign(w,k)});WOS=fresh;recalc()}
 function resetSample(){document.getElementById('woInput').value=SAMPLE.map(s=>s[0]+' '+s[1]+' '+s[2]+' '+s[3]).join('\n');WOS=[];loadWO()}
 function workDays(n){const a=[];let d=new Date(TODAY),c=0;while(a.length<n&&c<220){if((DAYH[d.getDay()]||0)>0)a.push(new Date(d));d=ad(d,1);c++}return a}
 function color(p){if(p<=0)return '#fff';if(p<50)return 'var(--g1)';if(p<80)return 'var(--g2)';if(p<99)return 'var(--g3)';return 'var(--g4)'}
@@ -1594,9 +1597,11 @@ function dDrop(e,target){e.preventDefault();e.stopPropagation();moveWO(_drag,tar
 function moveWO(d,t){if(!d||d===t)return;const ai=WOS.findIndex(w=>w.woNo===d);if(ai<0)return;const w=WOS.splice(ai,1)[0];let ti=WOS.findIndex(x=>x.woNo===t);if(ti<0)ti=WOS.length;WOS.splice(ti,0,w);recalc()}
 function chip(no){return `<span class="woc" draggable="true" ondragstart="dStart(event,'${no}')" ondragend="dEnd(event)" ondragover="dOver(event)" ondrop="dDrop(event,'${no}')" title="${no}">${no.replace(/^WO-?/i,'')}</span>`}
 // ---- WO tab (queue + assignment) ----
+function stepChips(idx,w){return routeOf(w).map(k=>{const d=w.stepDone&&w.stepDone[k];return `<span class="chip stepc${d?' sdone':''}" onclick="toggleStep(${idx},'${k}')" title="${d?'done at this station — click to reopen':'click to mark already done at this station'}">${d?'✓ ':''}${lab(k)}</span>`}).join('')}
+function toggleStep(i,k){const w=WOS[i];if(!w)return;w.stepDone=w.stepDone||{};w.stepDone[k]=!w.stepDone[k];recalc()}
 function renderWO(){let rows=WOS.map((w,idx)=>{const r=ROUTING[w.code];
    if(!r)return `<tr><td class="grip">≡</td><td><b>${w.woNo}</b></td><td>${w.code}</td><td>${w.qty}</td><td colspan=5 class=flag>Not in routing master</td></tr>`;
-   const route=routeOf(w).map(k=>`<span class=chip>${lab(k)}</span>`).join('');
+   const route=stepChips(idx,w);
    const hasSew=routeOf(w).includes('sew');
    const cands=sewCandidates(r.sc);
    const opts=hasSew?('<option value="">Auto</option>'+cands.map(m=>`<option value="${m.id}" ${w.sewPin===m.id?'selected':''}>${m.name}</option>`).join('')):'';
@@ -1622,11 +1627,11 @@ function renderBoard(){const days=workDays(15);
   let body='<tbody>'+rows.map(r=>{let t=days.map(d=>{const c=r.cap(d),u=r.use(d);const p=c>0?Math.round(u/c*100):(u>0?999:0);return `<td class=cap style="background:${color(p)}">${c<=0?'·':(p>0?p+'%':'')}</td>`}).join('');return `<tr class="${r.bn?'bn':''}"><td class=name>${r.n}<small>${r.s}</small></td>${t}</tr>`}).join('')+'</tbody>';
   document.getElementById('boardTbl').innerHTML=head+body;const over=WOS.filter(w=>w.over).length;
   document.getElementById('boardNote').innerHTML=over?`<b class=flag>${over}</b> order(s) don't fit the horizon at current capacity.`:'All current orders fit within the planning horizon.'}
-function curStep(w){if(w.done)return ['done','Done'];if(!w.steps||!w.steps.length)return ['q','—'];for(const s of w.steps){if(s.start&&s.end&&TODAY>=sd(s.start)&&TODAY<=sd(s.end))return ['run','On: '+s.label]}const f=w.steps[0];if(f.start&&TODAY<sd(f.start))return ['q','Queued · '+fmt(f.start)];return ['done','Past plan']}
+function curStep(w){if(w.done)return ['done','Done'];const rt=routeOf(w);if(rt.length&&rt.every(k=>w.stepDone&&w.stepDone[k]))return ['done','All steps done'];if(!w.steps||!w.steps.length)return ['q','—'];const inc=w.steps.filter(s=>!s.sdone);for(const s of inc){if(s.start&&s.end&&TODAY>=sd(s.start)&&TODAY<=sd(s.end))return ['run','On: '+s.label]}const f=inc[0];if(f&&f.start&&TODAY<sd(f.start))return ['q','Queued · '+fmt(f.start)];return ['done','Past plan']}
 function renderPipe(){const act=WOS.filter(w=>!w.done&&ROUTING[w.code]);let late=0;act.forEach(w=>{if(w.due&&w.finish&&w.finish>w.due)late++});
   document.getElementById('pipeKpis').innerHTML=`<div class=kpi><b>${act.length}</b><span>open orders</span></div><div class=kpi><b>${act.reduce((a,w)=>a+w.qty,0)}</b><span>units</span></div><div class=kpi><b>${late}</b><span>forecast late</span></div><div class=kpi><b>${WOS.filter(w=>w.over).length}</b><span>over horizon</span></div>`;
-  let rows=WOS.map((w,idx)=>{const r=ROUTING[w.code];if(!r)return `<tr><td>${w.woNo}</td><td colspan=7 class=flag>${w.code} not in routing master</td></tr>`;const [cls,l]=curStep(w);const fin=w.over?'<span class=flag>beyond horizon</span>':fmt(w.finish);const lateF=(w.due&&w.finish&&w.finish>w.due)?'<span class="pill late">late</span>':(w.due&&w.finish?'<span class="good">on time</span>':'');return `<tr><td><b>${w.woNo}</b><br><small style="color:var(--muted)">${w.code}</small></td><td>${w.qty}</td><td>${r.g}</td><td>${w.due?fmt(w.due):'—'}</td><td><span class="pill ${cls}">${l}</span></td><td>${w.sewResolved||'—'}</td><td>${fin} ${lateF}</td><td style="display:flex;gap:6px"><button class=mini onclick=markDone(${idx})>${w.done?'Reopen':'Complete'}</button><button class=mini onclick=addDay(${idx})>+ day</button></td></tr>`}).join('');
-  document.getElementById('pipeTbl').innerHTML=`<thead><tr><th>WO</th><th>Qty</th><th>Garment</th><th>Due</th><th>Status</th><th>Sew m/c</th><th>Forecast</th><th>Actions</th></tr></thead><tbody>${rows}</tbody>`}
+  let rows=WOS.map((w,idx)=>{const r=ROUTING[w.code];if(!r)return `<tr><td>${w.woNo}</td><td colspan=8 class=flag>${w.code} not in routing master</td></tr>`;const [cls,l]=curStep(w);const fin=w.over?'<span class=flag>beyond horizon</span>':fmt(w.finish);const lateF=(w.due&&w.finish&&w.finish>w.due)?'<span class="pill late">late</span>':(w.due&&w.finish?'<span class="good">on time</span>':'');return `<tr><td><b>${w.woNo}</b><br><small style="color:var(--muted)">${w.code}</small></td><td>${w.qty}</td><td>${r.g}</td><td>${stepChips(idx,w)}</td><td>${w.due?fmt(w.due):'—'}</td><td><span class="pill ${cls}">${l}</span></td><td>${w.sewResolved||'—'}</td><td>${fin} ${lateF}</td><td style="display:flex;gap:6px"><button class=mini onclick=markDone(${idx})>${w.done?'Reopen':'Complete'}</button><button class=mini onclick=addDay(${idx})>+ day</button></td></tr>`}).join('');
+  document.getElementById('pipeTbl').innerHTML=`<thead><tr><th>WO</th><th>Qty</th><th>Garment</th><th>Steps done</th><th>Due</th><th>Status</th><th>Sew m/c</th><th>Forecast</th><th>Actions</th></tr></thead><tbody>${rows}</tbody>`}
 function markDone(i){WOS[i].done=!WOS[i].done;recalc()}
 function addDay(i){const w=WOS[i];const cs=(w.steps||[]).find(s=>s.start&&s.end&&TODAY>=sd(s.start)&&TODAY<=sd(s.end))||(w.steps||[])[0];if(cs){w.extraStep=cs.k;w.extra=(w.extra||0)+1}recalc()}
 // ---- machine grids ----
@@ -1677,10 +1682,10 @@ buildMachines();renderRates();
 
 
 function plnrParseDate(s){if(!s)return null;var d=new Date(s);return isNaN(d)?null:sd(d);}
-function plnrSync(){var src=(window.WOs||[]);var keep={};WOS.forEach(function(w){keep[w.woNo]={done:w.done,sewPin:w.sewPin,extra:w.extra,extraStep:w.extraStep};});var jobs=[];src.forEach(function(wo){var items=wo.items||[];items.forEach(function(it,idx){var no=wo.ref+(items.length>1?('/'+(idx+1)):'');var j={woNo:no,code:(it.code||'').toUpperCase(),qty:+it.qty||0,due:plnrParseDate(wo.due),start:plnrParseDate(wo.start),done:false,extra:0,extraStep:null,sewPin:null};var k=keep[no];if(k)Object.assign(j,k);jobs.push(j);});});WOS=jobs;var si=document.getElementById('pl_syncinfo');if(si)si.textContent=jobs.length+' job(s) from '+src.length+' works order(s)';recalc();}
+function plnrSync(){var src=(window.WOs||[]);var keep={};WOS.forEach(function(w){keep[w.woNo]={done:w.done,sewPin:w.sewPin,extra:w.extra,extraStep:w.extraStep,stepDone:w.stepDone};});var jobs=[];src.forEach(function(wo){var items=wo.items||[];items.forEach(function(it,idx){var no=wo.ref+(items.length>1?('/'+(idx+1)):'');var j={woNo:no,code:(it.code||'').toUpperCase(),qty:+it.qty||0,due:plnrParseDate(wo.due),start:plnrParseDate(wo.start),done:false,extra:0,extraStep:null,sewPin:null,stepDone:{}};var k=keep[no];if(k)Object.assign(j,k);jobs.push(j);});});WOS=jobs;var si=document.getElementById('pl_syncinfo');if(si)si.textContent=jobs.length+' job(s) from '+src.length+' works order(s)';recalc();}
 function openPlanner(){document.body.classList.add('planner-mode');plnrSync();window.scrollTo(0,0);}
 function closePlanner(){document.body.classList.remove('planner-mode');}
-Object.assign(window,{openPlanner:openPlanner,closePlanner:closePlanner,plnrRefresh:plnrSync,autoAll:autoAll,setPin:setPin,markDone:markDone,addDay:addDay,setMaster:setMaster,setDay:setDay,toggleM:toggleM,toggleWk:toggleWk,setRate:setRate,dStart:dStart,dEnd:dEnd,dOver:dOver,dDrop:dDrop});
+Object.assign(window,{openPlanner:openPlanner,closePlanner:closePlanner,plnrRefresh:plnrSync,autoAll:autoAll,setPin:setPin,markDone:markDone,addDay:addDay,toggleStep:toggleStep,setMaster:setMaster,setDay:setDay,toggleM:toggleM,toggleWk:toggleWk,setRate:setRate,dStart:dStart,dEnd:dEnd,dOver:dOver,dDrop:dDrop});
 
 })();
 </script>
