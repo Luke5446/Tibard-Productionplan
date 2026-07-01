@@ -348,6 +348,7 @@ body.planner-mode .planner-wrap{display:block}
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
           <button class="btn btn-p edit-only" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
           <button class="btn edit-only" style="font-size:12px" onclick="showBulkForm()">&#128229; Bulk import works orders</button>
+          <button class="btn edit-only" style="font-size:12px" onclick="fixDuplicateWORefs(false)" title="Find and renumber any duplicate WO numbers">&#128295; Fix duplicate numbers</button>
           <input type="text" id="woSearch" placeholder="&#128269; Search works orders by SKU code..." oninput="renderWOCards()" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;min-width:230px;font-family:Arial,sans-serif">
           <span style="font-size:11px;color:#6b7280;margin-left:auto" id="woSearchCount"></span>
         </div>
@@ -643,14 +644,70 @@ function recalcWOs(){
   });
 }
 
-function nextWORef(){
-  // Find the highest existing WO-#### number and increment
+// Collect every WO reference that has EVER existed - active + completed history.
+// Returns a Set-like object of uppercased refs so we never reissue a number.
+function allUsedWORefs(){
+  var used={};
+  WOs.forEach(function(wo){ if(wo.ref) used[wo.ref.toUpperCase()]=true; });
+  (completedWOs||[]).forEach(function(c){ if(c.ref) used[c.ref.toUpperCase()]=true; });
+  return used;
+}
+// Highest WO-#### number seen anywhere (active or completed)
+function highestWONum(){
   var max=0;
+  function scan(ref){ var m=(ref||'').match(/WO-(\d+)/i); if(m){ var n=parseInt(m[1],10); if(n>max) max=n; } }
+  WOs.forEach(function(wo){ scan(wo.ref); });
+  (completedWOs||[]).forEach(function(c){ scan(c.ref); });
+  return max;
+}
+// Next unique WO reference. Optionally pass an object of refs already reserved
+// in the current batch so a single Create/Bulk run can't collide with itself.
+function nextWORef(reserved){
+  reserved=reserved||{};
+  var used=allUsedWORefs();
+  var n=highestWONum();
+  // Also account for any already reserved in this batch
+  Object.keys(reserved).forEach(function(r){ var m=r.match(/WO-(\d+)/i); if(m){ var v=parseInt(m[1],10); if(v>n) n=v; } });
+  var ref;
+  do { n++; ref='WO-'+String(n).padStart(4,'0'); }
+  while(used[ref.toUpperCase()] || reserved[ref.toUpperCase()]);
+  return ref;
+}
+// One-off cleanup: find any duplicate references across active + completed and
+// renumber the ACTIVE duplicates to fresh unique numbers. History is left as the
+// record of truth; only live works orders get corrected.
+function fixDuplicateWORefs(silent){
+  var seen={}, fixed=[];
+  // Seed with completed history refs (these are the record, keep them)
+  (completedWOs||[]).forEach(function(c){ if(c.ref) seen[c.ref.toUpperCase()]=true; });
+  var reserved={};
   WOs.forEach(function(wo){
-    var m=(wo.ref||'').match(/WO-(\d+)/i);
-    if(m){ var n=parseInt(m[1],10); if(n>max) max=n; }
+    var key=(wo.ref||'').toUpperCase();
+    if(!wo.ref || seen[key] || reserved[key]){
+      // Duplicate (or clashes with history) - assign a fresh unique ref
+      var old=wo.ref||'(blank)';
+      var nw=nextWORef(reserved);
+      reserved[nw.toUpperCase()]=true;
+      seen[nw.toUpperCase()]=true;
+      wo.ref=nw;
+      fixed.push(old+' \u2192 '+nw);
+    } else {
+      seen[key]=true;
+    }
   });
-  return 'WO-'+String(max+1).padStart(4,'0');
+  if(fixed.length){
+    recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); if(typeof refreshWOModal==='function') refreshWOModal(); saveState();
+    if(!silent) alert('Fixed '+fixed.length+' duplicate works order number(s):\n\n'+fixed.join('\n'));
+  } else if(!silent){
+    alert('No duplicate works order numbers found.');
+  }
+  return fixed.length;
+}
+
+// Check whether a (manually typed) reference already exists anywhere
+function woRefExists(ref){
+  if(!ref) return false;
+  return !!allUsedWORefs()[ref.toUpperCase()];
 }
 
 function showBulkForm(){ document.getElementById('bulkForm').classList.remove('hidden'); document.getElementById('bulkTA').focus(); }
@@ -680,7 +737,7 @@ function saveBulk(){ if(!IS_EDITOR) return;
   // Due date = today + 14 days
   var due=new Date(now().getTime()+14*24*60*60*1000);
   var dueStr=d2s(due);
-  var created=0, skipped=0, errors=[];
+  var created=0, skipped=0, errors=[]; var bulkReserved={};
   lines.forEach(function(line,idx){
     line=line.trim();
     if(!line) return;
@@ -694,7 +751,9 @@ function saveBulk(){ if(!IS_EDITOR) return;
     if(code.toLowerCase()==='code'||(parts[0].toLowerCase()==='start')) return; // header row
     if(!start){ skipped++; errors.push('Line '+(idx+1)+': unrecognised date "'+parts[0]+'"'); return; }
     if(!code||qty<=0){ skipped++; errors.push('Line '+(idx+1)+': missing code or qty'); return; }
-    WOs.push({ref:nextWORef(), start:start, due:dueStr, items:[{code:code, qty:qty}]});
+    var bref=nextWORef(bulkReserved);
+    bulkReserved[bref.toUpperCase()]=true;
+    WOs.push({ref:bref, start:start, due:dueStr, items:[{code:code, qty:qty}]});
     created++;
   });
   if(!created){ alert('No valid rows imported.\n\n'+errors.slice(0,8).join('\n')); return; }
@@ -713,6 +772,7 @@ function saveWO(){ if(!IS_EDITOR) return;
   var due=document.getElementById('woDue').value;
   var txt=document.getElementById('woTA').value.trim();
   if(!ref){ alert('Enter a works order reference.'); return; }
+  if(woRefExists(ref)){ alert('Works order reference "'+ref+'" already exists (in the active list or the completed history).\n\nPlease use a different reference — the auto-suggested number is unique.'); return; }
   if(!due){ alert('Enter a due (completion) date.'); return; }
   if(!txt){ alert('Paste or type the SKU/quantity lines.'); return; }
   var lines=txt.split('\n'), items=[];
@@ -1206,9 +1266,11 @@ function doCreateWOs(){ if(!IS_EDITOR) return;
   if(!due){ alert('Enter a due (completion) date.'); return; }
   var er=rows.filter(function(r){return r.included&&r.actWop>0;});
   if(!er.length){ alert('No items to create.'); return; }
-  // Create one works order per SKU, auto-referenced
+  // Create one works order per SKU, auto-referenced (reserve as we go so the batch can't self-collide)
+  var reserved={};
   er.forEach(function(r){
-    var ref=nextWORef();
+    var ref=nextWORef(reserved);
+    reserved[ref.toUpperCase()]=true;
     WOs.push({ref:ref, start:start, due:due, items:[{code:r.code, qty:r.actWop}]});
   });
   closeCreate();
