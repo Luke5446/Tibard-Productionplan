@@ -1223,11 +1223,13 @@ function doCreateWOs(){ if(!IS_EDITOR) return;
     var ref=nextWORef();
     WOs.push({ref:ref, start:start, due:due, items:[{code:r.code, qty:r.actWop}]});
   });
+  // Untick every row now the works orders are made — prevents accidentally creating them again
+  rows.forEach(function(r){ r.included=false; });
   closeCreate();
   // Open the WO tracker panel so they can see the result
   document.getElementById('woPB').classList.add('open');
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); saveState();
-  alert(er.length+' works order(s) created and added to the tracker.');
+  alert(er.length+' works order(s) created and added to the tracker.\n\nThe ticked items have been cleared.');
 }
 
 // ── Mode: editor vs viewer ─────────────────────────────────────────────────
