@@ -559,7 +559,11 @@ function mkRow(code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m){
   var daily=s6m/DAILY_DIVISOR;
   var avail=inStock-onSOP;
   var days=daily>0?(avail/daily):999;
-  var status=daily===0?'healthy':days<=7?'critical':days<=14?'low':days<=28?'ok':'healthy';
+  // No-sales items: don't blanket-mark Healthy. If free stock (stock - SOP) is negative
+  // the item is oversold and must flag Critical so it isn't missed. Positive free stock = Healthy.
+  var status;
+  if(daily===0){ status = avail<0 ? 'critical' : 'healthy'; }
+  else { status = days<=7?'critical':days<=14?'low':days<=28?'ok':'healthy'; }
   return { code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m,
     dailyUsage:daily, available:avail, daysOfStock:days, status,
     onWOP:0, pipeline:0, wopRec:0, actWop:0, included:false, manAdj:false };
@@ -607,7 +611,9 @@ function recalcPipeline(){
     var effAvail = (r.inStock - r.onSOP) + r.pipeline;
     r.available = effAvail;
     r.daysOfStock = r.dailyUsage>0 ? (effAvail/r.dailyUsage) : 999;
-    r.status = r.dailyUsage===0?'healthy':r.daysOfStock<=7?'critical':r.daysOfStock<=14?'low':r.daysOfStock<=28?'ok':'healthy';
+    // No-sales items: flag Critical if effective free stock is negative (oversold), else Healthy.
+    if(r.dailyUsage===0){ r.status = effAvail<0 ? 'critical' : 'healthy'; }
+    else { r.status = r.daysOfStock<=7?'critical':r.daysOfStock<=14?'low':r.daysOfStock<=28?'ok':'healthy'; }
   });
 }
 
@@ -1120,6 +1126,10 @@ function rowHTML(r){
   var days=r.daysOfStock, ds=days>=999?'∞':days.toFixed(0);
   var pct=Math.min(days/BUFFER_DAYS,1)*100;
   var bc=days<=7?'#ef4444':days<=14?'#f59e0b':days<=28?'#3b82f6':'#10b981';
+  // No-sales item that's oversold (negative free stock): show the shortfall in red, not a green ∞
+  var noSalesOversold = (r.dailyUsage===0 && r.available<0);
+  if(noSalesOversold){ ds=r.available.toFixed(0); pct=0; bc='#ef4444'; }
+  else if(r.dailyUsage===0){ ds='∞'; }
   var id=sid(r.code);
   var statusLbl={critical:'Critical',low:'Low',ok:'OK',healthy:'Healthy'};
   var pipeFlag=r.pipeline>0?'<div style="font-size:9px;color:#0369a1;font-weight:600;margin-top:2px">&#9201; Awaiting Sage</div>':'';
