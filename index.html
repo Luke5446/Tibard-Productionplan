@@ -1019,11 +1019,10 @@ function updateStats(){
     if(rows.length){
       var okHealthy=nOk+nHea;
       var pct=rows.length>0?(okHealthy/rows.length*100):0;
-      var pctCol=pct>=95?'#065f46':pct>=90?'#92400e':'#b91c1c';
+      var pctCol=pct>93?'#065f46':'#b91c1c';   // green if over 93%, red if below
       sc.innerHTML=rows.length.toLocaleString()+' SKUs'
         +' &nbsp;<span style="font-weight:600;color:#4b5563">|</span>&nbsp; '
-        +'<span style="color:'+pctCol+'">OK + Healthy: <strong>'+okHealthy.toLocaleString()+'</strong> ('+pct.toFixed(1)+'%)</span>'
-        +'<span style="font-size:11px;color:#6b7280;font-weight:400"> &nbsp;target &#8805;95%</span>';
+        +'<span style="color:'+pctCol+'"><strong>'+pct.toFixed(0)+'% Good</strong></span>';
     } else sc.textContent='';
   }
 
