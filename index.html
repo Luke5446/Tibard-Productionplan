@@ -1005,19 +1005,47 @@ function exportCompleted(){
 
 // ── Stats / tiles ──────────────────────────────────────────────────────────
 function updateStats(){
+  // Count SKUs in a status category that also have a WOP raised (are on a works order)
+  function withWOP(statusKey){ return rows.filter(function(r){ return r.status===statusKey && r.onWOP>0; }).length; }
+
+  var nCrit=rows.filter(function(r){return r.status==='critical';}).length;
+  var nLow =rows.filter(function(r){return r.status==='low';}).length;
+  var nOk  =rows.filter(function(r){return r.status==='ok';}).length;
+  var nHea =rows.filter(function(r){return r.status==='healthy';}).length;
+
+  // ── SKU count + OK/Healthy % (target 95%) ──
   var sc=document.getElementById('skuCount');
-  if(sc) sc.textContent=rows.length?rows.length.toLocaleString()+' SKUs':'';
+  if(sc){
+    if(rows.length){
+      var okHealthy=nOk+nHea;
+      var pct=rows.length>0?(okHealthy/rows.length*100):0;
+      var pctCol=pct>=95?'#065f46':pct>=90?'#92400e':'#b91c1c';
+      sc.innerHTML=rows.length.toLocaleString()+' SKUs'
+        +' &nbsp;<span style="font-weight:600;color:#4b5563">|</span>&nbsp; '
+        +'<span style="color:'+pctCol+'">OK + Healthy: <strong>'+okHealthy.toLocaleString()+'</strong> ('+pct.toFixed(1)+'%)</span>'
+        +'<span style="font-size:11px;color:#6b7280;font-weight:400"> &nbsp;target &#8805;95%</span>';
+    } else sc.textContent='';
+  }
+
+  // ── On a works order: on-time vs late (late = due date passed) ──
+  var onTimeWO=0, lateWO=0;
+  WOs.forEach(function(wo){
+    if(daysUntil(wo.due)<=0 && (new Date(wo.due) < now())) lateWO++;
+    else onTimeWO++;
+  });
+
   var tiles=[
-    {key:'critical', label:'Critical (≤7 days)', color:'#b91c1c', n:rows.filter(function(r){return r.status==='critical';}).length},
-    {key:'low',      label:'Low (7–14 days)',    color:'#92400e', n:rows.filter(function(r){return r.status==='low';}).length},
-    {key:'ok',       label:'OK (14–28 days)',    color:'#1e40af', n:rows.filter(function(r){return r.status==='ok';}).length},
-    {key:'healthy',  label:'Healthy (28+ days)', color:'#065f46', n:rows.filter(function(r){return r.status==='healthy';}).length},
+    {key:'critical', label:'Critical (≤7 days)', color:'#b91c1c', n:nCrit, sub:withWOP('critical')+' on a WOP'},
+    {key:'low',      label:'Low (7–14 days)',    color:'#92400e', n:nLow,  sub:withWOP('low')+' on a WOP'},
+    {key:'ok',       label:'OK (14–28 days)',    color:'#1e40af', n:nOk,   sub:withWOP('ok')+' on a WOP'},
+    {key:'healthy',  label:'Healthy (28+ days)', color:'#065f46', n:nHea,  sub:withWOP('healthy')+' on a WOP'},
     {key:'needswo',  label:'Needs making',       color:'#7A1F3D', n:rows.filter(function(r){return r.wopRec>0;}).length},
-    {key:'onwop',    label:'On a works order',   color:'#6d28d9', n:rows.filter(function(r){return r.onWOP>0;}).length},
+    {key:'onwop',    label:'On a works order',   color:'#6d28d9', n:rows.filter(function(r){return r.onWOP>0;}).length, sub:'<span style="color:#065f46">'+onTimeWO+' on time</span> / <span style="color:#b91c1c">'+lateWO+' late</span>'},
   ];
   document.getElementById('statsBar').innerHTML=tiles.map(function(t){
     var active=(activeTile===t.key)?' tile-active':'';
-    return '<div class="stat tile'+active+'" onclick="tileFilter(\''+t.key+'\')"><div class="stat-lbl">'+t.label+'</div><div class="stat-val" style="color:'+t.color+'">'+t.n+'</div></div>';
+    var subH=t.sub?'<div style="font-size:10px;color:#6b7280;margin-top:2px;font-weight:600">'+t.sub+'</div>':'';
+    return '<div class="stat tile'+active+'" onclick="tileFilter(\''+t.key+'\')"><div class="stat-lbl">'+t.label+'</div><div class="stat-val" style="color:'+t.color+'">'+t.n+'</div>'+subH+'</div>';
   }).join('');
 }
 function tileFilter(key){
