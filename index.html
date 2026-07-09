@@ -420,6 +420,7 @@ body.planner-mode .planner-wrap{display:block}
         <option value="">All items</option>
         <option value="needswo">Needs making (WOP REC > 0)</option>
         <option value="onwop">On a works order</option>
+        <option value="latewop">On a LATE works order</option>
         <option value="onsop">Has On SOP</option>
       </select>
       <button class="btn" onclick="clearFilt()" style="font-size:11px;padding:4px 9px">&#10005; Clear filters</button>
@@ -640,11 +641,14 @@ function recalcQtys(){
 
 // ── Works Orders ───────────────────────────────────────────────────────────
 function recalcWOs(){
-  rows.forEach(function(r){ r.onWOP=0; });
+  rows.forEach(function(r){ r.onWOP=0; r.onLateWOP=false; });
   WOs.forEach(function(wo){
+    // A live works order is "late" if its due date has passed (completed WOs move to history,
+    // so any active WO past due is late and not yet complete).
+    var isLate=(new Date(wo.due) < now());
     wo.items.forEach(function(it){
       var r=rows.find(function(x){return x.code===it.code;});
-      if(r) r.onWOP+=it.qty;
+      if(r){ r.onWOP+=it.qty; if(isLate) r.onLateWOP=true; }
     });
   });
 }
@@ -1026,20 +1030,19 @@ function updateStats(){
     } else sc.textContent='';
   }
 
-  // ── On a works order: on-time vs late (late = due date passed) ──
-  var onTimeWO=0, lateWO=0;
-  WOs.forEach(function(wo){
-    if(daysUntil(wo.due)<=0 && (new Date(wo.due) < now())) lateWO++;
-    else onTimeWO++;
-  });
+  // Overstocked = Healthy SKUs with over 182 days (6 months) of stock
+  var nOverstock=rows.filter(function(r){ return r.status==='healthy' && r.daysOfStock>182; }).length;
+  // SKUs on a late live works order
+  var nLateWOP=rows.filter(function(r){ return r.onLateWOP; }).length;
 
   var tiles=[
     {key:'critical', label:'Critical (≤7 days)', color:'#b91c1c', n:nCrit, sub:withWOP('critical')+' on a WOP'},
     {key:'low',      label:'Low (7–14 days)',    color:'#92400e', n:nLow,  sub:withWOP('low')+' on a WOP'},
     {key:'ok',       label:'OK (14–28 days)',    color:'#1e40af', n:nOk,   sub:withWOP('ok')+' on a WOP'},
-    {key:'healthy',  label:'Healthy (28+ days)', color:'#065f46', n:nHea,  sub:withWOP('healthy')+' on a WOP'},
+    {key:'healthy',  label:'Healthy (28+ days)', color:'#065f46', n:nHea,  sub:'<span style="color:#b45309">'+nOverstock+' overstocked (6m+)</span>'},
     {key:'needswo',  label:'Needs making',       color:'#7A1F3D', n:rows.filter(function(r){return r.wopRec>0;}).length},
-    {key:'onwop',    label:'On a works order',   color:'#6d28d9', n:rows.filter(function(r){return r.onWOP>0;}).length, sub:'<span style="color:#065f46">'+onTimeWO+' on time</span> / <span style="color:#b91c1c">'+lateWO+' late</span>'},
+    {key:'onwop',    label:'On a works order',   color:'#6d28d9', n:rows.filter(function(r){return r.onWOP>0;}).length},
+    {key:'latewop',  label:'Late WOPs',          color:'#b91c1c', n:nLateWOP},
   ];
   document.getElementById('statsBar').innerHTML=tiles.map(function(t){
     var active=(activeTile===t.key)?' tile-active':'';
@@ -1056,6 +1059,7 @@ function tileFilter(key){
   if(['critical','low','ok','healthy'].indexOf(key)>=0) document.getElementById('sfilt').value=key;
   else if(key==='needswo') document.getElementById('ofilt').value='needswo';
   else if(key==='onwop') document.getElementById('ofilt').value='onwop';
+  else if(key==='latewop') document.getElementById('ofilt').value='latewop';
   renderTable(); updateStats();
 }
 
@@ -1099,6 +1103,7 @@ function resetWops(){ if(!IS_EDITOR) return;
     if(sf&&r.status!==sf) return;
     if(of==='needswo'&&r.wopRec<=0) return;
     if(of==='onwop'&&r.onWOP<=0) return;
+    if(of==='latewop'&&!r.onLateWOP) return;
     if(of==='onsop'&&r.onSOP<=0) return;
     r.actWop=r.wopRec; r.manAdj=false; n++;
   });
@@ -1114,6 +1119,7 @@ function tickAll(state){ if(!IS_EDITOR) return;
     if(sf&&r.status!==sf) return;
     if(of==='needswo'&&r.wopRec<=0) return;
     if(of==='onwop'&&r.onWOP<=0) return;
+    if(of==='latewop'&&!r.onLateWOP) return;
     if(of==='onsop'&&r.onSOP<=0) return;
     r.included=state;
   });
@@ -1133,6 +1139,7 @@ function renderTable(){
     if(sf&&r.status!==sf) return false;
     if(of==='needswo'&&r.wopRec<=0) return false;
     if(of==='onwop'&&r.onWOP<=0) return false;
+    if(of==='latewop'&&!r.onLateWOP) return false;
     if(of==='onsop'&&r.onSOP<=0) return false;
     return true;
   });
