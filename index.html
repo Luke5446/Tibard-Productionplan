@@ -348,6 +348,8 @@ body.planner-mode .planner-wrap{display:block}
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
           <button class="btn btn-p edit-only" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
           <button class="btn edit-only" style="font-size:12px" onclick="fixDuplicateWORefs()" title="Find and renumber any duplicate WO numbers">&#128295; Fix duplicate numbers</button>
+          <button class="btn" id="prioSortBtn" style="font-size:12px" onclick="togglePrioritySort()" title="Order the works orders by most urgent stock first">&#128293; Sort by priority</button>
+          <button class="btn" style="font-size:12px" onclick="openPriorityList()" title="Ranked list of live works orders by urgency">&#128203; Priority list</button>
           <input type="text" id="woSearch" placeholder="&#128269; Search works orders by SKU code..." oninput="renderWOCards()" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;min-width:230px;font-family:Arial,sans-serif">
           <span style="font-size:11px;color:#6b7280;margin-left:auto" id="woSearchCount"></span>
         </div>
@@ -409,7 +411,7 @@ body.planner-mode .planner-wrap{display:block}
 
     <!-- Filters -->
     <div class="filters">
-      <input type="text" id="srch" placeholder="&#128269; Search code or description..." oninput="renderTable()">
+      <input type="text" id="srch" placeholder="&#128269; Search code or description (e.g. OHAPP black)..." oninput="renderTable()">
       <select id="sfilt" onchange="renderTable()">
         <option value="">All items</option>
         <option value="critical">Critical (≤7 days)</option>
@@ -854,6 +856,77 @@ function recordCompleted(wo, it){
   });
 }
 
+var woPrioritySort = false;   // when true, WO cards sort by stock urgency
+
+// Rank a works order by its MOST URGENT SKU: critical first, then low, then days of stock.
+// Returns {rank, days, code, status} of the most urgent item on the WO.
+function woUrgency(wo){
+  var statusRank={critical:0, low:1, ok:2, healthy:3};
+  var best=null;
+  wo.items.forEach(function(it){
+    var r=rows.find(function(x){return x.code===it.code;});
+    if(!r) return;
+    var rk=statusRank[r.status]!==undefined?statusRank[r.status]:3;
+    var dy=r.daysOfStock;
+    if(best===null || rk<best.rank || (rk===best.rank && dy<best.days)){
+      best={rank:rk, days:dy, code:r.code, status:r.status};
+    }
+  });
+  return best || {rank:9, days:9999, code:'', status:''};
+}
+
+// Ranked popup: all live WOs ordered by urgency of their most urgent SKU
+function openPriorityList(){
+  if(!WOs.length){ alert('No live works orders to prioritise.'); return; }
+  var ranked=WOs.map(function(wo,i){ return {wo:wo, u:woUrgency(wo)}; });
+  ranked.sort(function(a,b){
+    if(a.u.rank!==b.u.rank) return a.u.rank-b.u.rank;
+    return a.u.days-b.u.days;
+  });
+  document.getElementById('rwTitle').textContent='Works Order Priority — make first at the top';
+  var html='<p style="font-size:12px;color:#4b5563;margin-bottom:10px">Ranked by each works order\'s most urgent SKU: Critical stock first, then Low, then lowest days of stock. '+ranked.length+' live works order(s).</p>';
+  html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="main" style="min-width:640px"><thead><tr>'
+    +'<th style="text-align:left">Priority</th><th style="text-align:left">WO Ref</th>'
+    +'<th style="text-align:left">Most urgent SKU</th><th style="text-align:right">Days stock</th>'
+    +'<th style="text-align:left">Status</th><th style="text-align:right">Units on WO</th>'
+    +'<th style="text-align:left">Due</th><th style="text-align:left">Due status</th>'
+    +'</tr></thead><tbody>';
+  ranked.forEach(function(o,pos){
+    var wo=o.wo, u=o.u;
+    var scol=u.rank===0?'#b91c1c':u.rank===1?'#92400e':u.rank===2?'#1e40af':'#065f46';
+    var slbl=u.rank===0?'Critical':u.rank===1?'Low':u.rank===2?'OK':'Healthy';
+    var tot=Math.round(wo.items.reduce(function(s,it){return s+it.qty;},0));
+    var late=(new Date(wo.due)<now());
+    var dueH=late?'<span style="color:#b91c1c;font-weight:700">LATE</span>':daysUntil(wo.due).toFixed(0)+' days away';
+    var dysH=u.days>=999?'&mdash;':u.days.toFixed(0);
+    var rowBg=pos===0?'background:#fef2f2;':(u.rank===0?'background:#fff5f5;':'');
+    html+='<tr style="'+rowBg+'">'
+      +'<td style="font-weight:700;font-size:14px;color:'+scol+'">#'+(pos+1)+'</td>'
+      +'<td style="font-family:monospace;font-size:11px;font-weight:700">'+esc(wo.ref)+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+esc(u.code)+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:'+scol+'">'+dysH+'</td>'
+      +'<td><span class="badge" style="background:'+(u.rank===0?'#fde8e8':u.rank===1?'#fef3c7':'#d1fae5')+';color:'+scol+'">'+slbl+'</span></td>'
+      +'<td style="text-align:right">'+tot.toLocaleString()+'</td>'
+      +'<td>'+fmtD(wo.due)+'</td>'
+      +'<td>'+dueH+'</td>'
+      +'</tr>';
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('rwContent').innerHTML=html;
+  document.getElementById('rwModal').classList.add('open');
+}
+
+function togglePrioritySort(){
+  woPrioritySort=!woPrioritySort;
+  var btn=document.getElementById('prioSortBtn');
+  if(btn){
+    btn.style.background=woPrioritySort?'#7A1F3D':'';
+    btn.style.color=woPrioritySort?'#fff':'';
+    btn.innerHTML=woPrioritySort?'&#9989; Priority order ON':'&#128293; Sort by priority';
+  }
+  renderWOCards();
+}
+
 function renderWOCards(){
   var w=document.getElementById('woCards');
   var srch=(document.getElementById('woSearch')?document.getElementById('woSearch').value:'').toLowerCase().trim();
@@ -864,17 +937,32 @@ function renderWOCards(){
         || (o.wo.ref||'').toLowerCase().indexOf(srch)>=0;
     });
   }
+  if(woPrioritySort){
+    list.sort(function(a,b){
+      var ua=woUrgency(a.wo), ub=woUrgency(b.wo);
+      if(ua.rank!==ub.rank) return ua.rank-ub.rank;   // critical first, then low...
+      return ua.days-ub.days;                          // then lowest days of stock
+    });
+  }
   var sc=document.getElementById('woSearchCount');
   if(sc) sc.textContent = WOs.length ? (srch? list.length+' of '+WOs.length+' WOs' : WOs.length+' works orders') : '';
   if(!WOs.length){ w.innerHTML='<p style="font-size:12px;color:#6b7280;padding:8px">No works orders yet. Use Add or Bulk import above.</p>'; return; }
   if(!list.length){ w.innerHTML='<p style="font-size:12px;color:#6b7280;padding:8px">No works orders contain "'+esc(srch)+'".</p>'; return; }
-  w.innerHTML=list.map(function(o){
+  w.innerHTML=list.map(function(o,pos){
     var wo=o.wo, i=o.i;
     var dys=daysUntil(wo.due);
     var wl=dys<1?'Due now':dys.toFixed(0)+' days away';
     var wbg=dys<7?'#fde8e8;color:#b91c1c':dys<14?'#fef3c7;color:#92400e':'#d1fae5;color:#065f46';
     var tot=Math.round(wo.items.reduce(function(s,it){return s+it.qty;},0));
-    return '<div class="woc" onclick="openWOModal('+i+')" style="cursor:pointer">'
+    var prioH='';
+    if(woPrioritySort){
+      var u=woUrgency(wo);
+      var pcol=u.rank===0?'#b91c1c':u.rank===1?'#92400e':'#065f46';
+      var plbl=u.rank===0?'CRITICAL':u.rank===1?'LOW':'OK';
+      var pdays=(u.days>=999?'':' &middot; '+u.days.toFixed(0)+'d stock');
+      prioH='<div style="font-size:10px;font-weight:700;color:#fff;background:'+pcol+';border-radius:4px;padding:2px 7px;margin-bottom:4px;display:inline-block">#'+(pos+1)+' '+plbl+pdays+'</div><br>';
+    }
+    return '<div class="woc" onclick="openWOModal('+i+')" style="cursor:pointer">'+prioH
       +'<button class="woc-del" onclick="event.stopPropagation();delWO('+i+')" title="Remove WO (without completing)">&#10005;</button>'
       +'<button class="woc-edit" onclick="event.stopPropagation();editWODate('+i+')" title="Edit dates &amp; quantities">&#9998;</button>'
       +'<div class="woc-ref">'+esc(wo.ref)+'</div>'
@@ -1146,8 +1234,12 @@ function resetWops(){ if(!IS_EDITOR) return;
   var sf=document.getElementById('sfilt').value;
   var of=document.getElementById('ofilt').value;
   var n=0;
+  var srchWords=srch.split(/\s+/).filter(function(w){return w!=='';});
   rows.forEach(function(r){
-    if(srch&&r.code.toLowerCase().indexOf(srch)<0&&r.desc.toLowerCase().indexOf(srch)<0) return;
+    if(srchWords.length){
+      var hay=(r.code+' '+r.desc).toLowerCase();
+      if(!srchWords.every(function(w){ return hay.indexOf(w)>=0; })) return;
+    }
     if(sf&&r.status!==sf) return;
     if(of==='needswo'&&r.wopRec<=0) return;
     if(of==='onwop'&&r.onWOP<=0) return;
@@ -1162,8 +1254,12 @@ function tickAll(state){ if(!IS_EDITOR) return;
   var srch=(document.getElementById('srch').value||'').toLowerCase();
   var sf=document.getElementById('sfilt').value;
   var of=document.getElementById('ofilt').value;
+  var srchWords=srch.split(/\s+/).filter(function(w){return w!=='';});
   rows.forEach(function(r){
-    if(srch&&r.code.toLowerCase().indexOf(srch)<0&&r.desc.toLowerCase().indexOf(srch)<0) return;
+    if(srchWords.length){
+      var hay=(r.code+' '+r.desc).toLowerCase();
+      if(!srchWords.every(function(w){ return hay.indexOf(w)>=0; })) return;
+    }
     if(sf&&r.status!==sf) return;
     if(of==='needswo'&&r.wopRec<=0) return;
     if(of==='onwop'&&r.onWOP<=0) return;
@@ -1182,8 +1278,14 @@ function renderTable(){
   var srch=(document.getElementById('srch').value||'').toLowerCase();
   var sf=document.getElementById('sfilt').value;
   var of=document.getElementById('ofilt').value;
+  // Multi-word search: every word must appear in the code or description (AND match).
+  // e.g. "OHAPP black" finds all black items in that style; part codes + colours work.
+  var srchWords=srch.split(/\s+/).filter(function(w){return w!=='';});
   var data=rows.filter(function(r){
-    if(srch&&r.code.toLowerCase().indexOf(srch)<0&&r.desc.toLowerCase().indexOf(srch)<0) return false;
+    if(srchWords.length){
+      var hay=(r.code+' '+r.desc).toLowerCase();
+      if(!srchWords.every(function(w){ return hay.indexOf(w)>=0; })) return false;
+    }
     if(sf&&r.status!==sf) return false;
     if(of==='needswo'&&r.wopRec<=0) return false;
     if(of==='onwop'&&r.onWOP<=0) return false;
