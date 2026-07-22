@@ -984,7 +984,8 @@ function openDueDateRisk(){
       +'<th style="text-align:right">Gap</th><th style="text-align:left">Due by (latest safe)</th>'
       +'</tr></thead><tbody>';
     risks.forEach(function(k){
-      var runOut=new Date(now().getTime()+k.days*24*60*60*1000);
+      // If stock is already negative/out, the WO is needed NOW - never suggest a date in the past
+      var runOut=k.days<=0 ? now() : new Date(now().getTime()+k.days*24*60*60*1000);
       var gapCol=k.gap>14?'#b91c1c':k.gap>7?'#92400e':'#1e40af';
       html+='<tr'+(k.days<=7?' style="background:#fef2f2"':'')+'>'
         +'<td style="font-family:monospace;font-size:11px;font-weight:700">'+esc(k.ref)+'</td>'
@@ -993,7 +994,7 @@ function openDueDateRisk(){
         +'<td style="text-align:right;font-weight:700;color:'+(k.days<=7?'#b91c1c':'#92400e')+'">'+k.days.toFixed(0)+' days</td>'
         +'<td>'+fmtD(k.due)+'</td>'
         +'<td style="text-align:right;font-weight:700;color:'+gapCol+'">'+k.gap.toFixed(0)+' days late</td>'
-        +'<td style="font-weight:700;color:#065f46">'+runOut.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'</td>'
+        +'<td style="font-weight:700;color:'+(k.days<=0?'#b91c1c':'#065f46')+'">'+(k.days<=0?'TODAY — already out':runOut.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}))+'</td>'
         +'</tr>';
     });
     html+='</tbody></table></div>';
