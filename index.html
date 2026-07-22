@@ -347,9 +347,9 @@ body.planner-mode .planner-wrap{display:block}
         <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Add live works orders. The due date feeds into the days-of-stock projection. Click a WO tile to see its contents in a popup. Delete individual SKUs as manufacturing completes.</p>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
           <button class="btn btn-p edit-only" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
-          <button class="btn edit-only" style="font-size:12px" onclick="fixDuplicateWORefs()" title="Find and renumber any duplicate WO numbers">&#128295; Fix duplicate numbers</button>
           <button class="btn" id="prioSortBtn" style="font-size:12px" onclick="togglePrioritySort()" title="Order the works orders by most urgent stock first">&#128293; Sort by priority</button>
           <button class="btn" style="font-size:12px" onclick="openPriorityList()" title="Ranked list of live works orders by urgency">&#128203; Priority list</button>
+          <button class="btn" style="font-size:12px" onclick="openDueDateRisk()" title="Live WOs where stock runs out before the due date">&#9888; Due date risk</button>
           <input type="text" id="woSearch" placeholder="&#128269; Search works orders by SKU code..." oninput="renderWOCards()" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;min-width:230px;font-family:Arial,sans-serif">
           <span style="font-size:11px;color:#6b7280;margin-left:auto" id="woSearchCount"></span>
         </div>
@@ -875,16 +875,47 @@ function woUrgency(wo){
   return best || {rank:9, days:9999, code:'', status:''};
 }
 
+// Work out which live WOs are actually NEEDED per code: WOs count in ref order
+// (lowest number first); the first WO for a code always shows; later ones show only
+// while the cumulative stock position is still 14 days or less (Critical or Low).
+// Surplus WOs beyond that are hidden from the priority list.
+function neededWORefs(){
+  var needed={};   // wo.ref -> true
+  // Group WO lines by code
+  var byCode={};
+  WOs.forEach(function(wo){
+    wo.items.forEach(function(it){
+      (byCode[it.code]=byCode[it.code]||[]).push({ref:wo.ref, qty:it.qty});
+    });
+  });
+  function refNum(ref){ var m=(ref||'').match(/WO-(\d+)/i); return m?parseInt(m[1],10):Number.MAX_SAFE_INTEGER; }
+  Object.keys(byCode).forEach(function(code){
+    var list=byCode[code].sort(function(a,b){ return refNum(a.ref)-refNum(b.ref) || (a.ref||'').localeCompare(b.ref||''); });
+    var r=rows.find(function(x){return x.code===code;});
+    if(!r){ if(list.length) needed[list[0].ref]=true; return; }
+    var cum=r.available;
+    list.forEach(function(entry,idx){
+      var cumDays=r.dailyUsage>0?(cum/r.dailyUsage):999;
+      if(idx===0 || cumDays<=14){ needed[entry.ref]=true; }
+      cum+=entry.qty;
+    });
+  });
+  return needed;
+}
+
 // Ranked popup: all live WOs ordered by urgency of their most urgent SKU
 function openPriorityList(){
   if(!WOs.length){ alert('No live works orders to prioritise.'); return; }
-  var ranked=WOs.map(function(wo,i){ return {wo:wo, u:woUrgency(wo)}; });
+  var needed=neededWORefs();
+  var all=WOs.map(function(wo,i){ return {wo:wo, u:woUrgency(wo)}; });
+  var ranked=all.filter(function(o){ return needed[o.wo.ref]; });
+  var hiddenCount=all.length-ranked.length;
   ranked.sort(function(a,b){
     if(a.u.rank!==b.u.rank) return a.u.rank-b.u.rank;
     return a.u.days-b.u.days;
   });
   document.getElementById('rwTitle').textContent='Works Order Priority — make first at the top';
-  var html='<p style="font-size:12px;color:#4b5563;margin-bottom:10px">Ranked by each works order\'s most urgent SKU: Critical stock first, then Low, then lowest days of stock. '+ranked.length+' live works order(s).</p>';
+  var html='<p style="font-size:12px;color:#4b5563;margin-bottom:10px">Ranked by each works order\'s most urgent SKU: Critical stock first, then Low, then lowest days of stock. '+ranked.length+' works order(s) shown'+(hiddenCount>0?' &mdash; <span style="color:#6b7280">'+hiddenCount+' surplus WO(s) hidden (earlier WOs for the same code already lift it above 14 days cover)</span>':'')+'.</p>';
   html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="main" style="min-width:640px"><thead><tr>'
     +'<th style="text-align:left">Priority</th><th style="text-align:left">WO Ref</th>'
     +'<th style="text-align:left">Most urgent SKU</th><th style="text-align:right">Days stock</th>'
@@ -912,6 +943,61 @@ function openPriorityList(){
       +'</tr>';
   });
   html+='</tbody></table></div>';
+  document.getElementById('rwContent').innerHTML=html;
+  document.getElementById('rwModal').classList.add('open');
+}
+
+// Flag live WOs whose due date is AFTER the stock runs out - these need due dates
+// pulling forward. Accounts for earlier-due WOs of the same code landing first.
+function openDueDateRisk(){
+  if(!WOs.length){ alert('No live works orders to check.'); return; }
+  var risks=[];
+  WOs.forEach(function(wo){
+    var dueDays=(new Date(wo.due)-now())/(1000*60*60*24);   // can be negative if already late
+    wo.items.forEach(function(it){
+      var r=rows.find(function(x){return x.code===it.code;});
+      if(!r || r.dailyUsage<=0) return;   // no-sales items can't run out by usage
+      // Stock available to cover the wait = current available + any earlier-due WOs for this code
+      var incomingBefore=0;
+      WOs.forEach(function(other){
+        if(other===wo) return;
+        if(new Date(other.due) < new Date(wo.due)){
+          other.items.forEach(function(oit){ if(oit.code===it.code) incomingBefore+=oit.qty; });
+        }
+      });
+      var runOutDays=(r.available+incomingBefore)/r.dailyUsage;
+      if(runOutDays < dueDays){
+        risks.push({ref:wo.ref, code:it.code, desc:r.desc, days:runOutDays, due:wo.due, dueDays:dueDays, gap:dueDays-runOutDays});
+      }
+    });
+  });
+  document.getElementById('rwTitle').textContent='\u26A0 Due Date Risk — stock runs out before the WO lands';
+  var html;
+  if(!risks.length){
+    html='<p style="font-size:13px;color:#065f46;font-weight:600;padding:1rem;text-align:center">\u2705 No risks — every live works order is due before its stock runs out.</p>';
+  } else {
+    risks.sort(function(a,b){ return a.days-b.days; });   // soonest run-out first
+    html='<p style="font-size:12px;color:#4b5563;margin-bottom:10px">'+risks.length+' works order line(s) where stock runs out <strong>before</strong> the due date. Pull these due dates forward (the "Due by" column shows the latest safe date). Earlier-due WOs for the same code are already counted as incoming.</p>';
+    html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="main" style="min-width:700px"><thead><tr>'
+      +'<th style="text-align:left">WO Ref</th><th style="text-align:left">Code</th><th style="text-align:left">Description</th>'
+      +'<th style="text-align:right">Stock runs out in</th><th style="text-align:left">Current due</th>'
+      +'<th style="text-align:right">Gap</th><th style="text-align:left">Due by (latest safe)</th>'
+      +'</tr></thead><tbody>';
+    risks.forEach(function(k){
+      var runOut=new Date(now().getTime()+k.days*24*60*60*1000);
+      var gapCol=k.gap>14?'#b91c1c':k.gap>7?'#92400e':'#1e40af';
+      html+='<tr'+(k.days<=7?' style="background:#fef2f2"':'')+'>'
+        +'<td style="font-family:monospace;font-size:11px;font-weight:700">'+esc(k.ref)+'</td>'
+        +'<td style="font-family:monospace;font-size:11px">'+esc(k.code)+'</td>'
+        +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(k.desc)+'">'+esc(k.desc)+'</td>'
+        +'<td style="text-align:right;font-weight:700;color:'+(k.days<=7?'#b91c1c':'#92400e')+'">'+k.days.toFixed(0)+' days</td>'
+        +'<td>'+fmtD(k.due)+'</td>'
+        +'<td style="text-align:right;font-weight:700;color:'+gapCol+'">'+k.gap.toFixed(0)+' days late</td>'
+        +'<td style="font-weight:700;color:#065f46">'+runOut.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'</td>'
+        +'</tr>';
+    });
+    html+='</tbody></table></div>';
+  }
   document.getElementById('rwContent').innerHTML=html;
   document.getElementById('rwModal').classList.add('open');
 }
