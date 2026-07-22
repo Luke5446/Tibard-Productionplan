@@ -977,7 +977,7 @@ function openDueDateRisk(){
     html='<p style="font-size:13px;color:#065f46;font-weight:600;padding:1rem;text-align:center">\u2705 No risks — every live works order is due before its stock runs out.</p>';
   } else {
     risks.sort(function(a,b){ return a.days-b.days; });   // soonest run-out first
-    html='<p style="font-size:12px;color:#4b5563;margin-bottom:10px">'+risks.length+' works order line(s) where stock runs out <strong>before</strong> the due date. Pull these due dates forward (the "Due by" column shows the latest safe date). Earlier-due WOs for the same code are already counted as incoming.</p>';
+    html='<p style="font-size:12px;color:#4b5563;margin-bottom:10px">'+risks.length+' works order line(s) where stock runs out <strong>before</strong> the due date. Pull these due dates forward (the "Due by" column shows the latest safe date). <strong>Click a row to open that works order and edit its dates.</strong> Earlier-due WOs for the same code are already counted as incoming.</p>';
     html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="main" style="min-width:700px"><thead><tr>'
       +'<th style="text-align:left">WO Ref</th><th style="text-align:left">Code</th><th style="text-align:left">Description</th>'
       +'<th style="text-align:right">Stock runs out in</th><th style="text-align:left">Current due</th>'
@@ -987,7 +987,8 @@ function openDueDateRisk(){
       // If stock is already negative/out, the WO is needed NOW - never suggest a date in the past
       var runOut=k.days<=0 ? now() : new Date(now().getTime()+k.days*24*60*60*1000);
       var gapCol=k.gap>14?'#b91c1c':k.gap>7?'#92400e':'#1e40af';
-      html+='<tr'+(k.days<=7?' style="background:#fef2f2"':'')+'>'
+      var woIdx=WOs.findIndex(function(w){ return w.ref===k.ref; });
+      html+='<tr onclick="openWOFromRisk('+woIdx+')" style="cursor:pointer;'+(k.days<=7?'background:#fef2f2':'')+'" title="Click to open this works order and edit its dates">'
         +'<td style="font-family:monospace;font-size:11px;font-weight:700">'+esc(k.ref)+'</td>'
         +'<td style="font-family:monospace;font-size:11px">'+esc(k.code)+'</td>'
         +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(k.desc)+'">'+esc(k.desc)+'</td>'
@@ -1069,9 +1070,18 @@ function openWOModal(i){
   document.getElementById('woModalTitle').textContent=wo.ref+' — Contents';
   var dueDays=daysUntil(wo.due);
   var tot=Math.round(wo.items.reduce(function(s,it){return s+it.qty;},0));
+  var dateH;
+  if(IS_EDITOR){
+    dateH='<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap">'
+      +'Start: <input type="date" id="woModalStart" value="'+(wo.start||'')+'" style="font-size:11px;padding:2px 4px;border:1px solid #c8d0df;border-radius:4px;font-family:Arial,sans-serif">'
+      +' Due: <input type="date" id="woModalDue" value="'+(wo.due||'')+'" style="font-size:11px;padding:2px 4px;border:1px solid #a13a5c;border-radius:4px;font-family:Arial,sans-serif">'
+      +'<button class="btn btn-p" style="font-size:10px;padding:3px 9px" onclick="saveWOModalDates('+i+')">&#10003; Save dates</button>'
+      +'</span>';
+  } else {
+    dateH=(wo.start?'Start: <strong>'+fmtD(wo.start)+'</strong> &nbsp;|&nbsp; ':'')+'Due: <strong>'+fmtD(wo.due)+'</strong>';
+  }
   document.getElementById('woModalMeta').innerHTML=
-    (wo.start?'Start: <strong>'+fmtD(wo.start)+'</strong> &nbsp;|&nbsp; ':'')
-    +'Due: <strong>'+fmtD(wo.due)+'</strong> &nbsp;|&nbsp; '
+    dateH+' &nbsp;|&nbsp; '
     +'<strong>'+wo.items.length+'</strong> SKU(s) &nbsp;|&nbsp; <strong>'+tot.toLocaleString()+'</strong> units total';
   var body=document.getElementById('woModalBody');
   body.innerHTML=wo.items.map(function(it){
@@ -1094,6 +1104,22 @@ function openWOModal(i){
   // Wire the complete-all button for this WO
   document.getElementById('woModalCompleteAll').onclick=function(){ completeWholeWO(i); };
   document.getElementById('woModal').classList.add('open');
+}
+
+function openWOFromRisk(i){
+  if(i<0){ alert('This works order is no longer in the tracker.'); return; }
+  document.getElementById('rwModal').classList.remove('open');   // close the risk list
+  openWOModal(i);                                                // open the WO with editable dates
+}
+
+function saveWOModalDates(i){ if(!IS_EDITOR) return;
+  var wo=WOs[i]; if(!wo) return;
+  var due=document.getElementById('woModalDue').value;
+  var start=document.getElementById('woModalStart').value;
+  if(!due){ alert('Please choose a due date.'); return; }
+  wo.due=due; wo.start=start;
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderCompleted(); saveState();
+  openWOModal(i);   // refresh the popup with the new dates + recalculated cover
 }
 
 function closeWOModal(){ document.getElementById('woModal').classList.remove('open'); selectedWO=null; }
