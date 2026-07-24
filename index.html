@@ -347,7 +347,6 @@ body.planner-mode .planner-wrap{display:block}
         <p style="font-size:12px;color:#4b5563;margin-bottom:10px">Add live works orders. The due date feeds into the days-of-stock projection. Click a WO tile to see its contents in a popup. Delete individual SKUs as manufacturing completes.</p>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
           <button class="btn btn-p edit-only" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
-          <button class="btn" id="prioSortBtn" style="font-size:12px" onclick="togglePrioritySort()" title="Order the works orders by most urgent stock first">&#128293; Sort by priority</button>
           <button class="btn" style="font-size:12px" onclick="openPriorityList()" title="Ranked list of live works orders by urgency">&#128203; Priority list</button>
           <button class="btn" style="font-size:12px" onclick="openDueDateRisk()" title="Live WOs where stock runs out before the due date">&#9888; Due date risk</button>
           <input type="text" id="woSearch" placeholder="&#128269; Search works orders by SKU code..." oninput="renderWOCards()" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;min-width:230px;font-family:Arial,sans-serif">
@@ -1028,6 +1027,10 @@ function renderWOCards(){
       return o.wo.items.some(function(it){ return it.code.toLowerCase().indexOf(srch)>=0; })
         || (o.wo.ref||'').toLowerCase().indexOf(srch)>=0;
     });
+  } else {
+    // No search: show only UNPRINTED stock WOs (WO-####) so newly created ones stay
+    // visible until each is printed. Printed WOs and specials are found via search.
+    list=list.filter(function(o){ return /^WO-/i.test(o.wo.ref||'') && !o.wo.printed; });
   }
   if(woPrioritySort){
     list.sort(function(a,b){
@@ -1037,9 +1040,14 @@ function renderWOCards(){
     });
   }
   var sc=document.getElementById('woSearchCount');
-  if(sc) sc.textContent = WOs.length ? (srch? list.length+' of '+WOs.length+' WOs' : WOs.length+' works orders') : '';
-  if(!WOs.length){ w.innerHTML='<p style="font-size:12px;color:#6b7280;padding:8px">No works orders yet. Use Add or Bulk import above.</p>'; return; }
-  if(!list.length){ w.innerHTML='<p style="font-size:12px;color:#6b7280;padding:8px">No works orders contain "'+esc(srch)+'".</p>'; return; }
+  if(sc) sc.textContent = WOs.length ? (srch? list.length+' of '+WOs.length+' WOs' : list.length+' unprinted of '+WOs.length+' WOs') : '';
+  if(!WOs.length){ w.innerHTML='<p style="font-size:12px;color:#6b7280;padding:8px">No works orders yet. Use Add works order above.</p>'; return; }
+  if(!list.length){
+    w.innerHTML='<p style="font-size:12px;color:#6b7280;padding:8px">'+(srch
+      ? 'No works orders contain "'+esc(srch)+'".'
+      : 'No unprinted works orders — everything is printed. &#128269; Search above to find any works order.')+'</p>';
+    return;
+  }
   w.innerHTML=list.map(function(o,pos){
     var wo=o.wo, i=o.i;
     var dys=daysUntil(wo.due);
@@ -1057,7 +1065,11 @@ function renderWOCards(){
     return '<div class="woc" onclick="openWOModal('+i+')" style="cursor:pointer">'+prioH
       +'<button class="woc-del" onclick="event.stopPropagation();delWO('+i+')" title="Remove WO (without completing)">&#10005;</button>'
       +'<button class="woc-edit" onclick="event.stopPropagation();editWODate('+i+')" title="Edit dates &amp; quantities">&#9998;</button>'
-      +'<div class="woc-ref">'+esc(wo.ref)+'</div>'
+      +'<div class="woc-ref">'+esc(wo.ref)
+      +(/^WO-/i.test(wo.ref||'')?(wo.printed
+        ?' <span style="font-size:9px;font-weight:700;color:#065f46;background:#d1fae5;border-radius:8px;padding:1px 6px;vertical-align:middle">&#128424; Printed</span>'
+        :' <span style="font-size:9px;font-weight:700;color:#fff;background:#b91c1c;border-radius:8px;padding:1px 6px;vertical-align:middle">NOT PRINTED</span>'):'')
+      +'</div>'
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
       +'<span class="woc-wks" style="background:'+wbg+'">'+wl+'</span>'
       +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
@@ -1084,9 +1096,14 @@ function openWOModal(i){
   } else {
     dateH=(wo.start?'Start: <strong>'+fmtD(wo.start)+'</strong> &nbsp;|&nbsp; ':'')+'Due: <strong>'+fmtD(wo.due)+'</strong>';
   }
+  var printedH=wo.printed
+    ?'<span style="color:#065f46;font-weight:700">&#128424; Printed '+(wo.printedAt?fmtD(wo.printedAt):'')+'</span>'
+    :(/^WO-/i.test(wo.ref)?'<span style="color:#b91c1c;font-weight:700">NOT PRINTED</span>':'');
+  var splitH=IS_EDITOR?' &nbsp;<button class="btn" style="font-size:10px;padding:3px 9px" title="Split this works order into two" onclick="splitWO('+i+')">&#9986; Split WO</button>':'';
   document.getElementById('woModalMeta').innerHTML=
     dateH+' &nbsp;|&nbsp; '
-    +'<strong>'+wo.items.length+'</strong> SKU(s) &nbsp;|&nbsp; <strong>'+tot.toLocaleString()+'</strong> units total';
+    +'<strong>'+wo.items.length+'</strong> SKU(s) &nbsp;|&nbsp; <strong>'+tot.toLocaleString()+'</strong> units total'
+    +(printedH?' &nbsp;|&nbsp; '+printedH:'')+splitH;
   var body=document.getElementById('woModalBody');
   body.innerHTML=wo.items.map(function(it){
     var r=rows.find(function(x){return x.code===it.code;});
@@ -1102,8 +1119,7 @@ function openWOModal(i){
       +'<td style="text-align:right">'+inStock.toLocaleString()+'</td>'
       +'<td style="text-align:right;font-weight:700;color:#6d28d9">'+Math.round(it.qty).toLocaleString()+'</td>'
       +'<td style="text-align:right;font-weight:700;color:'+col+'">'+dc+'</td>'
-      +'<td style="text-align:center;white-space:nowrap"><button class="btn" style="font-size:10px;padding:2px 7px;color:#1e40af;border-color:#b6c4e8" title="Print works order document" onclick="printWOP(\''+esc(wo.ref).replace(/'/g,"\\'")+'\',\''+esc(it.code).replace(/'/g,"\\'")+'\','+it.qty+',\''+(wo.due||'')+'\')">&#128424; WOP</button> '
-      +'<button class="btn" style="font-size:10px;padding:2px 7px;color:#065f46;border-color:#a7d4bb" onclick="delWOItem('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\')">&#10003; Complete</button></td>'
+      +'<td style="text-align:center;white-space:nowrap"><button class="btn" style="font-size:10px;padding:2px 7px;color:#1e40af;border-color:#b6c4e8" title="Print works order document" onclick="printWOPTracked('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\','+it.qty+')">&#128424; WOP</button></td>'
       +'</tr>';
   }).join('');
   // Wire the complete-all button for this WO
@@ -1136,7 +1152,7 @@ function styleForCode(code){
 
 function printWOP(ref, code, qty, due){
   var hit=styleForCode(code);
-  if(!hit){ alert('No style data for "'+code+'" yet.\n\nThis style has not been added to the Style Master — send the old works order card over for conversion and it will print from then on.'); return; }
+  if(!hit){ alert('No style data for "'+code+'" yet.\n\nThis style has not been added to the Style Master — send the old works order card over for conversion and it will print from then on.'); return false; }
   var st=hit.style, size=hit.size;
   qty=Math.round(qty||0);
   var chart=STYLE_MASTER.charts[st.chart]||[];
@@ -1241,14 +1257,58 @@ function printWOP(ref, code, qty, due){
   h+='<script>window.onload=function(){window.print();};<\/script></body></html>';
 
   var w=window.open('','_blank');
-  if(!w){ alert('Your browser blocked the print window.\n\nAllow pop-ups for this site and try again.'); return; }
+  if(!w){ alert('Your browser blocked the print window.\n\nAllow pop-ups for this site and try again.'); return false; }
   w.document.open(); w.document.write(h); w.document.close();
+  return true;
 }
 
 function openWOFromRisk(i){
   if(i<0){ alert('This works order is no longer in the tracker.'); return; }
   document.getElementById('rwModal').classList.remove('open');   // close the risk list
   openWOModal(i);                                                // open the WO with editable dates
+}
+
+// Print a WO line and mark the works order as printed (only if the print actually opened)
+function printWOPTracked(i, code, qty){
+  var wo=WOs[i]; if(!wo) return;
+  var ok=printWOP(wo.ref, code, qty, wo.due||'');
+  if(ok!==false){
+    wo.printed=true; wo.printedAt=d2s(now());
+    saveState(); renderWOCards(); openWOModal(i);   // refresh badge + tile visibility
+  }
+}
+
+// Split a works order into two: move a chosen quantity to a NEW auto-numbered WO.
+// e.g. 20 on order, 4 needed urgently -> split into 4 (new WO) and 16 (this WO).
+function splitWO(i){ if(!IS_EDITOR) return;
+  var wo=WOs[i]; if(!wo) return;
+  var moved=[];   // items for the new WO
+  for(var j=0;j<wo.items.length;j++){
+    var it=wo.items[j];
+    var q=prompt('Split "'+it.code+'" (currently '+Math.round(it.qty)+' units).\n\nHow many units go to the NEW works order?\n(0 = leave all '+Math.round(it.qty)+' on '+wo.ref+')', '0');
+    if(q===null) return;   // cancelled - abort the whole split
+    var n=parseInt((q||'0').replace(/[^0-9]/g,''),10)||0;
+    if(n<0) n=0;
+    if(n>=it.qty && wo.items.length===1){ alert('You can\'t move all the units — that wouldn\'t be a split. Leave at least 1 on '+wo.ref+'.'); return; }
+    if(n>it.qty) n=Math.round(it.qty);
+    if(n>0) moved.push({code:it.code, qty:n});
+  }
+  if(!moved.length){ alert('Nothing was moved — enter a quantity above 0 to split.'); return; }
+  // Reduce this WO
+  moved.forEach(function(m){
+    var it=wo.items.find(function(x){return x.code===m.code;});
+    if(it) it.qty-=m.qty;
+  });
+  wo.items=wo.items.filter(function(x){return x.qty>0;});
+  // Create the new WO (fresh auto number, same dates - edit its due date in the popup that opens)
+  var newRef=nextWORef();
+  WOs.push({ref:newRef, start:wo.start, due:wo.due, items:moved});
+  var newIdx=WOs.length-1;
+  recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderCompleted(); saveState();
+  alert('Split done.\n\n'+wo.ref+' keeps '+wo.items.map(function(x){return Math.round(x.qty)+' x '+x.code;}).join(', ')
+    +'\n'+newRef+' gets '+moved.map(function(x){return Math.round(x.qty)+' x '+x.code;}).join(', ')
+    +'\n\nThe new WO opens now — set its urgent due date and print it.');
+  openWOModal(newIdx);
 }
 
 function saveWOModalDates(i){ if(!IS_EDITOR) return;
