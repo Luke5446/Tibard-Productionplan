@@ -1098,7 +1098,8 @@ function openWOModal(i){
   }
   var printedH=wo.printed
     ?'<span style="color:#065f46;font-weight:700">&#128424; Printed '+(wo.printedAt?fmtD(wo.printedAt):'')+'</span>'
-    :(/^WO-/i.test(wo.ref)?'<span style="color:#b91c1c;font-weight:700">NOT PRINTED</span>':'');
+    :(/^WO-/i.test(wo.ref)?'<span style="color:#b91c1c;font-weight:700">NOT PRINTED</span>'
+      +(IS_EDITOR?' <button class="btn" style="font-size:10px;padding:2px 8px" title="Clear this WO from the unprinted list without printing (e.g. no template set up yet)" onclick="markWOPrinted('+i+')">&#10003; Mark as printed</button>':''):'');
   var splitH=IS_EDITOR?' &nbsp;<button class="btn" style="font-size:10px;padding:3px 9px" title="Split this works order into two" onclick="splitWO('+i+')">&#9986; Split WO</button>':'';
   document.getElementById('woModalMeta').innerHTML=
     dateH+' &nbsp;|&nbsp; '
@@ -1269,6 +1270,14 @@ function openWOFromRisk(i){
 }
 
 // Print a WO line and mark the works order as printed (only if the print actually opened)
+// Manually mark a WO as printed - for codes with no print template set up yet
+// (printed via the old card system), so the tile clears from the unprinted list.
+function markWOPrinted(i){ if(!IS_EDITOR) return;
+  var wo=WOs[i]; if(!wo) return;
+  wo.printed=true; wo.printedAt=d2s(now());
+  saveState(); renderWOCards(); openWOModal(i);
+}
+
 function printWOPTracked(i, code, qty){
   var wo=WOs[i]; if(!wo) return;
   var ok=printWOP(wo.ref, code, qty, wo.due||'');
