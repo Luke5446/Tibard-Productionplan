@@ -47,21 +47,21 @@ Bronze large studs,Studs,23,4,,
 Bronze large studs male part set to apron female part set to leather (use markers),Studs,2,2,,
 Buttons,Studs,19,7,,
 Capped stud,Studs,1,1,,
-Gilt cap stud 15 mm,Studs,1,1,,
+Gilt cap stud 15 mm,Studs,1,1,CMP-STD-CAP-050-929,0.05338
 Ring stud,Studs,3,2,,
 Ring stud at centre front,Studs,5,3,,
 Stud antique brass,Studs,17,5,,
 Studs,Studs,22,6,,
 White capped stud,Studs,4,1,,
 4 hole buttons,Buttons,1,1,,
-Brass button,Buttons,6,1,,
-Button,Buttons,13,6,,
+Brass button,Buttons,6,1,OHBRASSBUTTON,0.02741
+Button,Buttons,13,6,OHBRASSBUTTON,0.02741
 Button holes,Buttons,2,1,,
 Button/buttonholes,Buttons,2,2,,
 Button/holes,Buttons,13,6,,
-Oh brass button,Buttons,6,2,,
-Oh logo button,Buttons,1,1,,
-Oliver harvey brass button,Buttons,2,1,,
+Oh brass button,Buttons,6,2,OHBRASSBUTTON,0.02741
+Oh logo button,Buttons,1,1,OHBRASSBUTTON,0.02741
+Oliver harvey brass button,Buttons,2,1,OHBRASSBUTTON,0.02741
 Antique brass rivet,Rivets,2,1,,
 Antique brass rivets,Rivets,27,7,,
 Antique brass rivets- nipple rivets,Rivets,8,2,,
@@ -73,17 +73,17 @@ Antique brass 30mm eyelet,Eyelets,8,1,,
 Antique brass eyelets,Eyelets,14,4,,
 Antique brass eyelets 30mm,Eyelets,12,1,,
 Large antique brass eyelets,Eyelets,2,1,,
-32mm bronze d rings,"Buckles, sliders & rings",1,1,,
+32mm bronze d rings,"Buckles, sliders & rings",1,1,CMP-DR32-N254-287,0.3451
 Antique brass bar (single brass slider),"Buckles, sliders & rings",2,1,,
 Antique brass sliders,"Buckles, sliders & rings",3,1,,
 Antique brass sliders (double brass slider),"Buckles, sliders & rings",5,2,,
 Antique brass tri glide slider buckle 25mm,"Buckles, sliders & rings",8,3,,
 Antique brass tri- glide slider,"Buckles, sliders & rings",4,1,,
 Black 20mm waistcoat buckle,"Buckles, sliders & rings",1,1,,
-Brass buckle,"Buckles, sliders & rings",1,1,,
-Buckle,"Buckles, sliders & rings",20,3,,
+Brass buckle,"Buckles, sliders & rings",1,1,OHBRASSBUCKLE,0.06448
+Buckle,"Buckles, sliders & rings",20,3,OHBRASSBUCKLE,0.06448
 Concealed studs,"Buckles, sliders & rings",5,1,,
-D ring bronze 32mm,"Buckles, sliders & rings",2,1,,
+D ring bronze 32mm,"Buckles, sliders & rings",2,1,CMP-DR32-N254-287,0.3451
 Fastening,"Buckles, sliders & rings",11,1,,
 Large bronze studs male part set to apron female part set to leather trim,"Buckles, sliders & rings",1,1,,
 Leather trim,"Buckles, sliders & rings",3,1,,
@@ -133,7 +133,7 @@ OH size tax tab,Tax tabs,2,2,,
 Red OH tax tab,Tax tabs,108,34,,
 Label,Labels & branding,58,37,,
 Labels,Labels & branding,19,3,,
-Oh centre fold label,Labels & branding,13,1,,
+Oh centre fold label,Labels & branding,13,1,LABELOH5771,0.04335
 Oh label,Labels & branding,27,5,,
 Oh label printed at tibard,Labels & branding,1,1,,
 Oh woven label,Labels & branding,53,10,,
@@ -155,19 +155,19 @@ Printed label - iron on reverse,Care / wash labels,1,1,,
 Product code label,Care / wash labels,9,1,,
 Wash,Care / wash labels,5,5,,
 Interlining,Interlinings,6,1,,
-Black polypropylene webbing 25mm cmp-web-pu-25-03,Webbing,1,1,,
-Bottle green polypropylene webbing 25mm cmp-web-pu-25-24,Webbing,1,1,,
-Brown polypropylene webbing 25mm cmp-web-pu-25-82,Webbing,1,1,,
-Burgundy polypropylene webbing 25mm cmp-web-pu-25-06,Webbing,1,1,,
-Dark grey polypropylene webbing 25mm cmp-web-pu-25-14,Webbing,1,1,,
-Navy polypropylene webbing 25mm cmp-web-pu-25-15,Webbing,1,1,,
-Olive polypropylene webbing 25mm cmp-web-pu-25-83,Webbing,1,1,,
-Pink polypropylene webbing 25mm cmp-web-pu-25-04,Webbing,1,1,,
-Rainbow polypropylene webbing 25mm cmp-web-pu-25-921,Webbing,1,1,,
-Sand polypropylene webbing 25mm cmp-web-pu-25-131,Webbing,1,1,,
-Silver grey polypropylene webbing 25mm cmp-web-pu-25-286,Webbing,1,1,,
-White polypropylene webbing 25mm cmp-web-pu-25-01,Webbing,1,1,,
-Yellow polypropylene webbing 25mm cmp-web-pu-25-11,Webbing,1,1,,
+Black polypropylene webbing 25mm cmp-web-pu-25-03,Webbing,1,1,CMP-WEB-PU-25-03,0.0642
+Bottle green polypropylene webbing 25mm cmp-web-pu-25-24,Webbing,1,1,CMP-WEB-PU-25-24,0.0931
+Brown polypropylene webbing 25mm cmp-web-pu-25-82,Webbing,1,1,CMP-WEB-PU-25-82,0.0931
+Burgundy polypropylene webbing 25mm cmp-web-pu-25-06,Webbing,1,1,CMP-WEB-PU-25-06,0.0931
+Dark grey polypropylene webbing 25mm cmp-web-pu-25-14,Webbing,1,1,CMP-WEB-PU-25-14,0.0931
+Navy polypropylene webbing 25mm cmp-web-pu-25-15,Webbing,1,1,CMP-WEB-PU-25-15,0.0931
+Olive polypropylene webbing 25mm cmp-web-pu-25-83,Webbing,1,1,CMP-WEB-PU-25-83,0.0931
+Pink polypropylene webbing 25mm cmp-web-pu-25-04,Webbing,1,1,CMP-WEB-PU-25-04,0.0931
+Rainbow polypropylene webbing 25mm cmp-web-pu-25-921,Webbing,1,1,CMP-WEB-PU-25-921,0.0931
+Sand polypropylene webbing 25mm cmp-web-pu-25-131,Webbing,1,1,CMP-WEB-PU-25-131,0.0931
+Silver grey polypropylene webbing 25mm cmp-web-pu-25-286,Webbing,1,1,CMP-WEB-PU-25-286,0.0931
+White polypropylene webbing 25mm cmp-web-pu-25-01,Webbing,1,1,CMP-WEB-PU-25-01,0.0931
+Yellow polypropylene webbing 25mm cmp-web-pu-25-11,Webbing,1,1,CMP-WEB-PU-25-11,0.0931
 Glassine peel & seal biodegradable bag (68x92cm),Packaging,14,2,PKG-BAG-GLA-68x92-PS,0.09686
 Antique brass 15mm cap (parts a and b),Other,13,1,,
 Oliver harvey,Other,1,1,,
