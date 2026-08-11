@@ -45,7 +45,7 @@ Apron studs - box marked up ohapp0630 kpln,Studs,2,1,,
 Black capped stud,Studs,2,1,,
 Bronze large studs,Studs,23,4,,
 Bronze large studs male part set to apron female part set to leather (use markers),Studs,2,2,,
-Buttons,Studs,19,7,,
+Buttons,Studs,17,6,,
 Capped stud,Studs,1,1,,
 Gilt cap stud 15 mm,Studs,1,1,CMP-STD-CAP-050-929,0.05338
 Ring stud,Studs,3,2,,
@@ -62,6 +62,7 @@ Button/holes,Buttons,13,6,,
 Oh brass button,Buttons,6,2,OHBRASSBUTTON,0.02741
 Oh logo button,Buttons,1,1,OHBRASSBUTTON,0.02741
 Oliver harvey brass button,Buttons,2,1,OHBRASSBUTTON,0.02741
+White detachable chef jacket button,Buttons,2,1,OHDETACHABLEBUTTON01,0.053
 Antique brass rivet,Rivets,2,1,,
 Antique brass rivets,Rivets,27,7,,
 Antique brass rivets- nipple rivets,Rivets,8,2,,
@@ -130,7 +131,7 @@ Oliver harvey made in britain tape,Ribbons & tapes,3,2,,
 Oliver harvey made in england tape,Ribbons & tapes,6,2,,
 Oliver harvey neck ribbon,Ribbons & tapes,5,2,,
 OH size tax tab,Tax tabs,2,2,,
-Red OH tax tab,Tax tabs,108,34,,
+Red OH tax tab,Tax tabs,108,34,TAXTABOH07/01,0.01678
 Label,Labels & branding,58,37,,
 Labels,Labels & branding,19,3,,
 Oh centre fold label,Labels & branding,13,1,LABELOH5771,0.04335
