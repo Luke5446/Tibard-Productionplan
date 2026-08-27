@@ -68,12 +68,12 @@ Antique brass rivets,Rivets,27,7,,
 Antique brass rivets- nipple rivets,Rivets,8,2,,
 Rivets,Rivets,7,4,,
 28mm silver eyelets,Eyelets,1,1,,
-30mm antique brass eyelets,Eyelets,3,1,,
-30mm eyelet and ring antique brass 30mm e/r ab,Eyelets,7,1,,
-Antique brass 30mm eyelet,Eyelets,8,1,,
-Antique brass eyelets,Eyelets,14,4,,
-Antique brass eyelets 30mm,Eyelets,12,1,,
-Large antique brass eyelets,Eyelets,2,1,,
+30mm antique brass eyelets,Eyelets,3,1,CMP-30ED-28-931 + CMP-30RD-28-931,0.2819808
+30mm eyelet and ring antique brass 30mm e/r ab,Eyelets,7,1,CMP-30ED-28-931 + CMP-30RD-28-931,0.2819808
+Antique brass 30mm eyelet,Eyelets,8,1,CMP-30ED-28-931 + CMP-30RD-28-931,0.2819808
+Antique brass eyelets,Eyelets,14,4,CMP-30ED-28-931 + CMP-30RD-28-931,0.2819808
+Antique brass eyelets 30mm,Eyelets,12,1,CMP-30ED-28-931 + CMP-30RD-28-931,0.2819808
+Large antique brass eyelets,Eyelets,2,1,CMP-30ED-28-931 + CMP-30RD-28-931,0.2819808
 32mm bronze d rings,"Buckles, sliders & rings",1,1,CMP-DR32-N254-287,0.3451
 Antique brass bar (single brass slider),"Buckles, sliders & rings",2,1,,
 Antique brass sliders,"Buckles, sliders & rings",3,1,,
@@ -105,7 +105,7 @@ Elastic 48mm elastic black,Elastic,2,1,,
 Elastic 48mm elastic white,Elastic,2,1,,
 Elastic white 25mm,Elastic,1,1,,
 OH logo non-tangle tape ties — black,Ties & straps,45,15,,
-OH logo non-tangle tape ties — white,Ties & straps,8,5,,
+OH logo non-tangle tape ties — white,Ties & straps,8,5,CMP-OH-NTT-25-01,0.2517
 Oliver havey waist ties black,Ties & straps,1,1,,
 Plain black non-tangle tape ties,Ties & straps,6,6,,
 OH logo non-tangle tape — black (towel loop),Towel loops,75,16,,
@@ -135,11 +135,11 @@ Red OH tax tab,Tax tabs,108,34,TAXTABOH07/01,0.01678
 Label,Labels & branding,58,37,,
 Labels,Labels & branding,19,3,,
 Oh centre fold label,Labels & branding,13,1,LABELOH5771,0.04335
-Oh label,Labels & branding,27,5,,
+Oh label,Labels & branding,27,5,LABELOH5771,0.04335
 Oh label printed at tibard,Labels & branding,1,1,,
-Oh woven label,Labels & branding,53,10,,
-Oliver harvey label,Labels & branding,1,1,,
-Oliver harvey woven label,Labels & branding,34,8,,
+Oh woven label,Labels & branding,53,10,LABELOH5771,0.04335
+Oliver harvey label,Labels & branding,1,1,LABELOH5771,0.04335
+Oliver harvey woven label,Labels & branding,34,8,LABELOH5771,0.04335
 Pos swing tag,Labels & branding,62,1,OHSWINGTAG,0.0646
 Printed size label,Labels & branding,1,1,,
 Red oh label,Labels & branding,15,3,,
