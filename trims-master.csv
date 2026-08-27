@@ -152,13 +152,13 @@ T150,Studs,Trim,Studs,STUDS,Ring press stud fasten (concealed studs),4,,,OHLCJSY
 T151,Studs,Trim,Studs,STUDS,10 x sets of ring press studs,2,,,OHCJSCUMBRIA--01; OHCJSCUMBRIA--01S
 T152,Studs,Trim,White capped stud,White capped stud,1 X white capped stud at collar,4,,,OHCJSSUFFOLK--01; OHCJSSUFFOLK--01L; OHCJSSUFFOLK--01S; OHCJSUFFOLK--01
 T153,Buttons,Trim,4 hole buttons,4 HOLE BUTTONS x 9 inc 1 spare,Jones button p102/23l white 4 hole,1,,,OHCJSBEDFORD--01
-T154,Buttons,Trim,Brass button,Brass button x 1,Antique brass oliver harvey button,6,OHBRASSBUTTON,0.02741,OHAPP057215DEN; OHAPP0572224DEN; OHAPP0572F224DEN; OHAPP0573224; OHAPP0574224RR; OHAPP0575224ST
-T155,Buttons,Trim,Button,BUTTON,Brass effect Oliver Harvey logo'd button - four holed,6,OHBRASSBUTTON,0.02741,OHAPP053431; OHAPP0534GD; OHAPP0534BUTCHERS; OHAPP0534DAISEYDOT; OHAPP0534DENIM; OHAPP0534STRIPE
-T156,Buttons,Trim,Button,BUTTON,Brass effect Oliver Harvey logo'd button - four hole,2,OHBRASSBUTTON,0.02741,OHAPP053403DEN; OHAPP0534224DEN
-T157,Buttons,Trim,Button,BUTTON,Oliver harvey brass coloured logo'd button / Need button for waist and button for pocket,2,OHBRASSBUTTON,0.02741,OHCTDURHAM--03; OHCTDURHAM--26
-T158,Buttons,Trim,Button,BUTTON,Brass effect OH button - four hole,1,OHBRASSBUTTON,0.02741,OHAPP0535241SHT5
-T159,Buttons,Trim,Button,BUTTON,Oliver harvey brass coloured log'od buttons / Need button for waist and button for pocket,1,OHBRASSBUTTON,0.02741,OHCTTDURHAM--03
-T160,Buttons,Trim,Button,BUTTON,Oliver harvey brass coloured logo'd buttons / Need button for waist and button for pocket,1,OHBRASSBUTTON,0.02741,OHCTTDURHAM--26
+T154,Buttons,Trim,Brass button,Brass button x 1,Antique brass oliver harvey button,6,OHBRASSBUTTON,0.036,OHAPP057215DEN; OHAPP0572224DEN; OHAPP0572F224DEN; OHAPP0573224; OHAPP0574224RR; OHAPP0575224ST
+T155,Buttons,Trim,Button,BUTTON,Brass effect Oliver Harvey logo'd button - four holed,6,OHBRASSBUTTON,0.036,OHAPP053431; OHAPP0534GD; OHAPP0534BUTCHERS; OHAPP0534DAISEYDOT; OHAPP0534DENIM; OHAPP0534STRIPE
+T156,Buttons,Trim,Button,BUTTON,Brass effect Oliver Harvey logo'd button - four hole,2,OHBRASSBUTTON,0.036,OHAPP053403DEN; OHAPP0534224DEN
+T157,Buttons,Trim,Button,BUTTON,Oliver harvey brass coloured logo'd button / Need button for waist and button for pocket,2,OHBRASSBUTTON,0.036,OHCTDURHAM--03; OHCTDURHAM--26
+T158,Buttons,Trim,Button,BUTTON,Brass effect OH button - four hole,1,OHBRASSBUTTON,0.036,OHAPP0535241SHT5
+T159,Buttons,Trim,Button,BUTTON,Oliver harvey brass coloured log'od buttons / Need button for waist and button for pocket,1,OHBRASSBUTTON,0.036,OHCTTDURHAM--03
+T160,Buttons,Trim,Button,BUTTON,Oliver harvey brass coloured logo'd buttons / Need button for waist and button for pocket,1,OHBRASSBUTTON,0.036,OHCTTDURHAM--26
 T161,Buttons,Trim,Button holes,Button holes,Key hole buttons holes - horizontal on outside edge of panel only - top button slanted to top corner,2,,,OHCJSMDORSET--01; OHCJSMDORSET--01S
 T162,Buttons,Trim,Button/buttonholes,Button/buttonholes,Key hole button hole - horizontal on outside edge of panel only - / Top button slanted to top corner,1,,,OHCJMDORSET--01
 T163,Buttons,Trim,Button/buttonholes,Button/buttonholes,Key hole buttons holes - horizontal on outside edge of panel only / Top buttonhole slanted to top corner,1,,,OHCJSMDORSET--01L
@@ -170,10 +170,10 @@ T168,Buttons,Trim,Button/holes,Button/holes,"Straight buttonholes, top buttonhol
 T169,Buttons,Trim,Button/holes,Button/holes,"Straight buttonholes, top buttonholes slanted into corners — 5/8"" blade",1,,,OHCJSMOXFORDNLL--01
 T170,Buttons,Trim,Buttons,Buttons,12 utexbel fabric roll buttons - hand sewn,6,,,OHCJMDORSET--01LS; OHCJMDORSET--01; OHCJMDORSET--01L; OHCJSMDORSET--01; OHCJSMDORSET--01L; OHCJSMDORSET--01S
 T171,Buttons,Trim,Buttons,BUTTONS,Jones p3536 36l buttons - white 10 buttons,2,,,OHCJNORFOLK--01; OHCJSNORFOLK--01
-T172,Buttons,Trim,Oh brass button,OH brass button,4 hole OH logo brass button,5,OHBRASSBUTTON,0.02741,OHAPP0535241; OHAPP053583; OHAPP053515; OHAPP053515S; OHAPP0535222
-T173,Buttons,Trim,Oh brass button,OH brass button,1 x OH brass button at front waistband,1,OHBRASSBUTTON,0.02741,OHLCTSHROPSHIRE--03
-T174,Buttons,Trim,Oh logo button,OH logo button,4 hole brass button - set 2cm in from armhole edge and centrally within depth of bib facing.,1,OHBRASSBUTTON,0.02741,OHAPP0569GD
-T175,Buttons,Trim,Oliver harvey brass button,Oliver harvey brass button,Oliver harvey brass button x 1 set to front waistband.,2,OHBRASSBUTTON,0.02741,OHCTLINCOLN--03; OHCTTLINCOLN--03
+T172,Buttons,Trim,Oh brass button,OH brass button,4 hole OH logo brass button,5,OHBRASSBUTTON,0.036,OHAPP0535241; OHAPP053583; OHAPP053515; OHAPP053515S; OHAPP0535222
+T173,Buttons,Trim,Oh brass button,OH brass button,1 x OH brass button at front waistband,1,OHBRASSBUTTON,0.036,OHLCTSHROPSHIRE--03
+T174,Buttons,Trim,Oh logo button,OH logo button,4 hole brass button - set 2cm in from armhole edge and centrally within depth of bib facing.,1,OHBRASSBUTTON,0.036,OHAPP0569GD
+T175,Buttons,Trim,Oliver harvey brass button,Oliver harvey brass button,Oliver harvey brass button x 1 set to front waistband.,2,OHBRASSBUTTON,0.036,OHCTLINCOLN--03; OHCTTLINCOLN--03
 T176,Buttons,Trim,White detachable chef jacket button,Buttons,Squashed detachable buttons,2,OHDETACHABLEBUTTON01,0.053,OHCJMOXFORD--01; OHCJMOXFORD--03
 T177,Rivets,Trim,Antique brass rivet,Antique brass rivet,Set to top of pocket mouth x 2 (010b/7p - 011b invert nipple rivet and post),2,,,OHAPP053403DEN; OHAPP0534224DEN
 T178,Rivets,Trim,Antique brass rivets,Antique brass rivets x 4,010b/7p-011b antique brass invert nipple rivet and post. set to top corners of pocket,9,,,OHAPP063103DENDS; OHAPP0631224DENDS; OHAPP0631GDDS; OHAPP053503DENDS; OHAPP053503DSSHT; OHAPP0535224DENDS; OHAPP0535224DENDSSHT; OHAPP0535GDDS; OHAPP0535GDDSSHT
