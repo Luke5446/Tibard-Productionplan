@@ -15,14 +15,9 @@ Excel works order + Google Sheet step the sales office does today.
 
 ## 1. Which route to take
 
-**Do you have Sage 200 Professional (on-premise or Sage-hosted), or Sage 200
-Standard (cloud)?** This decides everything:
-
-- **Professional** → you have a SQL Server database you can read. Use
-  **Power Query → SQL Server** (section 2). This is the right answer: genuinely
-  live, one refresh button, no add-ins, no extra licences.
-- **Standard** → there is no SQL access. You'd need the Sage 200 REST API, or a
-  scheduled export. Tell me which you're on and I'll write that version instead.
+**Confirmed: Sage 200 Professional**, SQL Server `TIB-SQL-002\SAGE200`, database
+`S200_LIVE`. So the route is **Power Query → SQL Server** (section 2): genuinely
+live, one refresh button, no add-ins, no extra licences.
 
 ### Options considered, and why not
 
@@ -37,52 +32,83 @@ Standard (cloud)?** This decides everything:
 
 ## 2. Building the sheet (Sage 200 Professional)
 
-### 2.1 Get a read-only SQL login
-Ask your Sage partner / IT for a SQL Server login with **db_datareader only** on
-the company database. Reading the Sage database is normal practice; **writing**
-to it directly is not supported by Sage and would put your support at risk. A
+### Your connection details (read off the existing buffer sheet)
+
+| | |
+|---|---|
+| **Server** | `TIB-SQL-002\SAGE200` |
+| **Database** | `S200_LIVE` |
+| Existing buffer source | `eve_AllLiveSOPPOPStockConsignment` (a custom SQL view — item-level, not order-line level, so we need a new query) |
+| Other company DB seen | `...OliverHarvey...` — check whether special makes are raised under this company too |
+
+**Build this in a NEW workbook, not in the buffer sheet.** The buffer sheet is a
+production dependency — a slow or broken query added to it would take Refresh All
+down for the buffer app as well. Keep them separate.
+
+### You do not need SQL Server Management Studio
+Every query in `00-discovery.sql` can be run from Excel itself: paste it into the
+SQL statement box in step 2.3 below and load the result to a sheet. Read the
+answer, then swap in the next query.
+
+### 2.1 Authentication
+Try **Windows authentication ("Use my current credentials")** first — if the
+existing buffer connection uses it, yours will work too and you need nothing from
+IT. Check by opening the buffer sheet's connection → **Definition** tab: an
+`Integrated Security=SSPI` in the connection string means Windows auth.
+
+If it turns out to use a SQL login, ask IT for one with **db_datareader only** on
+`S200_LIVE`. Reading the Sage database is normal practice; **writing** to it
+directly is not supported by Sage and would put your support contract at risk. A
 read-only login makes that mistake impossible.
 
-You need: server name (e.g. `SAGESERVER\SAGE200`) and the company database name.
+### 2.2 Create the workbook
+New blank workbook → save as `Special Makes Live.xlsx`, in the same shared folder
+as the buffer sheet so Production can find it.
 
-### 2.2 Confirm the schema
-Run `00-discovery.sql` in SQL Server Management Studio. Fix the two `>> CHECK <<`
-spots in `10-special-makes-live.sql` from what it tells you.
+### 2.3 Create the connection
+1. **Data** → **Get Data** → **From Database** → **From SQL Server Database**
+2. Server `TIB-SQL-002\SAGE200`, Database `S200_LIVE`
+3. Expand **Advanced options** → paste your SQL into the **SQL statement** box
+4. **OK** → credentials → **Windows / Use my current credentials** → **Connect**
+5. **Load To…** → **Table** → **New worksheet**. Rename the sheet `SageData`.
 
-The one that really matters is **CHECK 2 — where "stock held = Yes" actually
-lives**. In Sage 200 that tick is usually on the *Product Group* ("this product
-group holds stock"), not the product itself — but some sites tag it with an
-analysis code on the stock item instead. Query 0.3 finds it: put one code you
-know is stock-held next to one you know is a special make, and see which column
-differs.
+### 2.4 Confirm the schema before trusting the query
+Run the queries in `00-discovery.sql` through the box in 2.3, in order. The one
+that really matters is **0.3 — where "stock held = Yes" actually lives**. In Sage
+200 that tick is normally on the *Product Group* ("this product group holds
+stock"), not the product itself, but some sites tag it with an analysis code on
+the stock item instead. Put one code you know is stock-held next to one you know
+is a special make and see which column differs.
 
-### 2.3 Create the connection in Excel
-1. New workbook → **Data** → **Get Data** → **From Database** → **From SQL Server Database**
-2. Server + Database → expand **Advanced options** → paste the whole contents of
-   `10-special-makes-live.sql` into the SQL statement box
-3. Credentials → **Database** → the read-only login → Connect
-4. **Load To…** → **Table** → **New worksheet**. Name the sheet `SageData`.
+Then correct the two `>> CHECK <<` spots in `10-special-makes-live.sql`.
 
-### 2.4 Set the refresh behaviour
-**Data → Queries & Connections → right-click the query → Properties:**
+### 2.5 Swap in the real query
+**Data** → **Queries & Connections** → **Queries** tab → right-click the query →
+**Edit**. In the Power Query editor, click the **gear icon** next to the `Source`
+step on the right — the SQL statement box reopens. Paste the corrected
+`10-special-makes-live.sql` → **OK** → **Close & Load**.
+
+### 2.6 Set the refresh behaviour
+**Data → Queries & Connections → right-click → Properties:**
 
 - ✅ Refresh data when opening the file
-- ❌ **Enable background refresh** — untick this. It matters: with it on,
-  Refresh All returns immediately and Production can copy the *old* rows while
-  the new ones are still loading. Off means the refresh finishes before they
-  can touch anything.
-- ❌ Adjust column width (stops the layout jumping about on every refresh)
+- ✅ Refresh this connection on Refresh All
+- ❌ **Enable background refresh** — untick this. Your buffer connection currently
+  has it ticked. It matters here: with it on, Refresh All returns immediately and
+  Production can copy the *old* rows while the new ones are still loading. Off
+  means the refresh finishes before they can touch anything.
+- ❌ Adjust column width (stops the layout jumping on every refresh)
 
-### 2.5 Set up the filter
+### 2.7 Set up the filter
 On the `SageData` table, filter column **I (StockHeld)** to `NO` and `FREE-TEXT`.
 
-Deliberately **not** filtered in SQL. If a new special make is set up in Sage
-with the stock-held flag wrong, a SQL filter hides it silently and the order
-never gets made. This way it's still on the sheet — visible, one filter click
-away — and the app can cross-check too (see section 4).
+Deliberately **not** filtered in SQL. If a new special make is set up in Sage with
+the stock-held flag wrong, a SQL filter hides it silently and the order never gets
+made. This way it's still on the sheet — visible, one filter click away — and the
+app can cross-check too (see section 4).
 
-Excel's Ctrl+C copies **visible rows only** when a filter is applied, so
-selecting the filtered range and copying gives exactly the special makes.
+Excel's Ctrl+C copies **visible rows only** when a filter is applied, so selecting
+the filtered range and copying gives exactly the special makes.
 
 ---
 
