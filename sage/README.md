@@ -122,7 +122,8 @@ step on the right — the SQL statement box reopens. Paste the corrected
 - ❌ Adjust column width (stops the layout jumping on every refresh)
 
 ### 2.7 Set up the filter
-On the `SageData` table, filter column **I (StockHeld)** to `NO` and `FREE-TEXT`.
+On the `SageData` table, filter column **J (StockHeld)** to everything
+**except `YES`** — so `NO`, `NOT SET` and `FREE-TEXT` all stay visible.
 
 Deliberately **not** filtered in SQL. If a new special make is set up in Sage with
 the stock-held flag wrong, a SQL filter hides it silently and the order never gets
@@ -174,7 +175,7 @@ paste. Production select the filtered rows (no header) → Ctrl+C → paste.
 | G | `Qty` | Outstanding qty (ordered − despatched) |
 | H | `PromisedDate` | Text, `yyyy-mm-dd` |
 | I | `Customer` | |
-| J | `StockHeld` | `YES` / `NO` / `FREE-TEXT` |
+| J | `StockHeld` | `YES` / `NO` / `NOT SET` / `FREE-TEXT` |
 
 ### Why a line key, and not the sales order number
 
@@ -195,6 +196,30 @@ late. `TIB-45678` / `OH-45678` makes the collision impossible.
 
 The same goes for the works order reference itself: the two companies' sales
 order numbers overlap, so it needs to read `OH-SO12345 Pt 1`, not `SO12345 Pt 1`.
+
+### The stock-held flag: confirmed, with a caveat
+
+It is a **stock item analysis code**, and the two companies use **different
+slots** — they were set up separately:
+
+| Company | Slot | Items carrying Yes/No |
+|---|---|---|
+| Tibard | `AnalysisCode3` | 2,365 |
+| Oliver Harvey | `AnalysisCode7` | 2,226 |
+
+The query handles each company separately. Do not "tidy" them to match.
+
+**The caveat: most items have the code blank.** Only ~2,365 of roughly 107,000
+Tibard stock items are labelled at all. A blank is not the same as "No", and
+guessing either way is unsafe:
+
+- treat blank as **No** → every unlabelled product floods the special makes list
+- treat blank as **Yes** → genuine special makes silently vanish
+
+So blank comes through as its own value, `NOT SET`, for review rather than
+assumption. How much this matters in practice depends on how many *live order
+lines* land on unlabelled products — most of those 107,000 will be historic
+variants that never appear on a current order. That still needs measuring.
 
 ## 4. Decisions still needed for the app side
 

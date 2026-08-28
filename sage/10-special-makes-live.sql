@@ -67,26 +67,26 @@ SELECT
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS Customer,
 
-    /* J - >> CHECK 2 <<  Stock-held flag.
-           Confirmed against the live schema: StockItem has no type column of
-           its own - the stock/non-stock setting lives on the PRODUCT GROUP, as
-           ProductGroup.StockItemTypeID. So a special make is identified by the
-           group its product sits in, not by anything on the product itself.
+    /* J - Stock-held flag. CONFIRMED to be a stock item ANALYSIS CODE, and
+           the two companies use DIFFERENT SLOTS:
 
-           STILL TO CONFIRM: that StockItemTypeID = 0 means "Stock". Run
-           discovery query 0.6 and read the number off your own data before
-           trusting this line.
+             TIBARD        -> AnalysisCode3   (2,365 items carry Yes/No)
+             OLIVER HARVEY -> AnalysisCode7   (2,226 items carry Yes/No)
 
-           If it turns out your "stock held = Yes" is really a custom analysis
-           code rather than the group type, swap this for the relevant
-           StockItem.AnalysisCodeN instead - see 00-discovery.sql query 0.7.
+           Product groups turned out to be garment categories (Chef Jackets,
+           Trousers, Aprons), so they were never the flag.
 
-           FREE-TEXT means the line has no product record at all.
-           KEEP THIS IDENTICAL TO THE OLIVER HARVEY BLOCK BELOW. */
+           Note the third state, NOT SET. Most Tibard stock items have this
+           code blank - only 2,365 of roughly 107,000 are labelled at all. A
+           blank is NOT the same as "No", and guessing either way is unsafe:
+           treat blank as No and every unlabelled product floods the special
+           makes list; treat it as Yes and genuine special makes vanish. So it
+           is surfaced as its own value for review rather than assumed. */
     CASE
-        WHEN sorl.LineTypeID = 1        THEN 'FREE-TEXT'
-        WHEN si.ItemID IS NULL          THEN 'FREE-TEXT'
-        WHEN pg.StockItemTypeID = 0     THEN 'YES'
+        WHEN sorl.LineTypeID = 1                 THEN 'FREE-TEXT'
+        WHEN si.ItemID IS NULL                   THEN 'FREE-TEXT'
+        WHEN NULLIF(si.AnalysisCode3,'') IS NULL THEN 'NOT SET'
+        WHEN si.AnalysisCode3 = 'Yes'            THEN 'YES'
         ELSE 'NO'
     END                                                         AS StockHeld
 
@@ -124,10 +124,13 @@ SELECT
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS Customer,
-    CASE                                  -- >> CHECK 2 << keep matching Tibard
-        WHEN sorl.LineTypeID = 1        THEN 'FREE-TEXT'
-        WHEN si.ItemID IS NULL          THEN 'FREE-TEXT'
-        WHEN pg.StockItemTypeID = 0     THEN 'YES'
+    CASE            -- NB: AnalysisCode7 here, NOT 3. Oliver Harvey uses a
+                    -- different slot to Tibard - the companies were set up
+                    -- separately. Do not "tidy" these two to match.
+        WHEN sorl.LineTypeID = 1                 THEN 'FREE-TEXT'
+        WHEN si.ItemID IS NULL                   THEN 'FREE-TEXT'
+        WHEN NULLIF(si.AnalysisCode7,'') IS NULL THEN 'NOT SET'
+        WHEN si.AnalysisCode7 = 'Yes'            THEN 'YES'
         ELSE 'NO'
     END                                                         AS StockHeld
 
