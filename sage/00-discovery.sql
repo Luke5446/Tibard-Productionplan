@@ -45,23 +45,21 @@ ORDER BY DocumentTypeID, DocumentStatusID;
 /* DocumentTypeID 0 = Sales Order, 1 = Sales Return (confirm with the above). */
 
 
-/* --- 0.3  Find where "stock held = Yes" actually lives -------------------
-   Only run this AFTER 0.1 - the column list below must come from 0.1's output,
-   not from assumption. */
-/* THIS IS THE IMPORTANT ONE. Take one product code you KNOW is a stock-held
-   item you manufacture, and one you KNOW is a special make. Compare the two
-   rows side by side and look for the column that differs. */
-SELECT  si.Code, si.Name, si.*, pg.Code AS PG_Code, pg.Name AS PG_Name, pg.*
-FROM    StockItem si
-LEFT JOIN ProductGroup pg ON pg.ProductGroupID = si.ProductGroupID
-WHERE   si.Code IN ('OHAPP054415',          -- known stock-held example
-                    '<a known special make code>');
+/* --- 0.3  CONFIRMED SCHEMA (from 0.1, run against the live database) -----
 
-/* The flag is most likely ONE of:
-     ProductGroup.HoldsStock        (bit)  - the Product Group "holds stock" tick
-     StockItem.ItemTypeID           (int)  - 0 Stock / 1 Misc / 2 Service
-     StockItem.AnalysisCode1..20    (text) - if you tag it yourself
-   Once you know which, set the StockHeld expression in the main query. */
+   StockItem   : ItemID, Code, Name, Description, ProductGroupID,
+                 StockItemStatusID, BOMItemTypeID, AllowSalesOrder,
+                 AnalysisCode1..20, SpareText/Number/Date/Bit...
+                 >> NO ItemTypeID. StockItem carries no stock/non-stock flag.
+
+   ProductGroup: ProductGroupID, Code, Description, StockItemTypeID,
+                 CostingMethodID, ThisIsTheSOPProductGroup, ...
+                 >> NO Name (it is Description), NO HoldsStock.
+                 >> StockItemTypeID is where stock vs non-stock lives.
+
+   So "is this a special make?" is answered by the PRODUCT GROUP the item sits
+   in, not by anything on the item itself - unless you tag it with an analysis
+   code, which query 0.7 checks for.                                        */
 
 
 /* --- 0.4  Line types present on your orders ----------------------------- */
@@ -102,3 +100,44 @@ WHERE  si.Code IN ('<an OH stock-held code>', '<an OH special make code>');
    version does not have that column - run 0.1 first and use the real names.
    If it errors on OliverHarveyLive specifically, your Windows login can read
    Tibard but not Oliver Harvey; ask IT to even that up. */
+
+
+/* --- 0.6  THE DECIDER: list every product group with its stock item type ---
+   Small output, and usually answers the whole question outright. Your group
+   codes/descriptions will make it obvious which are special makes.
+   Read off which StockItemTypeID number your stock-held groups carry - do not
+   assume 0 = Stock.                                                        */
+
+SELECT 'TIBARD' AS Company, pg.Code AS GroupCode, pg.Description AS GroupDesc,
+       pg.StockItemTypeID, COUNT(si.ItemID) AS Items
+FROM   S200_LIVE.dbo.ProductGroup pg
+LEFT JOIN S200_LIVE.dbo.StockItem si ON si.ProductGroupID = pg.ProductGroupID
+GROUP BY pg.Code, pg.Description, pg.StockItemTypeID
+
+UNION ALL
+
+SELECT 'OLIVER HARVEY', pg.Code, pg.Description,
+       pg.StockItemTypeID, COUNT(si.ItemID)
+FROM   OliverHarveyLive.dbo.ProductGroup pg
+LEFT JOIN OliverHarveyLive.dbo.StockItem si ON si.ProductGroupID = pg.ProductGroupID
+GROUP BY pg.Code, pg.Description, pg.StockItemTypeID
+
+ORDER BY Company, GroupCode;
+
+
+/* --- 0.7  FALLBACK: if 0.6 shows every group with the same type ----------
+   ...then the stock/non-stock split is not the product group, and is most
+   likely a custom analysis code ("Stock Held: Yes/No" is exactly what a Sage
+   200 analysis code looks like). This puts a known stock item and a known
+   special make side by side across all 20 codes - look for the one that
+   differs. Fill in the two codes first.                                    */
+
+SELECT si.Code, si.Name, pg.Code AS GroupCode, pg.StockItemTypeID,
+       si.AnalysisCode1,  si.AnalysisCode2,  si.AnalysisCode3,  si.AnalysisCode4,
+       si.AnalysisCode5,  si.AnalysisCode6,  si.AnalysisCode7,  si.AnalysisCode8,
+       si.AnalysisCode9,  si.AnalysisCode10, si.AnalysisCode11, si.AnalysisCode12,
+       si.AnalysisCode13, si.AnalysisCode14, si.AnalysisCode15, si.AnalysisCode16,
+       si.AnalysisCode17, si.AnalysisCode18, si.AnalysisCode19, si.AnalysisCode20
+FROM   S200_LIVE.dbo.StockItem si
+LEFT JOIN S200_LIVE.dbo.ProductGroup pg ON pg.ProductGroupID = si.ProductGroupID
+WHERE  si.Code IN ('OHAPP054415', '<a known special make code>');

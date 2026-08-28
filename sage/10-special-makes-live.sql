@@ -68,14 +68,25 @@ SELECT
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS Customer,
 
     /* J - >> CHECK 2 <<  Stock-held flag.
-           Swap the tested column for whichever one 00-discovery.sql showed
-           actually differs between a stock item and a special make.
+           Confirmed against the live schema: StockItem has no type column of
+           its own - the stock/non-stock setting lives on the PRODUCT GROUP, as
+           ProductGroup.StockItemTypeID. So a special make is identified by the
+           group its product sits in, not by anything on the product itself.
+
+           STILL TO CONFIRM: that StockItemTypeID = 0 means "Stock". Run
+           discovery query 0.6 and read the number off your own data before
+           trusting this line.
+
+           If it turns out your "stock held = Yes" is really a custom analysis
+           code rather than the group type, swap this for the relevant
+           StockItem.AnalysisCodeN instead - see 00-discovery.sql query 0.7.
+
            FREE-TEXT means the line has no product record at all.
            KEEP THIS IDENTICAL TO THE OLIVER HARVEY BLOCK BELOW. */
     CASE
-        WHEN sorl.LineTypeID = 1     THEN 'FREE-TEXT'
-        WHEN si.ItemID IS NULL       THEN 'FREE-TEXT'
-        WHEN pg.HoldsStock = 1       THEN 'YES'
+        WHEN sorl.LineTypeID = 1        THEN 'FREE-TEXT'
+        WHEN si.ItemID IS NULL          THEN 'FREE-TEXT'
+        WHEN pg.StockItemTypeID = 0     THEN 'YES'
         ELSE 'NO'
     END                                                         AS StockHeld
 
@@ -114,9 +125,9 @@ SELECT
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS Customer,
     CASE                                  -- >> CHECK 2 << keep matching Tibard
-        WHEN sorl.LineTypeID = 1     THEN 'FREE-TEXT'
-        WHEN si.ItemID IS NULL       THEN 'FREE-TEXT'
-        WHEN pg.HoldsStock = 1       THEN 'YES'
+        WHEN sorl.LineTypeID = 1        THEN 'FREE-TEXT'
+        WHEN si.ItemID IS NULL          THEN 'FREE-TEXT'
+        WHEN pg.StockItemTypeID = 0     THEN 'YES'
         ELSE 'NO'
     END                                                         AS StockHeld
 
