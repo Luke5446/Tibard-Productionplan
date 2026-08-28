@@ -15,8 +15,8 @@ Excel works order + Google Sheet step the sales office does today.
 
 ## 1. Which route to take
 
-**Confirmed: Sage 200 Professional**, SQL Server `TIB-SQL-002`, database
-`S200_LIVE`. So the route is **Power Query → SQL Server** (section 2): genuinely
+**Confirmed: Sage 200 Professional**, SQL Server `TIB-SQL-002`, databases
+`S200_LIVE` (Tibard) and `OliverHarveyLive`. So the route is **Power Query → SQL Server** (section 2): genuinely
 live, one refresh button, no add-ins, no extra licences.
 
 ### Options considered, and why not
@@ -40,11 +40,10 @@ connection (Queries & Connections → Connections → Properties → Definition)
 | | |
 |---|---|
 | **Server** | `TIB-SQL-002` — the default instance, **not** `TIB-SQL-002\SAGE200` |
-| **Database** | `S200_LIVE` |
+| **Databases** | `S200_LIVE` (Tibard) **and** `OliverHarveyLive` (Oliver Harvey) — both on the same server, so one query reads both |
 | **Authentication** | Windows (`Integrated Security=SSPI`, no saved password) |
 | Existing connection type | OLE DB Query, Command type `Table` — legacy, pre-Power Query |
-| Existing source object | `"S200_Live"."dbo"."eve_AllLiveSOPPOPStockConsignment"` — a **custom SQL view** someone has already added inside the Sage database |
-| Other company DB seen | `...OliverHarvey...` — check whether special makes are raised under this company too |
+| Existing source objects | `S200_Live.dbo.eve_AllLiveSOPPOPStockConsignment` and `OliverHarveyLive.dbo.eve_AllLiveSOPPOPStock` — **custom SQL views** someone has already added inside the Sage databases |
 
 **Build this in a NEW workbook, not in the buffer sheet.** The buffer sheet is a
 production dependency — a slow or broken query added to it would take Refresh All
@@ -85,6 +84,8 @@ as the buffer sheet so Production can find it.
 ### 2.3 Create the connection
 1. **Data** → **Get Data** → **From Database** → **From SQL Server Database**
 2. Server `TIB-SQL-002`  ·  Database `S200_LIVE`
+   (the query reaches `OliverHarveyLive` itself via three-part names — you only
+   pick one database here)
 3. Expand **Advanced options** → paste your SQL into the **SQL statement** box
 4. **OK** → credentials → **Windows / Use my current credentials** → **Connect**
 5. **Load To…** → **Table** → **New worksheet**. Rename the sheet `SageData`.
@@ -97,7 +98,11 @@ stock"), not the product itself, but some sites tag it with an analysis code on
 the stock item instead. Put one code you know is stock-held next to one you know
 is a special make and see which column differs.
 
-Then correct the two `>> CHECK <<` spots in `10-special-makes-live.sql`.
+Run 0.3 against **both** databases — confirm Tibard and Oliver Harvey use the
+same convention before assuming one flag covers both.
+
+Then correct the `>> CHECK <<` spots in `10-special-makes-live.sql`. **`CHECK 2`
+appears twice**, once per company — they must match.
 
 ### 2.5 Swap in the real query
 **Data** → **Queries & Connections** → **Queries** tab → right-click the query →
@@ -160,28 +165,36 @@ paste. Production select the filtered rows (no header) → Ctrl+C → paste.
 
 | Col | Field | Notes |
 |---|---|---|
-| A | `LineID` | **Sage's permanent line ID. This is the dedupe key.** |
-| B | `SalesOrderNo` | |
-| C | `LineNo` | Position on the order — drives Pt 1 / Pt 2 ordering |
-| D | `ProductCode` | |
-| E | `ProductDesc` | Tabs/line breaks stripped in SQL |
-| F | `Qty` | Outstanding qty (ordered − despatched) |
-| G | `PromisedDate` | Text, `yyyy-mm-dd` |
-| H | `Customer` | |
-| I | `StockHeld` | `YES` / `NO` / `FREE-TEXT` |
+| A | `LineKey` | **The dedupe key** — `TIB-` / `OH-` prefix + Sage's permanent line ID |
+| B | `Company` | `TIBARD` or `OLIVER HARVEY` |
+| C | `SalesOrderNo` | |
+| D | `LineNo` | Position on the order — drives Pt 1 / Pt 2 ordering |
+| E | `ProductCode` | |
+| F | `ProductDesc` | Tabs/line breaks stripped in SQL |
+| G | `Qty` | Outstanding qty (ordered − despatched) |
+| H | `PromisedDate` | Text, `yyyy-mm-dd` |
+| I | `Customer` | |
+| J | `StockHeld` | `YES` / `NO` / `FREE-TEXT` |
 
-### Why LineID, and not the sales order number
+### Why a line key, and not the sales order number
 
 You asked for "don't duplicate any sales order already on a works order". Keying
-that on the **order number** alone breaks the first time the office adds a line
-to an existing order — the app would see SO12345 already done and silently skip
-the new product. Keying on `LineID` (Sage's `SOPOrderReturnLineID`, unique and
-never reused) means: paste as often as you like, each *line* becomes exactly one
-works order, and a line added at 2pm still gets picked up on the afternoon paste.
+that on the **order number** alone breaks the first time the office adds a line to
+an existing order — the app would see SO12345 as already done and silently skip
+the new product. Keying on Sage's `SOPOrderReturnLineID` (unique, never reused)
+means: paste as often as you like, each *line* becomes exactly one works order,
+and a line added at 2pm still gets picked up on the afternoon paste.
 
-That's why column A must not be dropped from the query.
+### Why the key is prefixed with the company
 
----
+The two databases number their lines independently, so **Tibard line 45678 and
+Oliver Harvey line 45678 both exist**. Without the prefix, an Oliver Harvey order
+would be silently treated as already made because Tibard happened to use that
+number first — a wrong-company skip that nobody would spot until the order was
+late. `TIB-45678` / `OH-45678` makes the collision impossible.
+
+The same goes for the works order reference itself: the two companies' sales
+order numbers overlap, so it needs to read `OH-SO12345 Pt 1`, not `SO12345 Pt 1`.
 
 ## 4. Decisions still needed for the app side
 

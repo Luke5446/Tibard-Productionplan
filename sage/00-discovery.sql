@@ -66,3 +66,34 @@ GROUP BY LineTypeID;
 /* 0 = Standard (stock/product) line, 1 = Free text, 2 = Charge, 3 = Comment.
    If special makes are ever keyed as FREE TEXT rather than a product code,
    type 1 rows matter to you - the main query keeps them and flags them. */
+
+
+/* --- 0.5  BOTH COMPANIES: run the stock-held check across the two databases -
+   Tibard (S200_LIVE) and Oliver Harvey (OliverHarveyLive) are on the same
+   server, so three-part names read both in one go. Paste this straight into
+   Excel's SQL statement box.
+
+   Fill in one code you KNOW is stock-held and one you KNOW is a special make
+   for EACH company, then look for the column that differs between them.
+   Do not assume both companies use the same convention - check.            */
+
+SELECT 'TIBARD' AS Company, si.Code, si.Name,
+       si.ItemTypeID, si.ProductGroupID,
+       pg.Code AS PG_Code, pg.Name AS PG_Name, pg.*
+FROM   S200_LIVE.dbo.StockItem si
+LEFT JOIN S200_LIVE.dbo.ProductGroup pg ON pg.ProductGroupID = si.ProductGroupID
+WHERE  si.Code IN ('OHAPP054415', '<a Tibard special make code>')
+
+UNION ALL
+
+SELECT 'OLIVER HARVEY', si.Code, si.Name,
+       si.ItemTypeID, si.ProductGroupID,
+       pg.Code, pg.Name, pg.*
+FROM   OliverHarveyLive.dbo.StockItem si
+LEFT JOIN OliverHarveyLive.dbo.ProductGroup pg ON pg.ProductGroupID = si.ProductGroupID
+WHERE  si.Code IN ('<an OH stock-held code>', '<an OH special make code>');
+
+/* If this errors with "Invalid column name", the ProductGroup table on your
+   version does not have that column - run 0.1 first and use the real names.
+   If it errors on OliverHarveyLive specifically, your Windows login can read
+   Tibard but not Oliver Harvey; ask IT to even that up. */
