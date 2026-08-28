@@ -10,9 +10,12 @@
    ========================================================================= */
 
 
-/* --- 0.1  Confirm the tables and columns exist with these names ---------- */
+/* --- 0.1  Confirm the tables and columns exist with these names ----------
+   RUN THIS FIRST. Do not guess column names - Sage's are not always what you
+   would expect (StockItem has no ItemTypeID, for one). Three-part naming so it
+   works from Excel whichever database the connection is pointed at. */
 SELECT  TABLE_NAME, COLUMN_NAME, DATA_TYPE
-FROM    INFORMATION_SCHEMA.COLUMNS
+FROM    S200_LIVE.INFORMATION_SCHEMA.COLUMNS
 WHERE   TABLE_NAME IN ('SOPOrderReturn','SOPOrderReturnLine',
                        'StockItem','ProductGroup','SLCustomerAccount')
 ORDER BY TABLE_NAME, ORDINAL_POSITION;
@@ -42,7 +45,9 @@ ORDER BY DocumentTypeID, DocumentStatusID;
 /* DocumentTypeID 0 = Sales Order, 1 = Sales Return (confirm with the above). */
 
 
-/* --- 0.3  Find where "stock held = Yes" actually lives ------------------- */
+/* --- 0.3  Find where "stock held = Yes" actually lives -------------------
+   Only run this AFTER 0.1 - the column list below must come from 0.1's output,
+   not from assumption. */
 /* THIS IS THE IMPORTANT ONE. Take one product code you KNOW is a stock-held
    item you manufacture, and one you KNOW is a special make. Compare the two
    rows side by side and look for the column that differs. */
