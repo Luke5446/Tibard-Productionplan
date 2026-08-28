@@ -15,7 +15,7 @@ Excel works order + Google Sheet step the sales office does today.
 
 ## 1. Which route to take
 
-**Confirmed: Sage 200 Professional**, SQL Server `TIB-SQL-002\SAGE200`, database
+**Confirmed: Sage 200 Professional**, SQL Server `TIB-SQL-002`, database
 `S200_LIVE`. So the route is **Power Query → SQL Server** (section 2): genuinely
 live, one refresh button, no add-ins, no extra licences.
 
@@ -32,13 +32,18 @@ live, one refresh button, no add-ins, no extra licences.
 
 ## 2. Building the sheet (Sage 200 Professional)
 
-### Your connection details (read off the existing buffer sheet)
+### Your connection details
+
+Read off the existing buffer sheet's `eve_AllLiveSOPPOPStockConsignment`
+connection (Queries & Connections → Connections → Properties → Definition):
 
 | | |
 |---|---|
-| **Server** | `TIB-SQL-002\SAGE200` |
+| **Server** | `TIB-SQL-002` — the default instance, **not** `TIB-SQL-002\SAGE200` |
 | **Database** | `S200_LIVE` |
-| Existing buffer source | `eve_AllLiveSOPPOPStockConsignment` (a custom SQL view — item-level, not order-line level, so we need a new query) |
+| **Authentication** | Windows (`Integrated Security=SSPI`, no saved password) |
+| Existing connection type | OLE DB Query, Command type `Table` — legacy, pre-Power Query |
+| Existing source object | `"S200_Live"."dbo"."eve_AllLiveSOPPOPStockConsignment"` — a **custom SQL view** someone has already added inside the Sage database |
 | Other company DB seen | `...OliverHarvey...` — check whether special makes are raised under this company too |
 
 **Build this in a NEW workbook, not in the buffer sheet.** The buffer sheet is a
@@ -50,16 +55,28 @@ Every query in `00-discovery.sql` can be run from Excel itself: paste it into th
 SQL statement box in step 2.3 below and load the result to a sheet. Read the
 answer, then swap in the next query.
 
-### 2.1 Authentication
-Try **Windows authentication ("Use my current credentials")** first — if the
-existing buffer connection uses it, yours will work too and you need nothing from
-IT. Check by opening the buffer sheet's connection → **Definition** tab: an
-`Integrated Security=SSPI` in the connection string means Windows auth.
+### 2.1 Authentication — nothing needed from IT
+The existing connection uses `Integrated Security=SSPI` with no saved password,
+so Sage's SQL is reachable under your own Windows login. Pick **Windows → Use my
+current credentials** when Excel asks. No new SQL login required.
 
-If it turns out to use a SQL login, ask IT for one with **db_datareader only** on
-`S200_LIVE`. Reading the Sage database is normal practice; **writing** to it
-directly is not supported by Sage and would put your support contract at risk. A
-read-only login makes that mistake impossible.
+> #### ⚠️ Raise with IT: the buffer sheet's connection string contains `User ID=sa`
+>
+> The full string is:
+> `Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=True;User ID=sa;Initial Catalog=S200_LIVE;Data Source=TIB-SQL-002;...`
+>
+> `sa` is SQL Server's superuser — it can read, alter and drop anything on that
+> server, the live Sage database included. Because `Integrated Security=SSPI` is
+> also set, the `sa` is *probably* inert leftover and Windows auth is what
+> actually connects (the unticked "Save password" supports that). But it is
+> ambiguous, and it is embedded in a workbook that gets shared.
+>
+> Two things follow:
+> 1. **Do not copy this connection string** for the new sheet. Build a fresh
+>    Windows-auth connection as below.
+> 2. Worth asking IT to strip the `User ID=sa` from the buffer sheet's
+>    connection and confirm nothing at Tibard is genuinely connecting to Sage
+>    as `sa`. Not urgent, not this project — but not something to leave unsaid.
 
 ### 2.2 Create the workbook
 New blank workbook → save as `Special Makes Live.xlsx`, in the same shared folder
@@ -67,7 +84,7 @@ as the buffer sheet so Production can find it.
 
 ### 2.3 Create the connection
 1. **Data** → **Get Data** → **From Database** → **From SQL Server Database**
-2. Server `TIB-SQL-002\SAGE200`, Database `S200_LIVE`
+2. Server `TIB-SQL-002`  ·  Database `S200_LIVE`
 3. Expand **Advanced options** → paste your SQL into the **SQL statement** box
 4. **OK** → credentials → **Windows / Use my current credentials** → **Connect**
 5. **Load To…** → **Table** → **New worksheet**. Rename the sheet `SageData`.
@@ -109,6 +126,30 @@ app can cross-check too (see section 4).
 
 Excel's Ctrl+C copies **visible rows only** when a filter is applied, so selecting
 the filtered range and copying gives exactly the special makes.
+
+---
+
+### 2.8 Later: promote the query to a SQL view (recommended follow-up)
+
+Someone has already added `eve_AllLiveSOPPOPStockConsignment` as a view inside
+`S200_Live.dbo` — your Sage partner or whoever built the buffer sheet. That is a
+better pattern than SQL embedded in a workbook, and worth following once this is
+proven:
+
+- Ask them to create `eve_LiveSpecialMakeOrderLines` from
+  `10-special-makes-live.sql` (same `eve_` prefix, so it's obviously a custom
+  object and not Sage's own).
+- The Excel connection then becomes **Command type: Table** pointing at that
+  view — identical to how the buffer sheet works today.
+- Changes get made once on the server instead of inside every copy of the
+  workbook, and nobody needs SQL in a spreadsheet to fix a date filter.
+
+Two cautions: it needs CREATE VIEW rights on the Sage database, and custom
+objects should be **re-checked after any Sage 200 upgrade** in case an upgrade
+drops them.
+
+Start with the embedded-SQL version in 2.3–2.7 — you can build that yourself
+today without waiting on anyone.
 
 ---
 
