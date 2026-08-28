@@ -123,7 +123,7 @@ step on the right — the SQL statement box reopens. Paste the corrected
 
 ### 2.7 Set up the filter
 On the `SageData` table, filter column **J (StockHeld)** to everything
-**except `YES`** — so `NO`, `NOT SET` and `FREE-TEXT` all stay visible.
+**except `YES`** — so `NO` and `FREE-TEXT` stay visible.
 
 Deliberately **not** filtered in SQL. If a new special make is set up in Sage with
 the stock-held flag wrong, a SQL filter hides it silently and the order never gets
@@ -175,7 +175,8 @@ paste. Production select the filtered rows (no header) → Ctrl+C → paste.
 | G | `Qty` | Outstanding qty (ordered − despatched) |
 | H | `PromisedDate` | Text, `yyyy-mm-dd` |
 | I | `Customer` | |
-| J | `StockHeld` | `YES` / `NO` / `NOT SET` / `FREE-TEXT` |
+| J | `StockHeld` | `YES` / `NO` / `FREE-TEXT` — blank in Sage counts as `NO` |
+| K | `Manufacturer` | Free text; only our own manufacture should raise a works order |
 
 ### Why a line key, and not the sales order number
 
@@ -197,29 +198,41 @@ late. `TIB-45678` / `OH-45678` makes the collision impossible.
 The same goes for the works order reference itself: the two companies' sales
 order numbers overlap, so it needs to read `OH-SO12345 Pt 1`, not `SO12345 Pt 1`.
 
-### The stock-held flag: confirmed, with a caveat
+### The stock-held flag: confirmed
 
 It is a **stock item analysis code**, and the two companies use **different
 slots** — they were set up separately:
 
-| Company | Slot | Items carrying Yes/No |
-|---|---|---|
-| Tibard | `AnalysisCode3` | 2,365 |
-| Oliver Harvey | `AnalysisCode7` | 2,226 |
+| Company | Slot |
+|---|---|
+| Tibard | `AnalysisCode3` |
+| Oliver Harvey | `AnalysisCode7` |
 
 The query handles each company separately. Do not "tidy" them to match.
 
-**The caveat: most items have the code blank.** Only ~2,365 of roughly 107,000
-Tibard stock items are labelled at all. A blank is not the same as "No", and
-guessing either way is unsafe:
+**The rule:** `Yes` means stock held. **`No` and blank both mean special make** —
+specials are the bulk of the product file and most are simply never labelled, so
+only an explicit `Yes` counts as stock.
 
-- treat blank as **No** → every unlabelled product floods the special makes list
-- treat blank as **Yes** → genuine special makes silently vanish
+That direction is deliberate. It errs towards a false positive — a stock item
+nobody labelled shows up as a special make, which is visible and easy to correct
+— rather than a false negative, where a special make silently never gets
+manufactured. The second is the failure this whole job exists to remove.
 
-So blank comes through as its own value, `NOT SET`, for review rather than
-assumption. How much this matters in practice depends on how many *live order
-lines* land on unlabelled products — most of those 107,000 will be historic
-variants that never appear on a current order. That still needs measuring.
+### Manufactured by us
+
+Only our own manufacture should raise a works order; bought-in goods must not.
+`StockItem.Manufacturer` holds this, but it is free text and messy — the buffer
+sheet shows `Tibard`, `Oliver Harvey`, and combined entries like
+`Urban Textiles/Tibard`.
+
+It is returned as column K but **not yet filtered on**, pending a profile of the
+real values. Two things need deciding once that list is in:
+
+1. What a combined entry like `Urban Textiles/Tibard` means — made by us, or
+   bought in?
+2. What a **blank** manufacturer means. If blank can be one of ours, filtering
+   it out would silently drop genuine special makes.
 
 ## 4. Decisions still needed for the app side
 

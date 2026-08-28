@@ -18,6 +18,7 @@
    Output column order is FIXED - the app parses by position:
      A LineKey  B Company  C SalesOrderNo  D LineNo  E ProductCode
      F ProductDesc  G Qty  H PromisedDate  I Customer  J StockHeld
+     K Manufacturer
    ========================================================================= */
 
 /* ---------------------------------------------------------------- TIBARD -- */
@@ -67,28 +68,37 @@ SELECT
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS Customer,
 
-    /* J - Stock-held flag. CONFIRMED to be a stock item ANALYSIS CODE, and
-           the two companies use DIFFERENT SLOTS:
+    /* J - Stock-held flag. A stock item ANALYSIS CODE, and the two companies
+           use DIFFERENT SLOTS - they were set up separately:
 
-             TIBARD        -> AnalysisCode3   (2,365 items carry Yes/No)
-             OLIVER HARVEY -> AnalysisCode7   (2,226 items carry Yes/No)
+             TIBARD        -> AnalysisCode3
+             OLIVER HARVEY -> AnalysisCode7
 
-           Product groups turned out to be garment categories (Chef Jackets,
-           Trousers, Aprons), so they were never the flag.
+           Confirmed rule: 'Yes' means stock held. 'No' AND BLANK both mean
+           special make - specials are the bulk of the product file, and most
+           are simply never labelled. So only an explicit 'Yes' is treated as
+           stock held; everything else falls through to the special makes list.
 
-           Note the third state, NOT SET. Most Tibard stock items have this
-           code blank - only 2,365 of roughly 107,000 are labelled at all. A
-           blank is NOT the same as "No", and guessing either way is unsafe:
-           treat blank as No and every unlabelled product floods the special
-           makes list; treat it as Yes and genuine special makes vanish. So it
-           is surfaced as its own value for review rather than assumed. */
+           This errs deliberately towards a false positive (a stock item that
+           was never labelled shows up as a special make - visible, and easy to
+           spot and correct) rather than a false negative (a special make that
+           silently never gets manufactured), which is the failure this whole
+           job exists to remove. */
     CASE
-        WHEN sorl.LineTypeID = 1                 THEN 'FREE-TEXT'
-        WHEN si.ItemID IS NULL                   THEN 'FREE-TEXT'
-        WHEN NULLIF(si.AnalysisCode3,'') IS NULL THEN 'NOT SET'
-        WHEN si.AnalysisCode3 = 'Yes'            THEN 'YES'
-        ELSE 'NO'
-    END                                                         AS StockHeld
+        WHEN sorl.LineTypeID = 1      THEN 'FREE-TEXT'
+        WHEN si.ItemID IS NULL        THEN 'FREE-TEXT'
+        WHEN si.AnalysisCode3 = 'Yes' THEN 'YES'   -- explicit Yes only
+        ELSE 'NO'                                  -- 'No' and blank alike
+    END                                                         AS StockHeld,
+
+    /* K - >> CHECK 3 <<  Who makes it. Only our own manufacture should raise a
+           works order; bought-in goods must not. StockItem.Manufacturer holds
+           this, but the values are free text and messy - the buffer sheet shows
+           'Tibard', 'Oliver Harvey' and combined entries like
+           'Urban Textiles/Tibard'. Returned as a column for now; the filter is
+           left out until the real value list has been profiled, so that nothing
+           is silently dropped in the meantime. */
+    LTRIM(RTRIM(ISNULL(si.Manufacturer,'')))                    AS Manufacturer
 
 FROM        S200_LIVE.dbo.SOPOrderReturn      sor
 INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
@@ -125,14 +135,13 @@ SELECT
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS Customer,
     CASE            -- NB: AnalysisCode7 here, NOT 3. Oliver Harvey uses a
-                    -- different slot to Tibard - the companies were set up
-                    -- separately. Do not "tidy" these two to match.
-        WHEN sorl.LineTypeID = 1                 THEN 'FREE-TEXT'
-        WHEN si.ItemID IS NULL                   THEN 'FREE-TEXT'
-        WHEN NULLIF(si.AnalysisCode7,'') IS NULL THEN 'NOT SET'
-        WHEN si.AnalysisCode7 = 'Yes'            THEN 'YES'
+                    -- different slot to Tibard. Do not "tidy" these to match.
+        WHEN sorl.LineTypeID = 1      THEN 'FREE-TEXT'
+        WHEN si.ItemID IS NULL        THEN 'FREE-TEXT'
+        WHEN si.AnalysisCode7 = 'Yes' THEN 'YES'
         ELSE 'NO'
-    END                                                         AS StockHeld
+    END                                                         AS StockHeld,
+    LTRIM(RTRIM(ISNULL(si.Manufacturer,'')))                    AS Manufacturer
 
 FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
 INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
