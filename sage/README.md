@@ -118,23 +118,40 @@ step on the right — the SQL statement box reopens. Paste the corrected
   means the refresh finishes before they can touch anything.
 - ❌ Adjust column width (stops the layout jumping on every refresh)
 
-### 2.7 No filtering needed
+### 2.7 No filtering needed — and do not filter on Manufacturer
 
 Copy columns **A to K**, all rows, **without the header**, and paste the lot.
-The app sorts the categories out itself:
+
+> #### ⚠️ Never filter on column K (Manufacturer)
+>
+> Logo and charge lines have **no manufacturer of their own** — they are
+> `LOGOAPPLICATION`, `LOGOORIGINATION` and typed free text, not products. Filter
+> column K to `Tibard` / `Oliver Harvey` and every one of them disappears, taking
+> the logo position and artwork approval with it. The works orders would still be
+> raised; they would just have no logo detail on them, and nothing would say so.
+>
+> The query solves this itself rather than leaving it to a filter: a `NOTE` line
+> is returned **only when its own sales order also carries a line needing a works
+> order or a decision**. Notes for orders that are entirely bought-in never
+> appear. So there is nothing to filter out.
+
+Everything returned is relevant:
 
 | Category | What the app does |
 |---|---|
 | `WORKS ORDER` | Into the review queue — you accept or dismiss each one |
 | `REVIEW - …` | Into the same queue, tagged with the reason |
 | `NOTE - …` | Attached automatically to the works orders on that sales order |
-| `INTERCOMPANY - no works order` | Counted and ignored |
+| `INTERCOMPANY - no works order` | Counted and ignored — kept only so the count stays visible |
+
+Stock-held items and bought-in goods are dropped in the query, so they never
+reach the sheet at all.
 
 Nothing is created on paste. Works orders exist only once you accept them, and
 anything dismissed is remembered so it is never offered again.
 
-A filter is still worth setting if you want to *read* the sheet, but it makes no
-difference to what you paste.
+**If notes do go missing**, pasting the full sheet later fixes it — notes are
+held per sales order and re-attach to works orders that already exist.
 
 ---
 
