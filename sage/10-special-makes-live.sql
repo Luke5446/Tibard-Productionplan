@@ -12,9 +12,16 @@
      F ProductDesc  G Qty  H PromisedDate  I Customer  J Category  K Manufacturer
 
    Filter column J to WORKS ORDER for production. Other values:
+     NOTE - free text / charge or logo line   attach to the works orders on the
+                                    same sales order, do not raise their own
      INTERCOMPANY - no works order   already raised from the customer order
      REVIEW - no manufacturer set    fix the manufacturer in Sage
-     REVIEW - code not in stock file / free text line   check by hand
+     REVIEW - FREETEXT placeholder   a described item with no real code
+     REVIEW - code not in stock file check by hand
+
+   Product group 54 is "Additional Charges" - LOGOAPPLICATION, LOGOORIGINATION,
+   TEXTAPPLICATION, HANDLINGCHARGE. Classified by GROUP, not by listing those
+   codes, so service codes added later inherit the behaviour.
    ========================================================================= */
 
 /* ---------------------------------------------------------------- TIBARD -- */
@@ -55,7 +62,9 @@ SELECT
        Produce and Oliver's Battery Countryside Group. */
     CASE
         WHEN cust.CustomerAccountNumber = 'OLIVER'   THEN 'INTERCOMPANY - no works order'
-        WHEN si.Code IS NULL AND sorl.LineTypeID = 1 THEN 'REVIEW - free text line'
+        WHEN sorl.LineTypeID = 1                     THEN 'NOTE - free text'
+        WHEN pg.Code = '54'                          THEN 'NOTE - charge or logo line'
+        WHEN sorl.ItemCode = 'FREETEXT'              THEN 'REVIEW - FREETEXT placeholder'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
         WHEN si.Manufacturer LIKE '%Tibard%'
           OR si.Manufacturer LIKE '%Oliver Harvey%'  THEN 'WORKS ORDER'
@@ -67,6 +76,7 @@ SELECT
 FROM        S200_LIVE.dbo.SOPOrderReturn      sor
 INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
 LEFT  JOIN  S200_LIVE.dbo.StockItem           si   ON si.Code                  = sorl.ItemCode
+LEFT  JOIN  S200_LIVE.dbo.ProductGroup        pg   ON pg.ProductGroupID        = si.ProductGroupID
 LEFT  JOIN  S200_LIVE.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
 WHERE
         sor.DocumentTypeID   = 0                  -- sales orders, not returns
@@ -104,7 +114,9 @@ SELECT
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' '))),
     CASE
         WHEN cust.CustomerAccountNumber = 'TIB003'   THEN 'INTERCOMPANY - no works order'
-        WHEN si.Code IS NULL AND sorl.LineTypeID = 1 THEN 'REVIEW - free text line'
+        WHEN sorl.LineTypeID = 1                     THEN 'NOTE - free text'
+        WHEN pg.Code = '54'                          THEN 'NOTE - charge or logo line'
+        WHEN sorl.ItemCode = 'FREETEXT'              THEN 'REVIEW - FREETEXT placeholder'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
         WHEN si.Manufacturer LIKE '%Tibard%'
           OR si.Manufacturer LIKE '%Oliver Harvey%'  THEN 'WORKS ORDER'
@@ -115,6 +127,7 @@ SELECT
 FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
 INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
 LEFT  JOIN  OliverHarveyLive.dbo.StockItem           si   ON si.Code                  = sorl.ItemCode
+LEFT  JOIN  OliverHarveyLive.dbo.ProductGroup        pg   ON pg.ProductGroupID        = si.ProductGroupID
 LEFT  JOIN  OliverHarveyLive.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
 WHERE
         sor.DocumentTypeID   = 0

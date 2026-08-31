@@ -132,8 +132,10 @@ DTF is heat transfer, EMB is embroidery. The method should **not** go in the
 product code — `-EMB` and `-DTF` variants would put the code count back up and
 the method is not really a property of the garment.
 
-It belongs on the job, defaulted from the logo record, since each logo entry
-already holds an EMB file, a DTF file, or both. Where a logo exists in only one
+It belongs on the job's **operations**, of which there can be more than one —
+confirmed: a customer can have both EMB and DTF on the same product. So a job
+carries a list of operations, each with its own method, logo and placement,
+rather than a single method field. Where a logo exists in only one
 format the method is decided for you. Where it exists in both, the order line or
 the emb manager chooses.
 
@@ -216,8 +218,11 @@ Steps 1 and 2 can run in parallel and neither blocks the other.
 
 - Are EMB and DTF separate queues with separate capacity, or one queue with a
   method attribute? Affects the emb view, not the data model.
-- Can one order line need both EMB and DTF — a stitched chest logo and a printed
-  back, say?
+- ~~Can one order line need both EMB and DTF?~~ **Yes** — confirmed. A job is
+  therefore one-to-many with its operations: a line can carry an embroidered
+  chest logo and a printed back. The model must allow several operations per
+  job from the start; retrofitting that later would mean reworking every queue
+  and every completion state.
 - Who owns setting the personalisation flag when a new product is created —
   sales office, or whoever sets up the product record?
 - What happens to a job where the emb manager finds the artwork is not approved?
