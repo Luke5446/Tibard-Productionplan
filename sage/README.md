@@ -8,8 +8,10 @@ Excel works order + Google Sheet step the sales office does today.
 
 | File | What it is |
 |---|---|
-| `00-discovery.sql` | Run this first. Proves the column names and status numbers on **your** database. |
-| `10-special-makes-live.sql` | The query the sheet runs. Two spots marked `>> CHECK <<` need confirming from step 0. |
+| `10-special-makes-live.sql` | **The query the sheet runs.** Finished and validated — this is the one to paste. |
+| `00-discovery.sql` | The schema and data investigation behind it, kept as a record of how each rule was established. |
+| `08-find-analysis-code.sql` | Profiles all 20 analysis code slots — how the stock-held flag was located. |
+| `20-validate-against-known-specials.sql` | Runs real codes from the manual sheet through the rules. Re-run it after any rule change. |
 
 ---
 
@@ -90,19 +92,14 @@ as the buffer sheet so Production can find it.
 4. **OK** → credentials → **Windows / Use my current credentials** → **Connect**
 5. **Load To…** → **Table** → **New worksheet**. Rename the sheet `SageData`.
 
-### 2.4 Confirm the schema before trusting the query
-Run the queries in `00-discovery.sql` through the box in 2.3, in order. The one
-that really matters is **0.3 — where "stock held = Yes" actually lives**. In Sage
-200 that tick is normally on the *Product Group* ("this product group holds
-stock"), not the product itself, but some sites tag it with an analysis code on
-the stock item instead. Put one code you know is stock-held next to one you know
-is a special make and see which column differs.
+### 2.4 The query is already confirmed — no discovery needed
 
-Run 0.3 against **both** databases — confirm Tibard and Oliver Harvey use the
-same convention before assuming one flag covers both.
+`10-special-makes-live.sql` is finished. Every column name in it was checked
+against the live database and every rule was measured or validated against real
+orders. Paste it as it stands.
 
-Then correct the `>> CHECK <<` spots in `10-special-makes-live.sql`. **`CHECK 2`
-appears twice**, once per company — they must match.
+`00-discovery.sql` is kept as the record of how that was established — worth
+reading only if a rule needs revisiting or something stops matching.
 
 ### 2.5 Swap in the real query
 **Data** → **Queries & Connections** → **Queries** tab → right-click the query →
@@ -122,16 +119,21 @@ step on the right — the SQL statement box reopens. Paste the corrected
 - ❌ Adjust column width (stops the layout jumping on every refresh)
 
 ### 2.7 Set up the filter
-On the `SageData` table, filter column **J (StockHeld)** to everything
-**except `YES`** — so `NO` and `FREE-TEXT` stay visible.
+On the `SageData` table, filter column **J (Category)** to **`WORKS ORDER`**.
 
-Deliberately **not** filtered in SQL. If a new special make is set up in Sage with
-the stock-held flag wrong, a SQL filter hides it silently and the order never gets
-made. This way it's still on the sheet — visible, one filter click away — and the
-app can cross-check too (see section 4).
+The other categories stay on the sheet rather than being filtered out in SQL,
+because each one means something different and none should vanish silently:
+
+| Category | Who acts |
+|---|---|
+| `WORKS ORDER` | Production — this is the filter |
+| `NOTE - …` | Attach to the works orders on the same sales order |
+| `REVIEW - no manufacturer set` | Someone fixes the manufacturer in Sage |
+| `REVIEW - FREETEXT placeholder` | Check by hand — could be a real special make |
+| `INTERCOMPANY - no works order` | Nobody; already raised from the customer order |
 
 Excel's Ctrl+C copies **visible rows only** when a filter is applied, so selecting
-the filtered range and copying gives exactly the special makes.
+the filtered range and copying gives exactly what production act on.
 
 ---
 
