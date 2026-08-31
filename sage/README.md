@@ -300,7 +300,6 @@ number**:
 |---|---|---|
 | `S200_LIVE` | `OLIVER` | Oliver Harvey Ltd |
 | `OliverHarveyLive` | `TIB003` | Tibard Ltd |
-| `OliverHarveyLive` | `TIB002` | Tibard Laundry Services Ltd |
 
 Those lines are labelled `INTERCOMPANY - no works order` — visible on the sheet,
 outside the production filter. The works order stays with the original customer
@@ -313,10 +312,8 @@ The Oliver Gilbey and Oliver's Battery Countryside Group. A `LIKE '%Oliver%'`
 rule would have silently excluded every one of those real customers' special
 makes. Account numbers only.
 
-**Open question:** `TIB002` Tibard Laundry Services Ltd is included on the
-assumption it is a group entity rather than an arms-length customer. If it buys
-special makes in its own right, remove it from the list — otherwise its orders
-would never reach production.
+`TIB002` Tibard Laundry Services Ltd is **not** included — that account is no
+longer used.
 
 **Belt and braces, app side:** before creating a works order, check whether the
 same product code already has an open works order from *either* company. If it

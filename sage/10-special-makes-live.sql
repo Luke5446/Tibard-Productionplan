@@ -1,72 +1,44 @@
 /* ============================================================================
    SPECIAL MAKES - LIVE SALES ORDER LINES        Sage 200 Professional
-   Feeds the "Special Makes" tab of the Production Buffer app.
+   Server TIB-SQL-002. Reads both companies - S200_LIVE (Tibard) and
+   OliverHarveyLive - in one pass via three-part names.
 
-   Server TIB-SQL-002. Covers BOTH companies - Tibard (S200_LIVE) and Oliver
-   Harvey (OliverHarveyLive) - which sit on the same server, so one query and
-   one connection reads both via three-part names.
+   Full rationale, the schema assumptions that proved wrong, and the validation
+   results are in sage/README.md. Column names below are all confirmed against
+   the live database.
 
-   Every column name below was confirmed against the live database. The
-   assumptions that did NOT survive contact with it, kept here so nobody
-   reintroduces them:
-     - SOPOrderReturnLine has no LineNumber          -> PrintSequenceNumber
-     - SOPOrderReturnLine has no QuantityDespatched  -> DespatchReceiptQuantity
-     - SOPOrderReturnLine has no ItemID at all, so there is no key to
-       StockItem; matched on si.Code = sorl.ItemCode
-     - StockItem has no ItemTypeID, ProductGroup has no Name or HoldsStock
-     - Product groups are garment categories, not a stock/non-stock split
-
-   CLASSIFICATION - validated against 22 real codes from the manual sheet,
-   18 of which came back as works orders, 3 for review, and 1 correctly
-   excluded as genuinely stock held:
-
-     stock-held analysis code = 'Yes'   -> excluded, the buffer app covers it
-     manufacturer is ours               -> WORKS ORDER
-     manufacturer blank                 -> REVIEW, so Sage gets corrected
-     manufacturer is a trade brand      -> excluded, bought in to order
-
-   The analysis code lives in a DIFFERENT SLOT per company - they were set up
-   separately. Tibard AnalysisCode3, Oliver Harvey AnalysisCode7. Do not tidy
-   these to match.
-
-   Output column order is FIXED - the app parses by position:
+   Output order is FIXED - the app parses by position:
      A LineKey  B Company  C SalesOrderNo  D LineNo  E ProductCode
-     F ProductDesc  G Qty  H PromisedDate  I Customer  J Category
-     K Manufacturer
+     F ProductDesc  G Qty  H PromisedDate  I Customer  J Category  K Manufacturer
 
-   Category values, filter column J to WORKS ORDER for production:
-     WORKS ORDER                    make it
-     INTERCOMPANY - no works order  the other company's PO for a job already
-                                    raised from the original customer order
-     REVIEW - no manufacturer set   fix the manufacturer in Sage
+   Filter column J to WORKS ORDER for production. Other values:
+     INTERCOMPANY - no works order   already raised from the customer order
+     REVIEW - no manufacturer set    fix the manufacturer in Sage
      REVIEW - code not in stock file / free text line   check by hand
    ========================================================================= */
 
 /* ---------------------------------------------------------------- TIBARD -- */
 SELECT
-    /* Permanent per-line key - this is what stops a second works order when
-       you paste again later the same day. Prefixed with the company because
-       the two databases number their lines independently, so Tibard line
-       45678 and Oliver Harvey line 45678 both exist. */
+    /* Permanent per-line key - stops a second works order when you paste again
+       later the same day. Company-prefixed: the two databases number lines
+       independently, so Tibard 45678 and Oliver Harvey 45678 both exist. */
     'TIB-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20))     AS LineKey,
     'TIBARD'                                                    AS Company,
     sor.DocumentNo                                              AS SalesOrderNo,
     sorl.PrintSequenceNumber                                    AS LineNo,
     LTRIM(RTRIM(sorl.ItemCode))                                 AS ProductCode,
 
-    /* Tabs and line breaks stripped - the app splits pasted rows on TAB, so a
-       stray tab in a description would shift every column after it. */
+    /* Tabs and line breaks stripped - the app splits pasted rows on TAB. */
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
         ISNULL(sorl.ItemDescription,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS ProductDesc,
 
-    /* Outstanding, not ordered - a part-despatched order raises a works order
-       for the remainder only. */
+    /* Outstanding, not ordered - part-despatched orders make the balance. */
     CAST(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)
          AS decimal(18,2))                                      AS Qty,
 
-    /* Text in yyyy-mm-dd on purpose. A real Excel date pasted into a browser
-       arrives as a 5-digit serial number or a dd/mm-vs-mm/dd guess. */
+    /* Text in yyyy-mm-dd. A real Excel date pasted into a browser arrives as a
+       5-digit serial or a dd/mm-vs-mm/dd guess. */
     CONVERT(varchar(10), COALESCE(sorl.PromisedDeliveryDate,
                                   sor.PromisedDeliveryDate,
                                   sorl.RequestedDeliveryDate,
@@ -76,17 +48,11 @@ SELECT
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS Customer,
 
-    /* Inter-company first. Oliver Harvey does not manufacture, so an OH
-       special make is made by Tibard and covered by an OH purchase order -
-       which raises a SECOND sales order, here in Tibard, for the same physical
-       job. Different database, different line, so the LineKey dedupe cannot
-       connect the two. The works order belongs to OH's original customer
-       order, which carries the real demand and the real promised date.
-
-       Matched on ACCOUNT NUMBER, never on name: Tibard's customer file also
-       holds Harvey Nichols, Harveys Laundry, Mrs Oliver, Oliver Kay Produce
-       and Oliver's Battery Countryside Group. A name match would have excluded
-       every one of them. */
+    /* Inter-company first: an OH special make is made by Tibard and covered by
+       an OH purchase order, which raises a second sales order here for the same
+       physical job. Matched on ACCOUNT NUMBER, never name - this customer file
+       also holds Harvey Nichols, Harveys Laundry, Mrs Oliver, Oliver Kay
+       Produce and Oliver's Battery Countryside Group. */
     CASE
         WHEN cust.CustomerAccountNumber = 'OLIVER'   THEN 'INTERCOMPANY - no works order'
         WHEN si.Code IS NULL AND sorl.LineTypeID = 1 THEN 'REVIEW - free text line'
@@ -103,21 +69,22 @@ INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    =
 LEFT  JOIN  S200_LIVE.dbo.StockItem           si   ON si.Code                  = sorl.ItemCode
 LEFT  JOIN  S200_LIVE.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
 WHERE
-        sor.DocumentTypeID   = 0                      -- sales orders, not returns
-    AND sor.DocumentStatusID = 0                      -- live
-    AND sorl.LineTypeID IN (0, 1)                     -- product + free text; no charges/comments
+        sor.DocumentTypeID   = 0                  -- sales orders, not returns
+    AND sor.DocumentStatusID = 0                  -- live
+    AND sorl.LineTypeID IN (0, 1)                 -- product + free text
     AND (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
-    AND ISNULL(si.AnalysisCode3,'') <> 'Yes'          -- not stock held (buffer app covers those)
-    AND (si.Code IS NULL                              -- keep unmatched for review
-         OR NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL   -- keep blank for review
+    AND ISNULL(si.AnalysisCode3,'') <> 'Yes'      -- Tibard stock-held slot
+    AND (si.Code IS NULL
+         OR NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL
          OR si.Manufacturer LIKE '%Tibard%'
-         OR si.Manufacturer LIKE '%Oliver Harvey%')   -- ours
+         OR si.Manufacturer LIKE '%Oliver Harvey%')
 
 UNION ALL
 
 /* -------------------------------------------------------- OLIVER HARVEY -- */
 /* Identical, except the database, the key prefix, the company label, and
-   AnalysisCode7 in place of AnalysisCode3. */
+   AnalysisCode7 in place of AnalysisCode3 - the two companies were set up
+   separately and use different analysis code slots. Do not tidy them to match. */
 SELECT
     'OH-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20)),
     'OLIVER HARVEY',
@@ -135,9 +102,8 @@ SELECT
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' '))),
-    CASE   -- TIB003 Tibard Ltd, TIB002 Tibard Laundry Services Ltd
-        WHEN cust.CustomerAccountNumber IN ('TIB003','TIB002')
-                                                     THEN 'INTERCOMPANY - no works order'
+    CASE
+        WHEN cust.CustomerAccountNumber = 'TIB003'   THEN 'INTERCOMPANY - no works order'
         WHEN si.Code IS NULL AND sorl.LineTypeID = 1 THEN 'REVIEW - free text line'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
         WHEN si.Manufacturer LIKE '%Tibard%'
@@ -155,7 +121,7 @@ WHERE
     AND sor.DocumentStatusID = 0
     AND sorl.LineTypeID IN (0, 1)
     AND (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
-    AND ISNULL(si.AnalysisCode7,'') <> 'Yes'
+    AND ISNULL(si.AnalysisCode7,'') <> 'Yes'      -- Oliver Harvey stock-held slot
     AND (si.Code IS NULL
          OR NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL
          OR si.Manufacturer LIKE '%Tibard%'
