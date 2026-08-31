@@ -44,28 +44,26 @@ biggest thing on the table.
 
 Two refinements.
 
-### 1. Prefer a customer-specific suffix over a generic `-B`
+### 1. A generic `-B` is correct — a customer suffix is not
 
-`CJM0193LL03-B` says "branded" but not **branded for whom**. If two customers
-both order that garment with their own logos, both lines carry `-B`, and:
+An earlier draft of this note argued for a customer-specific suffix. That was
+wrong, and the reason matters.
 
-- stock of `-B` is meaningless — one customer's branded stock cannot fill
-  another's order
-- the works order still has to carry the logo, so the code has not actually
-  identified the job
+Customers do not buy a narrow range. A hundred customers a week might each order
+the same t-shirt with their own logo, which under a customer-suffix scheme means
+**a hundred new product codes for one garment**, every week, forever. The product
+file already carries ~107,000 items and a lot of dead history; that scheme would
+make the problem worse at an accelerating rate, and every code needs setting up
+by hand.
 
-The existing product file already solves this. `FENAP0534173` (Fenwick),
-`WAGHTM016015` (Wagamama), `OHCJSMOXFORD4401S`, `CICJM01935803` — customer is
-already encoded in the code for branded and special work. Extending that
-convention to branded stock and bought-in items is consistent with what the
-business already does, and each code is then a genuinely distinct product.
+So: **one plain code and one branded code per garment**. `CJM0193LL03` and
+`CJM0193LL03-B`. Two codes per garment, not one per customer per garment.
 
-The cost is honest: more codes, and a setup step per customer/product pairing.
-A generic `-B` is fewer codes but pushes identification back onto the works
-order, which is where the ambiguity already lives.
+Special makes need no suffix — the code is already unique to the job and the
+detail lives on the works order.
 
-Reasonable middle ground: customer suffix for anything repeating or held,
-generic `-B` for true one-offs that will never sit in stock.
+This does leave a real question, addressed below: if the code no longer says
+whose logo it is, what does?
 
 ### 2. The suffix must not be the machine-readable mechanism
 
@@ -82,6 +80,65 @@ it is a dropdown, it is queryable, and this project has already proved the
 pattern works.
 
 So: suffix for humans, analysis code for machines. Both, not either.
+
+## Lining artwork up to the order
+
+With a generic `-B`, the code says *this needs branding* but not *with what*.
+That is the gap to close, and it is closed by splitting the question in two:
+
+> **Artwork is a property of the customer. Placement is a property of the order.**
+
+Those are different things with different lifespans, and conflating them is what
+makes the current process fragile.
+
+### A logo library, keyed by customer account
+
+Most customers have one logo, some have two or three — a main mark and a
+colourway variant. Each entry holds:
+
+| | |
+|---|---|
+| Customer account | `HAR005`, `FEN001`… — the join key, already in the feed |
+| Logo name | "Aramark White/Red" |
+| Artwork | the approved file |
+| EMB file | digitised stitch file |
+| DTF file | print-ready file |
+| Default placement | "Left chest as worn" |
+| Approved date | what "Approved 26.8.26" is trying to record today |
+
+This must live in the app, not Sage — Sage cannot hold artwork sensibly. The
+customer account number is the join, and the feed already carries it.
+
+### Defaults at customer level, overrides at line level
+
+For a repeat customer the placement is nearly always the same. So:
+
+- a `-B` line inherits the customer's default logo and placement automatically
+- the order line only needs an instruction when it **differs** from the default
+- the emb manager sees plainly which she is looking at: *customer default* or
+  *explicit instruction*
+
+This is the part that fixes "staff forget". A forgotten placement is no longer a
+missing instruction — it falls back to what that customer always has. Forgetting
+becomes harmless instead of invisible.
+
+Where a customer has more than one logo and the line says nothing, the job is
+flagged **needs logo selection** rather than guessed at. Visible, not silent —
+the same principle as the review buckets in the special makes feed.
+
+### EMB vs DTF
+
+DTF is heat transfer, EMB is embroidery. The method should **not** go in the
+product code — `-EMB` and `-DTF` variants would put the code count back up and
+the method is not really a property of the garment.
+
+It belongs on the job, defaulted from the logo record, since each logo entry
+already holds an EMB file, a DTF file, or both. Where a logo exists in only one
+format the method is decided for you. Where it exists in both, the order line or
+the emb manager chooses.
+
+If the two are genuinely separate queues with separate capacity — still to
+confirm — that is a filter on the emb view, not a different kind of job.
 
 ## The workflow question
 
@@ -157,9 +214,10 @@ Steps 1 and 2 can run in parallel and neither blocks the other.
 
 ## Open questions
 
-- Is EMB vs DTF a routing difference (different queue, different capacity) or
-  just an attribute on the job? Guessing routing, but worth confirming.
-- Can one order line need both EMB and DTF?
+- Are EMB and DTF separate queues with separate capacity, or one queue with a
+  method attribute? Affects the emb view, not the data model.
+- Can one order line need both EMB and DTF — a stitched chest logo and a printed
+  back, say?
 - Who owns setting the personalisation flag when a new product is created —
   sales office, or whoever sets up the product record?
 - What happens to a job where the emb manager finds the artwork is not approved?
