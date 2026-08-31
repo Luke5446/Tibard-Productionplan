@@ -264,6 +264,47 @@ worth knowing before anyone tries to deduplicate the two.
 in Tibard (`No` + `Tibard`) but blank in Oliver Harvey. Exactly the gap the
 REVIEW bucket exists to catch.
 
+### Inter-company orders: the duplicate works order risk
+
+Oliver Harvey does not manufacture. When OH wins a special make for its own
+customer — often on an `OH`-prefixed code — the goods are made by Tibard, and OH
+raises a purchase order to Tibard to cover it.
+
+That creates **two sales orders for one physical job**:
+
+1. **OH's customer order** — the real demand. This is what should raise the
+   works order.
+2. **Tibard's sales order**, created from OH's PO. Same goods, already being
+   made.
+
+Both appear in this feed, and they are genuinely different order lines in
+different databases, so the `LineKey` dedupe cannot connect them. Left alone,
+the second one raises a duplicate works order.
+
+**Why the current process makes this unlikely but not safe.** OH does not raise
+the PO until after manufacture — it is back-to-back: goods made, booked in, PO
+raised, despatched, booked into OH. So by the time the Tibard sales order exists,
+the job is done.
+
+But "unlikely" is a timing accident, not a control. The Tibard order line is live
+with outstanding quantity from the moment it is raised until it is despatched.
+Anything that widens that window — a despatch delayed to the next morning, a PO
+raised early because someone wanted the paperwork in, a part-despatch — puts a
+duplicate in front of production. It would look like a legitimate new special
+make, because that is exactly what it looks like in the data.
+
+**The control:** identify the inter-company customer accounts (Oliver Harvey as a
+customer in `S200_LIVE`, Tibard as a customer in `OliverHarveyLive`) and label
+those lines `INTERCOMPANY - no works order`. Visible on the sheet, filtered out
+of what production act on. The works order stays with the original customer
+order, which is the one that reflects real demand and carries the real promised
+date.
+
+**Belt and braces, app side:** before creating a works order, check whether the
+same product code already has an open works order from *either* company. If it
+does, warn rather than create. That catches the case regardless of how the
+paperwork was routed.
+
 ## 4. Decisions still needed for the app side
 
 Flagging these now because they change how the Special Makes tab is built:
