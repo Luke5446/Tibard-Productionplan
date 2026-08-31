@@ -219,39 +219,58 @@ nobody labelled shows up as a special make, which is visible and easy to correct
 — rather than a false negative, where a special make silently never gets
 manufactured. The second is the failure this whole job exists to remove.
 
-### Manufactured by us
+### Manufactured by us — measured, and it matters more than expected
 
-Only our own manufacture should raise a works order; bought-in goods must not.
-`StockItem.Manufacturer` holds this. Profiled values:
+Live order lines by stock-held flag against manufacturer bucket
+(`DocumentStatusID = 0`, outstanding quantity only):
 
-- **Tibard DB**: `(blank)` is the **largest single bucket**, then trade brands —
-  Brook Taverner, Premier, Stanley/Stella, Portwest, Gildan, Uneek… with
-  `Tibard` and `Oliver Harvey` both present.
-- **Oliver Harvey DB**: `Oliver Harvey` largest, then `(blank)`, then the same
-  sort of trade brands.
+| Company | Not stock held + **ours** | Not stock held + blank | Not stock held + bought in | Stock held | No stock record |
+|---|---|---|---|---|---|
+| Tibard | **24** | 51 | **911** | 778 | 481 |
+| Oliver Harvey | **11** | 46 | 11 | 330 | 31 |
 
-Combined entries like `Urban Textiles/Tibard` mean a garment bought in and then
-personalised by us. Per the business, those are **usually stock items**, so the
-stock-held flag already excludes them — the manufacturer test does not have to
-resolve them on its own.
+**The headline: "not stock held" is not the same as "special make".** 911 Tibard
+lines are not stock held *and* carry a trade-brand manufacturer — Brook Taverner,
+Premier, Portwest and the like. Those are garments **bought in to order**, not
+made by us. Without the manufacturer test they would all have become works
+orders.
 
-So "ours" is: manufacturer **contains** `Tibard` or `Oliver Harvey`.
+So the manufacturer filter is not a refinement, it is load-bearing. "Ours" is:
+manufacturer **contains** `Tibard` or `Oliver Harvey`.
 
-> #### ⚠️ Do not filter out blank manufacturer without measuring first
->
-> Blank is the biggest bucket in the Tibard database, and there is a plausible
-> reason to expect special makes to be blank disproportionately: a one-off
-> product code raised for a single customer order is exactly the kind of record
-> nobody fills the Manufacturer field in on.
->
-> If that is right, filtering to "contains Tibard or Oliver Harvey" would drop
-> the majority of special makes — silently, which is the precise failure this
-> job exists to remove.
->
-> This is measurable rather than guessable: count live order lines by
-> stock-held flag against manufacturer bucket, and see where the special makes
-> actually sit. Query 0.9 in `00-discovery.sql` does exactly that. Until it has
-> been run, `Manufacturer` is returned as column K but **not filtered on**.
+### Blank manufacturer: surfaced, never silently dropped
+
+97 lines (51 Tibard + 46 Oliver Harvey) are not stock held with **no manufacturer
+set**. These cannot be classified either way from the data.
+
+Per the business, a missing manufacturer is a **data quality problem to be fixed
+in Sage on an ongoing basis** — so the sheet must make them visible rather than
+quietly discard them. The design:
+
+| Bucket | What happens |
+|---|---|
+| Not stock held + **ours** | Raises a works order |
+| Not stock held + **blank** | Listed for review, so Sage gets corrected |
+| Not stock held + bought in | Ignored |
+| Stock held | Ignored — the buffer app already covers it |
+
+The review bucket is the safety net. If a genuine special make is missing its
+manufacturer, it surfaces as something to fix rather than vanishing.
+
+### Order status
+
+`DocumentStatusID = 0` carries the overwhelming bulk of live order lines and is
+the "live" value. Status `1` holds a small tail (about 30 lines across both
+companies) and still needs identifying in Sage before deciding whether to
+include it.
+
+### Open risk: 481 unmatched Tibard lines
+
+481 Tibard live order lines (and 31 Oliver Harvey) match **no stock record** at
+all on `si.Code = sorl.ItemCode`. If those are free-text lines, fine. If they are
+standard product lines whose code does not match, the code join is failing — and
+any special makes among them would be invisible. Needs breaking down by
+`LineTypeID` before the sheet can be trusted.
 
 ## 4. Decisions still needed for the app side
 
