@@ -293,12 +293,30 @@ raised early because someone wanted the paperwork in, a part-despatch — puts a
 duplicate in front of production. It would look like a legitimate new special
 make, because that is exactly what it looks like in the data.
 
-**The control:** identify the inter-company customer accounts (Oliver Harvey as a
-customer in `S200_LIVE`, Tibard as a customer in `OliverHarveyLive`) and label
-those lines `INTERCOMPANY - no works order`. Visible on the sheet, filtered out
-of what production act on. The works order stays with the original customer
-order, which is the one that reflects real demand and carries the real promised
-date.
+**The control:** the inter-company customer accounts, matched on **account
+number**:
+
+| Database | Account | Name |
+|---|---|---|
+| `S200_LIVE` | `OLIVER` | Oliver Harvey Ltd |
+| `OliverHarveyLive` | `TIB003` | Tibard Ltd |
+| `OliverHarveyLive` | `TIB002` | Tibard Laundry Services Ltd |
+
+Those lines are labelled `INTERCOMPANY - no works order` — visible on the sheet,
+outside the production filter. The works order stays with the original customer
+order, which carries the real demand and the real promised date.
+
+**Never match these by name.** Tibard's customer file also contains Harvey
+Nichols Regional Stores, Harvey Nichols Restaurants, Harveys Laundry, YO! Sushi
+Harvey Nichols, Mrs Oliver, Mr Oliver Wyatt, Oliver Kay Produce, Oliver Najev,
+The Oliver Gilbey and Oliver's Battery Countryside Group. A `LIKE '%Oliver%'`
+rule would have silently excluded every one of those real customers' special
+makes. Account numbers only.
+
+**Open question:** `TIB002` Tibard Laundry Services Ltd is included on the
+assumption it is a group entity rather than an arms-length customer. If it buys
+special makes in its own right, remove it from the list — otherwise its orders
+would never reach production.
 
 **Belt and braces, app side:** before creating a works order, check whether the
 same product code already has an open works order from *either* company. If it

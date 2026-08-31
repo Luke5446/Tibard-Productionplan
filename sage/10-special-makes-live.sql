@@ -33,6 +33,13 @@
      A LineKey  B Company  C SalesOrderNo  D LineNo  E ProductCode
      F ProductDesc  G Qty  H PromisedDate  I Customer  J Category
      K Manufacturer
+
+   Category values, filter column J to WORKS ORDER for production:
+     WORKS ORDER                    make it
+     INTERCOMPANY - no works order  the other company's PO for a job already
+                                    raised from the original customer order
+     REVIEW - no manufacturer set   fix the manufacturer in Sage
+     REVIEW - code not in stock file / free text line   check by hand
    ========================================================================= */
 
 /* ---------------------------------------------------------------- TIBARD -- */
@@ -69,7 +76,19 @@ SELECT
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS Customer,
 
+    /* Inter-company first. Oliver Harvey does not manufacture, so an OH
+       special make is made by Tibard and covered by an OH purchase order -
+       which raises a SECOND sales order, here in Tibard, for the same physical
+       job. Different database, different line, so the LineKey dedupe cannot
+       connect the two. The works order belongs to OH's original customer
+       order, which carries the real demand and the real promised date.
+
+       Matched on ACCOUNT NUMBER, never on name: Tibard's customer file also
+       holds Harvey Nichols, Harveys Laundry, Mrs Oliver, Oliver Kay Produce
+       and Oliver's Battery Countryside Group. A name match would have excluded
+       every one of them. */
     CASE
+        WHEN cust.CustomerAccountNumber = 'OLIVER'   THEN 'INTERCOMPANY - no works order'
         WHEN si.Code IS NULL AND sorl.LineTypeID = 1 THEN 'REVIEW - free text line'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
         WHEN si.Manufacturer LIKE '%Tibard%'
@@ -116,7 +135,9 @@ SELECT
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' '))),
-    CASE
+    CASE   -- TIB003 Tibard Ltd, TIB002 Tibard Laundry Services Ltd
+        WHEN cust.CustomerAccountNumber IN ('TIB003','TIB002')
+                                                     THEN 'INTERCOMPANY - no works order'
         WHEN si.Code IS NULL AND sorl.LineTypeID = 1 THEN 'REVIEW - free text line'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
         WHEN si.Manufacturer LIKE '%Tibard%'
