@@ -354,6 +354,31 @@ and `Heat Seal Transfers / Tax Tab`, so the grouping exists in Sage and will
 keep working as new service codes are added. Free-text lines (`LineTypeID = 1`)
 are notes by definition.
 
+### Line classification, measured from the live feed
+
+| What | Lines (TIB / OH) | Treatment |
+|---|---|---|
+| Free text (`LineTypeID = 1`) | 486 / 31 | **NOTE** |
+| Group `54` Additional Charges — `LOGOAPPLICATION`, `LOGOORIGINATION`, `TEXTAPPLICATION`, `HANDLINGCHARGE` | 43 / 46 | **NOTE** |
+| Groups `1` Chef Jackets, `2` Chef Trousers, `3` Aprons, `6` Shirts, `10` T-shirts/Polos, `25` Coats/Tunics, `26` Cloths/Towels | 26 / 11 | **WORKS ORDER** |
+| Group `30` Accessories — every line uses the literal code `FREETEXT` | 6 / 0 | **REVIEW** |
+
+Notes are classified by **product group 54**, not by listing the service codes,
+so codes added later inherit the behaviour instead of silently becoming works
+orders.
+
+`FREETEXT` is a real stock code used as a placeholder for described items. Those
+could be genuine special makes, so they go to review rather than being dropped or
+auto-raised — the description says what they are.
+
+### Resolved: the unmatched lines were all free text
+
+The earlier open risk — hundreds of lines matching no stock record — is closed.
+All 486 Tibard and 31 Oliver Harvey of them are `LineTypeID = 1`, typed
+free-text lines that by definition have no product record. **Not one standard
+product line fails the code join.** So `si.Code = sorl.ItemCode` is sound and
+Sage's `SOPStandardItemLink` table is not needed.
+
 ## 4. Decisions still needed for the app side
 
 Flagging these now because they change how the Special Makes tab is built:
