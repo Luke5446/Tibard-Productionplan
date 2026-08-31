@@ -1,88 +1,78 @@
+// Special Makes: review queue, works order creation, Pt continuation,
+// dismissal memory, note attachment, loose search, persistence.
 const { chromium } = require('playwright');
-const path = '/home/user/Tibard-Productionplan/index.html';
+const T=(a)=>a.join('\t');
 
-// Realistic paste: one OH order with 2 garments + a logo note + a charge line,
-// one Tibard order with 1 garment, a review line, and an intercompany line.
-const T = (a)=>a.join('\t');
-const paste1 = [
-  T(['OH-32036196','OLIVER HARVEY','0000114816','1','OHAPP0785191','FOREST GREEN ADJUSTABLE BIB APRON','12','2026-09-11','MALDON SALT','WORKS ORDER','Oliver Harvey']),
-  T(['OH-32036200','OLIVER HARVEY','0000114816','3','OHCJSCUMBRIA3603','CUMBRIA CHEF JACKET SZ 36','6','2026-09-11','MALDON SALT','WORKS ORDER','Oliver Harvey']),
-  T(['OH-32036228','OLIVER HARVEY','0000114816','2','LOGOAPPLICATION','Maldon Salt Logo Centre Bib in White','12','2026-09-11','MALDON SALT','NOTE - charge or logo line','']),
-  T(['OH-32036230','OLIVER HARVEY','0000114816','4','','Approved artwork 26.8.26','0','2026-09-11','MALDON SALT','NOTE - free text','']),
-  T(['TIB-40011','TIBARD','0000120445','1','CT01964601','CHEF TROUSERS BLACK 32R','20','2026-09-04','KLONDYKE','WORKS ORDER','Tibard']),
-  T(['TIB-40012','TIBARD','0000120445','2','FREETEXT','Bespoke tabard - see notes','5','2026-09-04','KLONDYKE','REVIEW - FREETEXT placeholder','']),
-  T(['TIB-40099','TIBARD','0000120999','1','OHAPP0785191','FOREST GREEN BIB APRON','12','2026-09-20','Oliver Harvey Ltd','INTERCOMPANY - no works order','Oliver Harvey']),
+const paste1=[
+ T(['OH-32036196','OLIVER HARVEY','0000114816','1','OHAPP0785191','FOREST GREEN ADJUSTABLE BIB APRON','12','2026-09-11','MALDON SALT','WORKS ORDER','Oliver Harvey']),
+ T(['OH-32036200','OLIVER HARVEY','0000114816','3','OHCJSCUMBRIA3603','CUMBRIA CHEF JACKET SZ 36','6','2026-09-11','MALDON SALT','WORKS ORDER','Oliver Harvey']),
+ T(['OH-32036228','OLIVER HARVEY','0000114816','2','LOGOAPPLICATION','Maldon Salt Logo Centre Bib in White','12','2026-09-11','MALDON SALT','NOTE - charge or logo line','']),
+ T(['OH-32036230','OLIVER HARVEY','0000114816','4','','Approved artwork 26.8.26','0','2026-09-11','MALDON SALT','NOTE - free text','']),
+ T(['TIB-40011','TIBARD','0000862833','1','CT01964601','CHEF TROUSERS BLACK 32R','20','2026-09-04','KLONDYKE','WORKS ORDER','Tibard']),
+ T(['TIB-40012','TIBARD','0000862833','2','FREETEXT','Bespoke tabard - see notes','5','2026-09-04','KLONDYKE','REVIEW - FREETEXT placeholder','']),
+ T(['TIB-40099','TIBARD','0000120999','1','OHAPP0785191','FOREST GREEN BIB APRON','12','2026-09-20','Oliver Harvey Ltd','INTERCOMPANY - no works order','Oliver Harvey']),
 ].join('\n');
+const newLine=T(['OH-32036999','OLIVER HARVEY','0000114816','5','OHCJSMDEVON6401','DEVON CHEF JACKET SZ 64','4','2026-09-11','MALDON SALT','WORKS ORDER','Oliver Harvey']);
 
-// Afternoon paste: everything above again (must not duplicate) PLUS a new line
-// added to the SAME Oliver Harvey order, which must become Pt 3, not Pt 1.
-const paste2 = paste1 + '\n' + T(['OH-32036999','OLIVER HARVEY','0000114816','5','OHCJSMDEVON6401','DEVON CHEF JACKET SZ 64','4','2026-09-11','MALDON SALT','WORKS ORDER','Oliver Harvey']);
+(async()=>{
+ const b=await chromium.launch({executablePath: process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+ const p=await b.newPage(); const errs=[];
+ p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
+ await p.goto('file:///home/user/Tibard-Productionplan/index.html?edit');
+ await p.waitForTimeout(400);
+ const run=async t=>{ await p.evaluate(x=>{document.getElementById('smTA').value=x; smLoadPaste();},t); await p.waitForTimeout(150); };
+ const S=()=>p.evaluate(()=>({pending:smPending.length, wos:WOs.filter(w=>w.sm).length,
+   refs:WOs.filter(w=>w.sm).map(w=>w.ref), dropped:smDropped.length,
+   cards:document.querySelectorAll('#smPendingList .sm-pend').length}));
 
-(async () => {
-  const b = await chromium.launch({executablePath: process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
-  const pg = await b.newPage();
-  const errs=[];
-  pg.on('pageerror', e=>errs.push('PAGEERROR: '+e.message));
-  pg.on('console', m=>{ if(m.type()==='error') errs.push('CONSOLE: '+m.text()); });
-  await pg.goto('file://'+path+'?edit');
-  await pg.waitForTimeout(400);
+ await p.click('#tabSpecial'); await p.waitForTimeout(150);
 
-  const run = async (txt) => {
-    await pg.evaluate((t)=>{ document.getElementById('smTA').value=t; smLoadPaste(); }, txt);
-    await pg.waitForTimeout(150);
-  };
+ await run(paste1);
+ const a=await S();
+ console.log('after paste: nothing auto-created ->', a.wos===0?'PASS':'FAIL', JSON.stringify(a));
 
-  await pg.click('#tabSpecial');
-  await pg.waitForTimeout(150);
-  const tabVisible = await pg.isVisible('#smView');
-  const bufHidden  = await pg.evaluate(()=>document.getElementById('dataWrap').style.display==='none');
+ // accept two, dismiss one
+ await p.evaluate(()=>{ smCreate('OH-32036196'); smCreate('OH-32036200'); smDismiss('TIB-40012'); });
+ await p.waitForTimeout(150);
+ const c=await S();
+ const notes=await p.evaluate(()=>WOs.filter(w=>w.sm).map(w=>w.ref+'='+w.sm.notes.length).join(', '));
+ console.log('accept 2 / dismiss 1:       ', JSON.stringify(c));
+ console.log('notes attached:             ', notes, '(expect 2 each)');
 
-  await run(paste1);
-  const a = await pg.evaluate(()=>({
-    refs: WOs.filter(w=>w.sm).map(w=>w.ref),
-    parts: WOs.filter(w=>w.sm).map(w=>w.sm.so+':Pt'+w.sm.part),
-    notes: WOs.filter(w=>w.sm).map(w=>w.ref+'='+(w.sm.notes||[]).length),
-    review: smReview.length,
-    dues: WOs.filter(w=>w.sm).map(w=>w.ref+' due '+w.due),
-  }));
+ // re-paste everything plus a new line on the SAME order
+ await run(paste1+'\n'+newLine);
+ const d=await S();
+ console.log('re-paste + 1 new line:      ', JSON.stringify(d));
+ console.log('  dismissed not re-offered: ', d.pending===2?'PASS (TIB-40011 + new line)':'FAIL');
 
-  await run(paste2);
-  const c = await pg.evaluate(()=>({
-    refs: WOs.filter(w=>w.sm).map(w=>w.ref),
-    total: WOs.filter(w=>w.sm).length,
-    review: smReview.length,
-    notesOnNew: (WOs.filter(w=>w.sm && w.sm.part===3)[0]||{sm:{notes:[]}}).sm.notes.length,
-  }));
+ await p.evaluate(()=>smCreate('OH-32036999'));
+ await p.waitForTimeout(120);
+ const e=await p.evaluate(()=>WOs.filter(w=>w.sm).map(w=>w.ref).join(', '));
+ console.log('Pt continues after accept:  ', e);
 
-  // reload the page: state must survive with no buffer data present
-  await pg.reload();
-  await pg.waitForTimeout(400);
-  await pg.click('#tabSpecial');
-  await pg.waitForTimeout(200);
-  const d = await pg.evaluate(()=>({
-    total: WOs.filter(w=>w.sm).length,
-    cards: document.querySelectorAll('#smList .sm-card').length,
-    review: document.querySelectorAll('#smReviewList .sm-rev').length,
-    liveStat: document.getElementById('smStatLive').textContent,
-    unitsStat: document.getElementById('smStatUnits').textContent,
-  }));
+ // loose search
+ const srch=async q=>p.evaluate(x=>{document.getElementById('smSearch').value=x; smRender();
+   return {pend:document.querySelectorAll('#smPendingList .sm-pend').length,
+           made:document.querySelectorAll('#smList .sm-card').length};},q);
+ console.log('search "862833":            ', JSON.stringify(await srch('862833')));
+ console.log('search "cumbria jacket":    ', JSON.stringify(await srch('cumbria jacket')));
+ console.log('search "maldon logo":       ', JSON.stringify(await srch('maldon logo')));
+ console.log('search "klondyke":          ', JSON.stringify(await srch('klondyke')));
+ await srch('');
 
-  // a third paste of the identical data must change nothing
-  await run(paste2);
-  const e = await pg.evaluate(()=>WOs.filter(w=>w.sm).length);
+ // undo a dismissal
+ await p.evaluate(()=>smUndismiss('TIB-40012')); await p.waitForTimeout(120);
+ const f=await S();
+ console.log('undo dismiss:               ', JSON.stringify({pending:f.pending,dropped:f.dropped}));
 
-  console.log('tab switches:      ', tabVisible && bufHidden ? 'PASS' : 'FAIL');
-  console.log('paste 1 refs:      ', a.refs.join(', '));
-  console.log('paste 1 parts:     ', a.parts.join(', '));
-  console.log('paste 1 notes/WO:  ', a.notes.join(', '));
-  console.log('paste 1 due dates: ', a.dues.join(' | '));
-  console.log('paste 1 review:    ', a.review);
-  console.log('paste 2 refs:      ', c.refs.join(', '));
-  console.log('paste 2 total WOs: ', c.total, '(expect 4 - no duplicates)');
-  console.log('paste 2 review:    ', c.review, '(expect 1 - not re-added)');
-  console.log('notes on new Pt3:  ', c.notesOnNew, '(expect 2)');
-  console.log('after reload:      ', JSON.stringify(d));
-  console.log('3rd identical paste:', e, '(expect 4)');
-  console.log('errors:            ', errs.length? errs.join(' | ') : 'none');
-  await b.close();
+ await p.reload(); await p.waitForTimeout(400);
+ await p.click('#tabSpecial'); await p.waitForTimeout(200);
+ const g=await p.evaluate(()=>({pending:smPending.length,wos:WOs.filter(w=>w.sm).length,
+   pendCards:document.querySelectorAll('#smPendingList .sm-pend').length,
+   madeCards:document.querySelectorAll('#smList .sm-card').length,
+   statPend:document.getElementById('smStatPend').textContent}));
+ console.log('after reload:               ', JSON.stringify(g));
+ console.log('errors:                     ', errs.length?errs.join(' | '):'none');
+ await p.screenshot({path:'/tmp/claude-0/-home-user-Tibard-Productionplan/9e51b526-bc55-5d8e-8e7d-d58edac0f137/scratchpad/special2.png', fullPage:true});
+ await b.close();
 })();

@@ -248,14 +248,23 @@ body.planner-mode .planner-wrap{display:block}
 .sm-sum div{flex:1;min-width:110px;background:#fff;border:1px solid #e5e7eb;border-radius:7px;padding:8px 11px}
 .sm-sum b{display:block;font-size:19px;color:#7A1F3D}
 .sm-sum span{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px}
+.sm-h{font-size:13px;margin:16px 0 8px;font-weight:700}
+.sm-pend{background:#fff;border:1px solid #e5e7eb;border-left:4px solid #c2872b;border-radius:7px;padding:10px 12px;margin-bottom:7px}
+.sm-pend.warn{border-left-color:#dc2626}
+.sm-pend-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.sm-code{font-weight:700;font-size:13px;color:#111827}
+.sm-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.4px;padding:1px 6px;border-radius:9px;background:#eef2ff;color:#3730a3;margin-left:6px;vertical-align:1px}
+.sm-tag.oh{background:#dcfce7;color:#14532d}
+.sm-tag.warn{background:#fee2e2;color:#991b1b}
+.sm-meta{font-size:11px;color:#6b7280;margin-top:2px}
+.sm-desc{font-size:12.5px;margin-top:5px}
+.sm-acts{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
 .sm-card{background:#fff;border:1px solid #e5e7eb;border-left:4px solid #7A1F3D;border-radius:7px;padding:10px 12px;margin-bottom:8px}
 .sm-card.oh{border-left-color:#1f6b4a}
 .sm-ref{font-weight:700;color:#7A1F3D;font-size:13px}
 .sm-card.oh .sm-ref{color:#1f6b4a}
-.sm-meta{font-size:11px;color:#6b7280;margin-top:2px}
-.sm-desc{font-size:12.5px;margin-top:5px}
 .sm-note{font-size:11.5px;background:#fffbeb;border-left:3px solid #f0b429;padding:4px 8px;margin-top:5px;border-radius:0 4px 4px 0}
-.sm-rev{background:#fff;border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:7px;padding:8px 11px;margin-bottom:6px;font-size:12px}
+.sm-dism{background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;margin-bottom:5px;font-size:11.5px;color:#6b7280;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .sm-empty{text-align:center;padding:34px 16px;color:#6b7280}
 </style>
 </head>
@@ -491,12 +500,11 @@ body.planner-mode .planner-wrap{display:block}
 
     <div id="smPastePanel" class="pbox hidden">
       <h3>&#9986; Paste Special Makes data</h3>
-      <p>In <strong>Special Makes Live.xlsx</strong>: Refresh All &rarr; select the rows (no header) &rarr; Ctrl+C &rarr; click below &rarr; Ctrl+V.<br>
-      Paste the <strong>whole sheet including NOTE rows</strong> &mdash; logo and charge lines get attached to the works orders on their sales order rather than becoming works orders of their own.<br>
-      Columns: <code>A</code>=LineKey <code>B</code>=Company <code>C</code>=Sales order <code>D</code>=Line <code>E</code>=Code <code>F</code>=Description <code>G</code>=Qty <code>H</code>=Promised <code>I</code>=Customer <code>J</code>=Category <code>K</code>=Manufacturer</p>
+      <p>In <strong>Special Makes Live.xlsx</strong>: Refresh All &rarr; select columns <strong>A to K</strong>, all rows, <strong>without the header</strong> &rarr; Ctrl+C &rarr; click below &rarr; Ctrl+V.<br>
+      No filtering needed &mdash; paste the whole sheet. Nothing is created straight away: garment lines land in a review list for you to accept or dismiss one at a time.</p>
       <textarea id="smTA" placeholder="Click here then Ctrl+V..."></textarea>
       <div style="display:flex;gap:6px">
-        <button class="btn btn-p" onclick="smLoadPaste()">&#10003; Create works orders</button>
+        <button class="btn btn-p" onclick="smLoadPaste()">&#10003; Load for review</button>
         <button class="btn" onclick="smTogglePaste()">Cancel</button>
       </div>
     </div>
@@ -504,20 +512,21 @@ body.planner-mode .planner-wrap{display:block}
     <div id="smResult" class="hidden" style="background:#ecfdf5;border:1px solid #a7d4bb;border-radius:7px;padding:10px 13px;margin-bottom:12px;font-size:12.5px"></div>
 
     <div class="sm-sum">
-      <div><b id="smStatLive">0</b><span>Live works orders</span></div>
-      <div><b id="smStatOrders">0</b><span>Sales orders</span></div>
+      <div><b id="smStatPend">0</b><span>Awaiting your review</span></div>
+      <div><b id="smStatLive">0</b><span>Works orders raised</span></div>
       <div><b id="smStatUnits">0</b><span>Units to make</span></div>
-      <div><b id="smStatReview">0</b><span>Need review</span></div>
+      <div><b id="smStatDism">0</b><span>Dismissed</span></div>
     </div>
 
     <div style="display:flex;gap:7px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
       <button class="btn btn-p edit-only" onclick="smTogglePaste()">&#9998; Paste Special Makes data</button>
-      <input id="smSearch" placeholder="Search order, code, customer..." oninput="smRender()" style="padding:6px 9px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;min-width:200px">
-      <span style="margin-left:auto;font-size:11px;color:#6b7280">Pasting twice a day is safe &mdash; only new order lines create works orders.</span>
+      <input id="smSearch" placeholder="Search anything - code, customer, order, description..." oninput="smRender()" style="padding:6px 9px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;min-width:250px">
+      <span style="margin-left:auto;font-size:11px;color:#6b7280">Pasting again is safe &mdash; anything raised or dismissed is never offered twice.</span>
     </div>
 
+    <div id="smPendingList"></div>
     <div id="smList"></div>
-    <div id="smReviewList"></div>
+    <div id="smDismissedList"></div>
 
   </div>
 
@@ -1878,7 +1887,8 @@ function publishData(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
   if(!rows.length){ alert('Load buffer data first.'); return; }
   var state={rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smReview:smReview,savedAt:new Date().toISOString()};
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,
+    savedAt:new Date().toISOString()};
   var blob=new Blob([JSON.stringify(state)],{type:'application/json'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
   alert('data.json downloaded.\n\nNow upload it to your GitHub repo (replacing the old data.json) and commit. Viewers will see the update within a minute.');
@@ -2069,7 +2079,8 @@ function dbSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveState,1200)
 function saveState(){
   try{
     localStorage.setItem('tibard_production',JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smReview:smReview,savedAt:new Date().toISOString()}));
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,
+      savedAt:new Date().toISOString()}));
     var ind=document.getElementById('saveInd'); if(ind){ind.innerHTML='✓ Saved';setTimeout(function(){ind.textContent='';},2000);}
   }catch(e){console.log('Save failed:',e);}
 }
@@ -2081,9 +2092,13 @@ function loadState(){
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
+    smPending=s.smPending||[]; smDropped=s.smDropped||[];
+    // Anything left in the old review list becomes a queue item needing a decision.
+    (s.smReview||[]).forEach(function(o){
+      if(!smSeen[o.key] && !smPending.some(function(p){return p.key===o.key;})) smPending.push(o);
+    });
     if(!s.rows||!s.rows.length){ WOs=s.WOs||[]; completedWOs=s.completedWOs||[]; smRender(); return false; }
     rows=s.rows; WOs=s.WOs||[]; completedWOs=s.completedWOs||[];
-    smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
     var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
     document.getElementById('lastUpdated').textContent='Last saved: '+sa;
     recalcWOs(); recalcQtys(); showData();
@@ -2095,7 +2110,7 @@ function clearAll(){ if(!IS_EDITOR) return;
   try{
     localStorage.removeItem('tibard_production');
     rows=[];WOs=[];completedWOs=[];
-    smSeen={};smNotes={};smParts={};smReview=[];
+    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];
     document.getElementById('dataWrap').classList.add('hidden');
     document.getElementById('uzone').classList.remove('hidden');
     document.getElementById('lastUpdated').textContent='';
@@ -2132,25 +2147,33 @@ document.addEventListener('DOMContentLoaded',function(){
 
 // ══════════════════════════════════════════════════════════════════════════
 // SPECIAL MAKES
-// Fed by Special Makes Live.xlsx (see sage/README.md). Production refresh the
-// sheet, copy, and paste here; each garment order line becomes one works order.
+// Fed by Special Makes Live.xlsx (see sage/README.md). Paste the whole sheet,
+// columns A-K, no filtering needed.
 //
-// Special make works orders live in the SAME `WOs` array as everything else,
-// carrying an `sm` block, so cards, completion, warehouse booking-in and
-// history all work on them unchanged. Their refs start with S, matching the
-// existing manual convention (S = special make, E = EMB, A = alterations), so
-// they can never collide with the auto-numbered stock WO-#### sequence.
-// `recalcWOs` ignores codes that are not in the buffer rows, so a special make
-// cannot disturb the buffer maths.
+// Nothing is created on paste. Garment lines land in a REVIEW QUEUE and become
+// works orders only when accepted, one at a time - the office knows things the
+// data does not. Dismissing is remembered, so the same line is never offered
+// twice however often the sheet is pasted.
+//
+// Accepted works orders join the SAME `WOs` array as everything else, carrying
+// an `sm` block, so cards, completion, warehouse booking-in and history all
+// work on them unchanged. Refs start with S, matching the manual convention
+// already enforced in saveWO (S special make, E emb, A alterations), so they
+// cannot collide with the auto-numbered stock WO-#### sequence. recalcWOs
+// ignores codes absent from the buffer rows, so a special make cannot disturb
+// the buffer maths.
 // ══════════════════════════════════════════════════════════════════════════
 
-var smSeen  = {};   // lineKey -> what we did with it. The duplicate guard.
-var smNotes = {};   // "OH|0000114816" -> [{key,code,desc}]  logo/charge lines
-var smParts = {};   // "OH|0000114816" -> highest Pt number ever issued
-var smReview= [];   // lines that need a human
+var smSeen   = {};   // lineKey -> {what:'wo'|'note'|'intercompany'|'dismissed'}
+var smPending= [];   // parsed lines awaiting a decision
+var smDropped= [];   // dismissed, kept so a mistaken dismiss can be undone
+var smNotes  = {};   // "OH|0000114816" -> [{key,code,desc}]  logo/charge lines
+var smParts  = {};   // "OH|0000114816" -> highest Pt number ever issued
+var smReview = [];   // legacy, migrated into smPending on load
 
-function smSoKey(o){ return o.company.indexOf('OLIVER')>=0 ? 'OH|'+o.so : 'TIB|'+o.so; }
-function smPrefix(company){ return company.indexOf('OLIVER')>=0 ? 'OH' : 'TIB'; }
+function smSoKey(o){ return (o.company.indexOf('OLIVER')>=0?'OH|':'TIB|')+o.so; }
+function smPrefix(c){ return c.indexOf('OLIVER')>=0 ? 'OH' : 'TIB'; }
+function smIsOH(c){ return (c||'').indexOf('OLIVER')>=0; }
 
 function smShowTab(which){
   var buf = which!=='special';
@@ -2158,8 +2181,7 @@ function smShowTab(which){
   document.getElementById('tabSpecial').classList.toggle('on', !buf);
   document.getElementById('smView').classList.toggle('hidden', buf);
   ['uzone','dataWrap','pastePanel'].forEach(function(id){
-    var el=document.getElementById(id); if(!el) return;
-    el.style.display = buf ? '' : 'none';
+    var el=document.getElementById(id); if(el) el.style.display = buf ? '' : 'none';
   });
   // The toolbar is buffer-specific (its paste button and SKU counts). Special
   // Makes has its own paste button, so hide it rather than show two.
@@ -2173,7 +2195,18 @@ function smTogglePaste(){
   if(!p.classList.contains('hidden')) document.getElementById('smTA').focus();
 }
 
-// Columns are read by POSITION, matching the fixed order the SQL emits:
+// Loose search: every word typed must appear somewhere in the row, in any
+// order, ignoring case and punctuation. So "862833" finds S-TIB862833-Pt1,
+// and "aramark jacket" finds an Aramark chef jacket, without anyone having to
+// type a works order number exactly.
+function smNorm(s){ return (s||'').toString().toLowerCase().replace(/[^a-z0-9]+/g,' '); }
+function smMatch(hay, srch){
+  if(!srch) return true;
+  var h=' '+smNorm(hay)+' ';
+  return smNorm(srch).split(' ').filter(Boolean).every(function(t){ return h.indexOf(t)>=0; });
+}
+
+// Columns read by POSITION, matching the order the SQL emits:
 // 0 LineKey 1 Company 2 SalesOrderNo 3 LineSeq 4 ProductCode 5 ProductDesc
 // 6 Qty 7 PromisedDate 8 Customer 9 Category 10 Manufacturer
 function smParse(txt){
@@ -2182,43 +2215,13 @@ function smParse(txt){
     var c=lines[i].split('\t');
     if(c.length<10) continue;
     var key=(c[0]||'').trim();
-    if(!key) continue;
-    if(key.toLowerCase()==='linekey') continue;         // header row
-    out.push({ key:key,
-      company:(c[1]||'').trim().toUpperCase(),
-      so:(c[2]||'').trim(),
-      seq:pn(c[3]),
-      code:(c[4]||'').trim(),
-      desc:(c[5]||'').trim(),
-      qty:pn(c[6]),
-      promised:(c[7]||'').trim(),
-      customer:(c[8]||'').trim(),
-      cat:(c[9]||'').trim().toUpperCase(),
-      maker:(c[10]||'').trim() });
+    if(!key || key.toLowerCase()==='linekey') continue;
+    out.push({ key:key, company:(c[1]||'').trim().toUpperCase(), so:(c[2]||'').trim(),
+      seq:pn(c[3]), code:(c[4]||'').trim(), desc:(c[5]||'').trim(), qty:pn(c[6]),
+      promised:(c[7]||'').trim(), customer:(c[8]||'').trim(),
+      cat:(c[9]||'').trim().toUpperCase(), maker:(c[10]||'').trim() });
   }
   return out;
-}
-
-// Pt numbers must CONTINUE, never restart. A morning paste giving Pt 1 and
-// Pt 2 must make a line added that afternoon Pt 3 - so the counter is kept per
-// sales order and persisted, rather than derived from the works orders
-// currently on screen (which would reset as soon as one was completed).
-function smNextPart(sokey){
-  var n=(smParts[sokey]||0)+1;
-  smParts[sokey]=n;
-  return n;
-}
-
-function smMakeRef(o, part){
-  var base='S-'+smPrefix(o.company)+o.so.replace(/^0+/,'')+'-Pt'+part;
-  var used=allUsedWORefs(), ref=base, n=1;
-  while(used[ref.toUpperCase()]){ ref=base+'-'+(++n); }   // belt and braces
-  return ref;
-}
-
-function smDue(o){
-  if(/^\d{4}-\d{2}-\d{2}$/.test(o.promised)) return o.promised;
-  var d=now(); d.setDate(d.getDate()+14); return d2s(d);   // fallback, flagged below
 }
 
 function smLoadPaste(){
@@ -2227,83 +2230,137 @@ function smLoadPaste(){
   if(!txt){ alert('Nothing pasted - click in the box then Ctrl+V.'); return; }
   var lines=smParse(txt);
   if(!lines.length){
-    alert('No valid rows found.\n\nSelect the rows from Special Makes Live.xlsx (without the header), Ctrl+C, then paste here.');
+    alert('No valid rows found.\n\nSelect columns A to K from Special Makes Live.xlsx (without the header row), Ctrl+C, then paste here.');
     return;
   }
 
-  var made=0, dupes=0, notes=0, notesDup=0, reviewed=0, skipped=0, noDate=0;
-  var madeRefs=[];
+  var added=0, already=0, dismissedBefore=0, notes=0, inter=0;
+  var pendKeys={}; smPending.forEach(function(p){ pendKeys[p.key]=true; });
 
-  // Garment lines first, in sales order then line order, so Pt numbers follow
-  // the order of the lines on the sales order rather than the paste order.
-  var garments=lines.filter(function(o){ return o.cat.indexOf('WORKS ORDER')===0; });
-  garments.sort(function(a,b){
+  lines.forEach(function(o){
+    var seen=smSeen[o.key];
+    if(o.cat.indexOf('NOTE')===0){
+      if(seen){ return; }
+      var sk=smSoKey(o);
+      if(!smNotes[sk]) smNotes[sk]=[];
+      smNotes[sk].push({key:o.key, code:o.code, desc:o.desc, qty:o.qty});
+      smSeen[o.key]={what:'note'};
+      notes++; return;
+    }
+    if(o.cat.indexOf('INTERCOMPANY')===0){
+      if(!seen) smSeen[o.key]={what:'intercompany'};
+      inter++; return;
+    }
+    // WORKS ORDER and REVIEW lines both need a human decision
+    if(seen && seen.what==='wo'){ already++; return; }
+    if(seen && seen.what==='dismissed'){ dismissedBefore++; return; }
+    if(pendKeys[o.key]) return;                      // already waiting
+    smPending.push(o); pendKeys[o.key]=true; added++;
+  });
+
+  // Sort the queue by sales order then line order, so multi-product orders are
+  // reviewed together and Pt numbers come out in line order.
+  smPending.sort(function(a,b){
     if(a.company!==b.company) return a.company<b.company?-1:1;
     if(a.so!==b.so) return a.so<b.so?-1:1;
     return a.seq-b.seq;
   });
 
-  garments.forEach(function(o){
-    if(smSeen[o.key]){ dupes++; return; }               // already has a works order
-    var sokey=smSoKey(o), part=smNextPart(sokey), ref=smMakeRef(o,part);
-    var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
-    if(!hasDate) noDate++;
-    WOs.push({
-      ref:ref, start:'', due:smDue(o),
-      items:[{code:o.code, qty:o.qty}],
-      sm:{ lineKey:o.key, company:o.company, so:o.so, seq:o.seq, part:part,
-           customer:o.customer, desc:o.desc, maker:o.maker,
-           promised:o.promised, dateAssumed:!hasDate, notes:[] }
-    });
-    smSeen[o.key]={what:'wo', ref:ref};
-    made++; madeRefs.push(ref);
-  });
-
-  // Logo / charge / free-text lines become NOTES on their sales order. Kept in
-  // smNotes rather than only on the works order, so a note pasted before its
-  // garment line - or after its works order was completed - still lands.
-  lines.filter(function(o){ return o.cat.indexOf('NOTE')===0; }).forEach(function(o){
-    if(smSeen[o.key]){ notesDup++; return; }
-    var sokey=smSoKey(o);
-    if(!smNotes[sokey]) smNotes[sokey]=[];
-    smNotes[sokey].push({key:o.key, code:o.code, desc:o.desc, qty:o.qty});
-    smSeen[o.key]={what:'note'};
-    notes++;
-  });
-
-  lines.filter(function(o){ return o.cat.indexOf('REVIEW')===0; }).forEach(function(o){
-    if(smSeen[o.key]){ return; }
-    smReview.push({key:o.key, company:o.company, so:o.so, code:o.code,
-                   desc:o.desc, qty:o.qty, customer:o.customer, cat:o.cat});
-    smSeen[o.key]={what:'review'};
-    reviewed++;
-  });
-
-  // INTERCOMPANY lines are the other company's paperwork for a job already
-  // raised from the original customer order. Counted, never actioned.
-  lines.filter(function(o){ return o.cat.indexOf('INTERCOMPANY')===0; }).forEach(function(o){
-    if(!smSeen[o.key]) smSeen[o.key]={what:'intercompany'};
-    skipped++;
-  });
-
-  smAttachNotes();
   document.getElementById('smTA').value='';
   document.getElementById('smPastePanel').classList.add('hidden');
 
-  var msg='<strong>'+made+'</strong> works order'+(made===1?'':'s')+' created';
-  if(madeRefs.length) msg+=' &mdash; '+madeRefs.slice(0,6).join(', ')+(madeRefs.length>6?' and '+(madeRefs.length-6)+' more':'');
-  msg+='.<br>';
   var bits=[];
-  if(dupes)     bits.push('<strong>'+dupes+'</strong> already had a works order and were left alone');
-  if(notes)     bits.push('<strong>'+notes+'</strong> logo/charge line'+(notes===1?'':'s')+' attached as notes');
-  if(notesDup)  bits.push(notesDup+' note'+(notesDup===1?'':'s')+' already attached');
-  if(reviewed)  bits.push('<strong>'+reviewed+'</strong> need review');
-  if(skipped)   bits.push(skipped+' inter-company line'+(skipped===1?'':'s')+' ignored');
-  if(noDate)    bits.push('<strong>'+noDate+'</strong> had no promised date &mdash; due set to today + 14 days, please check');
-  if(bits.length) msg+=bits.join('. ')+'.';
+  if(already)         bits.push(already+' already raised');
+  if(dismissedBefore) bits.push(dismissedBefore+' dismissed previously');
+  if(notes)           bits.push('<strong>'+notes+'</strong> logo/charge line'+(notes===1?'':'s')+' attached as notes');
+  if(inter)           bits.push(inter+' inter-company line'+(inter===1?'':'s')+' ignored');
   var r=document.getElementById('smResult');
-  r.innerHTML=msg; r.classList.remove('hidden');
+  r.innerHTML='<strong>'+added+'</strong> line'+(added===1?'':'s')+' ready for review'
+    +(added?' &mdash; accept or dismiss each below.':'.')
+    +(bits.length?'<br>'+bits.join(' &middot; ')+'.':'');
+  r.classList.remove('hidden');
+  smRender();
+}
 
+// Pt numbers must CONTINUE, never restart. A morning paste giving Pt 1 and
+// Pt 2 must make a line accepted that afternoon Pt 3 - so the counter is kept
+// per sales order and persisted, rather than derived from the works orders
+// currently on screen (which would reset as soon as one was completed).
+function smNextPart(sokey){ var n=(smParts[sokey]||0)+1; smParts[sokey]=n; return n; }
+
+function smMakeRef(o, part){
+  var base='S-'+smPrefix(o.company)+o.so.replace(/^0+/,'')+'-Pt'+part;
+  var used=allUsedWORefs(), ref=base, n=1;
+  while(used[ref.toUpperCase()]){ ref=base+'-'+(++n); }
+  return ref;
+}
+function smDue(o){
+  if(/^\d{4}-\d{2}-\d{2}$/.test(o.promised)) return o.promised;
+  var d=now(); d.setDate(d.getDate()+14); return d2s(d);
+}
+
+function smTake(key){
+  for(var i=0;i<smPending.length;i++){ if(smPending[i].key===key) return smPending.splice(i,1)[0]; }
+  return null;
+}
+
+function smCreate(key){
+  if(!IS_EDITOR) return;
+  var o=smTake(key); if(!o) return;
+  var part=smNextPart(smSoKey(o)), ref=smMakeRef(o,part);
+  var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
+  WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:o.qty}],
+    sm:{ lineKey:o.key, company:o.company, so:o.so, seq:o.seq, part:part,
+         customer:o.customer, desc:o.desc, maker:o.maker,
+         promised:o.promised, dateAssumed:!hasDate, notes:[] } });
+  smSeen[o.key]={what:'wo', ref:ref};
+  smAfterChange();
+}
+
+function smDismiss(key){
+  if(!IS_EDITOR) return;
+  var o=smTake(key); if(!o) return;
+  o.dismissedAt=d2s(now());
+  smDropped.push(o);
+  smSeen[o.key]={what:'dismissed'};
+  smAfterChange();
+}
+
+// Undo a dismissal - back into the queue rather than straight to a works order,
+// so it still gets a decision.
+function smUndismiss(key){
+  if(!IS_EDITOR) return;
+  for(var i=0;i<smDropped.length;i++){
+    if(smDropped[i].key===key){
+      var o=smDropped.splice(i,1)[0];
+      delete smSeen[o.key];
+      smPending.push(o);
+      break;
+    }
+  }
+  smAfterChange();
+}
+
+function smCreateAllShown(){
+  if(!IS_EDITOR) return;
+  var keys=smVisiblePending().map(function(o){return o.key;});
+  if(!keys.length) return;
+  if(!confirm('Raise works orders for all '+keys.length+' line'+(keys.length===1?'':'s')+' shown?')) return;
+  keys.forEach(function(k){
+    var o=smTake(k); if(!o) return;
+    var part=smNextPart(smSoKey(o)), ref=smMakeRef(o,part);
+    var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
+    WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:o.qty}],
+      sm:{ lineKey:o.key, company:o.company, so:o.so, seq:o.seq, part:part,
+           customer:o.customer, desc:o.desc, maker:o.maker,
+           promised:o.promised, dateAssumed:!hasDate, notes:[] } });
+    smSeen[o.key]={what:'wo', ref:ref};
+  });
+  smAfterChange();
+}
+
+function smAfterChange(){
+  smAttachNotes();
   recalcWOs(); recalcQtys(); saveState();
   if(rows.length){ updateStats(); renderTable(); }
   renderWOCards(); refreshWOModal(); smRender();
@@ -2314,61 +2371,97 @@ function smLoadPaste(){
 function smAttachNotes(){
   WOs.forEach(function(wo){
     if(!wo.sm) return;
-    var list=smNotes[smSoKey(wo.sm)]||[];
-    wo.sm.notes=list.slice();
+    wo.sm.notes=(smNotes[smSoKey(wo.sm)]||[]).slice();
+  });
+}
+
+function smSrch(){ return ((document.getElementById('smSearch')||{}).value||'').trim(); }
+function smVisiblePending(){
+  var q=smSrch();
+  return smPending.filter(function(o){
+    return smMatch(o.code+' '+o.desc+' '+o.customer+' '+o.so+' '+o.company+' '+o.cat+' '+o.maker, q);
   });
 }
 
 function smRender(){
   smAttachNotes();
-  var srch=((document.getElementById('smSearch')||{}).value||'').toLowerCase().trim();
+  var q=smSrch();
   var live=WOs.filter(function(wo){ return !!wo.sm; });
+  var units=0; live.forEach(function(wo){ wo.items.forEach(function(it){ units+=it.qty; }); });
 
-  var orders={}, units=0;
-  live.forEach(function(wo){
-    orders[smSoKey(wo.sm)]=true;
-    wo.items.forEach(function(it){ units+=it.qty; });
-  });
+  document.getElementById('smStatPend').textContent=smPending.length;
   document.getElementById('smStatLive').textContent=live.length;
-  document.getElementById('smStatOrders').textContent=Object.keys(orders).length;
   document.getElementById('smStatUnits').textContent=units.toLocaleString();
-  document.getElementById('smStatReview').textContent=smReview.length;
+  document.getElementById('smStatDism').textContent=smDropped.length;
   var tc=document.getElementById('smTabCount');
-  if(tc){ tc.textContent=live.length; tc.style.display=live.length?'':'none'; }
+  if(tc){ var n=smPending.length; tc.textContent=n; tc.style.display=n?'':'none'; }
 
+  // ── review queue ────────────────────────────────────────────────────────
+  var pend=smVisiblePending();
+  var pl=document.getElementById('smPendingList');
+  if(!smPending.length){
+    pl.innerHTML='';
+  } else if(!pend.length){
+    pl.innerHTML='<div class="sm-h">&#9998; '+smPending.length+' awaiting review</div>'
+      +'<div class="sm-empty" style="padding:18px">Nothing matches that search.</div>';
+  } else {
+    pl.innerHTML='<div class="sm-h">&#9998; '+pend.length+' awaiting review'
+      +(pend.length!==smPending.length?' <span style="font-weight:400;color:#6b7280">of '+smPending.length+'</span>':'')
+      +(IS_EDITOR?' <button class="btn" style="font-size:10.5px;padding:3px 9px;margin-left:8px" onclick="smCreateAllShown()">Raise all '+pend.length+' shown</button>':'')
+      +'</div>'
+      +pend.map(function(o){
+        var warn=o.cat.indexOf('REVIEW')===0;
+        var noDate=!/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
+        return '<div class="sm-pend'+(warn?' warn':'')+'">'
+          +'<div class="sm-pend-top"><span><span class="sm-code">'+esc(o.code||'(no code)')+'</span>'
+          +' &times; '+o.qty
+          +'<span class="sm-tag'+(smIsOH(o.company)?' oh':'')+'">'+(smIsOH(o.company)?'OH':'TIB')+'</span>'
+          +(warn?'<span class="sm-tag warn">'+esc(o.cat.replace('REVIEW - ',''))+'</span>':'')
+          +'</span><span style="font-size:11.5px;color:'+(noDate?'#b45309':'#6b7280')+'">'
+          +(noDate?'no promised date':'Promised '+esc(o.promised))+'</span></div>'
+          +'<div class="sm-meta">SO '+esc(o.so.replace(/^0+/,''))+' &middot; '+esc(o.customer||'no customer')
+          +(o.maker?' &middot; '+esc(o.maker):'')+'</div>'
+          +'<div class="sm-desc">'+esc(o.desc)+'</div>'
+          +(IS_EDITOR?'<div class="sm-acts">'
+            +'<button class="btn btn-p" style="font-size:11px;padding:4px 10px" onclick="smCreate(\''+esc(o.key)+'\')">&#10003; Create works order</button>'
+            +'<button class="btn" style="font-size:11px;padding:4px 10px" onclick="smDismiss(\''+esc(o.key)+'\')">Dismiss</button>'
+            +'</div>':'')
+          +'</div>';
+      }).join('');
+  }
+
+  // ── works orders raised ─────────────────────────────────────────────────
   var shown=live.filter(function(wo){
-    if(!srch) return true;
-    var hay=(wo.ref+' '+wo.sm.so+' '+wo.sm.customer+' '+wo.sm.desc+' '+
-             wo.items.map(function(i){return i.code;}).join(' ')).toLowerCase();
-    return hay.indexOf(srch)>=0;
+    return smMatch(wo.ref+' '+wo.sm.so+' '+wo.sm.customer+' '+wo.sm.desc+' '+wo.sm.company+' '
+      +wo.items.map(function(i){return i.code;}).join(' ')
+      +' '+(wo.sm.notes||[]).map(function(n){return n.code+' '+n.desc;}).join(' '), q);
   });
   shown.sort(function(a,b){
-    if(a.due!==b.due) return a.due<b.due?-1:1;          // soonest promised first
+    if(a.due!==b.due) return a.due<b.due?-1:1;
     if(a.sm.so!==b.sm.so) return a.sm.so<b.sm.so?-1:1;
     return a.sm.part-b.sm.part;
   });
 
   var el=document.getElementById('smList');
-  if(!shown.length){
-    el.innerHTML='<div class="sm-empty"><h3 style="margin:0 0 6px">'+
-      (live.length?'Nothing matches that search':'No special make works orders yet')+'</h3><p style="margin:0;font-size:12.5px">'+
-      (live.length?'Clear the search box to see all '+live.length+'.'
-                 :'Refresh <strong>Special Makes Live.xlsx</strong>, filter column J to <strong>WORKS ORDER</strong>, copy the rows and paste them above.')+
-      '</p></div>';
+  if(!live.length && !smPending.length){
+    el.innerHTML='<div class="sm-empty"><h3 style="margin:0 0 6px">No special makes loaded</h3>'
+      +'<p style="margin:0;font-size:12.5px">Refresh <strong>Special Makes Live.xlsx</strong>, copy columns A to K without the header, and paste them above.</p></div>';
+  } else if(!shown.length){
+    el.innerHTML= live.length ? '<div class="sm-h">&#128296; Works orders raised</div>'
+      +'<div class="sm-empty" style="padding:18px">Nothing matches that search.</div>' : '';
   } else {
-    el.innerHTML=shown.map(function(wo){
-      var oh=wo.sm.company.indexOf('OLIVER')>=0;
-      var late=(new Date(wo.due)<now());
+    el.innerHTML='<div class="sm-h">&#128296; '+shown.length+' works order'+(shown.length===1?'':'s')+' raised</div>'
+      +shown.map(function(wo){
+      var oh=smIsOH(wo.sm.company), late=(new Date(wo.due)<now());
       return '<div class="sm-card'+(oh?' oh':'')+'">'
         +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">'
         +'<span class="sm-ref">'+esc(wo.ref)+'</span>'
         +'<span style="font-size:11.5px'+(late?';color:#dc2626;font-weight:700':';color:#6b7280')+'">'
         +(late?'&#9888; ':'')+'Promised '+esc(wo.sm.promised||wo.due)
         +(wo.sm.dateAssumed?' <em>(assumed)</em>':'')+'</span></div>'
-        +'<div class="sm-meta">'+esc(oh?'Oliver Harvey':'Tibard')+' &middot; SO '+esc(wo.sm.so)
-        +' &middot; Pt '+wo.sm.part+' &middot; '+esc(wo.sm.customer||'no customer')+'</div>'
-        +'<div class="sm-desc"><strong>'+esc(wo.items[0].code)+'</strong> &times; '
-        +wo.items[0].qty+'<br>'+esc(wo.sm.desc)+'</div>'
+        +'<div class="sm-desc"><strong>'+esc(wo.items[0].code)+'</strong> &times; '+wo.items[0].qty
+        +(wo.sm.customer?' &middot; <span style="color:#6b7280">'+esc(wo.sm.customer)+'</span>':'')
+        +'<br>'+esc(wo.sm.desc)+'</div>'
         +(wo.sm.notes||[]).map(function(n){
             return '<div class="sm-note"><strong>'+esc(n.code||'Note')+'</strong> '+esc(n.desc)+'</div>';
           }).join('')
@@ -2376,27 +2469,25 @@ function smRender(){
     }).join('');
   }
 
-  var rl=document.getElementById('smReviewList');
-  if(!smReview.length){ rl.innerHTML=''; }
-  else {
-    rl.innerHTML='<h3 style="font-size:13px;margin:18px 0 7px;color:#dc2626">&#9888; '
-      +smReview.length+' line'+(smReview.length===1?'':'s')+' need review &mdash; no works order raised</h3>'
-      +smReview.map(function(o,i){
-        return '<div class="sm-rev"><strong>'+esc(o.code||'(no code)')+'</strong> &times; '+o.qty
-          +' &middot; '+esc(o.company)+' SO '+esc(o.so)+' &middot; '+esc(o.customer)
-          +'<br><span style="color:#6b7280">'+esc(o.desc)+'</span>'
-          +'<br><span style="color:#dc2626;font-size:11px">'+esc(o.cat)+'</span>'
-          +(IS_EDITOR?' <button class="btn" style="font-size:10px;padding:2px 7px;margin-left:6px" onclick="smClearReview('+i+')">Dismiss</button>':'')
+  // ── dismissed, collapsed ────────────────────────────────────────────────
+  var dl=document.getElementById('smDismissedList');
+  if(!smDropped.length){ dl.innerHTML=''; }
+  else if(!smDropShow){
+    dl.innerHTML='<div class="sm-h" style="color:#6b7280;font-weight:400">'
+      +smDropped.length+' dismissed &middot; <a href="#" onclick="smToggleDropped();return false" style="color:#7A1F3D">show</a></div>';
+  } else {
+    dl.innerHTML='<div class="sm-h" style="color:#6b7280;font-weight:400">'
+      +smDropped.length+' dismissed &middot; <a href="#" onclick="smToggleDropped();return false" style="color:#7A1F3D">hide</a></div>'
+      +smDropped.map(function(o){
+        return '<div class="sm-dism"><span>'+esc(o.code||'(no code)')+' &times; '+o.qty
+          +' &middot; SO '+esc(o.so.replace(/^0+/,''))+' &middot; '+esc(o.customer)+'</span>'
+          +(IS_EDITOR?'<button class="btn" style="font-size:10px;padding:2px 8px" onclick="smUndismiss(\''+esc(o.key)+'\')">Undo</button>':'')
           +'</div>';
       }).join('');
   }
 }
-
-function smClearReview(i){
-  if(!IS_EDITOR) return;
-  smReview.splice(i,1);
-  saveState(); smRender();
-}
+var smDropShow=false;
+function smToggleDropped(){ smDropShow=!smDropShow; smRender(); }
 
 </script>
 <script>

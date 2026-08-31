@@ -118,22 +118,23 @@ step on the right — the SQL statement box reopens. Paste the corrected
   means the refresh finishes before they can touch anything.
 - ❌ Adjust column width (stops the layout jumping on every refresh)
 
-### 2.7 Set up the filter
-On the `SageData` table, filter column **J (Category)** to **`WORKS ORDER`**.
+### 2.7 No filtering needed
 
-The other categories stay on the sheet rather than being filtered out in SQL,
-because each one means something different and none should vanish silently:
+Copy columns **A to K**, all rows, **without the header**, and paste the lot.
+The app sorts the categories out itself:
 
-| Category | Who acts |
+| Category | What the app does |
 |---|---|
-| `WORKS ORDER` | Production — this is the filter |
-| `NOTE - …` | Attach to the works orders on the same sales order |
-| `REVIEW - no manufacturer set` | Someone fixes the manufacturer in Sage |
-| `REVIEW - FREETEXT placeholder` | Check by hand — could be a real special make |
-| `INTERCOMPANY - no works order` | Nobody; already raised from the customer order |
+| `WORKS ORDER` | Into the review queue — you accept or dismiss each one |
+| `REVIEW - …` | Into the same queue, tagged with the reason |
+| `NOTE - …` | Attached automatically to the works orders on that sales order |
+| `INTERCOMPANY - no works order` | Counted and ignored |
 
-Excel's Ctrl+C copies **visible rows only** when a filter is applied, so selecting
-the filtered range and copying gives exactly what production act on.
+Nothing is created on paste. Works orders exist only once you accept them, and
+anything dismissed is remembered so it is never offered again.
+
+A filter is still worth setting if you want to *read* the sheet, but it makes no
+difference to what you paste.
 
 ---
 

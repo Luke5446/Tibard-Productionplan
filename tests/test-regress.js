@@ -8,7 +8,7 @@ const buf=[
 const sm=T(['OH-1','OLIVER HARVEY','0000114816','1','OHAPP0785191','GREEN BIB APRON','12','2026-09-11','MALDON','WORKS ORDER','Oliver Harvey']);
 
 (async()=>{
-  const b=await chromium.launch({executablePath: process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+  const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
   const p=await b.newPage(); const errs=[];
   p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
   await p.goto('file:///home/user/Tibard-Productionplan/index.html?edit');
@@ -20,7 +20,7 @@ const sm=T(['OH-1','OLIVER HARVEY','0000114816','1','OHAPP0785191','GREEN BIB AP
 
   // add a special make, then switch back to buffer - buffer must be intact
   await p.click('#tabSpecial'); await p.waitForTimeout(100);
-  await p.evaluate(t=>{document.getElementById('smTA').value=t; smLoadPaste();}, sm);
+  await p.evaluate(t=>{document.getElementById('smTA').value=t; smLoadPaste(); smCreate('OH-1');}, sm);
   await p.waitForTimeout(150);
   await p.click('#tabBuffer'); await p.waitForTimeout(150);
   const back=await p.evaluate(()=>({
