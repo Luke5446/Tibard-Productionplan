@@ -495,3 +495,57 @@ SELECT Company, DocumentStatusID, Flag, Maker, COUNT(*) AS OrderLines
 FROM   lines
 GROUP BY Company, DocumentStatusID, Flag, Maker
 ORDER BY Company, DocumentStatusID, Flag, Maker;
+
+
+/* --- 1.0  WHAT PRODUCT GROUPS ARE ACTUALLY COMING THROUGH THE FEED? -------
+   The first live run showed LOGOAPPLICATION and LOGOORIGINATION lines sitting
+   alongside the garment lines on the same sales order - finishing instructions
+   rather than separate jobs.
+
+   This lists the product groups present in the feed so they can be split into
+   "garment - make it" and "note - attach to the works order for this order".
+   Grouping beats hardcoding codes: new service codes added later inherit the
+   classification instead of silently becoming works orders.                */
+
+WITH feed AS (
+    SELECT 'TIBARD' AS Company,
+           ISNULL(pg.Code,'(none)')                              AS GroupCode,
+           ISNULL(pg.Description,'(free text / not in stock file)') AS GroupDesc,
+           sorl.LineTypeID, sorl.ItemCode
+    FROM        S200_LIVE.dbo.SOPOrderReturn      sor
+    INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
+    LEFT  JOIN  S200_LIVE.dbo.StockItem           si   ON si.Code                  = sorl.ItemCode
+    LEFT  JOIN  S200_LIVE.dbo.ProductGroup        pg   ON pg.ProductGroupID        = si.ProductGroupID
+    LEFT  JOIN  S200_LIVE.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
+    WHERE  sor.DocumentTypeID = 0 AND sor.DocumentStatusID = 0
+      AND  sorl.LineTypeID IN (0,1)
+      AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
+      AND  ISNULL(si.AnalysisCode3,'') <> 'Yes'
+      AND  ISNULL(cust.CustomerAccountNumber,'') <> 'OLIVER'
+      AND  (si.Code IS NULL OR NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL
+            OR si.Manufacturer LIKE '%Tibard%' OR si.Manufacturer LIKE '%Oliver Harvey%')
+
+    UNION ALL
+
+    SELECT 'OLIVER HARVEY',
+           ISNULL(pg.Code,'(none)'),
+           ISNULL(pg.Description,'(free text / not in stock file)'),
+           sorl.LineTypeID, sorl.ItemCode
+    FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
+    INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
+    LEFT  JOIN  OliverHarveyLive.dbo.StockItem           si   ON si.Code                  = sorl.ItemCode
+    LEFT  JOIN  OliverHarveyLive.dbo.ProductGroup        pg   ON pg.ProductGroupID        = si.ProductGroupID
+    LEFT  JOIN  OliverHarveyLive.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
+    WHERE  sor.DocumentTypeID = 0 AND sor.DocumentStatusID = 0
+      AND  sorl.LineTypeID IN (0,1)
+      AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
+      AND  ISNULL(si.AnalysisCode7,'') <> 'Yes'
+      AND  ISNULL(cust.CustomerAccountNumber,'') <> 'TIB003'
+      AND  (si.Code IS NULL OR NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL
+            OR si.Manufacturer LIKE '%Tibard%' OR si.Manufacturer LIKE '%Oliver Harvey%')
+)
+SELECT Company, GroupCode, GroupDesc, LineTypeID, COUNT(*) AS Lines,
+       MIN(ItemCode) AS ExampleA, MAX(ItemCode) AS ExampleB
+FROM   feed
+GROUP BY Company, GroupCode, GroupDesc, LineTypeID
+ORDER BY Company, COUNT(*) DESC;

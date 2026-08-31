@@ -320,6 +320,40 @@ same product code already has an open works order from *either* company. If it
 does, warn rather than create. That catches the case regardless of how the
 paperwork was routed.
 
+### Logo and charge lines are instructions, not works orders
+
+The first live run surfaced this pattern, on one Oliver Harvey order:
+
+```
+OH-32036196  SO 0000114816  line 1  OHAPP0785191     FOREST GREEN ADJUSTABLE BIB APRON…
+OH-32036228  SO 0000114816  line 2  LOGOAPPLICATION  Maldon Salt Logo Centre Bib in White
+```
+
+Line 1 is the garment to make. Line 2 is **how to finish it** — and it is a
+sibling line on the same sales order, not a separate job. The same shape appears
+as `LOGOORIGINATION` (embroidery origination charges) and as free-text lines
+carrying logo positions and approval notes (`Chefs Skull & Knife - 6334 Logo -
+Left Chest`, `LOGOORIGINATION - Approved 26.8.26`).
+
+**These must not become their own works orders** — that would raise a job for a
+logo with no garment attached.
+
+**They must not simply be dropped either.** The logo position and spec are
+exactly what production needs on the works order, and are presumably why the
+manual Excel works order exists in the first place. Discarding them would move
+the lookup back into Sage and undo part of the point of this.
+
+So the design is: classify these lines as **notes**, and have the app attach
+them to the works orders raised from the same sales order rather than creating
+separate ones. The `Pt 1 / Pt 2` numbering then counts only the garment lines,
+which is what the office means by "each product".
+
+Identification is by **product group** rather than by hardcoding codes like
+`LOGOAPPLICATION` — the product group list already carries `Additional Charges`
+and `Heat Seal Transfers / Tax Tab`, so the grouping exists in Sage and will
+keep working as new service codes are added. Free-text lines (`LineTypeID = 1`)
+are notes by definition.
+
 ## 4. Decisions still needed for the app side
 
 Flagging these now because they change how the Special Makes tab is built:
