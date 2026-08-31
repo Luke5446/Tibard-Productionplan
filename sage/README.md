@@ -219,58 +219,50 @@ nobody labelled shows up as a special make, which is visible and easy to correct
 — rather than a false negative, where a special make silently never gets
 manufactured. The second is the failure this whole job exists to remove.
 
-### Manufactured by us — measured, and it matters more than expected
+### Classification — validated against the real manual sheet
 
-Live order lines by stock-held flag against manufacturer bucket
-(`DocumentStatusID = 0`, outstanding quantity only):
+22 product codes taken from the current manual special makes sheet were run
+through the exact rules the live query uses:
 
-| Company | Not stock held + **ours** | Not stock held + blank | Not stock held + bought in | Stock held | No stock record |
-|---|---|---|---|---|---|
-| Tibard | **24** | 51 | **911** | 778 | 481 |
-| Oliver Harvey | **11** | 46 | 11 | 330 | 31 |
+| Verdict | Codes | |
+|---|---|---|
+| **WORKS ORDER** | 18 | correctly identified |
+| **REVIEW — no manufacturer set** | 3 | `CICJM01935803`, `CICJM0193XXS01`, and `WT4004MM01` in Oliver Harvey only |
+| **Excluded — flagged stock held** | 1 | `OHAPP054415`, correctly: it holds 136 in stock and is already in the buffer app |
 
-**The headline: "not stock held" is not the same as "special make".** 911 Tibard
-lines are not stock held *and* carry a trade-brand manufacturer — Brook Taverner,
-Premier, Portwest and the like. Those are garments **bought in to order**, not
-made by us. Without the manufacturer test they would all have become works
-orders.
+**No special make was silently lost.** The single exclusion is genuinely a stock
+item, independently confirmed — of the 22 codes, it is the only one that appears
+in the buffer app's 757-code stock list.
 
-So the manufacturer filter is not a refinement, it is load-bearing. "Ours" is:
-manufacturer **contains** `Tibard` or `Oliver Harvey`.
+The rules:
 
-### Blank manufacturer: surfaced, never silently dropped
-
-97 lines (51 Tibard + 46 Oliver Harvey) are not stock held with **no manufacturer
-set**. These cannot be classified either way from the data.
-
-Per the business, a missing manufacturer is a **data quality problem to be fixed
-in Sage on an ongoing basis** — so the sheet must make them visible rather than
-quietly discard them. The design:
-
-| Bucket | What happens |
+| Test | Result |
 |---|---|
-| Not stock held + **ours** | Raises a works order |
-| Not stock held + **blank** | Listed for review, so Sage gets corrected |
-| Not stock held + bought in | Ignored |
-| Stock held | Ignored — the buffer app already covers it |
+| Stock-held analysis code = `Yes` | Excluded — the buffer app covers it |
+| Manufacturer contains `Tibard` / `Oliver Harvey` | **WORKS ORDER** |
+| Manufacturer blank | **REVIEW**, so Sage gets corrected |
+| Manufacturer is a trade brand | Excluded — bought in to order |
 
-The review bucket is the safety net. If a genuine special make is missing its
-manufacturer, it surfaces as something to fix rather than vanishing.
+Analysis code slot differs per company: **Tibard `AnalysisCode3`, Oliver Harvey
+`AnalysisCode7`**. Do not tidy these to match.
 
-### Order status
+### What the validation revealed
 
-`DocumentStatusID = 0` carries the overwhelming bulk of live order lines and is
-the "live" value. Status `1` holds a small tail (about 30 lines across both
-companies) and still needs identifying in Sage before deciding whether to
-include it.
+**The manufacturer field does nearly all the work.** Of the 22 codes, only one
+carried `Yes` and one carried `No` — every other special make has the analysis
+code **blank**. So the stock-held flag mainly serves to exclude the ~757 buffer
+items; the manufacturer decides everything else. That is why the bought-in test
+is load-bearing: 911 live Tibard order lines are not stock held but carry a
+trade brand, and without it every one would have become a works order.
 
-### Open risk: 481 unmatched Tibard lines
+**Product codes exist in both company databases.** Most `OH…` codes returned a
+row in Tibard *and* Oliver Harvey with the same manufacturer. Harmless here —
+each company's order lines are matched to that company's own stock file — but
+worth knowing before anyone tries to deduplicate the two.
 
-481 Tibard live order lines (and 31 Oliver Harvey) match **no stock record** at
-all on `si.Code = sorl.ItemCode`. If those are free-text lines, fine. If they are
-standard product lines whose code does not match, the code join is failing — and
-any special makes among them would be invisible. Needs breaking down by
-`LineTypeID` before the sheet can be trusted.
+**The two companies disagree on the same code.** `WT4004MM01` is set up properly
+in Tibard (`No` + `Tibard`) but blank in Oliver Harvey. Exactly the gap the
+REVIEW bucket exists to catch.
 
 ## 4. Decisions still needed for the app side
 
