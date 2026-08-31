@@ -443,3 +443,55 @@ SELECT 'OLIVER HARVEY' AS Company, 'AnalysisCode20' AS CodeSlot,
 FROM   OliverHarveyLive.dbo.StockItem
 
 ORDER BY Company, LEN(CodeSlot), CodeSlot;
+
+
+/* --- 0.9  THE FEED PREVIEW: does the manufacturer filter lose special makes?
+   Also confirms the whole join chain works on real data, and reveals which
+   DocumentStatusID means "live" (>> CHECK 1 <<) at the same time.
+
+   Uses the CONFIRMED column names:
+     PrintSequenceNumber      (there is no LineNumber)
+     DespatchReceiptQuantity  (there is no QuantityDespatched)
+     si.Code = sorl.ItemCode  (the line carries no ItemID)
+
+   What to look for: the rows where Flag = 'SPECIAL MAKE'. If most of those sit
+   under Maker = '(blank)', then filtering to 'OURS' would drop the bulk of the
+   special makes and must NOT be applied.                                    */
+
+WITH lines AS (
+    SELECT 'TIBARD' AS Company, sor.DocumentStatusID,
+           CASE WHEN si.Code IS NULL            THEN 'no stock record'
+                WHEN si.AnalysisCode3 = 'Yes'   THEN 'stock held'
+                ELSE 'SPECIAL MAKE' END AS Flag,
+           CASE WHEN NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL THEN '(blank)'
+                WHEN si.Manufacturer LIKE '%Tibard%'
+                  OR si.Manufacturer LIKE '%Oliver Harvey%'           THEN 'OURS'
+                ELSE 'bought in' END AS Maker
+    FROM        S200_LIVE.dbo.SOPOrderReturn     sor
+    INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine sorl ON sorl.SOPOrderReturnID = sor.SOPOrderReturnID
+    LEFT  JOIN  S200_LIVE.dbo.StockItem          si   ON si.Code = sorl.ItemCode
+    WHERE  sor.DocumentTypeID = 0
+      AND  sorl.LineTypeID IN (0,1)
+      AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
+
+    UNION ALL
+
+    SELECT 'OLIVER HARVEY', sor.DocumentStatusID,
+           CASE WHEN si.Code IS NULL            THEN 'no stock record'
+                WHEN si.AnalysisCode7 = 'Yes'   THEN 'stock held'
+                ELSE 'SPECIAL MAKE' END,
+           CASE WHEN NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL THEN '(blank)'
+                WHEN si.Manufacturer LIKE '%Tibard%'
+                  OR si.Manufacturer LIKE '%Oliver Harvey%'           THEN 'OURS'
+                ELSE 'bought in' END
+    FROM        OliverHarveyLive.dbo.SOPOrderReturn     sor
+    INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine sorl ON sorl.SOPOrderReturnID = sor.SOPOrderReturnID
+    LEFT  JOIN  OliverHarveyLive.dbo.StockItem          si   ON si.Code = sorl.ItemCode
+    WHERE  sor.DocumentTypeID = 0
+      AND  sorl.LineTypeID IN (0,1)
+      AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
+)
+SELECT Company, DocumentStatusID, Flag, Maker, COUNT(*) AS OrderLines
+FROM   lines
+GROUP BY Company, DocumentStatusID, Flag, Maker
+ORDER BY Company, DocumentStatusID, Flag, Maker;

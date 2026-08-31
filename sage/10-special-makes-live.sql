@@ -15,6 +15,12 @@
    match. (This duplication is the main argument for promoting the query to a
    SQL view later; see README section 2.8.)
 
+   SCHEMA NOTES (confirmed against the live database, not assumed):
+     - SOPOrderReturnLine has NO LineNumber   -> PrintSequenceNumber
+     - SOPOrderReturnLine has NO QuantityDespatched -> DespatchReceiptQuantity
+     - SOPOrderReturnLine has NO ItemID at all, so there is no direct key to
+       StockItem. Joined on si.Code = sorl.ItemCode instead. See >> CHECK 4 <<.
+
    Output column order is FIXED - the app parses by position:
      A LineKey  B Company  C SalesOrderNo  D LineNo  E ProductCode
      F ProductDesc  G Qty  H PromisedDate  I Customer  J StockHeld
@@ -40,7 +46,7 @@ SELECT
     sor.DocumentNo                                              AS SalesOrderNo,
 
     /* D - Line position on the order. Drives Pt 1 / Pt 2 ordering. */
-    sorl.LineNumber                                             AS LineNo,
+    sorl.PrintSequenceNumber                                             AS LineNo,
 
     /* E/F - Code and description. Tabs and line breaks are stripped because
              the app splits pasted rows on TAB - a stray tab inside a
@@ -52,7 +58,7 @@ SELECT
 
     /* G - Quantity still to make (ordered less already despatched), so a
            part-despatched order doesn't get a works order for the full qty. */
-    CAST(sorl.LineQuantity - ISNULL(sorl.QuantityDespatched,0)
+    CAST(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)
          AS decimal(18,2))                                      AS Qty,
 
     /* H - Promised date as TEXT in yyyy-mm-dd. Deliberate: pasting a real
@@ -100,16 +106,21 @@ SELECT
            is silently dropped in the meantime. */
     LTRIM(RTRIM(ISNULL(si.Manufacturer,'')))                    AS Manufacturer
 
+/* >> CHECK 4 << The line table carries no ItemID, so stock is matched by CODE.
+   Sage's proper link is the SOPStandardItemLink table (one row per standard
+   line, keyed on SOPOrderReturnLineID); if that exists here it is the more
+   robust join, because a code join breaks if a product code is ever renamed -
+   historic lines keep the old code and would stop matching, silently turning
+   into FREE-TEXT. Confirm and switch if so. */
 FROM        S200_LIVE.dbo.SOPOrderReturn      sor
 INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
-LEFT  JOIN  S200_LIVE.dbo.StockItem           si   ON si.ItemID                = sorl.ItemID
-LEFT  JOIN  S200_LIVE.dbo.ProductGroup        pg   ON pg.ProductGroupID        = si.ProductGroupID
+LEFT  JOIN  S200_LIVE.dbo.StockItem           si   ON si.Code                  = sorl.ItemCode
 LEFT  JOIN  S200_LIVE.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
 WHERE
         sor.DocumentTypeID = 0            -- Sales Orders only, not returns
     AND sor.DocumentStatusID = 0          -- >> CHECK 1 << "Live" per 00-discovery.sql
     AND sorl.LineTypeID IN (0, 1)         -- product + free text; excludes charges/comments
-    AND (sorl.LineQuantity - ISNULL(sorl.QuantityDespatched,0)) > 0   -- still outstanding
+    AND (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0   -- still outstanding
 
 UNION ALL
 
@@ -120,12 +131,12 @@ SELECT
     'OH-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20))      AS LineKey,
     'OLIVER HARVEY'                                             AS Company,
     sor.DocumentNo                                              AS SalesOrderNo,
-    sorl.LineNumber                                             AS LineNo,
+    sorl.PrintSequenceNumber                                             AS LineNo,
     LTRIM(RTRIM(sorl.ItemCode))                                 AS ProductCode,
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
         ISNULL(sorl.ItemDescription,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS ProductDesc,
-    CAST(sorl.LineQuantity - ISNULL(sorl.QuantityDespatched,0)
+    CAST(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)
          AS decimal(18,2))                                      AS Qty,
     CONVERT(varchar(10), COALESCE(sorl.PromisedDeliveryDate,
                                   sor.PromisedDeliveryDate,
@@ -145,13 +156,12 @@ SELECT
 
 FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
 INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
-LEFT  JOIN  OliverHarveyLive.dbo.StockItem           si   ON si.ItemID                = sorl.ItemID
-LEFT  JOIN  OliverHarveyLive.dbo.ProductGroup        pg   ON pg.ProductGroupID        = si.ProductGroupID
+LEFT  JOIN  OliverHarveyLive.dbo.StockItem           si   ON si.Code                  = sorl.ItemCode
 LEFT  JOIN  OliverHarveyLive.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
 WHERE
         sor.DocumentTypeID = 0
     AND sor.DocumentStatusID = 0          -- >> CHECK 1 <<
     AND sorl.LineTypeID IN (0, 1)
-    AND (sorl.LineQuantity - ISNULL(sorl.QuantityDespatched,0)) > 0
+    AND (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
 
 ORDER BY Company, SalesOrderNo, LineNo;

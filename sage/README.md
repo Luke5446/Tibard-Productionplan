@@ -222,17 +222,36 @@ manufactured. The second is the failure this whole job exists to remove.
 ### Manufactured by us
 
 Only our own manufacture should raise a works order; bought-in goods must not.
-`StockItem.Manufacturer` holds this, but it is free text and messy — the buffer
-sheet shows `Tibard`, `Oliver Harvey`, and combined entries like
-`Urban Textiles/Tibard`.
+`StockItem.Manufacturer` holds this. Profiled values:
 
-It is returned as column K but **not yet filtered on**, pending a profile of the
-real values. Two things need deciding once that list is in:
+- **Tibard DB**: `(blank)` is the **largest single bucket**, then trade brands —
+  Brook Taverner, Premier, Stanley/Stella, Portwest, Gildan, Uneek… with
+  `Tibard` and `Oliver Harvey` both present.
+- **Oliver Harvey DB**: `Oliver Harvey` largest, then `(blank)`, then the same
+  sort of trade brands.
 
-1. What a combined entry like `Urban Textiles/Tibard` means — made by us, or
-   bought in?
-2. What a **blank** manufacturer means. If blank can be one of ours, filtering
-   it out would silently drop genuine special makes.
+Combined entries like `Urban Textiles/Tibard` mean a garment bought in and then
+personalised by us. Per the business, those are **usually stock items**, so the
+stock-held flag already excludes them — the manufacturer test does not have to
+resolve them on its own.
+
+So "ours" is: manufacturer **contains** `Tibard` or `Oliver Harvey`.
+
+> #### ⚠️ Do not filter out blank manufacturer without measuring first
+>
+> Blank is the biggest bucket in the Tibard database, and there is a plausible
+> reason to expect special makes to be blank disproportionately: a one-off
+> product code raised for a single customer order is exactly the kind of record
+> nobody fills the Manufacturer field in on.
+>
+> If that is right, filtering to "contains Tibard or Oliver Harvey" would drop
+> the majority of special makes — silently, which is the precise failure this
+> job exists to remove.
+>
+> This is measurable rather than guessable: count live order lines by
+> stock-held flag against manufacturer bucket, and see where the special makes
+> actually sit. Query 0.9 in `00-discovery.sql` does exactly that. Until it has
+> been run, `Manufacturer` is returned as column K but **not filtered on**.
 
 ## 4. Decisions still needed for the app side
 
