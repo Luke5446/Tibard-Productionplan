@@ -169,7 +169,7 @@ paste. Production select the filtered rows (no header) → Ctrl+C → paste.
 | A | `LineKey` | **The dedupe key** — `TIB-` / `OH-` prefix + Sage's permanent line ID |
 | B | `Company` | `TIBARD` or `OLIVER HARVEY` |
 | C | `SalesOrderNo` | |
-| D | `LineNo` | Position on the order — drives Pt 1 / Pt 2 ordering |
+| D | `LineSeq` | Position on the order — drives Pt 1 / Pt 2 ordering. Named `LineSeq` because `LINENO` is a reserved T-SQL keyword and fails as a column alias |
 | E | `ProductCode` | |
 | F | `ProductDesc` | Tabs/line breaks stripped in SQL |
 | G | `Qty` | Outstanding qty (ordered − despatched) |

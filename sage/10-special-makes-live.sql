@@ -8,7 +8,7 @@
    the live database.
 
    Output order is FIXED - the app parses by position:
-     A LineKey  B Company  C SalesOrderNo  D LineNo  E ProductCode
+     A LineKey  B Company  C SalesOrderNo  D LineSeq  E ProductCode
      F ProductDesc  G Qty  H PromisedDate  I Customer  J Category  K Manufacturer
 
    Filter column J to WORKS ORDER for production. Other values:
@@ -25,7 +25,7 @@ SELECT
     'TIB-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20))     AS LineKey,
     'TIBARD'                                                    AS Company,
     sor.DocumentNo                                              AS SalesOrderNo,
-    sorl.PrintSequenceNumber                                    AS LineNo,
+    sorl.PrintSequenceNumber                                    AS LineSeq,
     LTRIM(RTRIM(sorl.ItemCode))                                 AS ProductCode,
 
     /* Tabs and line breaks stripped - the app splits pasted rows on TAB. */
@@ -127,4 +127,4 @@ WHERE
          OR si.Manufacturer LIKE '%Tibard%'
          OR si.Manufacturer LIKE '%Oliver Harvey%')
 
-ORDER BY Company, SalesOrderNo, LineNo;
+ORDER BY Company, SalesOrderNo, LineSeq;
