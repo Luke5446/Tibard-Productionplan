@@ -53,7 +53,7 @@ const newLine=T(['OH-32036999','OLIVER HARVEY','0000114816','5','OHCJSMDEVON6401
  // loose search
  const srch=async q=>p.evaluate(x=>{document.getElementById('smSearch').value=x; smRender();
    return {pend:document.querySelectorAll('#smPendingList .sm-pend').length,
-           made:document.querySelectorAll('#smList .sm-card').length};},q);
+           made:document.querySelectorAll('#smList .sm-tbl tbody tr').length};},q);
  console.log('search "862833":            ', JSON.stringify(await srch('862833')));
  console.log('search "cumbria jacket":    ', JSON.stringify(await srch('cumbria jacket')));
  console.log('search "maldon logo":       ', JSON.stringify(await srch('maldon logo')));
@@ -69,7 +69,7 @@ const newLine=T(['OH-32036999','OLIVER HARVEY','0000114816','5','OHCJSMDEVON6401
  await p.click('#tabSpecial'); await p.waitForTimeout(200);
  const g=await p.evaluate(()=>({pending:smPending.length,wos:WOs.filter(w=>w.sm).length,
    pendCards:document.querySelectorAll('#smPendingList .sm-pend').length,
-   madeCards:document.querySelectorAll('#smList .sm-card').length,
+   madeCards:document.querySelectorAll('#smList .sm-tbl tbody tr').length,
    statPend:document.getElementById('smStatPend').textContent}));
  console.log('after reload:               ', JSON.stringify(g));
  console.log('errors:                     ', errs.length?errs.join(' | '):'none');
