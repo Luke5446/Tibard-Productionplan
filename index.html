@@ -256,6 +256,7 @@ body.planner-mode .planner-wrap{display:block}
 .sm-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.4px;padding:1px 6px;border-radius:9px;background:#eef2ff;color:#3730a3;margin-left:6px;vertical-align:1px}
 .sm-tag.oh{background:#dcfce7;color:#14532d}
 .sm-tag.warn{background:#fee2e2;color:#991b1b}
+.sm-tag.ok{background:#d1fae5;color:#065f46}
 .sm-meta{font-size:11px;color:#6b7280;margin-top:2px}
 .sm-desc{font-size:12.5px;margin-top:5px}
 .sm-acts{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
@@ -1179,6 +1180,8 @@ function renderWOCards(){
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
       +'<span class="woc-wks" style="background:'+wbg+'">'+wl+'</span>'
       +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
+      +(wo.sm?'<div style="font-size:10px;color:#6b7280;margin-top:2px">'+esc(wo.sm.customer||'')
+        +(smPrintable(wo.items[0].code)?'':' &middot; <span style="color:#b45309;font-weight:700">no print template</span>')+'</div>':'')
       +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
       +'<button class="btn" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button>'
       +'</div>';
@@ -2336,7 +2339,7 @@ function smCreate(key){
   var o=smTake(key); if(!o) return;
   var part=smNextPart(smSoKey(o)), ref=smMakeRef(o,part);
   var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
-  WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:o.qty}],
+  WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
     sm:{ lineKey:o.key, company:o.company, so:o.so, seq:o.seq, part:part,
          customer:o.customer, desc:o.desc, maker:o.maker,
          promised:o.promised, dateAssumed:!hasDate, notes:[] } });
@@ -2349,7 +2352,8 @@ function smCreate(key){
 // leaves WOs once completed, so without this the monthly history would only
 // ever show what happens to be live.
 function smLog(o, ref, part){
-  smMade.push({key:o.key, ref:ref, part:part, code:o.code, desc:o.desc, qty:o.qty,
+  smMade.push({key:o.key, ref:ref, part:part, code:o.code, desc:o.desc,
+               qty:smTake0(o), ordered:o.qty,
                so:o.so, company:o.company, customer:o.customer, raisedAt:d2s(now())});
 }
 
@@ -2379,14 +2383,15 @@ function smUndismiss(key){
 
 function smCreateAllShown(){
   if(!IS_EDITOR) return;
-  var keys=smVisiblePending().map(function(o){return o.key;});
-  if(!keys.length) return;
-  if(!confirm('Raise works orders for all '+keys.length+' line'+(keys.length===1?'':'s')+' shown?')) return;
+  var keys=smVisiblePending().filter(function(o){ return o.included && smTake0(o)>0; })
+                             .map(function(o){return o.key;});
+  if(!keys.length){ alert('Tick the lines you want to make first.'); return; }
+  if(!confirm('Raise works orders for the '+keys.length+' ticked line'+(keys.length===1?'':'s')+'?')) return;
   keys.forEach(function(k){
     var o=smTake(k); if(!o) return;
     var part=smNextPart(smSoKey(o)), ref=smMakeRef(o,part);
     var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
-    WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:o.qty}],
+    WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
       sm:{ lineKey:o.key, company:o.company, so:o.so, seq:o.seq, part:part,
            customer:o.customer, desc:o.desc, maker:o.maker,
            promised:o.promised, dateAssumed:!hasDate, notes:[] } });
@@ -2410,6 +2415,40 @@ function smAttachNotes(){
     if(!wo.sm) return;
     wo.sm.notes=(smNotes[smSoKey(wo.sm)]||[]).slice();
   });
+}
+
+// ── review queue helpers: tick + editable quantity, mirroring the buffer ───
+// Each pending line carries `take` (units to make, defaulting to the ordered
+// quantity) and `included` (ticked), exactly as a buffer row carries actWop and
+// included. Same muscle memory for the production manager.
+function smFind(key){ for(var i=0;i<smPending.length;i++){ if(smPending[i].key===key) return smPending[i]; } return null; }
+function smTake0(o){ return (o.take==null? o.qty : o.take); }
+function smTick(key,on){ var o=smFind(key); if(!o) return; o.included=!!on; saveState(); smRender(); }
+function smAdj(key,d){ var o=smFind(key); if(!o) return;
+  o.take=Math.max(0, Math.round(smTake0(o)+d)); o.included=o.take>0; saveState(); smRender(); }
+function smSetQty(key,v){ var o=smFind(key); if(!o) return;
+  o.take=Math.max(0, Math.round(pn(v))); o.included=o.take>0; saveState(); smRender(); }
+function smTickAll(on){
+  smVisiblePending().forEach(function(o){ o.included=!!on; if(on&&o.take==null) o.take=o.qty; });
+  saveState(); smRender();
+}
+
+// Date-driven status. A special make has no stock cover to compute, so the only
+// honest urgency signal is its promised date - this mirrors the buffer's
+// Critical/Low/OK banding using a number that actually exists.
+function smStatus(promised, due){
+  var d=/^\d{4}-\d{2}-\d{2}$/.test(promised)?promised:due;
+  if(!d) return {key:'later', label:'No date', col:'#6b7280', bg:'#f3f4f6'};
+  var days=Math.round((new Date(d+'T00:00:00') - now())/86400000);
+  if(days<0)  return {key:'overdue', label:'Overdue',    col:'#b91c1c', bg:'#fde8e8', days:days};
+  if(days<=7) return {key:'week',    label:'This week',  col:'#92400e', bg:'#fef3c7', days:days};
+  return             {key:'later',   label:days+' days', col:'#065f46', bg:'#d1fae5', days:days};
+}
+
+// Does this code print? Special makes are one-offs, but many are an established
+// customer garment in a given size, which the Style Master already covers.
+function smPrintable(code){
+  try{ return !!styleForCode(code); }catch(e){ return false; }
 }
 
 function smSrch(){ return ((document.getElementById('smSearch')||{}).value||'').trim(); }
@@ -2478,34 +2517,58 @@ function smRenderInner(){
   // ── review queue ────────────────────────────────────────────────────────
   var pend=smVisiblePending();
   var pl=document.getElementById('smPendingList');
+  var nTick=pend.filter(function(o){return o.included && smTake0(o)>0;}).length;
+  var nTickUnits=0; pend.forEach(function(o){ if(o.included) nTickUnits+=smTake0(o); });
   if(!smPending.length){ pl.innerHTML=''; }
   else if(!pend.length){
     pl.innerHTML='<div class="sm-h">&#9998; '+smPending.length+' awaiting review</div>'
       +'<div class="sm-empty" style="padding:18px">Nothing matches that search.</div>';
   } else {
-    pl.innerHTML='<div class="sm-h">&#9998; '+pend.length+' awaiting review'
+    pl.innerHTML='<div class="sm-h">&#9998; '+pend.length+' awaiting a works order'
       +(pend.length!==smPending.length?' <span style="font-weight:400;color:#6b7280">of '+smPending.length+'</span>':'')
-      +(IS_EDITOR?' <button class="btn" style="font-size:10.5px;padding:3px 9px;margin-left:8px" onclick="smCreateAllShown()">Raise all '+pend.length+' shown</button>':'')
+      +(IS_EDITOR?'<span style="float:right;font-weight:400">'
+        +'<button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="smTickAll(true)">&#9745; Tick all</button> '
+        +'<button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="smTickAll(false)">&#9744; Untick all</button> '
+        +'<button class="btn btn-p" style="font-size:10.5px;padding:3px 9px" onclick="smCreateAllShown()">&#128296; Create works orders'
+        +(nTick?' ('+nTick+')':'')+'</button></span>':'')
       +'</div>'
+      +(nTick?'<div style="font-size:11px;color:#6b7280;margin-bottom:6px">'+nTick+' ticked &middot; '
+        +nTickUnits.toLocaleString()+' units to make</div>':'')
+      +'<div class="sm-tblwrap"><table class="sm-tbl"><thead><tr>'
+      +'<th style="width:26px"></th><th>Product</th><th>Customer</th><th>Sales order</th>'
+      +'<th style="text-align:right">Ordered</th><th style="text-align:center;width:118px">To make</th>'
+      +'<th>Promised</th><th>Status</th></tr></thead><tbody>'
       +pend.map(function(o){
-        var warn=o.cat.indexOf('REVIEW')===0;
-        var noDate=!/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
-        return '<div class="sm-pend'+(warn?' warn':'')+'">'
-          +'<div class="sm-pend-top"><span><span class="sm-code">'+esc(o.code||'(no code)')+'</span>'
-          +' &times; '+o.qty
-          +'<span class="sm-tag'+(smIsOH(o.company)?' oh':'')+'">'+(smIsOH(o.company)?'OH':'TIB')+'</span>'
-          +(warn?'<span class="sm-tag warn">'+esc(o.cat.replace('REVIEW - ',''))+'</span>':'')
-          +'</span><span style="font-size:11.5px;color:'+(noDate?'#b45309':'#6b7280')+'">'
-          +(noDate?'no promised date':'Promised '+esc(o.promised))+'</span></div>'
-          +'<div class="sm-meta">SO '+esc(o.so.replace(/^0+/,''))+' &middot; '+esc(o.customer||'no customer')
-          +(o.maker?' &middot; '+esc(o.maker):'')+'</div>'
-          +'<div class="sm-desc">'+esc(o.desc)+'</div>'
-          +(IS_EDITOR?'<div class="sm-acts">'
-            +'<button class="btn btn-p" style="font-size:11px;padding:4px 10px" onclick="smCreate(\''+esc(o.key)+'\')">&#10003; Create works order</button>'
-            +'<button class="btn" style="font-size:11px;padding:4px 10px" onclick="smDismiss(\''+esc(o.key)+'\')">Dismiss</button>'
-            +'</div>':'')
-          +'</div>';
-      }).join('');
+        var warn=o.cat.indexOf('REVIEW')===0, st=smStatus(o.promised,''), take=smTake0(o);
+        return '<tr'+(o.included?' style="background:#fdf5f8"':'')+'>'
+          +'<td>'+(IS_EDITOR?'<input type="checkbox"'+(o.included?' checked':'')
+              +' onchange="smTick(\''+esc(o.key)+'\',this.checked)">':'')+'</td>'
+          +'<td><strong>'+esc(o.code||'(no code)')+'</strong>'
+            +'<span class="sm-tag'+(smIsOH(o.company)?' oh':'')+'">'+(smIsOH(o.company)?'OH':'TIB')+'</span>'
+            +(warn?'<span class="sm-tag warn">'+esc(o.cat.replace('REVIEW - ',''))+'</span>':'')
+            +(smPrintable(o.code)?'<span class="sm-tag ok">prints</span>':'')
+            +'<div class="sm-sub">'+esc(o.desc)+'</div></td>'
+          +'<td>'+esc(o.customer||'')+'</td>'
+          +'<td class="sm-sub" style="white-space:nowrap">'+esc(o.so.replace(/^0+/,''))+'</td>'
+          +'<td style="text-align:right">'+o.qty+'</td>'
+          +'<td style="text-align:center;white-space:nowrap">'
+            +(IS_EDITOR
+              ? '<button class="btn" style="font-size:11px;padding:1px 6px" onclick="smAdj(\''+esc(o.key)+'\',-1)">&minus;</button>'
+                +'<input value="'+take+'" onchange="smSetQty(\''+esc(o.key)+'\',this.value)" '
+                +'style="width:52px;text-align:center;margin:0 3px;padding:2px;border:1px solid #d1d5db;border-radius:4px;font-size:12px'
+                +(take!==o.qty?';font-weight:700;color:#7A1F3D':'')+'">'
+                +'<button class="btn" style="font-size:11px;padding:1px 6px" onclick="smAdj(\''+esc(o.key)+'\',1)">+</button>'
+              : take)
+            +'</td>'
+          +'<td style="white-space:nowrap">'+esc(o.promised||'&mdash;')+'</td>'
+          +'<td><span style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:9px;color:'
+            +st.col+';background:'+st.bg+'">'+st.label+'</span></td>'
+          +'</tr>'
+          +(IS_EDITOR?'<tr><td></td><td colspan="7" style="padding-top:0;border-bottom:1px solid #f3f4f6">'
+            +'<button class="btn" style="font-size:10px;padding:2px 8px" onclick="smDismiss(\''+esc(o.key)+'\')">Dismiss this line</button>'
+            +'</td></tr>':'');
+      }).join('')
+      +'</tbody></table></div>';
   }
 
   // ── live works orders, as a list with On WOP and Pipeline ───────────────
@@ -2555,7 +2618,11 @@ function smRenderInner(){
         var wo=r.wo, oh=smIsOH(wo.sm.company), late=(new Date(wo.due)<now());
         return '<tr>'
           +'<td><span class="sm-ref-s'+(oh?' oh':'')+'">'+esc(wo.ref)+'</span></td>'
-          +'<td><strong>'+esc(r.code)+'</strong><div class="sm-sub">'+esc(wo.sm.desc)+'</div>'
+          +'<td><strong>'+esc(r.code)+'</strong>'
+          +(wo.printed?'<span class="sm-tag ok">printed</span>'
+            :smPrintable(r.code)?'<span class="sm-tag ok">ready to print</span>'
+            :'<span class="sm-tag warn">no template</span>')
+          +'<div class="sm-sub">'+esc(wo.sm.desc)+'</div>'
           +(wo.sm.notes||[]).map(function(n){
               return '<div class="sm-note"><strong>'+esc(n.code||'Note')+'</strong> '+esc(n.desc)+'</div>';
             }).join('')
