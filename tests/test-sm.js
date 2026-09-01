@@ -23,7 +23,7 @@ const newLine=T(['OH-32036999','OLIVER HARVEY','0000114816','5','OHCJSMDEVON6401
  const run=async t=>{ await p.evaluate(x=>{document.getElementById('smTA').value=x; smLoadPaste();},t); await p.waitForTimeout(150); };
  const S=()=>p.evaluate(()=>({pending:smPending.length, wos:WOs.filter(w=>w.sm).length,
    refs:WOs.filter(w=>w.sm).map(w=>w.ref), dropped:smDropped.length,
-   cards:document.querySelectorAll('#smPendingList .sm-pend').length}));
+   cards:document.querySelectorAll('#smPendingList input[type=checkbox]').length}));
 
  await p.click('#tabSpecial'); await p.waitForTimeout(150);
 
@@ -52,7 +52,7 @@ const newLine=T(['OH-32036999','OLIVER HARVEY','0000114816','5','OHCJSMDEVON6401
 
  // loose search
  const srch=async q=>p.evaluate(x=>{document.getElementById('smSearch').value=x; smRender();
-   return {pend:document.querySelectorAll('#smPendingList .sm-pend').length,
+   return {pend:document.querySelectorAll('#smPendingList input[type=checkbox]').length,
            made:document.querySelectorAll('#smList .sm-tbl tbody tr').length};},q);
  console.log('search "862833":            ', JSON.stringify(await srch('862833')));
  console.log('search "cumbria jacket":    ', JSON.stringify(await srch('cumbria jacket')));
@@ -68,7 +68,7 @@ const newLine=T(['OH-32036999','OLIVER HARVEY','0000114816','5','OHCJSMDEVON6401
  await p.reload(); await p.waitForTimeout(400);
  await p.click('#tabSpecial'); await p.waitForTimeout(200);
  const g=await p.evaluate(()=>({pending:smPending.length,wos:WOs.filter(w=>w.sm).length,
-   pendCards:document.querySelectorAll('#smPendingList .sm-pend').length,
+   pendCards:document.querySelectorAll('#smPendingList input[type=checkbox]').length,
    madeCards:document.querySelectorAll('#smList .sm-tbl tbody tr').length,
    statPend:document.getElementById('smStatPend').textContent}));
  console.log('after reload:               ', JSON.stringify(g));

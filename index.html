@@ -1916,7 +1916,7 @@ function publishData(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
   if(!rows.length){ alert('Load buffer data first.'); return; }
   var state={rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,
     savedAt:new Date().toISOString()};
   var blob=new Blob([JSON.stringify(state)],{type:'application/json'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
@@ -2108,7 +2108,7 @@ function dbSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveState,1200)
 function saveState(){
   try{
     localStorage.setItem('tibard_production',JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,
       savedAt:new Date().toISOString()}));
     var ind=document.getElementById('saveInd'); if(ind){ind.innerHTML='✓ Saved';setTimeout(function(){ind.textContent='';},2000);}
   }catch(e){console.log('Save failed:',e);}
@@ -2121,7 +2121,7 @@ function loadState(){
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
-    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[];
+    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{};
     // Anything left in the old review list becomes a queue item needing a decision.
     (s.smReview||[]).forEach(function(o){
       if(!smSeen[o.key] && !smPending.some(function(p){return p.key===o.key;})) smPending.push(o);
@@ -2139,7 +2139,7 @@ function clearAll(){ if(!IS_EDITOR) return;
   try{
     localStorage.removeItem('tibard_production');
     rows=[];WOs=[];completedWOs=[];
-    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];
+    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};
     document.getElementById('dataWrap').classList.add('hidden');
     document.getElementById('uzone').classList.remove('hidden');
     document.getElementById('lastUpdated').textContent='';
@@ -2604,7 +2604,7 @@ function smRenderInner(){
       +'<div class="sm-tblwrap"><table class="sm-tbl"><thead><tr>'
       +'<th>Works order</th><th>Product</th><th>Customer</th>'
       +'<th style="text-align:right">On WOP</th><th style="text-align:right">Pipeline</th><th>Promised</th>'
-      +'</tr></thead><tbody>'
+      +'<th>Document</th></tr></thead><tbody>'
       +rowsOut.map(function(r){
         if(r.kind==='pipe'){
           return '<tr class="pipe"><td><span class="sm-ref-s">'+esc(r.c.ref)+'</span>'
@@ -2613,7 +2613,7 @@ function smRenderInner(){
             +'<td>'+esc(r.c.customer||'')+'</td>'
             +'<td style="text-align:right;color:#9ca3af">&mdash;</td>'
             +'<td style="text-align:right;color:#0369a1;font-weight:700">'+r.pipe+'</td>'
-            +'<td><span class="sm-sub">in pipeline until 7am</span></td></tr>';
+            +'<td><span class="sm-sub">in pipeline until 7am</span></td><td></td></tr>';
         }
         var wo=r.wo, oh=smIsOH(wo.sm.company), late=(new Date(wo.due)<now());
         return '<tr>'
@@ -2632,9 +2632,17 @@ function smRenderInner(){
           +'<td style="text-align:right;'+(r.pipe?'color:#0369a1;font-weight:700':'color:#9ca3af')+'">'+(r.pipe||'&mdash;')+'</td>'
           +'<td'+(late?' style="color:#dc2626;font-weight:700"':'')+'>'+(late?'&#9888; ':'')
           +esc(wo.sm.promised||wo.due)+(wo.sm.dateAssumed?' <em class="sm-sub">assumed</em>':'')+'</td>'
+          +'<td style="white-space:nowrap">'
+            +(IS_EDITOR?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="smPrintDoc(\''+esc(wo.ref)+'\')">&#128424; '
+              +(smPrintable(r.code)?'Print WOP':'Print sheet')+'</button> ':'')
+            +smDocCell(wo)
+          +'</td>'
           +'</tr>';
       }).join('')
-      +'</tbody></table></div>';
+      +'</tbody></table></div>'
+      +'<p class="sm-sub" style="margin:6px 2px 0">&#128206; Attached documents are stored in <strong>this browser only</strong> '
+      +'&mdash; they are not shared by Publish and are lost if site data is cleared. '
+      +'Keep anything the team needs on the network drive as now.</p>';
   }
 
   // ── history: raised and dismissed, in monthly folders ───────────────────
@@ -2664,6 +2672,184 @@ function smRenderInner(){
 }
 var smHistShow=false;
 function smToggleHist(){ smHistShow=!smHistShow; smRender(); }
+
+// ══════════════════════════════════════════════════════════════════════════
+// SPECIAL MAKE WORKS ORDER DOCUMENTS
+//
+// Two routes, because special makes split two ways:
+//
+//   Style Master hit  -> the normal printWOP document, full spec. About a
+//                        third of special make codes resolve, since many are
+//                        an established customer garment in a given size.
+//   No Style Master   -> the sheet below: everything Sage holds about the
+//                        order plus the logo spec, and ruled space for the
+//                        making detail. It replaces the emailed Excel works
+//                        order, not the garment specification.
+//
+// The PM can also attach the real document - an existing S works order, or a
+// fresh one out of the costing app.
+// ══════════════════════════════════════════════════════════════════════════
+
+function smPrintDoc(ref){
+  var wo=WOs.filter(function(w){ return w.ref===ref; })[0];
+  if(!wo || !wo.sm){ alert('Works order not found.'); return; }
+  var it=wo.items[0]||{code:'',qty:0};
+
+  // A code the Style Master knows prints the full specification instead -
+  // there is no reason to hand production a thinner document.
+  if(smPrintable(it.code)){
+    var i=WOs.indexOf(wo);
+    printWOPTracked(i, it.code, it.qty);
+    return;
+  }
+
+  var e=function(x){ return esc(String(x==null?'':x)); };
+  var today=new Date().toLocaleDateString('en-GB');
+  var dueTxt=wo.due?new Date(wo.due).toLocaleDateString('en-GB'):'';
+  var notes=wo.sm.notes||[];
+  var blank=function(n){ var s=''; for(var k=0;k<n;k++) s+='<tr class="sign"><td class="num">'+(k+1)+'</td><td></td></tr>'; return s; };
+
+  var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Works order '+e(ref)+'</title><style>'
+    +'@page{size:A4 portrait;margin:12mm}'
+    +'*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    +'body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0;font-size:13px}'
+    +'.hdr{background:#fff;color:#1F3245;padding:0 0 10px;border-bottom:4px solid #1F3245;display:flex;justify-content:space-between;align-items:center}'
+    +'.hdr h1{margin:0;font-size:24px;letter-spacing:.5px}'
+    +'.band{background:#44546A;color:#fff;font-weight:700;font-size:14px;padding:6px 10px;margin:14px 0 0}'
+    +'table{width:100%;border-collapse:collapse}'
+    +'th,td{border:1px solid #B7BEC8;padding:6px 9px;text-align:left;vertical-align:top;font-size:13px}'
+    +'th{background:#EEF1F5;color:#44546A;width:26%;font-size:12px}'
+    +'.kv td{font-weight:700;font-size:14px}'
+    +'.num{width:5%;text-align:center;color:#44546A;font-weight:700}'
+    +'.sign td{height:30px}'
+    +'.logo td{background:#FFF8E1}'
+    +'.note{font-size:10px;color:#808080;font-style:italic;margin-top:8px}'
+    +'.warn{color:#C00000;font-weight:700;margin:8px 0;font-size:12px}'
+    +'</style></head><body>';
+
+  h+='<div class="hdr"><h1>SPECIAL MAKE WORKS ORDER &nbsp;&middot;&nbsp; '+e(ref)+'</h1>'
+    +(typeof TIBARD_LOGO!=='undefined'?'<img src="'+TIBARD_LOGO+'" alt="Tibard" style="height:40px">':'')
+    +'</div>'
+    +'<table class="kv" style="margin-top:14px">'
+    +'<tr><th>Date issued</th><td>'+e(today)+'</td><th style="width:26%">Date required</th><td>'+e(dueTxt)+'</td></tr>'
+    +'<tr><th>Customer</th><td>'+e(wo.sm.customer)+'</td><th>Sales order</th><td>'+e(String(wo.sm.so).replace(/^0+/,''))+'</td></tr>'
+    +'<tr><th>Product code</th><td>'+e(it.code)+'</td><th>Quantity</th><td>'+Math.round(it.qty).toLocaleString()+'</td></tr>'
+    +'<tr><th>Company</th><td>'+(smIsOH(wo.sm.company)?'Oliver Harvey':'Tibard')+'</td>'
+    +'<th>Personalisation</th><td>'+(notes.length?'Yes &mdash; see below':'None specified')+'</td></tr>'
+    +'</table>'
+    +'<div class="band">GARMENT</div><table><tr><td style="font-weight:700">'+e(wo.sm.desc)+'</td></tr></table>';
+
+  h+='<div class="band">LOGO / PERSONALISATION</div><table>';
+  if(notes.length){
+    notes.forEach(function(n,ix){
+      h+='<tr class="logo"><td class="num">'+(ix+1)+'</td><th style="width:22%">'+e(n.code||'Note')+'</th><td>'+e(n.desc)+'</td></tr>';
+    });
+  } else {
+    h+='<tr><td colspan="3" style="color:#808080">No logo or charge lines on this sales order.</td></tr>';
+  }
+  h+='</table>';
+
+  h+='<div class="band">FABRIC &amp; TRIMS</div><table>'+blank(5)+'</table>'
+    +'<div class="band">MAKING DETAIL</div><table>'+blank(8)+'</table>'
+    +'<div class="band">SIGN OFF</div><table>'
+    +'<tr><th>Cut by</th><td></td><th style="width:26%">Date</th><td></td></tr>'
+    +'<tr><th>Made by</th><td></td><th>Date</th><td></td></tr>'
+    +'<tr><th>Checked by</th><td></td><th>Date</th><td></td></tr>'
+    +'</table>'
+    +'<p class="warn">'+e(it.code)+' is not in the style master, so the fabric, trim and making detail are not held by the app. '
+    +'Complete them by hand, or attach the detailed works order in the Special Makes tab.</p>'
+    +'<p class="note">Generated from the Production Buffer app &mdash; order detail and logo specification from Sage.</p>';
+
+  h+='</body></html>';
+  var w=window.open('','_blank');
+  if(!w){ alert('Pop-up blocked. Allow pop-ups for this page and try again.'); return; }
+  w.document.write(h); w.document.close(); w.focus();
+  setTimeout(function(){ try{ w.print(); }catch(err){} }, 400);
+
+  wo.printed=true; wo.printedAt=d2s(now());
+  saveState(); renderWOCards(); smRender();
+}
+
+// ── attached documents ────────────────────────────────────────────────────
+// The file itself goes in IndexedDB, not localStorage: a works order workbook
+// would eat the localStorage quota that the whole app's state shares, and a
+// quota failure there loses the buffer data silently. Only small metadata is
+// kept in state so the UI can render without an async lookup.
+//
+// LIMITATION, surfaced in the UI as well as here: an attached file lives in
+// THIS browser only. It is not shared with the team by Publish, and clearing
+// site data loses it. For anything that must be shared, keep the document on
+// the network drive as now and attach it here for the PM's own convenience.
+var smDocs={};          // ref -> {name,size,at}
+var SMDB=null;
+function smDB(cb){
+  if(SMDB) return cb(SMDB);
+  if(!window.indexedDB) return cb(null);
+  try{
+    var r=indexedDB.open('tibard_sm_docs',1);
+    r.onupgradeneeded=function(ev){ ev.target.result.createObjectStore('docs',{keyPath:'ref'}); };
+    r.onsuccess=function(ev){ SMDB=ev.target.result; cb(SMDB); };
+    r.onerror=function(){ cb(null); };
+  }catch(err){ cb(null); }
+}
+function smAttachDoc(ref){
+  if(!IS_EDITOR) return;
+  var inp=document.createElement('input');
+  inp.type='file';
+  inp.accept='.xlsx,.xlsm,.xls,.pdf,.csv,.doc,.docx';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0]; if(!f) return;
+    if(f.size>20*1024*1024){ alert('That file is over 20 MB. Keep it on the network drive instead.'); return; }
+    smDB(function(db){
+      if(!db){ alert('This browser will not store files. Keep the document on the network drive.'); return; }
+      try{
+        var t=db.transaction('docs','readwrite');
+        t.objectStore('docs').put({ref:ref,name:f.name,type:f.type,size:f.size,at:d2s(now()),blob:f});
+        t.oncomplete=function(){
+          smDocs[ref]={name:f.name,size:f.size,at:d2s(now())};
+          saveState(); smRender();
+        };
+        t.onerror=function(){ alert('Could not store that file.'); };
+      }catch(err){ alert('Could not store that file: '+err.message); }
+    });
+  };
+  inp.click();
+}
+function smOpenDoc(ref){
+  smDB(function(db){
+    if(!db){ alert('No stored documents in this browser.'); return; }
+    var t=db.transaction('docs','readonly');
+    var q=t.objectStore('docs').get(ref);
+    q.onsuccess=function(){
+      var rec=q.result;
+      if(!rec||!rec.blob){ alert('That document is not in this browser. It may have been attached on another machine.'); return; }
+      var url=URL.createObjectURL(rec.blob);
+      var a=document.createElement('a'); a.href=url; a.download=rec.name; a.click();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+    };
+    q.onerror=function(){ alert('Could not read that document.'); };
+  });
+}
+function smRemoveDoc(ref){
+  if(!IS_EDITOR) return;
+  if(!confirm('Remove the attached document from '+ref+'?')) return;
+  smDB(function(db){
+    if(db){ try{ db.transaction('docs','readwrite').objectStore('docs').delete(ref); }catch(err){} }
+    delete smDocs[ref]; saveState(); smRender();
+  });
+}
+function smDocCell(wo){
+  var d=smDocs[wo.ref];
+  if(d){
+    return '<div class="sm-sub" style="white-space:nowrap">&#128206; <a href="#" onclick="smOpenDoc(\''+esc(wo.ref)+'\');return false">'
+      +esc(d.name.length>22?d.name.slice(0,20)+'…':d.name)+'</a>'
+      +(IS_EDITOR?' <a href="#" onclick="smRemoveDoc(\''+esc(wo.ref)+'\');return false" style="color:#b91c1c">&#10005;</a>':'')+'</div>';
+  }
+  return IS_EDITOR
+    ? '<button class="btn" style="font-size:10px;padding:2px 7px" onclick="smAttachDoc(\''+esc(wo.ref)+'\')">&#128206; Attach</button>'
+    : '<span class="sm-sub">&mdash;</span>';
+}
+
 
 
 </script>
