@@ -6,8 +6,8 @@ makes.
 ## Adding one
 
 1. In GitHub: **Add file → Upload files**, drop it in this folder, commit.
-2. In the buffer app, Special Makes tab, press **📎 Link file** on that works
-   order and enter the file name.
+2. In the buffer app, open the works order — click its card in the tracker —
+   and press **📎 Link file** in the panel header, then enter the file name.
 
 Naming the file after the works order reference — `S-OH114816-Pt1.xlsx` — keeps
 them findable and makes the link the app suggests correct by default.

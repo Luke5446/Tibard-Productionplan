@@ -14,6 +14,7 @@ Run against the real `index.html` in Chromium. No build step, no test runner —
 | `test-wocust.js` | The customer on the printed works order: shown for every special make including when Sage left it blank, carried onto the second page's header, and absent from a stock works order |
 | `test-custname.js` | The resolved customer name against real rows — account-is-customer, reference-is-customer, the printed works order, search, and a 12-column paste falling back |
 | `test-costedcust.js` | That the customer a product was costed for stands in when Sage has no name at all — the one-customer-per-special rule, so it is safe |
+| `test-collapse.js` | The two lists as collapsible banners — collapsing one only, remembering the choice across a reload, a button in a banner not collapsing it, and the live list carrying no action buttons |
 | `test-regress.js` | That the existing buffer flow still works alongside it — buffer paste, stock `WO-####` auto-numbering, and that a special make does not count towards buffer `On WOP` |
 
 Set `CHROME_PATH` if your Chromium is elsewhere.

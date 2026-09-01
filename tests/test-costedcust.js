@@ -25,7 +25,7 @@ const exp={code:"OHAPB0631DSTIE01",name:"Biscuit waist apron",desc:"2 x hip pock
  console.log('after import            :', JSON.stringify(after));
  await p.evaluate(()=>{window.confirm=()=>true; smTickAll(true); smCreateAllShown();}); await p.waitForTimeout(250);
  const [pop]=await Promise.all([p.waitForEvent('popup'),
-   p.evaluate(()=>{window.print=()=>{}; smWorksOrder(WOs.find(w=>w.sm).ref);})]);
+   p.evaluate(()=>{window.print=()=>{}; (function(){var w=WOs.find(w=>w.sm);printWOPTracked(WOs.indexOf(w),w.items[0].code,w.items[0].qty);})();})]);
  await pop.waitForLoadState('domcontentloaded'); await pop.waitForTimeout(250);
  const t=await pop.evaluate(()=>document.body.innerText);
  await pop.close();

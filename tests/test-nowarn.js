@@ -19,10 +19,10 @@ const exp={code:"OHAPP0785191",name:"Forest green bib apron",desc:"Adjustable ne
 
  const noData=await p.evaluate(()=>{
    let m=null; window.alert=x=>{m=x;};
-   smWorksOrder(WOs.find(w=>w.sm).ref);
+   (function(){var w=WOs.find(w=>w.sm);printWOPTracked(WOs.indexOf(w),w.items[0].code,w.items[0].qty);})();
    return {alert:m, editorGone:!document.getElementById('styleEditModal'),
      fnGone:(typeof smOpenStyleEditor==='undefined'),
-     btn:document.querySelector('#smList .sm-tbl tbody button').textContent.trim(),
+     listBtns:document.querySelectorAll('#smList .sm-tbl tbody button').length,
      warnTag:document.querySelector('#smList .sm-tag.warn')?document.querySelector('#smList .sm-tag.warn').textContent:null};
  });
  console.log('no data ->', JSON.stringify(noData));
@@ -33,7 +33,7 @@ const exp={code:"OHAPP0785191",name:"Forest green bib apron",desc:"Adjustable ne
  console.log('after import, fabric row:', JSON.stringify(imp.fab), 'printable:', imp.printable);
 
  const [pop]=await Promise.all([p.waitForEvent('popup'),
-   p.evaluate(()=>{window.print=()=>{}; smWorksOrder(WOs.find(w=>w.sm).ref);})]);
+   p.evaluate(()=>{window.print=()=>{}; (function(){var w=WOs.find(w=>w.sm);printWOPTracked(WOs.indexOf(w),w.items[0].code,w.items[0].qty);})();})]);
  await pop.waitForLoadState('domcontentloaded'); await pop.waitForTimeout(250);
  const doc=await pop.evaluate(()=>{const t=document.body.innerText; return {
    rating:t.includes('0.52'), code:t.includes('PC9070'),

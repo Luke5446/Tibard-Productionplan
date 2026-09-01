@@ -249,6 +249,12 @@ body.planner-mode .planner-wrap{display:block}
 .sm-sum b{display:block;font-size:19px;color:#7A1F3D}
 .sm-sum span{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px}
 .sm-h{font-size:13px;margin:16px 0 8px;font-weight:700}
+.sm-bh{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:9px 12px;margin:16px 0 8px;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
+.sm-bh:hover{background:#f9fafb}
+.sm-bh.shut{margin-bottom:0}
+.sm-bh .cv{color:#9ca3af;font-size:10px;width:9px;flex:none}
+.sm-bh .ttl{flex:1}
+.sm-bh .act{font-weight:400;cursor:default}
 .sm-pend{background:#fff;border:1px solid #e5e7eb;border-left:4px solid #c2872b;border-radius:7px;padding:10px 12px;margin-bottom:7px}
 .sm-pend.warn{border-left-color:#dc2626}
 .sm-pend-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
@@ -1214,7 +1220,7 @@ function openWOModal(i){
   document.getElementById('woModalMeta').innerHTML=
     dateH+' &nbsp;|&nbsp; '
     +'<strong>'+wo.items.length+'</strong> SKU(s) &nbsp;|&nbsp; <strong>'+tot.toLocaleString()+'</strong> units total'
-    +(printedH?' &nbsp;|&nbsp; '+printedH:'')+splitH;
+    +(printedH?' &nbsp;|&nbsp; '+printedH:'')+splitH+smDocMeta(wo);
   var body=document.getElementById('woModalBody');
   body.innerHTML=wo.items.map(function(it){
     var r=rows.find(function(x){return x.code===it.code;});
@@ -2531,6 +2537,28 @@ function smPipelineUnits(){
 
 var smOpenMonths={};
 function smToggleMonth(k){ smOpenMonths[k]=!smOpenMonths[k]; smRender(); }
+
+// Which of the two lists are open. This is one person's view preference, not
+// production data, so it is kept in its own local key and stays out of
+// data.json - the PM collapsing a list should not collapse it for everyone.
+var smOpen={pend:true, live:true};
+try{ var _so=JSON.parse(localStorage.getItem('tibard_sm_sections')||'null');
+     if(_so){ smOpen.pend=_so.pend!==false; smOpen.live=_so.live!==false; } }catch(e){}
+function smToggleSec(k){
+  smOpen[k]=!smOpen[k];
+  try{ localStorage.setItem('tibard_sm_sections',JSON.stringify(smOpen)); }catch(e){}
+  smRender();
+}
+// A collapsible banner. `act` is the right-hand button area, which must not
+// toggle the section when it is clicked.
+function smBanner(k, title, act){
+  var open=smOpen[k];
+  return '<div class="sm-bh'+(open?'':' shut')+'" onclick="smToggleSec(\''+k+'\')">'
+    +'<span class="cv">'+(open?'&#9662;':'&#9656;')+'</span>'
+    +'<span class="ttl">'+title+'</span>'
+    +(act?'<span class="act" onclick="event.stopPropagation()">'+act+'</span>':'')
+    +'</div>';
+}
 function smByMonth(list, dateField){
   var g={};
   list.forEach(function(o){ var k=monthKey(o[dateField]); (g[k]=g[k]||[]).push(o); });
@@ -2573,18 +2601,20 @@ function smRenderInner(){
   var nTickUnits=0; pend.forEach(function(o){ if(o.included) nTickUnits+=smTake0(o); });
   if(!smPending.length){ pl.innerHTML=''; }
   else if(!pend.length){
-    pl.innerHTML='<div class="sm-h">&#9998; '+smPending.length+' awaiting review</div>'
-      +'<div class="sm-empty" style="padding:18px">Nothing matches that search.</div>';
+    pl.innerHTML=smBanner('pend','&#9998; '+smPending.length+' awaiting review','')
+      +(smOpen.pend?'<div class="sm-empty" style="padding:18px">Nothing matches that search.</div>':'');
   } else {
-    pl.innerHTML='<div class="sm-h">&#9998; '+pend.length+' awaiting a works order'
-      +(pend.length!==smPending.length?' <span style="font-weight:400;color:#6b7280">of '+smPending.length+'</span>':'')
-      +(IS_EDITOR?'<span style="float:right;font-weight:400">'
-        +'<button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="smTickAll(true)">&#9745; Tick all</button> '
-        +'<button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="smTickAll(false)">&#9744; Untick all</button> '
-        +'<button class="btn btn-p" style="font-size:10.5px;padding:3px 9px" onclick="smCreateAllShown()">&#128296; Create works orders'
-        +(nTick?' ('+nTick+')':'')+'</button></span>':'')
-      +'</div>'
-      +(nTick?'<div style="font-size:11px;color:#6b7280;margin-bottom:6px">'+nTick+' ticked &middot; '
+    pl.innerHTML=smBanner('pend',
+        '&#9998; '+pend.length+' awaiting a works order'
+        +(pend.length!==smPending.length?' <span style="font-weight:400;color:#6b7280">of '+smPending.length+'</span>':''),
+        IS_EDITOR
+          ? '<button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="smTickAll(true)">&#9745; Tick all</button> '
+            +'<button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="smTickAll(false)">&#9744; Untick all</button> '
+            +'<button class="btn btn-p" style="font-size:10.5px;padding:3px 9px" onclick="smCreateAllShown()">&#128296; Create works orders'
+            +(nTick?' ('+nTick+')':'')+'</button>'
+          : '')
+      +(!smOpen.pend?'':
+       (nTick?'<div style="font-size:11px;color:#6b7280;margin-bottom:6px">'+nTick+' ticked &middot; '
         +nTickUnits.toLocaleString()+' units to make</div>':'')
       +'<div class="sm-tblwrap"><table class="sm-tbl"><thead><tr>'
       +'<th style="width:26px"></th><th>Product</th><th>Customer</th><th>Sales order</th>'
@@ -2622,7 +2652,7 @@ function smRenderInner(){
             +'<button class="btn" style="font-size:10px;padding:2px 8px" onclick="smDismiss(\''+esc(o.key)+'\')">Dismiss this line</button>'
             +'</td></tr>':'');
       }).join('')
-      +'</tbody></table></div>';
+      +'</tbody></table></div>');
   }
 
   // ── live works orders, as a list with On WOP and Pipeline ───────────────
@@ -2649,16 +2679,18 @@ function smRenderInner(){
   if(!rowsOut.length){
     el.innerHTML = (live.length||smPending.length||smMade.length)
       ? (smPending.length&&!live.length ? '' :
-         '<div class="sm-h">&#128296; Live special works orders</div><div class="sm-empty" style="padding:18px">'
-         +(live.length?'Nothing matches that search.':'None live.')+'</div>')
+         smBanner('live','&#128296; Live special works orders','')
+         +(smOpen.live?'<div class="sm-empty" style="padding:18px">'
+           +(live.length?'Nothing matches that search.':'None live.')+'</div>':''))
       : '<div class="sm-empty"><h3 style="margin:0 0 6px">No special makes loaded</h3>'
         +'<p style="margin:0;font-size:12.5px">Refresh <strong>Special Makes Live.xlsx</strong>, copy columns A to L without the header, and paste them above.</p></div>';
   } else {
-    el.innerHTML='<div class="sm-h">&#128296; '+rowsOut.length+' live special works order'+(rowsOut.length===1?'':'s')+'</div>'
-      +'<div class="sm-tblwrap"><table class="sm-tbl"><thead><tr>'
+    el.innerHTML=smBanner('live','&#128296; '+rowsOut.length+' live special works order'+(rowsOut.length===1?'':'s'),'')
+      +(!smOpen.live?'':
+       '<div class="sm-tblwrap"><table class="sm-tbl"><thead><tr>'
       +'<th>Works order</th><th>Product</th><th>Customer</th>'
-      +'<th style="text-align:right">On WOP</th><th style="text-align:right">Pipeline</th><th>Promised</th>'
-      +'<th>Document</th></tr></thead><tbody>'
+      +'<th style="text-align:right">On WOP</th><th style="text-align:right">Pipeline</th>'
+      +'<th>Promised</th></tr></thead><tbody>'
       +rowsOut.map(function(r){
         if(r.kind==='pipe'){
           return '<tr class="pipe"><td><span class="sm-ref-s">'+esc(r.c.ref)+'</span>'
@@ -2667,7 +2699,7 @@ function smRenderInner(){
             +'<td>'+esc(r.c.customer||'')+'</td>'
             +'<td style="text-align:right;color:#9ca3af">&mdash;</td>'
             +'<td style="text-align:right;color:#0369a1;font-weight:700">'+r.pipe+'</td>'
-            +'<td><span class="sm-sub">in pipeline until 7am</span></td><td></td></tr>';
+            +'<td><span class="sm-sub">in pipeline until 7am</span></td></tr>';
         }
         var wo=r.wo, oh=smIsOH(wo.sm.company), late=(new Date(wo.due)<now());
         return '<tr>'
@@ -2688,17 +2720,9 @@ function smRenderInner(){
           +'<td style="text-align:right;'+(r.pipe?'color:#0369a1;font-weight:700':'color:#9ca3af')+'">'+(r.pipe||'&mdash;')+'</td>'
           +'<td'+(late?' style="color:#dc2626;font-weight:700"':'')+'>'+(late?'&#9888; ':'')
           +esc(wo.sm.promised||wo.due)+(wo.sm.dateAssumed?' <em class="sm-sub">assumed</em>':'')+'</td>'
-          +'<td style="white-space:nowrap">'
-            +(IS_EDITOR?'<button class="btn" style="font-size:10px;padding:2px 7px" '
-              +'onclick="smWorksOrder(\''+esc(wo.ref)+'\')">&#128424; Works order</button> ':'')
-
-            +smDocCell(wo)
-          +'</td>'
           +'</tr>';
       }).join('')
-      +'</tbody></table></div>'
-      +'<p class="sm-sub" style="margin:6px 2px 0">&#128206; Linked files live in the repo\'s <code>works-orders/</code> folder '
-      +'&mdash; upload through GitHub, then link the file name here. Everyone gets the same file, and it survives a cleared browser.</p>';
+      +'</tbody></table></div>');
   }
 
   // ── history: raised and dismissed, in monthly folders ───────────────────
@@ -2927,14 +2951,6 @@ function smCustomerFor(sm, code){
   return '';
 }
 
-function smWorksOrder(ref){
-  var wo=WOs.filter(function(w){ return w.ref===ref; })[0];
-  if(!wo){ alert('Works order not found.'); return; }
-  var it=wo.items[0]||{code:'',qty:0};
-  // printWOP warns if there is no works order data for the code.
-  printWOPTracked(WOs.indexOf(wo), it.code, it.qty);
-}
-
 // ── attached documents: a file in the repo, not this browser ──────────────
 // Files live in the works-orders/ folder of the repo, uploaded through GitHub
 // the same way data.json is. The app stores only the file name, so the link
@@ -2957,20 +2973,20 @@ function smLinkDoc(ref){
   else { smDocs[ref]={name:name, at:d2s(now())}; }
   saveState(); smRender();
 }
-function smDocCell(wo){
+// Shown on the works order panel, not in the list. The list is for reading -
+// what is on a works order and what is still in the pipeline - so the actions
+// live with the job itself, where the PM opens it.
+function smDocMeta(wo){
+  if(!wo || !wo.sm) return '';
   var d=smDocs[wo.ref];
-  var out='';
   if(d){
-    out='<div class="sm-sub" style="white-space:nowrap">&#128206; <a href="'+esc(smDocUrl(d.name))+'" target="_blank" rel="noopener">'
-      +esc(d.name.length>22?d.name.slice(0,20)+'…':d.name)+'</a>'
-      +(IS_EDITOR?' <a href="#" onclick="smLinkDoc(\'' +esc(wo.ref)+ '\');return false" title="Change or remove">&#9998;</a>':'')
-      +'</div>';
-  } else if(IS_EDITOR){
-    out='<button class="btn" style="font-size:10px;padding:2px 7px" onclick="smLinkDoc(\''+esc(wo.ref)+'\')">&#128206; Link file</button>';
-  } else {
-    out='<span class="sm-sub">&mdash;</span>';
+    return ' &nbsp;|&nbsp; &#128206; <a href="'+esc(smDocUrl(d.name))+'" target="_blank" rel="noopener">'
+      +esc(d.name.length>28?d.name.slice(0,26)+'…':d.name)+'</a>'
+      +(IS_EDITOR?' <a href="#" onclick="smLinkDoc(\'' +esc(wo.ref)+ '\');return false" title="Change or remove the linked file">&#9998;</a>':'');
   }
-  return out;
+  return IS_EDITOR
+    ? ' &nbsp;<button class="btn" style="font-size:10px;padding:3px 9px" title="Link a works order file from the repo\'s works-orders/ folder" onclick="smLinkDoc(\''+esc(wo.ref)+'\')">&#128206; Link file</button>'
+    : '';
 }
 
 

@@ -19,7 +19,7 @@ const paste=[
 
  const grab=async(code)=>{
    const [pop]=await Promise.all([p.waitForEvent('popup'),
-     p.evaluate(c=>{window.print=()=>{}; smWorksOrder(WOs.find(w=>w.sm&&w.items[0].code===c).ref);},code)]);
+     p.evaluate(c=>{window.print=()=>{}; (function(){var w=WOs.find(w=>w.sm&&w.items[0].code===c);printWOPTracked(WOs.indexOf(w),w.items[0].code,w.items[0].qty);})();},code)]);
    await pop.waitForLoadState('domcontentloaded'); await pop.waitForTimeout(250);
    const t=await pop.evaluate(()=>document.body.innerText);
    await pop.close(); return t;
