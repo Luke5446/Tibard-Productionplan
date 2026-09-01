@@ -285,6 +285,9 @@ body.planner-mode .planner-wrap{display:block}
 .sef input,.sef textarea{display:block;width:100%;margin-top:3px;padding:6px 8px;border:1px solid #d1d5db;border-radius:5px;font-size:12.5px;font-family:inherit}
 .sef textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
 .sef code{background:#f3f4f6;padding:0 3px;border-radius:3px;font-weight:400}
+.setbl{width:100%;border-collapse:collapse;margin-top:4px}
+.setbl th{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:#6b7280;text-align:left;padding:3px 4px;font-weight:700}
+.setbl td{padding:2px 4px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -1360,11 +1363,15 @@ function printWOP(ref, code, qty, due, notes){
         +'</table>'
       : '')
     +'<div class="band">LECTRA PATTERN</div><table>'+(st.variant?'<tr><th>Pattern</th><td colspan="3">'+e(st.lectra)+'</td></tr><tr><th>Variant (cutting room)</th><td colspan="3" style="font-weight:700;font-size:15px">'+e(st.variant)+'</td></tr>':'<tr><td>'+e(st.lectra)+'</td></tr>')+'</table>'
-    +'<div class="band">FABRIC</div><table><tr><th style="width:60%">Fabric</th><th>Tibard code</th><th>Location</th></tr>';
-  (cw?cw.fabrics:st.fabrics).forEach(function(f){ if(f[0]) h+='<tr><td>'+e(f[0])+'</td><td><strong>'+e(f[1])+'</strong></td><td><strong>'+e(f[2])+'</strong></td></tr>'; });
-  if(cwWarn) h+='<tr><td colspan="3" style="color:#C00000;font-weight:700">&#9888; Colour code not in the colourway table — confirm the fabric before cutting</td></tr>';
-  h+='</table><div class="band">TRIMS &amp; LABELS</div><table><tr><th>Trim</th><th style="width:auto">Detail</th><th style="width:9%;text-align:center">Qty</th></tr>';
-  st.trims.forEach(function(t){ var det=(cw&&cw.thread&&/^thread$/i.test(String(t[0]).trim()))?cw.thread:t[1]; h+='<tr><th>'+e(t[0])+'</th><td>'+e(det)+'</td><td style="text-align:center;font-weight:700">'+(t.length>2&&t[2]!=null&&t[2]!==''?e(t[2]):'')+'</td></tr>'; });
+    +'<div class="band">FABRIC</div><table><tr><th style="width:50%">Fabric</th><th>Code</th><th>Location</th><th style="width:12%;text-align:right">Qty/unit</th></tr>';
+  woFabrics(cw?{fabrics:cw.fabrics}:st).forEach(function(f){ if(f[0]||f[1]) h+='<tr><td>'+e(f[0])+'</td><td><strong>'+e(f[1])+'</strong></td><td><strong>'+e(f[2])+'</strong></td><td style="text-align:right">'+((f[3]===''||f[3]==null)?'':e(String(f[3])))+'</td></tr>'; });
+  if(cwWarn) h+='<tr><td colspan="4" style="color:#C00000;font-weight:700">&#9888; Colour code not in the colourway table — confirm the fabric before cutting</td></tr>';
+  h+='</table><div class="band">TRIMS &amp; LABELS</div><table><tr><th style="width:20%">Trim</th><th style="width:auto">Description</th><th style="width:22%">Sage code</th><th style="width:9%;text-align:center">Qty</th></tr>';
+  woTrims(st).forEach(function(t){
+    var det=(cw&&cw.thread&&/^thread$/i.test(String(t[0]).trim()))?cw.thread:trimDesc(t);
+    h+='<tr><th>'+e(t[0])+'</th><td>'+e(det)+'</td>'
+      +'<td><strong>'+(t[3]?e(t[3]):'<span style="color:#C00000;font-weight:400">no code yet</span>')+'</strong></td>'
+      +'<td style="text-align:center;font-weight:700">'+((t[2]!=null&&t[2]!=='')?e(String(t[2])):'')+'</td></tr>'; });
   h+='</table><p class="note">Generated from the Buffer Stock app style master &mdash; print only, no edits.</p></div>';
 
   h+='<div class="page">'
@@ -2737,6 +2744,104 @@ function smToggleHist(){ smHistShow=!smHistShow; smRender(); }
 // team in data.json. A style filled in once is filled in for everyone.
 // ══════════════════════════════════════════════════════════════════════════
 
+
+// ══════════════════════════════════════════════════════════════════════════
+// ONE TRIM LIST, NOT TWO
+// The same trim was held twice in different shapes:
+//   STYLE_MASTER.trims  ['Labels','Oliver Harvey woven label, back neck']
+//   TRIM_COSTS          ['Labels','LABELOH5771',1,0.04335]
+// joined only by the label, which is why the works order and the costing
+// sheet could drift apart. Both are read through these helpers into one row:
+//
+//   trim   [label, detail, qtyPerUnit, sageCode, costEach]
+//   fabric [description, code, location, qtyPerUnit, costEach]
+//
+// Anything edited in the app is saved in the unified shape; the baked-in data
+// is merged on read, so nothing had to be migrated.
+// ══════════════════════════════════════════════════════════════════════════
+function woTrims(st){
+  if(!st) return [];
+  var t=st.trims||[];
+  if(t.some(function(r){ return r.length>3; })) return t;      // already unified
+  var costs=TRIM_COSTS[st.code]||[];
+  return t.map(function(r){
+    var c=costs.filter(function(x){ return (x[0]||'').toLowerCase()===(r[0]||'').toLowerCase(); })[0];
+    return [ r[0]||'', r[1]||'',
+             (r[2]!=null&&r[2]!=='')?r[2]:(c?c[2]:''),
+             c?(c[1]||''):'', c?c[3]:null ];
+  });
+}
+function woFabrics(st){
+  return ((st&&st.fabrics)||[]).map(function(f){
+    return [ f[0]||'', f[1]||'', f[2]||'', (f[3]!=null?f[3]:''), (f[4]!=null?f[4]:null) ];
+  });
+}
+// Sage's own description for a code, so the costing sheet and the works order
+// name a trim the same way.
+function trimDesc(row){
+  var code=row[3];
+  if(code && typeof SAGE_TRIMS!=='undefined' && SAGE_TRIMS[code] && SAGE_TRIMS[code].n) return SAGE_TRIMS[code].n;
+  return row[1]||'';
+}
+// Costing rows for a style, preferring anything edited in the app.
+function costRowsFor(styleCode){
+  var st=null, list=allStyles();
+  for(var i=0;i<list.length;i++){ if((list[i].code||'').toUpperCase()===styleCode.toUpperCase()){ st=list[i]; break; } }
+  if(st && styleEdits[st.code]) return woTrims(st).map(function(r){ return [r[0], r[3]||'', r[2], r[4]]; });
+  return TRIM_COSTS[styleCode]||(st?woTrims(st).map(function(r){ return [r[0], r[3]||'', r[2], r[4]]; }):[]);
+}
+
+// ── row editors, mirroring the costing sheet's grids ──────────────────────
+var seFab=[], seTrm=[];
+function seNum(v){ var n=parseFloat(v); return isNaN(n)?null:n; }
+function seCell(val,ph,oninput,extra){
+  // No placeholder text. An example repeated down every empty cell reads as
+  // real data at a glance - the column headings already say what goes here.
+  return '<input value="'+esc(val==null?'':String(val))+'" oninput="'+oninput+'"'
+    +' style="width:100%;padding:4px 6px;border:1px solid #d9dee5;border-radius:4px;font-size:12px;'+(extra||'')+'">';
+}
+function seRenderFab(){
+  var h='<table class="setbl"><thead><tr>'
+    +'<th style="width:130px">Code</th><th>Description</th><th style="width:80px">Location</th>'
+    +'<th style="width:82px">Qty / unit</th><th style="width:92px">Cost &pound; each</th><th style="width:28px"></th>'
+    +'</tr></thead><tbody>';
+  seFab.forEach(function(f,i){
+    h+='<tr>'
+      +'<td>'+seCell(f[1],'PC14001','seFab['+i+'][1]=this.value')+'</td>'
+      +'<td>'+seCell(f[0],'White Cooltex poly-cotton 50/50','seFab['+i+'][0]=this.value')+'</td>'
+      +'<td>'+seCell(f[2],'A3','seFab['+i+'][2]=this.value')+'</td>'
+      +'<td>'+seCell(f[3],'1.4','seFab['+i+'][3]=this.value','text-align:right')+'</td>'
+      +'<td>'+seCell(f[4],'2.15','seFab['+i+'][4]=this.value','text-align:right')+'</td>'
+      +'<td><button class="btn" style="font-size:10px;padding:1px 6px;color:#b91c1c" onclick="seFab.splice('+i+',1);seRenderFab()">&times;</button></td>'
+      +'</tr>';
+  });
+  if(!seFab.length) h+='<tr><td colspan="6" style="color:#6b7280;font-size:11.5px">No fabrics yet.</td></tr>';
+  h+='</tbody></table><button class="btn" style="font-size:11px;padding:3px 9px;margin-top:5px" onclick="seFab.push([\'\',\'\',\'\',\'\',null]);seRenderFab()">+ Add fabric</button>';
+  document.getElementById('seFabBox').innerHTML=h;
+}
+function seRenderTrm(){
+  var h='<table class="setbl"><thead><tr>'
+    +'<th style="width:150px">Trim code (Sage)</th><th style="width:120px">Trim</th><th>Description</th>'
+    +'<th style="width:82px">Qty / unit</th><th style="width:92px">Cost &pound; each</th><th style="width:28px"></th>'
+    +'</tr></thead><tbody>';
+  seTrm.forEach(function(t,i){
+    h+='<tr>'
+      +'<td>'+seCell(t[3],'','seTrm['+i+'][3]=this.value',(t[3]?'':'background:#fff7ed;'))+'</td>'
+      +'<td>'+seCell(t[0],'Labels','seTrm['+i+'][0]=this.value')+'</td>'
+      +'<td>'+seCell(t[1],'Oliver Harvey woven label, back neck','seTrm['+i+'][1]=this.value')+'</td>'
+      +'<td>'+seCell(t[2],'1','seTrm['+i+'][2]=this.value','text-align:right')+'</td>'
+      +'<td>'+seCell(t[4],'0.04335','seTrm['+i+'][4]=this.value','text-align:right')+'</td>'
+      +'<td><button class="btn" style="font-size:10px;padding:1px 6px;color:#b91c1c" onclick="seTrm.splice('+i+',1);seRenderTrm()">&times;</button></td>'
+      +'</tr>';
+  });
+  if(!seTrm.length) h+='<tr><td colspan="6" style="color:#6b7280;font-size:11.5px">No trims yet.</td></tr>';
+  h+='</tbody></table><button class="btn" style="font-size:11px;padding:3px 9px;margin-top:5px" onclick="seTrm.push([\'\',\'\',\'\',\'\',null]);seRenderTrm()">+ Add trim</button>'
+    +'<p style="font-size:11px;color:#6b7280;margin:6px 0 0">Cells shaded amber have <strong>no Sage code</strong>. '
+    +'A trim not yet in Sage can be added with just a description and cost &mdash; leave the code blank. '
+    +'It will show as <strong>no code yet</strong> in the trim costs helper until a Sage code exists.</p>';
+  document.getElementById('seTrmBox').innerHTML=h;
+}
+
 var smEditCode=null, smEditThenPrint=null;
 
 function smWorksOrder(ref){
@@ -2770,8 +2875,14 @@ function smLines(a){ return (a||[]).join('\n'); }
 function smOpenStyleEditor(code, wo){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
   smEditCode=code; smEditThenPrint=wo?wo.ref:null;
-  var hit=null; try{ hit=styleForCode(code); }catch(e){}
-  var st=hit?hit.style:null;
+  // Exact match first. A template code contains "--" as the size wildcard, so
+  // styleForCode would never match it against itself - which meant editing an
+  // existing style by its own code silently opened a blank form.
+  var st=null, list=allStyles();
+  for(var li=0;li<list.length;li++){
+    if((list[li].code||'').toUpperCase()===code.toUpperCase()){ st=list[li]; break; }
+  }
+  if(!st){ try{ var hit=styleForCode(code); if(hit) st=hit.style; }catch(e){} }
   var v=function(id,val){ document.getElementById(id).value=val==null?'':val; };
   document.getElementById('seTitle').textContent=(st?'Edit works order data — ':'New works order data — ')+code;
   document.getElementById('seIntro').innerHTML = st
@@ -2781,8 +2892,9 @@ function smOpenStyleEditor(code, wo){
   v('seName', st?st.name:(wo&&wo.sm?wo.sm.desc:''));
   v('seDesc', st?st.desc:(wo&&wo.sm?wo.sm.desc:''));
   v('seLectra', st?st.lectra:'');
-  v('seFabrics', st?smJoinRows(st.fabrics,3):'');
-  v('seTrims', st?smJoinRows(st.trims,3):'');
+  seFab = st?woFabrics(st):[];
+  seTrm = st?woTrims(st).map(function(r){ return r.slice(); }):[];
+  seRenderFab(); seRenderTrm();
   v('seMfg', st?smLines(st.mfg):'');
   v('seFin', st?smLines(st.fin):'');
   v('seCutBatch', st?st.cutBatch:'');
@@ -2804,7 +2916,11 @@ function smSaveStyle(andPrint){
   var num=function(id){ var x=g(id); return x===''?null:parseFloat(x); };
   styleEdits[code]={
     code:code, name:g('seName'), desc:g('seDesc'), lectra:g('seLectra'),
-    chart:'', fabrics:smSplitRows(g('seFabrics'),3), trims:smSplitRows(g('seTrims'),3),
+    chart:'',
+    fabrics: seFab.filter(function(f){ return (f[0]||f[1]); })
+                  .map(function(f){ return [f[0]||'',f[1]||'',f[2]||'',seNum(f[3]),seNum(f[4])]; }),
+    trims:   seTrm.filter(function(t){ return (t[0]||t[1]||t[3]); })
+                  .map(function(t){ return [t[0]||'',t[1]||'',seNum(t[2]),t[3]||'',seNum(t[4])]; }),
     mfg:g('seMfg').split('\n').map(function(s){return s.trim();}).filter(Boolean),
     fin:g('seFin').split('\n').map(function(s){return s.trim();}).filter(Boolean),
     cutBatch:num('seCutBatch')||1, cutMins:num('seCutMins')||0,
@@ -2873,7 +2989,8 @@ function smDocCell(wo){
 function showTrimCosts(){
   var dl=document.getElementById('tcStyles');
   if(!dl.children.length){
-    Object.keys(TRIM_COSTS).sort().forEach(function(k){ var o=document.createElement('option'); o.value=k; dl.appendChild(o); });
+    var keys={}; Object.keys(TRIM_COSTS).forEach(function(k){keys[k]=1;}); Object.keys(styleEdits).forEach(function(k){keys[k]=1;});
+    Object.keys(keys).sort().forEach(function(k){ var o=document.createElement('option'); o.value=k; dl.appendChild(o); });
   }
   document.getElementById('trimCostModal').classList.add('open');
   document.getElementById('tcStyle').focus();
@@ -2885,10 +3002,10 @@ function renderTrimCosts(){
   var el=document.getElementById('tcBody');
   if(!v){ el.innerHTML=''; return; }
   var key=null;
-  if(TRIM_COSTS[v]) key=v;
-  else { var hit=styleForCode(v); if(hit&&TRIM_COSTS[hit.style.code]) key=hit.style.code; }
+  if(TRIM_COSTS[v]||styleEdits[v]) key=v;
+  else { var hit=styleForCode(v); if(hit) key=hit.style.code; }
   if(!key){ el.innerHTML='<p style="font-size:12px;color:#b91c1c">No style data for "'+esc(v)+'" — check the code or pick from the list.</p>'; return; }
-  var rows=TRIM_COSTS[key], tot=0, missing=0;
+  var rows=costRowsFor(key), tot=0, missing=0;
   var h='<div style="font-size:12px;font-weight:700;color:#7A1F3D;margin-bottom:6px">'+esc(key)+'</div>'
     +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
     +'<tr><th style="text-align:left;background:#44546A;color:#fff;padding:5px 8px">Trim</th>'
@@ -3123,10 +3240,8 @@ Object.assign(window,{openPlanner:openPlanner,closePlanner:closePlanner,plnrRefr
       </div>
       <label class="sef">Description<input id="seDesc" placeholder="Short sleeves · Mesh side panels · Press-stud fastening"></label>
       <label class="sef">Lectra pattern<input id="seLectra" placeholder="OH2 — Cheshire — short sleeves"></label>
-      <label class="sef">Fabrics &mdash; one per line as <code>fabric | Tibard code | location</code>
-        <textarea id="seFabrics" rows="3" placeholder="White Cooltex poly-cotton 50/50 | PC14001 | A3"></textarea></label>
-      <label class="sef">Trims &amp; labels &mdash; one per line as <code>trim | detail | qty</code>
-        <textarea id="seTrims" rows="5" placeholder="Thread | White&#10;Studs | 10 x nickel-plated ring press studs | 10"></textarea></label>
+      <div class="sef">Fabrics<div id="seFabBox"></div></div>
+      <div class="sef">Trims &amp; labels<div id="seTrmBox"></div></div>
       <label class="sef">Making detail &mdash; one step per line
         <textarea id="seMfg" rows="4"></textarea></label>
       <label class="sef">Finishing detail &mdash; one step per line
