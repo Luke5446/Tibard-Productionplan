@@ -7,7 +7,7 @@
    results are in sage/README.md. Column names are all confirmed against the
    live database.
 
-   NO FILTERING NEEDED. Copy columns A to K, all rows, without the header.
+   NO FILTERING NEEDED. Copy columns A to L, all rows, without the header.
    Everything returned is relevant:
 
      WORKS ORDER                     make it

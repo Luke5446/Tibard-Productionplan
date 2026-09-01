@@ -2292,7 +2292,7 @@ function smLoadPaste(){
   if(!txt){ alert('Nothing pasted - click in the box then Ctrl+V.'); return; }
   var lines=smParse(txt);
   if(!lines.length){
-    alert('No valid rows found.\n\nSelect columns A to K from Special Makes Live.xlsx (without the header row), Ctrl+C, then paste here.');
+    alert('No valid rows found.\n\nSelect columns A to L from Special Makes Live.xlsx (without the header row), Ctrl+C, then paste here.');
     return;
   }
 
@@ -2631,7 +2631,7 @@ function smRenderInner(){
          '<div class="sm-h">&#128296; Live special works orders</div><div class="sm-empty" style="padding:18px">'
          +(live.length?'Nothing matches that search.':'None live.')+'</div>')
       : '<div class="sm-empty"><h3 style="margin:0 0 6px">No special makes loaded</h3>'
-        +'<p style="margin:0;font-size:12.5px">Refresh <strong>Special Makes Live.xlsx</strong>, copy columns A to K without the header, and paste them above.</p></div>';
+        +'<p style="margin:0;font-size:12.5px">Refresh <strong>Special Makes Live.xlsx</strong>, copy columns A to L without the header, and paste them above.</p></div>';
   } else {
     el.innerHTML='<div class="sm-h">&#128296; '+rowsOut.length+' live special works order'+(rowsOut.length===1?'':'s')+'</div>'
       +'<div class="sm-tblwrap"><table class="sm-tbl"><thead><tr>'

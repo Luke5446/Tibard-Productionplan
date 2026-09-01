@@ -120,7 +120,7 @@ step on the right — the SQL statement box reopens. Paste the corrected
 
 ### 2.7 No filtering needed — and do not filter on Manufacturer
 
-Copy columns **A to K**, all rows, **without the header**, and paste the lot.
+Copy columns **A to L**, all rows, **without the header**, and paste the lot.
 
 > #### ⚠️ Never filter on column K (Manufacturer)
 >
