@@ -8,10 +8,10 @@ const paste=[
  T(['TIB-1','TIBARD','0000862833','1','CT01964601','CHEF TROUSERS BLACK 32R','20','2025-01-04','KLONDYKE','WORKS ORDER','Tibard']),
 ].join('\n');
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+ const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
  const p=await b.newPage(); const errs=[];
  p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
- await p.goto('file:///home/user/Tibard-Productionplan/index.html?edit'); await p.waitForTimeout(400);
+ await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit'); await p.waitForTimeout(400);
  await p.click('#tabSpecial'); await p.waitForTimeout(150);
  await p.evaluate(t=>{document.getElementById('smTA').value=t; smLoadPaste();},paste); await p.waitForTimeout(200);
 
@@ -45,6 +45,6 @@ const paste=[
  console.log('shared tracker:');
  panel.forEach(c=>console.log('   ', c));
  console.log('errors:            ', errs.length?errs.join(' | '):'none');
- await p.screenshot({path:'sm4.png',fullPage:true});
+ await p.screenshot({path:'tests/out/review.png',fullPage:true});
  await b.close();
 })();

@@ -8,10 +8,10 @@ const buf=[
 const sm=T(['OH-1','OLIVER HARVEY','0000114816','1','OHAPP0785191','GREEN BIB APRON','12','2026-09-11','MALDON','WORKS ORDER','Oliver Harvey']);
 
 (async()=>{
-  const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+  const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
   const p=await b.newPage(); const errs=[];
   p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
-  await p.goto('file:///home/user/Tibard-Productionplan/index.html?edit');
+  await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit');
   await p.waitForTimeout(400);
 
   await p.evaluate(t=>{document.getElementById('pasteTA').value=t; loadPaste();}, buf);
@@ -45,8 +45,8 @@ const sm=T(['OH-1','OLIVER HARVEY','0000114816','1','OHAPP0785191','GREEN BIB AP
   console.log('back to buffer:   ', JSON.stringify(back));
   console.log('stock WO refs:    ', stockWO);
   console.log('errors:           ', errs.length?errs.join(' | '):'none');
-  await p.screenshot({path:'/tmp/claude-0/-home-user-Tibard-Productionplan/9e51b526-bc55-5d8e-8e7d-d58edac0f137/scratchpad/buffer.png'});
+  await p.screenshot({path:'tests/out/buffer.png'});
   await p.click('#tabSpecial'); await p.waitForTimeout(300);
-  await p.screenshot({path:'/tmp/claude-0/-home-user-Tibard-Productionplan/9e51b526-bc55-5d8e-8e7d-d58edac0f137/scratchpad/special.png', fullPage:true});
+  await p.screenshot({path:'tests/out/special.png', fullPage:true});
   await b.close();
 })();

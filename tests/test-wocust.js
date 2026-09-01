@@ -9,10 +9,10 @@ const paste=[
  T(['OH-3','OLIVER HARVEY','0000114900','1','OHCJSMDEVON6401','DEVON CHEF JACKET 64','2','2026-09-15','','WORKS ORDER','Oliver Harvey','']),
 ].join('\n');
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+ const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
  const p=await b.newPage(); const errs=[];
  p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
- await p.goto('file:///home/user/Tibard-Productionplan/index.html?edit'); await p.waitForTimeout(450);
+ await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit'); await p.waitForTimeout(450);
  await p.click('#tabSpecial'); await p.waitForTimeout(150);
  await p.evaluate(t=>{document.getElementById('smTA').value=t; smLoadPaste();},paste); await p.waitForTimeout(150);
  await p.evaluate(()=>{window.confirm=()=>true; smTickAll(true); smCreateAllShown();}); await p.waitForTimeout(250);

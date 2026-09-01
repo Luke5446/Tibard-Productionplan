@@ -11,10 +11,10 @@ const exp={code:"OHAPB0631DSTIE01",name:"Biscuit waist apron",desc:"2 x hip pock
  machMins:10,finMins:10,cutBatch:24,cutMins:15,oneSize:true,
  sr:"SR-0001",customer:"THWAITES THORPE PARK"};
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+ const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
  const p=await b.newPage(); const errs=[];
  p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
- await p.goto('file:///home/user/Tibard-Productionplan/index.html?edit'); await p.waitForTimeout(450);
+ await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit'); await p.waitForTimeout(450);
  await p.click('#tabSpecial'); await p.waitForTimeout(150);
  await p.evaluate(t=>{document.getElementById('smTA').value=t; smLoadPaste();},paste); await p.waitForTimeout(150);
  const before=await p.evaluate(()=>document.querySelector('#smPendingList .sm-tbl tbody tr td:nth-child(3)').innerText.trim());

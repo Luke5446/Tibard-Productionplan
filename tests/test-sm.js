@@ -18,7 +18,7 @@ const newLine=T(['OH-32036999','OLIVER HARVEY','0000114816','5','OHCJSMDEVON6401
  const b=await chromium.launch({executablePath: process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
  const p=await b.newPage(); const errs=[];
  p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
- await p.goto('file:///home/user/Tibard-Productionplan/index.html?edit');
+ await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit');
  await p.waitForTimeout(400);
  const run=async t=>{ await p.evaluate(x=>{document.getElementById('smTA').value=x; smLoadPaste();},t); await p.waitForTimeout(150); };
  const S=()=>p.evaluate(()=>({pending:smPending.length, wos:WOs.filter(w=>w.sm).length,
@@ -73,6 +73,6 @@ const newLine=T(['OH-32036999','OLIVER HARVEY','0000114816','5','OHCJSMDEVON6401
    statPend:document.getElementById('smStatPend').textContent}));
  console.log('after reload:               ', JSON.stringify(g));
  console.log('errors:                     ', errs.length?errs.join(' | '):'none');
- await p.screenshot({path:'/tmp/claude-0/-home-user-Tibard-Productionplan/9e51b526-bc55-5d8e-8e7d-d58edac0f137/scratchpad/special2.png', fullPage:true});
+ await p.screenshot({path:'tests/out/special2.png', fullPage:true});
  await b.close();
 })();

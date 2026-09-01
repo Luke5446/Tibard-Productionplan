@@ -18,10 +18,10 @@ const exp = {
  oneSize:true, sr:"SR-0142", srVersion:2, customer:"DORCHESTER"
 };
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+ const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
  const p=await b.newPage(); const errs=[];
  p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
- await p.goto('file:///home/user/Tibard-Productionplan/index.html?edit'); await p.waitForTimeout(450);
+ await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit'); await p.waitForTimeout(450);
  await p.click('#tabSpecial'); await p.waitForTimeout(150);
 
  const r=await p.evaluate(j=>{
@@ -48,7 +48,7 @@ const exp = {
    meas:t.includes('WIDTH OF SKIRT'), mfg:t.includes('Set eyelet re-inforcement'),
    fin:t.includes('CHECK, TRIM, PRESS AND FOLD'), thread:t.includes("COATS EPIC 80'S BISCUIT")};});
  console.log('printed works order:', JSON.stringify(doc));
- await pop.screenshot({path:'imported-wo.png',fullPage:true}); await pop.close();
+ await pop.screenshot({path:'tests/out/imported-wo.png',fullPage:true}); await pop.close();
 
  await p.reload(); await p.waitForTimeout(400);
  console.log('after reload:', JSON.stringify(await p.evaluate(()=>({styles:Object.keys(styleEdits).length,

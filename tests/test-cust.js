@@ -6,10 +6,10 @@ const paste=[
  T(['OH-2','OLIVER HARVEY','0000114816','2','LOGOAPPLICATION','Maldon logo left chest','100','2026-09-11','Oliver Harvey Proforma','NOTE - charge or logo line','','S012607POH0013294 - Maldon']),
 ].join('\n');
 (async()=>{
- const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+ const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
  const p=await b.newPage(); const errs=[];
  p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
- await p.goto('file:///home/user/Tibard-Productionplan/index.html?edit'); await p.waitForTimeout(450);
+ await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit'); await p.waitForTimeout(450);
  await p.click('#tabSpecial'); await p.waitForTimeout(150);
  await p.evaluate(t=>{document.getElementById('smTA').value=t; smLoadPaste();},paste); await p.waitForTimeout(200);
  const q=await p.evaluate(()=>({parsed:smPending[0].custOrder,
