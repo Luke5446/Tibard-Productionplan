@@ -281,13 +281,6 @@ body.planner-mode .planner-wrap{display:block}
 .sm-mon-b{padding:4px 8px 8px}
 .sm-hsub{font-size:11px;font-weight:700;color:#6b7280;margin:10px 0 5px}
 .sm-empty{text-align:center;padding:34px 16px;color:#6b7280}
-.sef{display:block;font-size:11px;font-weight:600;color:#4b5563;margin-bottom:9px}
-.sef input,.sef textarea{display:block;width:100%;margin-top:3px;padding:6px 8px;border:1px solid #d1d5db;border-radius:5px;font-size:12.5px;font-family:inherit}
-.sef textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
-.sef code{background:#f3f4f6;padding:0 3px;border-radius:3px;font-weight:400}
-.setbl{width:100%;border-collapse:collapse;margin-top:4px}
-.setbl th{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:#6b7280;text-align:left;padding:3px 4px;font-weight:700}
-.setbl td{padding:2px 4px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -1285,16 +1278,7 @@ var STOCK_LOC={"APPR18203":"A041B","MESH2290903":"A1","HEATWAD":"A1","PO5286PU":
 function printWOP(ref, code, qty, due, notes){
   var hit=styleForCode(code);
   if(!hit){
-    // Every print route lands here, so this is the one place that has to offer
-    // a way forward. A dead-end alert just sent the PM back to email.
-    if(IS_EDITOR && typeof smOpenStyleEditor==='function'){
-      if(confirm('No works order data for "'+code+'" yet.\n\nAdd it now? Fill in what you can from the existing works order card — once saved it prints for every future order, and reaches the team on the next Publish.')){
-        var w=WOs.filter(function(x){ return x.ref===ref; })[0];
-        smOpenStyleEditor(code, w||null);
-      }
-      return false;
-    }
-    alert('No works order data for "'+code+'" yet.\n\nAsk the production manager to add it — they can do this from the works order.');
+    alert('No works order data for "'+code+'" yet.\n\nThis product has not been added to the works order data — contact the operations manager to add the works order, and it will print from then on.');
     return false;
   }
   var st=hit.style, size=hit.size;
@@ -1364,7 +1348,7 @@ function printWOP(ref, code, qty, due, notes){
         +'</table>'
       : '')
     +'<div class="band">LECTRA PATTERN</div><table>'+(st.variant?'<tr><th>Pattern</th><td colspan="3">'+e(st.lectra)+'</td></tr><tr><th>Variant (cutting room)</th><td colspan="3" style="font-weight:700;font-size:15px">'+e(st.variant)+'</td></tr>':'<tr><td>'+e(st.lectra)+'</td></tr>')+'</table>'
-    +'<div class="band">FABRIC</div><table><tr><th style="width:50%">Fabric</th><th>Code</th><th>Location</th><th style="width:12%;text-align:right">Qty/unit</th></tr>';
+    +'<div class="band">FABRIC</div><table><tr><th style="width:50%">Fabric</th><th>Code</th><th>Location</th><th style="width:14%;text-align:right">Per unit</th></tr>';
   woFabrics(cw?{fabrics:cw.fabrics}:st).forEach(function(f){ if(f[0]||f[1]) h+='<tr><td>'+e(f[0])+'</td><td><strong>'+e(f[1])+'</strong></td><td><strong>'+e(f[2])+'</strong></td><td style="text-align:right">'+((f[3]===''||f[3]==null)?'':e(String(f[3])))+'</td></tr>'; });
   if(cwWarn) h+='<tr><td colspan="4" style="color:#C00000;font-weight:700">&#9888; Colour code not in the colourway table — confirm the fabric before cutting</td></tr>';
   h+='</table><div class="band">TRIMS &amp; LABELS</div><table><tr><th style="width:20%">Trim</th><th style="width:auto">Description</th><th style="width:22%">Sage code</th><th style="width:9%;text-align:center">Qty</th></tr>';
@@ -2665,7 +2649,7 @@ function smRenderInner(){
           +'<td><strong>'+esc(r.code)+'</strong>'
           +(wo.printed?'<span class="sm-tag ok">printed</span>'
             :smPrintable(r.code)?'<span class="sm-tag ok">ready to print</span>'
-            :'<span class="sm-tag warn">no template</span>')
+            :'<span class="sm-tag warn">no works order data</span>')
           +'<div class="sm-sub">'+esc(wo.sm.desc)+'</div>'
           +(wo.sm.notes||[]).map(function(n){
               return '<div class="sm-note"><strong>'+esc(n.code||'Note')+'</strong> '+esc(n.desc)+'</div>';
@@ -2677,10 +2661,9 @@ function smRenderInner(){
           +'<td'+(late?' style="color:#dc2626;font-weight:700"':'')+'>'+(late?'&#9888; ':'')
           +esc(wo.sm.promised||wo.due)+(wo.sm.dateAssumed?' <em class="sm-sub">assumed</em>':'')+'</td>'
           +'<td style="white-space:nowrap">'
-            +(IS_EDITOR?'<button class="btn'+(smPrintable(r.code)?'':' btn-p')+'" style="font-size:10px;padding:2px 7px" '
-              +'onclick="smWorksOrder(\''+esc(wo.ref)+'\')" title="'
-              +(smPrintable(r.code)?'Print the works order':'No works order data yet - fill it in once and it prints from then on')+'">'
-              +(smPrintable(r.code)?'&#128424; Works order':'&#9998; Add works order data')+'</button> ':'')
+            +(IS_EDITOR?'<button class="btn" style="font-size:10px;padding:2px 7px" '
+              +'onclick="smWorksOrder(\''+esc(wo.ref)+'\')">&#128424; Works order</button> ':'')
+
             +smDocCell(wo)
           +'</td>'
           +'</tr>';
@@ -2792,58 +2775,6 @@ function costRowsFor(styleCode){
   return TRIM_COSTS[styleCode]||(st?woTrims(st).map(function(r){ return [r[0], r[3]||'', r[2], r[4]]; }):[]);
 }
 
-// ── row editors, mirroring the costing sheet's grids ──────────────────────
-var seFab=[], seTrm=[];
-function seNum(v){ var n=parseFloat(v); return isNaN(n)?null:n; }
-function seCell(val,ph,oninput,extra){
-  // No placeholder text. An example repeated down every empty cell reads as
-  // real data at a glance - the column headings already say what goes here.
-  return '<input value="'+esc(val==null?'':String(val))+'" oninput="'+oninput+'"'
-    +' style="width:100%;padding:4px 6px;border:1px solid #d9dee5;border-radius:4px;font-size:12px;'+(extra||'')+'">';
-}
-function seRenderFab(){
-  var h='<table class="setbl"><thead><tr>'
-    +'<th style="width:130px">Code</th><th>Description</th><th style="width:80px">Location</th>'
-    +'<th style="width:82px">Qty / unit</th><th style="width:92px">Cost &pound; each</th><th style="width:28px"></th>'
-    +'</tr></thead><tbody>';
-  seFab.forEach(function(f,i){
-    h+='<tr>'
-      +'<td>'+seCell(f[1],'PC14001','seFab['+i+'][1]=this.value')+'</td>'
-      +'<td>'+seCell(f[0],'White Cooltex poly-cotton 50/50','seFab['+i+'][0]=this.value')+'</td>'
-      +'<td>'+seCell(f[2],'A3','seFab['+i+'][2]=this.value')+'</td>'
-      +'<td>'+seCell(f[3],'1.4','seFab['+i+'][3]=this.value','text-align:right')+'</td>'
-      +'<td>'+seCell(f[4],'2.15','seFab['+i+'][4]=this.value','text-align:right')+'</td>'
-      +'<td><button class="btn" style="font-size:10px;padding:1px 6px;color:#b91c1c" onclick="seFab.splice('+i+',1);seRenderFab()">&times;</button></td>'
-      +'</tr>';
-  });
-  if(!seFab.length) h+='<tr><td colspan="6" style="color:#6b7280;font-size:11.5px">No fabrics yet.</td></tr>';
-  h+='</tbody></table><button class="btn" style="font-size:11px;padding:3px 9px;margin-top:5px" onclick="seFab.push([\'\',\'\',\'\',\'\',null]);seRenderFab()">+ Add fabric</button>';
-  document.getElementById('seFabBox').innerHTML=h;
-}
-function seRenderTrm(){
-  var h='<table class="setbl"><thead><tr>'
-    +'<th style="width:150px">Trim code (Sage)</th><th style="width:120px">Trim</th><th>Description</th>'
-    +'<th style="width:82px">Qty / unit</th><th style="width:92px">Cost &pound; each</th><th style="width:28px"></th>'
-    +'</tr></thead><tbody>';
-  seTrm.forEach(function(t,i){
-    h+='<tr>'
-      +'<td>'+seCell(t[3],'','seTrm['+i+'][3]=this.value',(t[3]?'':'background:#fff7ed;'))+'</td>'
-      +'<td>'+seCell(t[0],'Labels','seTrm['+i+'][0]=this.value')+'</td>'
-      +'<td>'+seCell(t[1],'Oliver Harvey woven label, back neck','seTrm['+i+'][1]=this.value')+'</td>'
-      +'<td>'+seCell(t[2],'1','seTrm['+i+'][2]=this.value','text-align:right')+'</td>'
-      +'<td>'+seCell(t[4],'0.04335','seTrm['+i+'][4]=this.value','text-align:right')+'</td>'
-      +'<td><button class="btn" style="font-size:10px;padding:1px 6px;color:#b91c1c" onclick="seTrm.splice('+i+',1);seRenderTrm()">&times;</button></td>'
-      +'</tr>';
-  });
-  if(!seTrm.length) h+='<tr><td colspan="6" style="color:#6b7280;font-size:11.5px">No trims yet.</td></tr>';
-  h+='</tbody></table><button class="btn" style="font-size:11px;padding:3px 9px;margin-top:5px" onclick="seTrm.push([\'\',\'\',\'\',\'\',null]);seRenderTrm()">+ Add trim</button>'
-    +'<p style="font-size:11px;color:#6b7280;margin:6px 0 0">Cells shaded amber have <strong>no Sage code</strong>. '
-    +'A trim not yet in Sage can be added with just a description and cost &mdash; leave the code blank. '
-    +'It will show as <strong>no code yet</strong> in the trim costs helper until a Sage code exists.</p>';
-  document.getElementById('seTrmBox').innerHTML=h;
-}
-
-
 // ══════════════════════════════════════════════════════════════════════════
 // IMPORT FROM THE COSTING APP
 // The costing app's "Convert to product…" produces <CODE>_product.json, already
@@ -2901,9 +2832,13 @@ function smDoImport(){
       lectra:d.lectra||'',
       variant:d.variant||'',
       chart:d.chart||'',
-      /* costing gives [name, code, location]; qty and cost are not exported */
+      /* costing gives [name, code, location, rating (m per unit), cost per m].
+         The rating prints on the works order as the fabric needed per unit;
+         the cost travels but is never printed on a shop-floor document. */
       fabrics:(d.fabrics||[]).map(function(f){
-        return [f[0]||'', f[1]||'', f[2]||'', null, null];
+        return [f[0]||'', f[1]||'', f[2]||'',
+                (f[3]==null||f[3]==='')?null:f[3],
+                (f[4]==null||f[4]==='')?null:f[4]];
       }),
       /* costing gives [sageCode, description, qty] - note the code comes first */
       trims:(d.trims||[]).map(function(t){
@@ -2948,105 +2883,12 @@ function smDoImport(){
   document.getElementById('impResult').innerHTML=h||'<p style="color:#b91c1c">Nothing imported.</p>';
 }
 
-var smEditCode=null, smEditThenPrint=null;
-
 function smWorksOrder(ref){
   var wo=WOs.filter(function(w){ return w.ref===ref; })[0];
   if(!wo){ alert('Works order not found.'); return; }
   var it=wo.items[0]||{code:'',qty:0};
-  if(smPrintable(it.code)){ printWOPTracked(WOs.indexOf(wo), it.code, it.qty); return; }
-  smOpenStyleEditor(it.code, wo);           // no data yet - create it, then print
-}
-
-// Rows are edited as plain lines rather than a grid of inputs: the PM is
-// copying from an existing works order card, and typing "fabric | code | loc"
-// is quicker than tabbing through three boxes per row.
-function smSplitRows(txt, cols){
-  return (txt||'').split('\n').map(function(l){ return l.trim(); }).filter(Boolean)
-    .map(function(l){
-      var p=l.split('|').map(function(x){ return x.trim(); });
-      while(p.length<cols) p.push('');
-      return p.slice(0,cols);
-    });
-}
-function smJoinRows(rows, cols){
-  return (rows||[]).map(function(r){
-    var p=[]; for(var i=0;i<cols;i++) p.push(r[i]==null?'':r[i]);
-    while(p.length && p[p.length-1]==='') p.pop();
-    return p.join(' | ');
-  }).join('\n');
-}
-function smLines(a){ return (a||[]).join('\n'); }
-
-function smOpenStyleEditor(code, wo){
-  if(!IS_EDITOR){ alert('View-only mode.'); return; }
-  smEditCode=code; smEditThenPrint=wo?wo.ref:null;
-  // Exact match first. A template code contains "--" as the size wildcard, so
-  // styleForCode would never match it against itself - which meant editing an
-  // existing style by its own code silently opened a blank form.
-  var st=null, list=allStyles();
-  for(var li=0;li<list.length;li++){
-    if((list[li].code||'').toUpperCase()===code.toUpperCase()){ st=list[li]; break; }
-  }
-  if(!st){ try{ var hit=styleForCode(code); if(hit) st=hit.style; }catch(e){} }
-  var v=function(id,val){ document.getElementById(id).value=val==null?'':val; };
-  document.getElementById('seTitle').textContent=(st?'Edit works order data — ':'New works order data — ')+code;
-  document.getElementById('seIntro').innerHTML = st
-    ? 'Editing <strong>'+esc(st.code)+'</strong>. Changes are saved with the app and reach the team on the next <strong>Publish</strong>.'
-    : '<strong>'+esc(code)+'</strong> has no works order data yet. Fill in what you can from the existing works order card &mdash; once saved it prints properly for every future order, and reaches the team on the next <strong>Publish</strong>.';
-  v('seCode', st?st.code:code);
-  v('seName', st?st.name:(wo&&wo.sm?wo.sm.desc:''));
-  v('seDesc', st?st.desc:(wo&&wo.sm?wo.sm.desc:''));
-  v('seLectra', st?st.lectra:'');
-  seFab = st?woFabrics(st):[];
-  seTrm = st?woTrims(st).map(function(r){ return r.slice(); }):[];
-  seRenderFab(); seRenderTrm();
-  v('seMfg', st?smLines(st.mfg):'');
-  v('seFin', st?smLines(st.fin):'');
-  v('seCutBatch', st?st.cutBatch:'');
-  v('seCutMins', st?st.cutMins:'');
-  v('seMachMins', st?st.machMins:'');
-  v('seFinMins', st?st.finMins:'');
-  document.getElementById('styleEditModal').classList.add('open');
-}
-function smCloseStyleEditor(){
-  document.getElementById('styleEditModal').classList.remove('open');
-  smEditCode=null; smEditThenPrint=null;
-}
-function smSaveStyle(andPrint){
-  if(!IS_EDITOR) return;
-  var g=function(id){ return (document.getElementById(id).value||'').trim(); };
-  var code=g('seCode').toUpperCase();
-  if(!code){ alert('A product code is needed.'); return; }
-  if(!g('seName')){ alert('Give the garment a name.'); return; }
-  var num=function(id){ var x=g(id); return x===''?null:parseFloat(x); };
-  styleEdits[code]={
-    code:code, name:g('seName'), desc:g('seDesc'), lectra:g('seLectra'),
-    chart:'',
-    fabrics: seFab.filter(function(f){ return (f[0]||f[1]); })
-                  .map(function(f){ return [f[0]||'',f[1]||'',f[2]||'',seNum(f[3]),seNum(f[4])]; }),
-    trims:   seTrm.filter(function(t){ return (t[0]||t[1]||t[3]); })
-                  .map(function(t){ return [t[0]||'',t[1]||'',seNum(t[2]),t[3]||'',seNum(t[4])]; }),
-    mfg:g('seMfg').split('\n').map(function(s){return s.trim();}).filter(Boolean),
-    fin:g('seFin').split('\n').map(function(s){return s.trim();}).filter(Boolean),
-    cutBatch:num('seCutBatch')||1, cutMins:num('seCutMins')||0,
-    machMins:num('seMachMins'), finMins:num('seFinMins'),
-    editedAt:d2s(now())
-  };
-  var ref=smEditThenPrint;
-  saveState();
-  smCloseStyleEditor();
-  if(rows.length){ renderTable(); }
-  renderWOCards(); smRender();
-  if(andPrint && ref){
-    var wo=WOs.filter(function(w){ return w.ref===ref; })[0];
-    if(wo){
-      // Print the line that actually uses this code - a stock works order can
-      // hold several SKUs, and only one of them sent us here.
-      var it=wo.items.filter(function(x){ return (x.code||'').toUpperCase()===code; })[0]||wo.items[0];
-      printWOPTracked(WOs.indexOf(wo), it.code, it.qty);
-    }
-  }
+  // printWOP warns if there is no works order data for the code.
+  printWOPTracked(WOs.indexOf(wo), it.code, it.qty);
 }
 
 // ── attached documents: a file in the repo, not this browser ──────────────
@@ -3334,40 +3176,6 @@ Object.assign(window,{openPlanner:openPlanner,closePlanner:closePlanner,plnrRefr
 
 })();
 </script>
-<!-- Works order data editor -->
-<div class="modal-bg" id="styleEditModal">
-  <div class="modal-box" style="width:min(860px,96vw)">
-    <div class="mhdr"><h3 id="seTitle">Works order data</h3><button class="mclose" onclick="smCloseStyleEditor()">&times;</button></div>
-    <div class="mbody">
-      <p id="seIntro" style="font-size:12px;color:#4b5563;margin:0 0 12px"></p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <label class="sef">Product code<input id="seCode"></label>
-        <label class="sef">Garment name<input id="seName" placeholder="Cheshire chef jacket — short sleeve, white"></label>
-      </div>
-      <label class="sef">Description<input id="seDesc" placeholder="Short sleeves · Mesh side panels · Press-stud fastening"></label>
-      <label class="sef">Lectra pattern<input id="seLectra" placeholder="OH2 — Cheshire — short sleeves"></label>
-      <div class="sef">Fabrics<div id="seFabBox"></div></div>
-      <div class="sef">Trims &amp; labels<div id="seTrmBox"></div></div>
-      <label class="sef">Making detail &mdash; one step per line
-        <textarea id="seMfg" rows="4"></textarea></label>
-      <label class="sef">Finishing detail &mdash; one step per line
-        <textarea id="seFin" rows="3"></textarea></label>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-        <label class="sef">Cut batch<input id="seCutBatch" type="number" min="1" placeholder="20"></label>
-        <label class="sef">Cut mins / batch<input id="seCutMins" type="number" step="0.1"></label>
-        <label class="sef">Machine mins / unit<input id="seMachMins" type="number" step="0.1"></label>
-        <label class="sef">Finish mins / unit<input id="seFinMins" type="number" step="0.1"></label>
-      </div>
-      <p style="font-size:11px;color:#6b7280;margin:8px 0 0">Leave anything you do not know blank &mdash; it prints as an empty row to complete by hand, and can be filled in later.</p>
-    </div>
-    <div style="padding:10px 16px;border-top:1px solid #e5e7eb;display:flex;gap:7px;justify-content:flex-end;flex-shrink:0">
-      <button class="btn" onclick="smCloseStyleEditor()">Cancel</button>
-      <button class="btn" onclick="smSaveStyle(false)">&#10003; Save</button>
-      <button class="btn btn-p" onclick="smSaveStyle(true)">&#10003; Save &amp; print works order</button>
-    </div>
-  </div>
-</div>
-
 <!-- Import from the costing app -->
 <div class="modal-bg" id="importModal">
   <div class="modal-box" style="width:min(720px,96vw)">

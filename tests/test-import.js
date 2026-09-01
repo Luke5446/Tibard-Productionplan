@@ -7,7 +7,7 @@ const exp = {
  chart:"OHAPB0631DSTIE01-MEAS", chartCols:["Measurement","Value"],
  chartRows:[["WIDTH OF SKIRT","70"],["Pocket","18.5 × 19.5"],["LENGTH FROM WAIST TO HEM","45"],
             ["LENGTH OF SIDE SEAM","45"],["WAIST TIES LENGTH X WIDTH","108 × 2.6"]],
- fabrics:[["BISCUIT COT/POLY 55/45 300GSM","PC9068","B6"]],
+ fabrics:[["BISCUIT COT/POLY 55/45 300GSM","PC9068","B6",0.52,5.3651]],
  trims:[["","COATS EPIC 80'S BISCUIT 08569",150],
         ["CMP-STD-PST-9B-287","LARGE BRONZE STUD MALE PART",2],
         ["LABELOH5771","Oliver Harvey 'Button' Woven Centrefold Label (32x80mm)",1],
@@ -44,7 +44,7 @@ const exp = {
    p.evaluate(()=>{window.print=()=>{}; printWOP('S-TEST','OHAPB0631DSTIE01',20,'2026-09-20',null);})]);
  await pop.waitForLoadState('domcontentloaded'); await pop.waitForTimeout(300);
  const doc=await pop.evaluate(()=>{const t=document.body.innerText; return {
-   fabric:t.includes('PC9068'), trimCode:t.includes('TAXTABOH07/01'), noCode:t.includes('no code yet'),
+   fabric:t.includes('PC9068'), rating:t.includes('0.52'), noCost:!/5\.3651/.test(t), trimCode:t.includes('TAXTABOH07/01'), noCode:t.includes('no code yet'),
    meas:t.includes('WIDTH OF SKIRT'), mfg:t.includes('Set eyelet re-inforcement'),
    fin:t.includes('CHECK, TRIM, PRESS AND FOLD'), thread:t.includes("COATS EPIC 80'S BISCUIT")};});
  console.log('printed works order:', JSON.stringify(doc));
