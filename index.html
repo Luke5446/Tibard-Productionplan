@@ -1181,7 +1181,7 @@ function renderWOCards(){
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
       +'<span class="woc-wks" style="background:'+wbg+'">'+wl+'</span>'
       +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
-      +(wo.sm?'<div style="font-size:10px;color:#6b7280;margin-top:2px">'+esc(wo.sm.customer||'')
+      +(wo.sm?'<div style="font-size:10px;color:#6b7280;margin-top:2px">'+esc(wo.sm.custName||wo.sm.customer||'')
         +(smPrintable(wo.items[0].code)?'':' &middot; <span style="color:#b45309;font-weight:700">no print template</span>')+'</div>':'')
       +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
       +'<button class="btn" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button>'
@@ -1342,9 +1342,10 @@ function printWOP(ref, code, qty, due, sm){
     /* Always shown on a special make, even when Sage has left it blank - an
        empty row asks the question, a missing row hides it. */
     +(sm
-      ? '<tr><th>Customer</th><td>'+e(sm.customer||'\u2014')+'</td>'
+      ? '<tr><th>Customer</th><td style="font-size:15px">'+e(sm.custName||sm.customer||'\u2014')+'</td>'
         +'<th>Sales order</th><td>'+e(String(sm.so||'').replace(/^0+/,'')||'\u2014')+'</td></tr>'
-        +'<tr><th>Customer order no</th><td colspan="3">'+e(sm.custOrder||'\u2014')+'</td></tr>'
+        +'<tr><th>Sage account</th><td>'+e(sm.customer||'\u2014')+'</td>'
+        +'<th>Customer order no</th><td>'+e(sm.custOrder||'\u2014')+'</td></tr>'
       : '')
     +'</table>'
     +'<div class="band" style="display:flex;justify-content:space-between"><span>GARMENT</span><span>LOCATION</span></div><table><tr><td style="font-weight:700">'+e(st.name)+'</td><td style="width:20%;text-align:center;font-weight:700;border-left:1px solid #999">'+e(stockLoc)+'</td></tr></table>'
@@ -1373,7 +1374,7 @@ function printWOP(ref, code, qty, due, sm){
   h+='<div class="page">'
     +'<div class="hdr"><h1 style="font-size:20px">MANUFACTURING &amp; TIMES</h1><div class="r">'+e(code)
       +'<small>'+e(ref)+' &middot; Qty '+qty.toLocaleString()
-      +(sm&&sm.customer?' &middot; '+e(sm.customer):'')+'</small></div></div>'
+      +(sm&&(sm.custName||sm.customer)?' &middot; '+e(sm.custName||sm.customer):'')+'</small></div></div>'
     +'<div class="band">MANUFACTURING DETAILS</div><table>';
   st.mfg.forEach(function(m,ix){ h+='<tr><td class="num">'+(ix+1)+'</td><td class="'+(ix%2?'alt':'')+'">'+e(m)+'</td></tr>'; });
   h+='</table><div class="band">FINISHING DETAILS</div><table>';
@@ -2280,9 +2281,9 @@ function smMatch(hay, srch){
 // Columns read by POSITION, matching the order the SQL emits:
 // 0 LineKey 1 Company 2 SalesOrderNo 3 LineSeq 4 ProductCode 5 ProductDesc
 // 6 Qty 7 PromisedDate 8 Customer 9 Category 10 Manufacturer
-// 11 CustomerOrderNo - the customer's own reference. On a proforma or
-//    inter-company account this is the only place the end customer's name
-//    appears, so it is shown under the account name rather than hidden.
+// 11 CustomerOrderNo - the customer's own reference
+// 12 CustomerName     - which of the two actually names the customer, resolved
+//    in SQL because it depends on the account, not on the text.
 function smParse(txt){
   var out=[], lines=txt.split('\n');
   for(var i=0;i<lines.length;i++){
@@ -2294,7 +2295,11 @@ function smParse(txt){
       seq:pn(c[3]), code:(c[4]||'').trim(), desc:(c[5]||'').trim(), qty:pn(c[6]),
       promised:(c[7]||'').trim(), customer:(c[8]||'').trim(),
       cat:(c[9]||'').trim().toUpperCase(), maker:(c[10]||'').trim(),
-      custOrder:(c[11]||'').trim() });
+      custOrder:(c[11]||'').trim(),
+      /* Column M is the resolved name - the account on a real trading account,
+         the customer's own reference on a placeholder one. Falls back to the
+         account name so an older 12-column paste still names somebody. */
+      custName:((c[12]||'').trim() || (c[8]||'').trim()) });
   }
   return out;
 }
@@ -2438,7 +2443,8 @@ function smCreateAllShown(){
     var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
     WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
       sm:{ lineKey:o.key, company:o.company, so:o.so, seq:o.seq, part:part,
-           customer:o.customer, custOrder:o.custOrder||'', desc:o.desc, maker:o.maker,
+           customer:o.customer, custOrder:o.custOrder||'',
+           custName:o.custName||o.customer||'', desc:o.desc, maker:o.maker,
            promised:o.promised, dateAssumed:!hasDate, notes:[] } });
     smSeen[o.key]={what:'wo', ref:ref};
     smLog(o, ref, part);
@@ -2500,7 +2506,8 @@ function smSrch(){ return ((document.getElementById('smSearch')||{}).value||'').
 function smVisiblePending(){
   var q=smSrch();
   return smPending.filter(function(o){
-    return smMatch(o.code+' '+o.desc+' '+o.customer+' '+o.so+' '+o.company+' '+o.cat+' '+o.maker, q);
+    return smMatch(o.code+' '+o.desc+' '+o.customer+' '+(o.custName||'')+' '+(o.custOrder||'')
+      +' '+o.so+' '+o.company+' '+o.cat+' '+o.maker, q);
   });
 }
 
@@ -2593,8 +2600,9 @@ function smRenderInner(){
             +(warn?'<span class="sm-tag warn">'+esc(o.cat.replace('REVIEW - ',''))+'</span>':'')
             +(smPrintable(o.code)?'<span class="sm-tag ok">prints</span>':'')
             +'<div class="sm-sub">'+esc(o.desc)+'</div></td>'
-          +'<td>'+esc(o.customer||'')
-            +(o.custOrder?'<div class="sm-sub">'+esc(o.custOrder)+'</div>':'')+'</td>'
+          +'<td><strong>'+esc(o.custName||o.customer||'')+'</strong>'
+            +(o.customer&&o.customer!==o.custName?'<div class="sm-sub">'+esc(o.customer)+'</div>':'')
+            +(o.custOrder&&o.custOrder!==o.custName?'<div class="sm-sub">'+esc(o.custOrder)+'</div>':'')+'</td>'
           +'<td class="sm-sub" style="white-space:nowrap">'+esc(o.so.replace(/^0+/,''))+'</td>'
           +'<td style="text-align:right">'+o.qty+'</td>'
           +'<td style="text-align:center;white-space:nowrap">'
@@ -2624,7 +2632,7 @@ function smRenderInner(){
   // never made.
   var rowsOut=[];
   live.forEach(function(wo){
-    if(!smMatch(wo.ref+' '+wo.sm.so+' '+wo.sm.customer+' '+wo.sm.desc+' '+wo.sm.company+' '
+    if(!smMatch(wo.ref+' '+wo.sm.so+' '+wo.sm.customer+' '+(wo.sm.custName||'')+' '+(wo.sm.custOrder||'')+' '+wo.sm.desc+' '+wo.sm.company+' '
        +wo.items.map(function(i){return i.code;}).join(' ')
        +' '+(wo.sm.notes||[]).map(function(n){return n.code+' '+n.desc;}).join(' '), q)) return;
     rowsOut.push({kind:'live', wo:wo, code:wo.items[0].code, qty:wo.items[0].qty,
@@ -2673,8 +2681,9 @@ function smRenderInner(){
               return '<div class="sm-note"><strong>'+esc(n.code||'Note')+'</strong> '+esc(n.desc)+'</div>';
             }).join('')
           +'</td>'
-          +'<td>'+esc(wo.sm.customer||'')
-            +(wo.sm.custOrder?'<div class="sm-sub">'+esc(wo.sm.custOrder)+'</div>':'')+'</td>'
+          +'<td><strong>'+esc(wo.sm.custName||wo.sm.customer||'')+'</strong>'
+            +(wo.sm.customer&&wo.sm.customer!==wo.sm.custName?'<div class="sm-sub">'+esc(wo.sm.customer)+'</div>':'')
+            +(wo.sm.custOrder&&wo.sm.custOrder!==wo.sm.custName?'<div class="sm-sub">'+esc(wo.sm.custOrder)+'</div>':'')+'</td>'
           +'<td style="text-align:right;color:#6d28d9;font-weight:700">'+r.qty+'</td>'
           +'<td style="text-align:right;'+(r.pipe?'color:#0369a1;font-weight:700':'color:#9ca3af')+'">'+(r.pipe||'&mdash;')+'</td>'
           +'<td'+(late?' style="color:#dc2626;font-weight:700"':'')+'>'+(late?'&#9888; ':'')

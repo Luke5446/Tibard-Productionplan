@@ -197,7 +197,8 @@ paste. Production select the filtered rows (no header) → Ctrl+C → paste.
 | I | `Customer` | |
 | J | `StockHeld` | `YES` / `NO` / `FREE-TEXT` — blank in Sage counts as `NO` |
 | K | `Manufacturer` | Free text; only our own manufacture should raise a works order |
-| L | `CustomerOrderNo` | The customer's own reference — on a proforma or inter-company account, the only place the end customer's name appears |
+| L | `CustomerOrderNo` | The customer's own reference |
+| M | `CustomerName` | **Who the job is for**, resolved — the account on a real trading account, the reference on a placeholder one |
 
 ### Why a line key, and not the sales order number
 
@@ -400,17 +401,33 @@ free-text lines that by definition have no product record. **Not one standard
 product line fails the code join.** So `si.Code = sorl.ItemCode` is sound and
 Sage's `SOPStandardItemLink` table is not needed.
 
-### The account name is not always the customer
+### Who the job is for takes three columns, not one
 
-Column I is the Sage **account** name. On a proforma or inter-company account
-that is not who the garments are for — order 114816 reads `Oliver Harvey
-Proforma`, while Sage's own screen shows `Customer order no:
-S012607POH0013294 - Maldon`.
+Neither the account nor the customer's reference is reliably the customer:
 
-So column L carries `SOPOrderReturn.CustomerDocumentNo`, the customer's own
-reference, and the app shows it beneath the account name in both tables and on
-the printed works order. Production need both: the account to know whose order
-it is, the reference to know who it is for.
+| Account (I) | Reference (L) | Who it is for |
+|---|---|---|
+| `Knoops Procurement` | `EMB: PO: 33452341` | the **account** |
+| `Mollies Motels Ltd` | `134164 Miles Roberts` | the **account** |
+| `Oliver Harvey Proforma` | `EMB: Coventry City FC` | the **reference** |
+| `XONLINE` | `OH-76438 Louise Burks` | the **reference** |
+
+What decides it is the **account**. On a real trading account the account name
+is the customer and the reference is a purchase order number or a contact. On a
+**placeholder** account — proforma, online — the account says nothing and the
+customer only appears in their own reference.
+
+Column M applies that rule: placeholder accounts (`PROFORMA`, `PROFEURO`,
+`XONLINE`) take the reference, everything else takes the account name. Matched
+on **account number**, not name, for the same reason as the inter-company rule.
+An `EMB:` or `DTF:` prefix is stripped; nothing else is, because guessing at the
+rest of a free-text reference does more harm than good.
+
+I and L are still returned, so nothing hides behind the rule — the app leads
+with M and shows the other two beneath it.
+
+**If another placeholder account turns up**, add its account number to the list
+in both halves of the query.
 
 ### Promised date comes from the order header, not the line
 

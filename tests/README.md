@@ -12,6 +12,7 @@ Run against the real `index.html` in Chromium. No build step, no test runner —
 | `test-nowarn.js` | That a code with no works order data warns and points at the operations manager rather than offering an editor, and that an imported fabric rating prints while its cost does not |
 | `test-cust.js` | The customer's own order reference: parsed from column L, shown under the account name in both tables, and an older 11-column paste still working |
 | `test-wocust.js` | The customer on the printed works order: shown for every special make including when Sage left it blank, carried onto the second page's header, and absent from a stock works order |
+| `test-custname.js` | The resolved customer name against real rows — account-is-customer, reference-is-customer, the printed works order, search, and a 12-column paste falling back |
 | `test-regress.js` | That the existing buffer flow still works alongside it — buffer paste, stock `WO-####` auto-numbering, and that a special make does not count towards buffer `On WOP` |
 
 Set `CHROME_PATH` if your Chromium is elsewhere.

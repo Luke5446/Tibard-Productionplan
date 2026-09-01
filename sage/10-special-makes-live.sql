@@ -7,7 +7,7 @@
    results are in sage/README.md. Column names are all confirmed against the
    live database.
 
-   NO FILTERING NEEDED. Copy columns A to L, all rows, without the header.
+   NO FILTERING NEEDED. Copy columns A to M, all rows, without the header.
    Everything returned is relevant:
 
      WORKS ORDER                     make it
@@ -18,12 +18,18 @@
    Stock-held items and bought-in goods are dropped here, so they never reach
    the sheet at all.
 
-   COLUMN I is the Sage ACCOUNT name, which on a proforma or inter-company
-   account is not the end customer - order 114816 reads "Oliver Harvey
-   Proforma". COLUMN L carries the customer's own order reference, which is
-   where the real customer name sits ("S012607POH0013294 - Maldon"). Production
-   need both: the account to know whose order it is, the reference to know who
-   it is for.
+   WHO THE JOB IS FOR takes all three of I, L and M. Column I is the Sage
+   ACCOUNT and column L the customer's own reference, and neither is reliably
+   the customer:
+
+     Knoops Procurement    / EMB: PO: 33452341      -> the ACCOUNT is the customer
+     Mollies Motels Ltd    / 134164 Miles Roberts   -> the ACCOUNT is the customer
+     Oliver Harvey Proforma/ EMB: Coventry City FC  -> the REFERENCE is the customer
+     XONLINE               / OH-76438 Louise Burks  -> the REFERENCE is the customer
+
+   COLUMN M resolves it: on a placeholder account (proforma, online) it takes
+   the reference, otherwise the account name. I and L are still returned so
+   nothing is hidden behind the rule.
 
    *** DO NOT FILTER ON MANUFACTURER (column K). *** Logo and charge lines have
    no manufacturer of their own, so filtering on it silently removes the very
@@ -35,7 +41,7 @@
    Output order is FIXED - the app parses by position:
      A LineKey  B Company  C SalesOrderNo  D LineSeq  E ProductCode
      F ProductDesc  G Qty  H PromisedDate  I Customer  J Category  K Manufacturer
-     L CustomerOrderNo
+     L CustomerOrderNo  M CustomerName
    ========================================================================= */
 
 WITH lines AS (
@@ -106,7 +112,35 @@ SELECT
        accounts this is the only place the end customer's name appears. */
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
         ISNULL(sor.CustomerDocumentNo,''),
-        CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS CustomerOrderNo
+        CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS CustomerOrderNo,
+
+    /* >> CUSTOMER NAME <<  Neither column alone is the customer:
+
+         Knoops Procurement   / EMB: PO: 33452341        -> the ACCOUNT is right
+         Mollies Motels Ltd   / 134164 Miles Roberts     -> the ACCOUNT is right
+         Oliver Harvey Prof.  / EMB: Coventry City FC    -> the REFERENCE is right
+         XONLINE              / OH-76438 Louise Burks    -> the REFERENCE is right
+
+       What decides it is the account: on a real trading account the account
+       name IS the customer and the reference is a PO number or a contact. On a
+       proforma or online account the account is a placeholder and the customer
+       only appears in their own reference.
+
+       Matched on ACCOUNT NUMBER, not name, for the same reason as the
+       inter-company rule. Add to this list if another placeholder account
+       turns up. The EMB:/DTF: prefix is stripped; nothing else is, because
+       guessing at the rest of a free-text reference does more harm than good.
+       Falls back to the account name if the reference is empty. */
+    CASE WHEN cust.CustomerAccountNumber IN ('PROFORMA','PROFEURO','XONLINE')
+              AND NULLIF(LTRIM(RTRIM(sor.CustomerDocumentNo)),'') IS NOT NULL
+         THEN LTRIM(RTRIM(
+                CASE WHEN LTRIM(sor.CustomerDocumentNo) LIKE 'EMB:%'
+                     THEN SUBSTRING(LTRIM(sor.CustomerDocumentNo),5,200)
+                     WHEN LTRIM(sor.CustomerDocumentNo) LIKE 'DTF:%'
+                     THEN SUBSTRING(LTRIM(sor.CustomerDocumentNo),5,200)
+                     ELSE LTRIM(sor.CustomerDocumentNo) END))
+         ELSE LTRIM(RTRIM(ISNULL(cust.CustomerAccountName,'')))
+    END                                                         AS CustomerName
 
 FROM        S200_LIVE.dbo.SOPOrderReturn      sor
 INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
@@ -159,7 +193,16 @@ SELECT
     LTRIM(RTRIM(ISNULL(si.Manufacturer,''))),
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
         ISNULL(sor.CustomerDocumentNo,''),
-        CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))
+        CHAR(9),' '), CHAR(13),' '), CHAR(10),' '))),
+    CASE WHEN cust.CustomerAccountNumber IN ('PROFORMA','PROFEURO','XONLINE')
+              AND NULLIF(LTRIM(RTRIM(sor.CustomerDocumentNo)),'') IS NOT NULL
+         THEN LTRIM(RTRIM(
+                CASE WHEN LTRIM(sor.CustomerDocumentNo) LIKE 'EMB:%'
+                     THEN SUBSTRING(LTRIM(sor.CustomerDocumentNo),5,200)
+                     WHEN LTRIM(sor.CustomerDocumentNo) LIKE 'DTF:%'
+                     THEN SUBSTRING(LTRIM(sor.CustomerDocumentNo),5,200)
+                     ELSE LTRIM(sor.CustomerDocumentNo) END))
+         ELSE LTRIM(RTRIM(ISNULL(cust.CustomerAccountName,''))) END
 
 FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
 INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
@@ -174,7 +217,8 @@ WHERE
 )
 
 SELECT LineKey, Company, SalesOrderNo, LineSeq, ProductCode, ProductDesc,
-       Qty, PromisedDate, Customer, Category, Manufacturer, CustomerOrderNo
+       Qty, PromisedDate, Customer, Category, Manufacturer, CustomerOrderNo,
+       CustomerName
 FROM   lines l
 WHERE
     /* Anything needing a works order or a decision, plus the inter-company
