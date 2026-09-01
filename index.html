@@ -1280,7 +1280,19 @@ var STOCK_LOC={"APPR18203":"A041B","MESH2290903":"A1","HEATWAD":"A1","PO5286PU":
 
 function printWOP(ref, code, qty, due, notes){
   var hit=styleForCode(code);
-  if(!hit){ alert('No style data for "'+code+'" yet.\n\nThis style has not been added to the Style Master — send the old works order card over for conversion and it will print from then on.'); return false; }
+  if(!hit){
+    // Every print route lands here, so this is the one place that has to offer
+    // a way forward. A dead-end alert just sent the PM back to email.
+    if(IS_EDITOR && typeof smOpenStyleEditor==='function'){
+      if(confirm('No works order data for "'+code+'" yet.\n\nAdd it now? Fill in what you can from the existing works order card — once saved it prints for every future order, and reaches the team on the next Publish.')){
+        var w=WOs.filter(function(x){ return x.ref===ref; })[0];
+        smOpenStyleEditor(code, w||null);
+      }
+      return false;
+    }
+    alert('No works order data for "'+code+'" yet.\n\nAsk the production manager to add it — they can do this from the works order.');
+    return false;
+  }
   var st=hit.style, size=hit.size;
   qty=Math.round(qty||0);
   var chart=STYLE_MASTER.charts[st.chart]||[];
@@ -2806,7 +2818,12 @@ function smSaveStyle(andPrint){
   renderWOCards(); smRender();
   if(andPrint && ref){
     var wo=WOs.filter(function(w){ return w.ref===ref; })[0];
-    if(wo) printWOPTracked(WOs.indexOf(wo), wo.items[0].code, wo.items[0].qty);
+    if(wo){
+      // Print the line that actually uses this code - a stock works order can
+      // hold several SKUs, and only one of them sent us here.
+      var it=wo.items.filter(function(x){ return (x.code||'').toUpperCase()===code; })[0]||wo.items[0];
+      printWOPTracked(WOs.indexOf(wo), it.code, it.qty);
+    }
   }
 }
 
