@@ -429,6 +429,26 @@ with M and shows the other two beneath it.
 **If another placeholder account turns up**, add its account number to the list
 in both halves of the query.
 
+### When Sage has no name at all, the costed customer stands in
+
+A handful of rows have neither a usable account name nor anything customer-like
+in the reference. The works order would print its customer row empty.
+
+There is a safe last resort, and it exists because of a rule of the business:
+
+> Specials are for one customer only, if another customer orders it would be a
+> new special code.
+
+So the customer captured when the product was **costed** stays true for the life
+of that code — a second customer never arrives on it. Where a costing app import
+has supplied a customer for the style, the app falls back to it.
+
+The order is: **column M** (resolved above) → **column I** (raw account) → **the
+costed customer** → blank. Sage always wins; the costed name only fills a gap.
+
+This would *not* be safe for a stock code, which many customers order, and it is
+not applied to one.
+
 ### Promised date comes from the order header, not the line
 
 Sage holds a promised date on the order **and** on each line. Amending an order
@@ -443,11 +463,13 @@ ignore the colour.
 So the order is now: **header promised → line promised → header requested → line
 requested**.
 
-The cost of this is a genuinely staggered delivery, where one line really is due
-on a different date to the rest — that would now be flattened to the header date.
-Discovery query **1.1** counts how often line and header disagree, and whether
-any line date is *later* than the header, which is what a real staggered
-delivery looks like. Worth running before assuming it never happens here.
+The cost of this would be a genuinely staggered delivery, where one line really
+is due on a different date to the rest — that would now be flattened to the
+header date. Confirmed with the sales office that this does not arise: **"We
+don't stagger deliveries."** Discovery query **1.1** still counts how often line
+and header disagree, and whether any line date is *later* than the header, which
+is what a real staggered delivery would look like — worth re-running if that ever
+changes.
 
 ## 4. Decisions still needed for the app side
 

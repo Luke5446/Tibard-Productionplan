@@ -1181,7 +1181,7 @@ function renderWOCards(){
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
       +'<span class="woc-wks" style="background:'+wbg+'">'+wl+'</span>'
       +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
-      +(wo.sm?'<div style="font-size:10px;color:#6b7280;margin-top:2px">'+esc(wo.sm.custName||wo.sm.customer||'')
+      +(wo.sm?'<div style="font-size:10px;color:#6b7280;margin-top:2px">'+esc(smCustomerFor(wo.sm, wo.items[0]&&wo.items[0].code))
         +(smPrintable(wo.items[0].code)?'':' &middot; <span style="color:#b45309;font-weight:700">no print template</span>')+'</div>':'')
       +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
       +'<button class="btn" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button>'
@@ -1342,7 +1342,7 @@ function printWOP(ref, code, qty, due, sm){
     /* Always shown on a special make, even when Sage has left it blank - an
        empty row asks the question, a missing row hides it. */
     +(sm
-      ? '<tr><th>Customer</th><td style="font-size:15px">'+e(sm.custName||sm.customer||'\u2014')+'</td>'
+      ? '<tr><th>Customer</th><td style="font-size:15px">'+e(smCustomerFor(sm,code)||'\u2014')+'</td>'
         +'<th>Sales order</th><td>'+e(String(sm.so||'').replace(/^0+/,'')||'\u2014')+'</td></tr>'
         +'<tr><th>Sage account</th><td>'+e(sm.customer||'\u2014')+'</td>'
         +'<th>Customer order no</th><td>'+e(sm.custOrder||'\u2014')+'</td></tr>'
@@ -1374,7 +1374,7 @@ function printWOP(ref, code, qty, due, sm){
   h+='<div class="page">'
     +'<div class="hdr"><h1 style="font-size:20px">MANUFACTURING &amp; TIMES</h1><div class="r">'+e(code)
       +'<small>'+e(ref)+' &middot; Qty '+qty.toLocaleString()
-      +(sm&&(sm.custName||sm.customer)?' &middot; '+e(sm.custName||sm.customer):'')+'</small></div></div>'
+      +(sm&&smCustomerFor(sm,code)?' &middot; '+e(smCustomerFor(sm,code)):'')+'</small></div></div>'
     +'<div class="band">MANUFACTURING DETAILS</div><table>';
   st.mfg.forEach(function(m,ix){ h+='<tr><td class="num">'+(ix+1)+'</td><td class="'+(ix%2?'alt':'')+'">'+e(m)+'</td></tr>'; });
   h+='</table><div class="band">FINISHING DETAILS</div><table>';
@@ -2600,7 +2600,7 @@ function smRenderInner(){
             +(warn?'<span class="sm-tag warn">'+esc(o.cat.replace('REVIEW - ',''))+'</span>':'')
             +(smPrintable(o.code)?'<span class="sm-tag ok">prints</span>':'')
             +'<div class="sm-sub">'+esc(o.desc)+'</div></td>'
-          +'<td><strong>'+esc(o.custName||o.customer||'')+'</strong>'
+          +'<td><strong>'+esc(smCustomerFor(o, o.code))+'</strong>'
             +(o.customer&&o.customer!==o.custName?'<div class="sm-sub">'+esc(o.customer)+'</div>':'')
             +(o.custOrder&&o.custOrder!==o.custName?'<div class="sm-sub">'+esc(o.custOrder)+'</div>':'')+'</td>'
           +'<td class="sm-sub" style="white-space:nowrap">'+esc(o.so.replace(/^0+/,''))+'</td>'
@@ -2681,7 +2681,7 @@ function smRenderInner(){
               return '<div class="sm-note"><strong>'+esc(n.code||'Note')+'</strong> '+esc(n.desc)+'</div>';
             }).join('')
           +'</td>'
-          +'<td><strong>'+esc(wo.sm.custName||wo.sm.customer||'')+'</strong>'
+          +'<td><strong>'+esc(smCustomerFor(wo.sm, r.code))+'</strong>'
             +(wo.sm.customer&&wo.sm.customer!==wo.sm.custName?'<div class="sm-sub">'+esc(wo.sm.customer)+'</div>':'')
             +(wo.sm.custOrder&&wo.sm.custOrder!==wo.sm.custName?'<div class="sm-sub">'+esc(wo.sm.custOrder)+'</div>':'')+'</td>'
           +'<td style="text-align:right;color:#6d28d9;font-weight:700">'+r.qty+'</td>'
@@ -2909,6 +2909,22 @@ function smDoImport(){
   skipped.forEach(function(s){ h+='<div style="color:#b91c1c;padding:5px 0">Skipped '+esc(s)+'.</div>'; });
   if(done.length) h+='<p style="font-size:11.5px;color:#6b7280;margin:9px 0 0">Saved. These print straight away, and reach the team on the next <strong>Publish</strong>.</p>';
   document.getElementById('impResult').innerHTML=h||'<p style="color:#b91c1c">Nothing imported.</p>';
+}
+
+// Who a special make is for. A special code belongs to ONE customer - if
+// another customer orders it, it gets a new code - so the customer recorded
+// when the product was costed stays true for the life of the code. That makes
+// it a safe last resort when Sage's own fields are empty, which they are on
+// some proforma and online orders.
+function smCustomerFor(sm, code){
+  if(!sm) return '';
+  if(sm.custName)  return sm.custName;
+  if(sm.customer)  return sm.customer;
+  try{
+    var hit=styleForCode(code||'');
+    if(hit && hit.style && hit.style.customer) return hit.style.customer;
+  }catch(e){}
+  return '';
 }
 
 function smWorksOrder(ref){
