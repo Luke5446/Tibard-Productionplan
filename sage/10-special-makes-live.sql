@@ -54,10 +54,16 @@ SELECT
 
     /* Text in yyyy-mm-dd. A real Excel date pasted into a browser arrives as a
        5-digit serial or a dd/mm-vs-mm/dd guess. */
-    CONVERT(varchar(10), COALESCE(sorl.PromisedDeliveryDate,
-                                  sor.PromisedDeliveryDate,
-                                  sorl.RequestedDeliveryDate,
-                                  sor.RequestedDeliveryDate), 23) AS PromisedDate,
+    /* ORDER-LEVEL promised date first, then the line's. Deliberately this way
+       round: amending an order's promised date in Sage updates the header, and
+       the sales office only reliably updates the header - lines keep whatever
+       they were raised with. Preferring the line meant order 114816 read
+       2026-08-05 while Sage showed 11/09/2026, and the sheet flagged it
+       Overdue on a date nobody had promised. */
+    CONVERT(varchar(10), COALESCE(sor.PromisedDeliveryDate,
+                                  sorl.PromisedDeliveryDate,
+                                  sor.RequestedDeliveryDate,
+                                  sorl.RequestedDeliveryDate), 23) AS PromisedDate,
 
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
         ISNULL(cust.CustomerAccountName,''),
@@ -116,10 +122,10 @@ SELECT
         ISNULL(sorl.ItemDescription,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' '))),
     CAST(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0) AS decimal(18,2)),
-    CONVERT(varchar(10), COALESCE(sorl.PromisedDeliveryDate,
-                                  sor.PromisedDeliveryDate,
-                                  sorl.RequestedDeliveryDate,
-                                  sor.RequestedDeliveryDate), 23),
+    CONVERT(varchar(10), COALESCE(sor.PromisedDeliveryDate,   -- header first, see Tibard block
+                                  sorl.PromisedDeliveryDate,
+                                  sor.RequestedDeliveryDate,
+                                  sorl.RequestedDeliveryDate), 23),
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
         ISNULL(cust.CustomerAccountName,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' '))),

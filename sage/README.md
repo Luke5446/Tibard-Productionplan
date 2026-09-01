@@ -399,6 +399,26 @@ free-text lines that by definition have no product record. **Not one standard
 product line fails the code join.** So `si.Code = sorl.ItemCode` is sound and
 Sage's `SOPStandardItemLink` table is not needed.
 
+### Promised date comes from the order header, not the line
+
+Sage holds a promised date on the order **and** on each line. Amending an order
+updates the header, and the sales office only reliably updates the header —
+lines keep whatever they were raised with.
+
+Taking the line date first meant order **114816** read `2026-08-05` while Sage's
+screen said **11/09/2026**, and the sheet flagged it **Overdue** on a date nobody
+had promised. A wrong overdue flag is worse than no flag: it trains people to
+ignore the colour.
+
+So the order is now: **header promised → line promised → header requested → line
+requested**.
+
+The cost of this is a genuinely staggered delivery, where one line really is due
+on a different date to the rest — that would now be flattened to the header date.
+Discovery query **1.1** counts how often line and header disagree, and whether
+any line date is *later* than the header, which is what a real staggered
+delivery looks like. Worth running before assuming it never happens here.
+
 ## 4. Decisions still needed for the app side
 
 Flagging these now because they change how the Special Makes tab is built:

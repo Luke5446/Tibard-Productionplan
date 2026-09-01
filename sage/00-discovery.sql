@@ -549,3 +549,46 @@ SELECT Company, GroupCode, GroupDesc, LineTypeID, COUNT(*) AS Lines,
 FROM   feed
 GROUP BY Company, GroupCode, GroupDesc, LineTypeID
 ORDER BY Company, COUNT(*) DESC;
+
+
+/* --- 1.1  HOW OFTEN DO LINE AND ORDER PROMISED DATES DISAGREE? ------------
+   Order 114816 showed 2026-08-05 on the line while Sage's header said
+   11/09/2026, so the sheet called it Overdue on a date nobody had promised.
+   The query now takes the header date; this shows how widespread the
+   disagreement is, and whether any line date is genuinely later (a staggered
+   delivery, which taking the header would flatten).                       */
+
+SELECT Company, Disagreement, COUNT(*) AS Lines,
+       MIN(SalesOrderNo) AS ExampleOrder,
+       MIN(LineDate) AS ExampleLineDate, MIN(HeaderDate) AS ExampleHeaderDate
+FROM (
+    SELECT 'TIBARD' AS Company, sor.DocumentNo AS SalesOrderNo,
+           CONVERT(varchar(10), sorl.PromisedDeliveryDate, 23) AS LineDate,
+           CONVERT(varchar(10), sor.PromisedDeliveryDate, 23)  AS HeaderDate,
+           CASE WHEN sorl.PromisedDeliveryDate IS NULL THEN 'line date missing'
+                WHEN sor.PromisedDeliveryDate IS NULL  THEN 'header date missing'
+                WHEN sorl.PromisedDeliveryDate = sor.PromisedDeliveryDate THEN 'same'
+                WHEN sorl.PromisedDeliveryDate < sor.PromisedDeliveryDate THEN 'line EARLIER than header'
+                ELSE 'line LATER than header' END AS Disagreement
+    FROM       S200_LIVE.dbo.SOPOrderReturn     sor
+    INNER JOIN S200_LIVE.dbo.SOPOrderReturnLine sorl ON sorl.SOPOrderReturnID = sor.SOPOrderReturnID
+    WHERE sor.DocumentTypeID=0 AND sor.DocumentStatusID=0 AND sorl.LineTypeID IN (0,1)
+      AND (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
+
+    UNION ALL
+
+    SELECT 'OLIVER HARVEY', sor.DocumentNo,
+           CONVERT(varchar(10), sorl.PromisedDeliveryDate, 23),
+           CONVERT(varchar(10), sor.PromisedDeliveryDate, 23),
+           CASE WHEN sorl.PromisedDeliveryDate IS NULL THEN 'line date missing'
+                WHEN sor.PromisedDeliveryDate IS NULL  THEN 'header date missing'
+                WHEN sorl.PromisedDeliveryDate = sor.PromisedDeliveryDate THEN 'same'
+                WHEN sorl.PromisedDeliveryDate < sor.PromisedDeliveryDate THEN 'line EARLIER than header'
+                ELSE 'line LATER than header' END
+    FROM       OliverHarveyLive.dbo.SOPOrderReturn     sor
+    INNER JOIN OliverHarveyLive.dbo.SOPOrderReturnLine sorl ON sorl.SOPOrderReturnID = sor.SOPOrderReturnID
+    WHERE sor.DocumentTypeID=0 AND sor.DocumentStatusID=0 AND sorl.LineTypeID IN (0,1)
+      AND (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
+) x
+GROUP BY Company, Disagreement
+ORDER BY Company, Lines DESC;
