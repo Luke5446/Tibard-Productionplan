@@ -2267,6 +2267,9 @@ function smMatch(hay, srch){
 // Columns read by POSITION, matching the order the SQL emits:
 // 0 LineKey 1 Company 2 SalesOrderNo 3 LineSeq 4 ProductCode 5 ProductDesc
 // 6 Qty 7 PromisedDate 8 Customer 9 Category 10 Manufacturer
+// 11 CustomerOrderNo - the customer's own reference. On a proforma or
+//    inter-company account this is the only place the end customer's name
+//    appears, so it is shown under the account name rather than hidden.
 function smParse(txt){
   var out=[], lines=txt.split('\n');
   for(var i=0;i<lines.length;i++){
@@ -2277,7 +2280,8 @@ function smParse(txt){
     out.push({ key:key, company:(c[1]||'').trim().toUpperCase(), so:(c[2]||'').trim(),
       seq:pn(c[3]), code:(c[4]||'').trim(), desc:(c[5]||'').trim(), qty:pn(c[6]),
       promised:(c[7]||'').trim(), customer:(c[8]||'').trim(),
-      cat:(c[9]||'').trim().toUpperCase(), maker:(c[10]||'').trim() });
+      cat:(c[9]||'').trim().toUpperCase(), maker:(c[10]||'').trim(),
+      custOrder:(c[11]||'').trim() });
   }
   return out;
 }
@@ -2421,7 +2425,7 @@ function smCreateAllShown(){
     var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
     WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
       sm:{ lineKey:o.key, company:o.company, so:o.so, seq:o.seq, part:part,
-           customer:o.customer, desc:o.desc, maker:o.maker,
+           customer:o.customer, custOrder:o.custOrder||'', desc:o.desc, maker:o.maker,
            promised:o.promised, dateAssumed:!hasDate, notes:[] } });
     smSeen[o.key]={what:'wo', ref:ref};
     smLog(o, ref, part);
@@ -2576,7 +2580,8 @@ function smRenderInner(){
             +(warn?'<span class="sm-tag warn">'+esc(o.cat.replace('REVIEW - ',''))+'</span>':'')
             +(smPrintable(o.code)?'<span class="sm-tag ok">prints</span>':'')
             +'<div class="sm-sub">'+esc(o.desc)+'</div></td>'
-          +'<td>'+esc(o.customer||'')+'</td>'
+          +'<td>'+esc(o.customer||'')
+            +(o.custOrder?'<div class="sm-sub">'+esc(o.custOrder)+'</div>':'')+'</td>'
           +'<td class="sm-sub" style="white-space:nowrap">'+esc(o.so.replace(/^0+/,''))+'</td>'
           +'<td style="text-align:right">'+o.qty+'</td>'
           +'<td style="text-align:center;white-space:nowrap">'
@@ -2655,7 +2660,8 @@ function smRenderInner(){
               return '<div class="sm-note"><strong>'+esc(n.code||'Note')+'</strong> '+esc(n.desc)+'</div>';
             }).join('')
           +'</td>'
-          +'<td>'+esc(wo.sm.customer||'')+'</td>'
+          +'<td>'+esc(wo.sm.customer||'')
+            +(wo.sm.custOrder?'<div class="sm-sub">'+esc(wo.sm.custOrder)+'</div>':'')+'</td>'
           +'<td style="text-align:right;color:#6d28d9;font-weight:700">'+r.qty+'</td>'
           +'<td style="text-align:right;'+(r.pipe?'color:#0369a1;font-weight:700':'color:#9ca3af')+'">'+(r.pipe||'&mdash;')+'</td>'
           +'<td'+(late?' style="color:#dc2626;font-weight:700"':'')+'>'+(late?'&#9888; ':'')

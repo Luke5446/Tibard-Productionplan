@@ -18,6 +18,13 @@
    Stock-held items and bought-in goods are dropped here, so they never reach
    the sheet at all.
 
+   COLUMN I is the Sage ACCOUNT name, which on a proforma or inter-company
+   account is not the end customer - order 114816 reads "Oliver Harvey
+   Proforma". COLUMN L carries the customer's own order reference, which is
+   where the real customer name sits ("S012607POH0013294 - Maldon"). Production
+   need both: the account to know whose order it is, the reference to know who
+   it is for.
+
    *** DO NOT FILTER ON MANUFACTURER (column K). *** Logo and charge lines have
    no manufacturer of their own, so filtering on it silently removes the very
    detail production need. That is why this query decides which notes matter
@@ -28,6 +35,7 @@
    Output order is FIXED - the app parses by position:
      A LineKey  B Company  C SalesOrderNo  D LineSeq  E ProductCode
      F ProductDesc  G Qty  H PromisedDate  I Customer  J Category  K Manufacturer
+     L CustomerOrderNo
    ========================================================================= */
 
 WITH lines AS (
@@ -92,7 +100,13 @@ SELECT
         ELSE                                              'BOUGHT IN'
     END                                                         AS Category,
 
-    LTRIM(RTRIM(ISNULL(si.Manufacturer,'')))                    AS Manufacturer
+    LTRIM(RTRIM(ISNULL(si.Manufacturer,'')))                    AS Manufacturer,
+
+    /* The customer's own order reference. On proforma and inter-company
+       accounts this is the only place the end customer's name appears. */
+    LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
+        ISNULL(sor.CustomerDocumentNo,''),
+        CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS CustomerOrderNo
 
 FROM        S200_LIVE.dbo.SOPOrderReturn      sor
 INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
@@ -142,7 +156,10 @@ SELECT
                                                      THEN 'REVIEW - no manufacturer set'
         ELSE                                              'BOUGHT IN'
     END,
-    LTRIM(RTRIM(ISNULL(si.Manufacturer,'')))
+    LTRIM(RTRIM(ISNULL(si.Manufacturer,''))),
+    LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(
+        ISNULL(sor.CustomerDocumentNo,''),
+        CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))
 
 FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
 INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
@@ -157,7 +174,7 @@ WHERE
 )
 
 SELECT LineKey, Company, SalesOrderNo, LineSeq, ProductCode, ProductDesc,
-       Qty, PromisedDate, Customer, Category, Manufacturer
+       Qty, PromisedDate, Customer, Category, Manufacturer, CustomerOrderNo
 FROM   lines l
 WHERE
     /* Anything needing a works order or a decision, plus the inter-company

@@ -197,6 +197,7 @@ paste. Production select the filtered rows (no header) → Ctrl+C → paste.
 | I | `Customer` | |
 | J | `StockHeld` | `YES` / `NO` / `FREE-TEXT` — blank in Sage counts as `NO` |
 | K | `Manufacturer` | Free text; only our own manufacture should raise a works order |
+| L | `CustomerOrderNo` | The customer's own reference — on a proforma or inter-company account, the only place the end customer's name appears |
 
 ### Why a line key, and not the sales order number
 
@@ -398,6 +399,18 @@ All 486 Tibard and 31 Oliver Harvey of them are `LineTypeID = 1`, typed
 free-text lines that by definition have no product record. **Not one standard
 product line fails the code join.** So `si.Code = sorl.ItemCode` is sound and
 Sage's `SOPStandardItemLink` table is not needed.
+
+### The account name is not always the customer
+
+Column I is the Sage **account** name. On a proforma or inter-company account
+that is not who the garments are for — order 114816 reads `Oliver Harvey
+Proforma`, while Sage's own screen shows `Customer order no:
+S012607POH0013294 - Maldon`.
+
+So column L carries `SOPOrderReturn.CustomerDocumentNo`, the customer's own
+reference, and the app shows it beneath the account name in both tables and on
+the printed works order. Production need both: the account to know whose order
+it is, the reference to know who it is for.
 
 ### Promised date comes from the order header, not the line
 
