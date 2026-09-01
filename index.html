@@ -542,6 +542,7 @@ body.planner-mode .planner-wrap{display:block}
 
     <div style="display:flex;gap:7px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
       <button class="btn btn-p edit-only" onclick="smTogglePaste()">&#9998; Paste Special Makes data</button>
+      <button class="btn edit-only" onclick="smOpenImport()" title="Bring a works order across from the costing app">&#128229; Import from costing</button>
       <input id="smSearch" placeholder="Search anything - code, customer, order, description..." oninput="smRender()" style="padding:6px 9px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;min-width:250px">
       <span style="margin-left:auto;font-size:11px;color:#6b7280">Pasting again is safe &mdash; anything raised or dismissed is never offered twice.</span>
     </div>
@@ -1298,8 +1299,8 @@ function printWOP(ref, code, qty, due, notes){
   }
   var st=hit.style, size=hit.size;
   qty=Math.round(qty||0);
-  var chart=STYLE_MASTER.charts[st.chart]||[];
-  var cols=(STYLE_MASTER.chartCols||{})[st.chart]||null;
+  var chart=chartFor(st.chart);
+  var cols=chartColsFor(st.chart);
   var today=new Date().toLocaleDateString('en-GB');
   var dueTxt=due?new Date(due).toLocaleDateString('en-GB'):'';
   var cutTot=qty>0?Math.ceil(qty/st.cutBatch)*st.cutMins:0;
@@ -1369,7 +1370,7 @@ function printWOP(ref, code, qty, due, notes){
   h+='</table><div class="band">TRIMS &amp; LABELS</div><table><tr><th style="width:20%">Trim</th><th style="width:auto">Description</th><th style="width:22%">Sage code</th><th style="width:9%;text-align:center">Qty</th></tr>';
   woTrims(st).forEach(function(t){
     var det=(cw&&cw.thread&&/^thread$/i.test(String(t[0]).trim()))?cw.thread:trimDesc(t);
-    h+='<tr><th>'+e(t[0])+'</th><td>'+e(det)+'</td>'
+    h+='<tr><th>'+e(t[0]||t[3]||'Trim')+'</th><td>'+e(det)+'</td>'
       +'<td><strong>'+(t[3]?e(t[3]):'<span style="color:#C00000;font-weight:400">no code yet</span>')+'</strong></td>'
       +'<td style="text-align:center;font-weight:700">'+((t[2]!=null&&t[2]!=='')?e(String(t[2])):'')+'</td></tr>'; });
   h+='</table><p class="note">Generated from the Buffer Stock app style master &mdash; print only, no edits.</p></div>';
@@ -1959,7 +1960,7 @@ function publishData(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
   if(!rows.length){ alert('Load buffer data first.'); return; }
   var state={rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,styleEdits:styleEdits,
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,
     savedAt:new Date().toISOString()};
   var blob=new Blob([JSON.stringify(state)],{type:'application/json'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
@@ -2151,7 +2152,7 @@ function dbSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveState,1200)
 function saveState(){
   try{
     localStorage.setItem('tibard_production',JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,styleEdits:styleEdits,
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,
       savedAt:new Date().toISOString()}));
     var ind=document.getElementById('saveInd'); if(ind){ind.innerHTML='✓ Saved';setTimeout(function(){ind.textContent='';},2000);}
   }catch(e){console.log('Save failed:',e);}
@@ -2164,7 +2165,7 @@ function loadState(){
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
-    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; styleEdits=s.styleEdits||{};
+    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
     // Anything left in the old review list becomes a queue item needing a decision.
     (s.smReview||[]).forEach(function(o){
       if(!smSeen[o.key] && !smPending.some(function(p){return p.key===o.key;})) smPending.push(o);
@@ -2182,7 +2183,7 @@ function clearAll(){ if(!IS_EDITOR) return;
   try{
     localStorage.removeItem('tibard_production');
     rows=[];WOs=[];completedWOs=[];
-    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};styleEdits={};
+    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};styleEdits={};chartEdits={};chartColEdits={};
     document.getElementById('dataWrap').classList.add('hidden');
     document.getElementById('uzone').classList.remove('hidden');
     document.getElementById('lastUpdated').textContent='';
@@ -2842,6 +2843,111 @@ function seRenderTrm(){
   document.getElementById('seTrmBox').innerHTML=h;
 }
 
+
+// ══════════════════════════════════════════════════════════════════════════
+// IMPORT FROM THE COSTING APP
+// The costing app's "Convert to product…" produces <CODE>_product.json, already
+// shaped for this app. Importing it beats re-typing: the costing app owns the
+// trims and fabrics catalogues and the search over them, so the data should
+// travel rather than be entered twice.
+//
+// Field mapping, where the two differ:
+//   costing trims  [sageCode, description, qty]
+//   here           [label, detail, qty, sageCode, cost]
+//   Cost is deliberately absent - it stays off the works order.
+//   Measurements arrive as chartRows/chartCols and become a size chart.
+// ══════════════════════════════════════════════════════════════════════════
+var chartEdits={}, chartColEdits={};
+function chartFor(name){ return chartEdits[name]||STYLE_MASTER.charts[name]||[]; }
+function chartColsFor(name){ return chartColEdits[name]||(STYLE_MASTER.chartCols||{})[name]||null; }
+
+function smOpenImport(){
+  if(!IS_EDITOR){ alert('View-only mode.'); return; }
+  document.getElementById('impTA').value='';
+  document.getElementById('impResult').innerHTML='';
+  document.getElementById('importModal').classList.add('open');
+  document.getElementById('impTA').focus();
+}
+function smCloseImport(){ document.getElementById('importModal').classList.remove('open'); }
+
+function smImportFile(){
+  var inp=document.createElement('input');
+  inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){ document.getElementById('impTA').value=r.result; smDoImport(); };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+function smDoImport(){
+  if(!IS_EDITOR) return;
+  var txt=(document.getElementById('impTA').value||'').trim();
+  if(!txt){ alert('Paste the costing app export, or choose the _product.json file.'); return; }
+  var data;
+  try{ data=JSON.parse(txt); }
+  catch(err){ alert('That is not valid JSON.\n\nIn the costing app press "Convert to product…", then copy the export box or download the _product.json file.\n\n'+err.message); return; }
+  var list=Array.isArray(data)?data:[data];
+  var done=[], skipped=[];
+  list.forEach(function(d){
+    if(!d || !d.code){ skipped.push('an entry with no product code'); return; }
+    var code=String(d.code).toUpperCase();
+    var st={
+      code:code,
+      name:d.name||code,
+      desc:d.desc||'',
+      lectra:d.lectra||'',
+      variant:d.variant||'',
+      chart:d.chart||'',
+      /* costing gives [name, code, location]; qty and cost are not exported */
+      fabrics:(d.fabrics||[]).map(function(f){
+        return [f[0]||'', f[1]||'', f[2]||'', null, null];
+      }),
+      /* costing gives [sageCode, description, qty] - note the code comes first */
+      trims:(d.trims||[]).map(function(t){
+        var code2=t[0]||'', desc=t[1]||'', qty=(t[2]===''||t[2]==null)?'':t[2];
+        return ['', desc, qty, code2, null];
+      }),
+      mfg:d.mfg||[], fin:d.fin||[],
+      machMins:(d.machMins==null?null:d.machMins),
+      finMins:(d.finMins==null?null:d.finMins),
+      cutBatch:d.cutBatch||1, cutMins:d.cutMins||0,
+      oneSize:!!d.oneSize,
+      /* cutting room detail - printed, not otherwise used here */
+      markerMain:d.markerMain||'', markerMesh:d.markerMesh||'',
+      markerLen:d.markerLen||null, layQty:d.layQty||null,
+      hasMesh:!!d.hasMesh, meshLen:d.meshLen||null, meshLay:d.meshLay||null,
+      sr:d.sr||'', srVersion:d.srVersion||null, customer:d.customer||'',
+      importedAt:d2s(now())
+    };
+    if(d.chart && d.chartRows && d.chartRows.length){
+      chartEdits[d.chart]=d.chartRows;
+      if(d.chartCols) chartColEdits[d.chart]=d.chartCols;
+    }
+    styleEdits[code]=st;
+    done.push({code:code, sr:d.sr||'', trims:st.trims.length, fabrics:st.fabrics.length,
+               meas:(d.chartRows||[]).length, noCode:st.trims.filter(function(t){return !t[3];}).length});
+  });
+  saveState();
+  if(rows.length){ renderTable(); }
+  renderWOCards(); smRender();
+  var h='';
+  done.forEach(function(d){
+    h+='<div style="padding:7px 0;border-bottom:1px solid #e5e7eb">'
+      +'<strong>'+esc(d.code)+'</strong>'+(d.sr?' <span style="color:#6b7280">from '+esc(d.sr)+'</span>':'')
+      +'<div style="font-size:11.5px;color:#4b5563;margin-top:2px">'
+      +d.fabrics+' fabric'+(d.fabrics===1?'':'s')+' &middot; '+d.trims+' trim'+(d.trims===1?'':'s')
+      +(d.meas?' &middot; '+d.meas+' measurement'+(d.meas===1?'':'s'):'')
+      +(d.noCode?' &middot; <span style="color:#b45309;font-weight:700">'+d.noCode+' trim'+(d.noCode===1?'':'s')+' with no Sage code</span>':'')
+      +'</div></div>';
+  });
+  skipped.forEach(function(s){ h+='<div style="color:#b91c1c;padding:5px 0">Skipped '+esc(s)+'.</div>'; });
+  if(done.length) h+='<p style="font-size:11.5px;color:#6b7280;margin:9px 0 0">Saved. These print straight away, and reach the team on the next <strong>Publish</strong>.</p>';
+  document.getElementById('impResult').innerHTML=h||'<p style="color:#b91c1c">Nothing imported.</p>';
+}
+
 var smEditCode=null, smEditThenPrint=null;
 
 function smWorksOrder(ref){
@@ -3258,6 +3364,32 @@ Object.assign(window,{openPlanner:openPlanner,closePlanner:closePlanner,plnrRefr
       <button class="btn" onclick="smCloseStyleEditor()">Cancel</button>
       <button class="btn" onclick="smSaveStyle(false)">&#10003; Save</button>
       <button class="btn btn-p" onclick="smSaveStyle(true)">&#10003; Save &amp; print works order</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import from the costing app -->
+<div class="modal-bg" id="importModal">
+  <div class="modal-box" style="width:min(720px,96vw)">
+    <div class="mhdr"><h3>&#128229; Import works order data from the costing app</h3><button class="mclose" onclick="smCloseImport()">&times;</button></div>
+    <div class="mbody">
+      <p style="font-size:12px;color:#4b5563;margin:0 0 10px">
+        In the costing app, press <strong>Convert to product&hellip;</strong> on the approved SR. It gives you an export box to copy
+        and a <code>&lt;CODE&gt;_product.json</code> file to download. Either works here &mdash; paste it, or choose the file.
+      </p>
+      <textarea id="impTA" rows="9" placeholder="Paste the costing app export here…" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace"></textarea>
+      <div style="display:flex;gap:7px;margin-top:8px">
+        <button class="btn btn-p" onclick="smDoImport()">&#10003; Import</button>
+        <button class="btn" onclick="smImportFile()">&#128193; Choose _product.json&hellip;</button>
+      </div>
+      <div id="impResult" style="margin-top:12px;font-size:12.5px"></div>
+      <p style="font-size:11px;color:#6b7280;margin:12px 0 0">
+        Fabrics, trims with their Sage codes, measurements, manufacturing and finishing steps, times and cutting room detail all come across.
+        Costs stay in the costing app &mdash; they are not printed on a works order.
+      </p>
+    </div>
+    <div style="padding:10px 16px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;flex-shrink:0">
+      <button class="btn" onclick="smCloseImport()">Close</button>
     </div>
   </div>
 </div>
