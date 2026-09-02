@@ -27,7 +27,7 @@ const exp={code:"OHAPP0785191",name:"Forest green bib apron",desc:"Adjustable ne
  });
  console.log('no data ->', JSON.stringify(noData));
 
- const imp=await p.evaluate(j=>{ smOpenImport(); document.getElementById('impTA').value=JSON.stringify(j); smDoImport();
+ const imp=await p.evaluate(j=>{ smOpenImport(); smDoImport(JSON.stringify(j));
    return {fab:styleEdits['OHAPP0785191'].fabrics[0], printable:smPrintable('OHAPP0785191')}; }, exp);
  await p.waitForTimeout(200);
  console.log('after import, fabric row:', JSON.stringify(imp.fab), 'printable:', imp.printable);
