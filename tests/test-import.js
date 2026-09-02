@@ -26,14 +26,13 @@ const exp = {
 
  const r=await p.evaluate(j=>{
    smOpenImport();
-   document.getElementById('impTA').value=JSON.stringify(j);
-   smDoImport();
+   smDoImport(JSON.stringify(j));
    const st=styleEdits['OHAPB0631DSTIE01'];
    return {saved:!!st, trims:st.trims.length, fabrics:st.fabrics.length,
      firstTrim:st.trims[0], codedTrim:st.trims[1],
      meas:(chartEdits['OHAPB0631DSTIE01-MEAS']||[]).length,
      printable:smPrintable('OHAPB0631DSTIE01'),
-     result:document.getElementById('impResult').innerText.replace(/\s+/g,' ').slice(0,150)};
+     result:'(modal closes; confirmation alert)'};
  }, exp);
  console.log('imported:', JSON.stringify({saved:r.saved,trims:r.trims,fabrics:r.fabrics,meas:r.meas,printable:r.printable}));
  console.log('  trim with no Sage code ->', JSON.stringify(r.firstTrim));

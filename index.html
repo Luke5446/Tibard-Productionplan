@@ -2873,10 +2873,8 @@ function chartColsFor(name){ return chartColEdits[name]||(STYLE_MASTER.chartCols
 
 function smOpenImport(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
-  document.getElementById('impTA').value='';
   document.getElementById('impResult').innerHTML='';
   document.getElementById('importModal').classList.add('open');
-  document.getElementById('impTA').focus();
 }
 function smCloseImport(){ document.getElementById('importModal').classList.remove('open'); }
 
@@ -2886,19 +2884,19 @@ function smImportFile(){
   inp.onchange=function(){
     var f=inp.files&&inp.files[0]; if(!f) return;
     var r=new FileReader();
-    r.onload=function(){ document.getElementById('impTA').value=r.result; smDoImport(); };
+    r.onload=function(){ smDoImport(r.result); };
     r.readAsText(f);
   };
   inp.click();
 }
 
-function smDoImport(){
+function smDoImport(txt){
   if(!IS_EDITOR) return;
-  var txt=(document.getElementById('impTA').value||'').trim();
-  if(!txt){ alert('Paste the costing app export, or choose the _product.json file.'); return; }
+  txt=String(txt||'').trim();
+  if(!txt){ alert('Choose the _product.json file downloaded from the costing app.'); return; }
   var data;
   try{ data=JSON.parse(txt); }
-  catch(err){ alert('That is not valid JSON.\n\nIn the costing app press "Convert to product…", then copy the export box or download the _product.json file.\n\n'+err.message); return; }
+  catch(err){ alert('That is not a costing app export.\n\nIn the costing app press "Convert to product…" then "Download for buffer app", and choose the downloaded _product.json file here.\n\n'+err.message); return; }
   var list=Array.isArray(data)?data:[data];
   var done=[], skipped=[];
   list.forEach(function(d){
@@ -2947,23 +2945,20 @@ function smDoImport(){
   saveState();
   if(rows.length){ renderTable(); }
   renderWOCards(); smRender();
-  var h='';
-  done.forEach(function(d){
-    h+='<div style="padding:7px 0;border-bottom:1px solid #e5e7eb">'
-      +'<strong>'+esc(d.code)+'</strong>'+(d.sr?' <span style="color:#6b7280">from '+esc(d.sr)+'</span>':'')
-      +'<div style="font-size:11.5px;color:#4b5563;margin-top:2px">'
-      +d.fabrics+' fabric'+(d.fabrics===1?'':'s')+' &middot; '+d.trims+' trim'+(d.trims===1?'':'s')
-      +(d.meas?' &middot; '+d.meas+' measurement'+(d.meas===1?'':'s'):'')
-      +(d.noCode?' &middot; <span style="color:#b45309;font-weight:700">'+d.noCode+' trim'+(d.noCode===1?'':'s')+' with no Sage code</span>':'')
-      +'</div></div>';
-  });
-  if(done.length) h='<div style="background:#ecfdf5;border:1.5px solid #10b981;border-radius:8px;padding:10px 12px">'
-    +'<div style="font-weight:800;color:#065f46;font-size:14px">&#10003; Imported into this app</div>'
-    +h
-    +'<p style="font-size:11.5px;color:#047857;margin:9px 0 0">Now listed under <strong>&#128229; Imported from costing</strong> on the Special Makes tab. It prints straight away and reaches the team on the next <strong>Publish</strong>.</p>'
-    +'</div>';
-  skipped.forEach(function(s){ h+='<div style="color:#b91c1c;padding:5px 0">Skipped '+esc(s)+'.</div>'; });
-  document.getElementById('impResult').innerHTML=h||'<p style="color:#b91c1c">Nothing imported.</p>';
+  if(done.length){
+    smCloseImport();
+    var lines=done.map(function(d){
+      return '• '+d.code+(d.sr?' (from '+d.sr+')':'')+' — '
+        +d.fabrics+' fabric'+(d.fabrics===1?'':'s')+', '+d.trims+' trim'+(d.trims===1?'':'s')
+        +(d.meas?', '+d.meas+' measurement'+(d.meas===1?'':'s'):'')
+        +(d.noCode?' — ⚠ '+d.noCode+' trim'+(d.noCode===1?'':'s')+' with no Sage code':'');
+    });
+    alert('✓ Imported successfully\n\n'+lines.join('\n')
+      +(skipped.length?'\n\nSkipped '+skipped.join(', ')+'.':'')
+      +'\n\nNow listed under 📥 Imported from costing on the Special Makes tab — it prints straight away and reaches the team on the next Publish.');
+  } else {
+    document.getElementById('impResult').innerHTML='<p style="color:#b91c1c">Nothing imported'+(skipped.length?' — skipped '+skipped.map(esc).join(', '):'')+'.</p>';
+  }
 }
 
 // Who a special make is for. A special code belongs to ONE customer - if
@@ -3274,13 +3269,11 @@ Object.assign(window,{openPlanner:openPlanner,closePlanner:closePlanner,plnrRefr
     <div class="mhdr"><h3>&#128229; Import works order data from the costing app</h3><button class="mclose" onclick="smCloseImport()">&times;</button></div>
     <div class="mbody">
       <p style="font-size:12px;color:#4b5563;margin:0 0 10px">
-        In the costing app, press <strong>Convert to product&hellip;</strong> on the approved SR. It gives you an export box to copy
-        and a <code>&lt;CODE&gt;_product.json</code> file to download. Either works here &mdash; paste it, or choose the file.
+        In the costing app, press <strong>Convert to product&hellip;</strong> on the approved SR, then <strong>Download for buffer app</strong> &mdash;
+        it saves a <code>&lt;CODE&gt;_product.json</code> file. Choose that file here.
       </p>
-      <textarea id="impTA" rows="9" placeholder="Paste the costing app export here…" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace"></textarea>
       <div style="display:flex;gap:7px;margin-top:8px">
-        <button class="btn btn-p" onclick="smDoImport()">&#10003; Import</button>
-        <button class="btn" onclick="smImportFile()">&#128193; Choose _product.json&hellip;</button>
+        <button class="btn btn-p" onclick="smImportFile()">&#128193; Choose _product.json&hellip;</button>
       </div>
       <div id="impResult" style="margin-top:12px;font-size:12.5px"></div>
       <p style="font-size:11px;color:#6b7280;margin:12px 0 0">
