@@ -549,6 +549,7 @@ body.planner-mode .planner-wrap{display:block}
     <div id="smPendingList"></div>
     <div id="smList"></div>
     <div id="smDismissedList"></div>
+    <div id="smImportedList"></div>
 
   </div>
 
@@ -2541,9 +2542,9 @@ function smToggleMonth(k){ smOpenMonths[k]=!smOpenMonths[k]; smRender(); }
 // Which of the two lists are open. This is one person's view preference, not
 // production data, so it is kept in its own local key and stays out of
 // data.json - the PM collapsing a list should not collapse it for everyone.
-var smOpen={pend:true, live:true};
+var smOpen={pend:true, live:true, imp:true};
 try{ var _so=JSON.parse(localStorage.getItem('tibard_sm_sections')||'null');
-     if(_so){ smOpen.pend=_so.pend!==false; smOpen.live=_so.live!==false; } }catch(e){}
+     if(_so){ smOpen.pend=_so.pend!==false; smOpen.live=_so.live!==false; smOpen.imp=_so.imp!==false; } }catch(e){}
 function smToggleSec(k){
   smOpen[k]=!smOpen[k];
   try{ localStorage.setItem('tibard_sm_sections',JSON.stringify(smOpen)); }catch(e){}
@@ -2749,6 +2750,32 @@ function smRenderInner(){
             +'</div>';
         },'drop-'):'');
   }
+
+  // ── specials imported from the costing app ──
+  var il=document.getElementById('smImportedList');
+  if(il){
+    var imps=Object.keys(styleEdits).map(function(k){ return styleEdits[k]; })
+      .filter(function(st){ return st && st.importedAt; });
+    if(q){
+      var ql=q.toLowerCase();
+      imps=imps.filter(function(st){
+        return ((st.code||'')+' '+(st.name||'')+' '+(st.customer||'')+' '+(st.sr||'')).toLowerCase().indexOf(ql)>=0;
+      });
+    }
+    imps.sort(function(a,b){ return a.importedAt<b.importedAt?1:-1; });
+    if(!imps.length){ il.innerHTML=''; }
+    else {
+      il.innerHTML=smBanner('imp','&#128229; Imported from costing ('+imps.length+')','')
+        +(!smOpen.imp?'':imps.map(function(st){
+          return '<div class="sm-dism"><span><strong>'+esc(st.code)+'</strong>'
+            +(smPrintable(st.code)?'<span class="sm-tag ok">prints</span>':'')
+            +' &middot; '+esc(st.name||'')
+            +(st.customer?' &middot; '+esc(st.customer):'')
+            +(st.sr?' &middot; from '+esc(st.sr)+((st.srVersion||1)>1?' V'+st.srVersion:''):'')
+            +'</span><span>imported '+esc(fmtD(st.importedAt))+'</span></div>';
+        }).join(''));
+    }
+  }
 }
 var smHistShow=false;
 function smToggleHist(){ smHistShow=!smHistShow; smRender(); }
@@ -2930,8 +2957,12 @@ function smDoImport(){
       +(d.noCode?' &middot; <span style="color:#b45309;font-weight:700">'+d.noCode+' trim'+(d.noCode===1?'':'s')+' with no Sage code</span>':'')
       +'</div></div>';
   });
+  if(done.length) h='<div style="background:#ecfdf5;border:1.5px solid #10b981;border-radius:8px;padding:10px 12px">'
+    +'<div style="font-weight:800;color:#065f46;font-size:14px">&#10003; Imported into this app</div>'
+    +h
+    +'<p style="font-size:11.5px;color:#047857;margin:9px 0 0">Now listed under <strong>&#128229; Imported from costing</strong> on the Special Makes tab. It prints straight away and reaches the team on the next <strong>Publish</strong>.</p>'
+    +'</div>';
   skipped.forEach(function(s){ h+='<div style="color:#b91c1c;padding:5px 0">Skipped '+esc(s)+'.</div>'; });
-  if(done.length) h+='<p style="font-size:11.5px;color:#6b7280;margin:9px 0 0">Saved. These print straight away, and reach the team on the next <strong>Publish</strong>.</p>';
   document.getElementById('impResult').innerHTML=h||'<p style="color:#b91c1c">Nothing imported.</p>';
 }
 
@@ -3024,6 +3055,7 @@ function renderTrimCosts(){
     +'<th style="text-align:right;background:#44546A;color:#fff;padding:5px 8px">Line &pound;</th></tr>';
   rows.forEach(function(r){
     var label=r[0], code=r[1], qty=r[2], price=r[3];
+    if(price==null&&code&&SAGE_TRIMS[code]) price=SAGE_TRIMS[code].c;
     var desc=code&&SAGE_TRIMS[code]?SAGE_TRIMS[code].n:'';
     var line=(qty!==''&&qty!=null&&price!=null)?qty*price:null;
     if(line!=null) tot+=line;
