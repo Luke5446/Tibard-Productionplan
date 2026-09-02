@@ -2544,7 +2544,7 @@ function smToggleMonth(k){ smOpenMonths[k]=!smOpenMonths[k]; smRender(); }
 // data.json - the PM collapsing a list should not collapse it for everyone.
 var smOpen={pend:true, live:true, imp:true};
 try{ var _so=JSON.parse(localStorage.getItem('tibard_sm_sections')||'null');
-     if(_so){ smOpen.pend=_so.pend!==false; smOpen.live=_so.live!==false; } }catch(e){}
+     if(_so){ smOpen.pend=_so.pend!==false; smOpen.live=_so.live!==false; smOpen.imp=_so.imp!==false; } }catch(e){}
 function smToggleSec(k){
   smOpen[k]=!smOpen[k];
   try{ localStorage.setItem('tibard_sm_sections',JSON.stringify(smOpen)); }catch(e){}
@@ -3055,6 +3055,7 @@ function renderTrimCosts(){
     +'<th style="text-align:right;background:#44546A;color:#fff;padding:5px 8px">Line &pound;</th></tr>';
   rows.forEach(function(r){
     var label=r[0], code=r[1], qty=r[2], price=r[3];
+    if(price==null&&code&&SAGE_TRIMS[code]) price=SAGE_TRIMS[code].c;
     var desc=code&&SAGE_TRIMS[code]?SAGE_TRIMS[code].n:'';
     var line=(qty!==''&&qty!=null&&price!=null)?qty*price:null;
     if(line!=null) tot+=line;
