@@ -2556,9 +2556,10 @@ function smPipelineUnits(){
 var smOpenMonths={};
 function smToggleMonth(k){ smOpenMonths[k]=!smOpenMonths[k]; smRender(); }
 
-// Which of the two lists are open. This is one person's view preference, not
-// production data, so it is kept in its own local key and stays out of
-// data.json - the PM collapsing a list should not collapse it for everyone.
+// Which sections of the Special Makes tab are open. This is one person's view
+// preference, not production data, so it is kept in its own local key and
+// stays out of data.json - the PM collapsing a list should not collapse it for
+// everyone. Add a key here to make a new section collapsible.
 var smOpen={pend:true, live:true, imp:true};
 try{ var _so=JSON.parse(localStorage.getItem('tibard_sm_sections')||'null');
      if(_so){ smOpen.pend=_so.pend!==false; smOpen.live=_so.live!==false; smOpen.imp=_so.imp!==false; } }catch(e){}
