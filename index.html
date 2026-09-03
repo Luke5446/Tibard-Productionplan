@@ -1295,6 +1295,7 @@ function printWOP(ref, code, qty, due, sm){
     return false;
   }
   var st=hit.style, size=hit.size;
+  var hasBrand=(st.brandType&&st.brandType!=='None')||!!st.logoImg||!!st.brandPlace;
   qty=Math.round(qty||0);
   var chart=chartFor(st.chart);
   var cols=chartColsFor(st.chart);
@@ -1359,19 +1360,28 @@ function printWOP(ref, code, qty, due, sm){
     +'</table>'
     +'<div class="band" style="display:flex;justify-content:space-between"><span>GARMENT</span><span>LOCATION</span></div><table><tr><td style="font-weight:700">'+e(st.name)+'</td><td style="width:20%;text-align:center;font-weight:700;border-left:1px solid #999">'+e(stockLoc)+'</td></tr></table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(st.desc)+'</td></tr></table>'
-    /* branding spec imported from the costing app - the artwork itself, not
-       just the Sage note lines, so the machinist sees what goes on the garment */
-    +(((st.brandType&&st.brandType!=='None')||st.logoImg||st.brandPlace)
-      ? '<div class="band">CUSTOMER BRANDING</div><table>'
-        +'<tr><th>Type</th><td>'+e(st.brandType||'\u2014')+'</td></tr>'
-        +(st.brandPlace?'<tr><th>Placement</th><td>'+e(st.brandPlace)+'</td></tr>':'')
-        +(st.logoImg?'<tr><th>Customer artwork</th><td><img src="'+st.logoImg+'" alt="customer artwork" style="max-height:80px;max-width:240px"></td></tr>':'')
+    /* branding spec imported from the costing app, with the sales order's own
+       logo/personalisation lines beside the artwork - the machinist sees the
+       artwork and the order's logo instructions together. A branded garment on
+       a special make order with NO note lines prints a warning instead of
+       silence: that means the sheet paste did not carry the LOGOAPPLICATION
+       rows (or this browser never saw that paste). */
+    +(hasBrand
+      ? '<div class="band">CUSTOMER BRANDING &amp; LOGO</div><table>'
+        +'<tr><th>Type</th><td colspan="2">'+e(st.brandType||'\u2014')+(st.brandPlace?' \u2014 '+e(st.brandPlace):'')+'</td></tr>'
+        +'<tr><th>Customer artwork</th>'
+        +'<td style="width:32%;text-align:center;vertical-align:middle">'+(st.logoImg?'<img src="'+st.logoImg+'" alt="customer artwork" style="max-height:90px;max-width:220px">':'\u2014')+'</td>'
+        +'<td style="background:#FFF8E1">'
+          +((notes&&notes.length)
+            ? notes.map(function(n,ix){ return '<div style="margin:2px 0"><strong>'+(ix+1)+'. '+e(n.code||'Note')+':</strong> '+e(n.desc)+'</div>'; }).join('')
+            : (sm?'<span style="color:#b45309;font-weight:700">&#9888; No logo lines from the Special Makes sheet are attached to this order. If Sage has LOGOAPPLICATION lines for it, re-paste the full sheet (columns A\u2013K, unfiltered) and reprint.</span>':'\u2014'))
+        +'</td></tr>'
         +'</table>'
       : '')
-    /* Personalisation, when this works order came off a sales order that has
-       logo or charge lines. Printed here so the spec travels with the job
-       instead of being looked up in Sage. */
-    +((notes&&notes.length)
+    /* Personalisation on its own when the garment itself has no branding spec.
+       Printed here so the spec travels with the job instead of being looked
+       up in Sage. */
+    +((!hasBrand&&notes&&notes.length)
       ? '<div class="band">LOGO / PERSONALISATION</div><table>'
         +notes.map(function(n,ix){ return '<tr><td class="num">'+(ix+1)+'</td><th style="width:22%">'
           +e(n.code||'Note')+'</th><td style="background:#FFF8E1">'+e(n.desc)+'</td></tr>'; }).join('')
