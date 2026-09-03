@@ -289,7 +289,9 @@ body.planner-mode .planner-wrap{display:block}
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table class="wh-tbl"><thead><tr>
           <th style="width:28px;text-align:center"><input type="checkbox" class="wh-cb" id="whSelectAll" onclick="whToggleAll(this.checked)"></th>
-          <th>Completed</th><th>WO Ref</th><th>Code</th><th>Description</th>
+          <th style="cursor:pointer" title="Click to sort by completed date" onclick="whSortBy('date')">Completed <span id="whSortDate"></span></th>
+          <th style="cursor:pointer" title="Click to sort by WO number" onclick="whSortBy('ref')">WO Ref <span id="whSortRef"></span></th>
+          <th>Code</th><th>Description</th>
           <th style="text-align:right">Qty</th><th class="ns" style="text-align:center">Action</th>
         </tr></thead><tbody id="whPendingBody"></tbody></table>
       </div>
@@ -1850,6 +1852,14 @@ function saveBooked(){
   try{ localStorage.setItem('tibard_production_booked',JSON.stringify(bookedMap)); }catch(e){}
 }
 
+/* Pending table sort: click "Completed" for date order (newest first, click again to flip),
+   click "WO Ref" for WO number order (smallest first, click again to flip). */
+var whPendSort={key:'date', dir:'desc'};
+function whSortBy(key){
+  if(whPendSort.key===key){ whPendSort.dir=(whPendSort.dir==='asc'?'desc':'asc'); }
+  else { whPendSort={key:key, dir:key==='ref'?'asc':'desc'}; }
+  renderWarehouse();
+}
 function renderWarehouse(){
   if(!IS_WAREHOUSE) return;
   var sa=document.getElementById('whUpdated');
@@ -1863,8 +1873,15 @@ function renderWarehouse(){
   if(!pending.length){
     pb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:1.4rem;color:#6b7280">Nothing waiting to be booked in</td></tr>';
   } else {
-    // newest first
-    pending.sort(function(a,b){ return (b.completed||'').localeCompare(a.completed||''); });
+    if(whPendSort.key==='ref'){
+      var woNum=function(c){ var m=String(c.ref||'').match(/\d+/); return m?parseInt(m[0],10):Infinity; };
+      pending.sort(function(a,b){ var d=woNum(a)-woNum(b); if(!d) d=String(a.ref||'').localeCompare(String(b.ref||'')); return whPendSort.dir==='asc'?d:-d; });
+    } else {
+      pending.sort(function(a,b){ var d=(a.completed||'').localeCompare(b.completed||''); return whPendSort.dir==='asc'?d:-d; });
+    }
+    var arrows={date:document.getElementById('whSortDate'), ref:document.getElementById('whSortRef')};
+    if(arrows.date) arrows.date.innerHTML=whPendSort.key==='date'?(whPendSort.dir==='asc'?'&#9650;':'&#9660;'):'';
+    if(arrows.ref) arrows.ref.innerHTML=whPendSort.key==='ref'?(whPendSort.dir==='asc'?'&#9650;':'&#9660;'):'';
     pb.innerHTML=pending.map(function(c){
       var k=esc(whKey(c));
       return '<tr><td style="text-align:center"><input type="checkbox" class="wh-cb wh-pend" data-k="'+k+'"></td>'
