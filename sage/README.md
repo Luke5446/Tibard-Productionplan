@@ -12,6 +12,7 @@ Excel works order + Google Sheet step the sales office does today.
 | `00-discovery.sql` | The schema and data investigation behind it, kept as a record of how each rule was established. |
 | `08-find-analysis-code.sql` | Profiles all 20 analysis code slots — how the stock-held flag was located. |
 | `20-validate-against-known-specials.sql` | Runs real codes from the manual sheet through the rules. Re-run it after any rule change. |
+| `30-why-is-this-code-missing.sql` | **Run this when a code does not appear on the sheet.** Put the code in and it names the reason. |
 
 ---
 
@@ -492,7 +493,37 @@ Flagging these now because they change how the Special Makes tab is built:
 
 ---
 
-## 5. Gotchas worth knowing
+## 5. A code has a live order but is not on the sheet
+
+Run **`30-why-is-this-code-missing.sql`** — put the code at the top and it
+returns the reason in plain English. Do not go hunting; the query drops very
+little, so the list of possible causes is short.
+
+Nine times in ten it is the **stock-held analysis code**. A new product code
+copied from an existing one inherits `Yes`, which classifies it as stock held
+and drops it before it reaches the sheet. Set it to **No or blank** on the
+product record — Tibard reads **AnalysisCode3**, Oliver Harvey **AnalysisCode7**.
+
+The complete list of things that make a code disappear:
+
+| Cause | Fix |
+|---|---|
+| Stock-held analysis code says `Yes` | Set it to No or blank on the product |
+| Manufacturer set to anything but Tibard or Oliver Harvey | Set the manufacturer |
+| `DocumentStatusID` is not 0 | The order is not live — on hold, parked or cancelled |
+| `DocumentTypeID` is not 0 | It is a return or a credit, not an order |
+| Nothing outstanding | The line is already fully despatched |
+| The sheet was not refreshed | Data → Refresh All |
+
+**A code the stock file has never heard of is not on this list.** Those come
+through as `REVIEW - code not in stock file`, deliberately: an unknown code is
+the case most likely to need a person, so it is shown rather than hidden. The
+same goes for a product with no manufacturer set — `REVIEW - no manufacturer
+set`. If a code is missing *entirely*, it is one of the six above.
+
+---
+
+## 6. Gotchas worth knowing
 
 - **Dates.** Kept as text `yyyy-mm-dd` on purpose. Pasting a real Excel date into
   a browser gives you a 5-digit serial number or a dd/mm vs mm/dd guess. Text in
