@@ -19,7 +19,7 @@ const exp={code:"OHAPB0631DSTIE01",name:"Biscuit waist apron",desc:"2 x hip pock
  await p.evaluate(t=>{document.getElementById('smTA').value=t; smLoadPaste();},paste); await p.waitForTimeout(150);
  const before=await p.evaluate(()=>document.querySelector('#smPendingList .sm-tbl tbody tr td:nth-child(3)').innerText.trim());
  console.log('before import (Sage blank):', JSON.stringify(before));
- await p.evaluate(j=>{smOpenImport(); document.getElementById('impTA').value=JSON.stringify(j); smDoImport();}, exp);
+ await p.evaluate(j=>{smOpenImport(); smDoImport(JSON.stringify(j));}, exp);
  await p.waitForTimeout(200);
  const after=await p.evaluate(()=>document.querySelector('#smPendingList .sm-tbl tbody tr td:nth-child(3)').innerText.trim());
  console.log('after import            :', JSON.stringify(after));
