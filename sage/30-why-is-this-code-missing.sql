@@ -250,7 +250,10 @@ CROSS APPLY (VALUES
         (20, ISNULL(si.AnalysisCode20,''))
 ) v(SlotNo, Val)
 WHERE LTRIM(RTRIM(si.Code)) = @Code
-  AND NULLIF(v.Val,'') IS NOT NULL
+  /* The slot the query reads is ALWAYS shown, even when empty. An empty slot
+     produced no row at all before, so the single most important line - "the
+     flag the rule looks at is blank" - was the one you could not see. */
+  AND (NULLIF(v.Val,'') IS NOT NULL OR v.SlotNo = 3)
 
 UNION ALL
 
@@ -283,6 +286,6 @@ CROSS APPLY (VALUES
         (20, ISNULL(si.AnalysisCode20,''))
 ) v(SlotNo, Val)
 WHERE LTRIM(RTRIM(si.Code)) = @Code
-  AND NULLIF(v.Val,'') IS NOT NULL
+  AND (NULLIF(v.Val,'') IS NOT NULL OR v.SlotNo = 7)
 
 ORDER BY Company, SlotNo;
