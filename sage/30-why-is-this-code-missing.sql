@@ -2,14 +2,24 @@
    WHY IS THIS CODE NOT ON THE SPECIAL MAKES SHEET?    Sage 200 Professional
    Server TIB-SQL-002. Reads both companies, same as 10-special-makes-live.sql.
 
-   Put the product code in @Code below and run it. It returns two grids:
+   Put the product code in @Code below and run it. It returns three grids:
 
      1. HOW THE PRODUCT IS SET UP   - and what that alone would classify it as
      2. EVERY ORDER LINE FOR IT     - with the reason each one is or is not on
                                       the sheet, in plain English
+     3. EVERY ANALYSIS CODE SLOT    - every populated slot, both companies,
+                                      values shown in [brackets]
 
    Read grid 2's REASON column first. If it says the line SHOULD be there, the
    sheet just needs refreshing.
+
+   IT ALSO ANSWERS THE OPPOSITE QUESTION - a stock item appearing on the sheet
+   when it should not. That is nearly always the stock-held flag not saying
+   what you think it says. Grid 1's StockHeldFlag is shown in [brackets] so
+   leading spaces and short forms are visible, and MatchesStockHeldRule applies
+   the live query's test exactly: only [Yes] counts. [Y], [ Yes] and [] do not,
+   and the item is then treated as a special make. Grid 3 shows every slot, so
+   if the flag was entered in a different one you will see it there.
 
    A code that is genuinely missing can only be missing for one of these
    reasons, because everything else - including a code the stock file has never
@@ -22,7 +32,7 @@
      nothing left    the line is fully despatched
    ========================================================================= */
 
-DECLARE @Code varchar(60) = 'OHAPB0001';        /* <<< the code to look up */
+DECLARE @Code varchar(60) = 'OHAPP063015HP1S';        /* <<< the code to look up */
 
 /* ---------------------------------------------------------------------------
    1. HOW THE PRODUCT IS SET UP
@@ -40,7 +50,12 @@ SELECT
        in = and <>, so 'ABC ' = 'ABC'. Compare the stored length instead. */
     CASE WHEN DATALENGTH(si.Code) <> DATALENGTH(LTRIM(RTRIM(si.Code)))
          THEN 'YES - stray spaces in the code' ELSE 'no' END AS Padded,
-    ISNULL(si.AnalysisCode3,'(blank)')           AS StockHeldFlag,
+    /* In [brackets] deliberately. An empty cell cannot be told apart from a
+       space, and ' Yes' does not match the rule while 'Yes ' does - SQL Server
+       ignores trailing spaces in = but not leading ones. */
+    '[' + ISNULL(si.AnalysisCode3,'') + ']'      AS StockHeldFlag,
+    CASE WHEN ISNULL(si.AnalysisCode3,'') = 'Yes' THEN 'YES - treated as stock held, kept off the sheet'
+         ELSE 'no - treated as a special make' END AS MatchesStockHeldRule,
     ISNULL(NULLIF(LTRIM(RTRIM(si.Manufacturer)),''),'(blank)') AS Manufacturer,
     ISNULL(pg.Code,'(none)')                     AS ProductGroup,
     CASE
@@ -64,7 +79,9 @@ SELECT
     LTRIM(RTRIM(si.Code)),
     CASE WHEN DATALENGTH(si.Code) <> DATALENGTH(LTRIM(RTRIM(si.Code)))
          THEN 'YES - stray spaces in the code' ELSE 'no' END,
-    ISNULL(si.AnalysisCode7,'(blank)'),
+    '[' + ISNULL(si.AnalysisCode7,'') + ']',
+    CASE WHEN ISNULL(si.AnalysisCode7,'') = 'Yes' THEN 'YES - treated as stock held, kept off the sheet'
+         ELSE 'no - treated as a special make' END,
     ISNULL(NULLIF(LTRIM(RTRIM(si.Manufacturer)),''),'(blank)'),
     ISNULL(pg.Code,'(none)'),
     CASE
@@ -180,3 +197,86 @@ SELECT
     END AS Reason
 FROM candidates
 ORDER BY Company, SalesOrderNo, LineSeq;
+
+
+/* ---------------------------------------------------------------------------
+   3. EVERY POPULATED ANALYSIS CODE SLOT, BOTH COMPANIES
+   Use this when the stock-held flag is not where you expect it, or does not
+   read as you expect. Values are in [brackets] so a leading space or a short
+   form like [Y] is visible - neither matches the rule, and the item is then
+   treated as a special make and put on the sheet.
+
+   The slot the live query reads is AnalysisCode3 for Tibard and AnalysisCode7
+   for Oliver Harvey. The two companies were set up separately; that difference
+   is deliberate. If the Yes/No stock-held values turn up in a DIFFERENT slot
+   here, that is the finding - the rule is reading the wrong field for this
+   product, and the query needs changing rather than the product.
+
+   SlotNo is in the select list on purpose: after a UNION, ORDER BY can only
+   use columns that are selected.
+--------------------------------------------------------------------------- */
+SELECT 'TIBARD' AS Company,
+       v.SlotNo,
+       'AnalysisCode' + CAST(v.SlotNo AS varchar(2)) AS Slot,
+       '[' + v.Val + ']'                             AS Value,
+       CASE WHEN v.SlotNo = 3 THEN '<< the slot the query reads' ELSE '' END AS Note
+FROM        S200_LIVE.dbo.StockItem si
+CROSS APPLY (VALUES
+        ( 1, ISNULL(si.AnalysisCode1,'')),
+        ( 2, ISNULL(si.AnalysisCode2,'')),
+        ( 3, ISNULL(si.AnalysisCode3,'')),
+        ( 4, ISNULL(si.AnalysisCode4,'')),
+        ( 5, ISNULL(si.AnalysisCode5,'')),
+        ( 6, ISNULL(si.AnalysisCode6,'')),
+        ( 7, ISNULL(si.AnalysisCode7,'')),
+        ( 8, ISNULL(si.AnalysisCode8,'')),
+        ( 9, ISNULL(si.AnalysisCode9,'')),
+        (10, ISNULL(si.AnalysisCode10,'')),
+        (11, ISNULL(si.AnalysisCode11,'')),
+        (12, ISNULL(si.AnalysisCode12,'')),
+        (13, ISNULL(si.AnalysisCode13,'')),
+        (14, ISNULL(si.AnalysisCode14,'')),
+        (15, ISNULL(si.AnalysisCode15,'')),
+        (16, ISNULL(si.AnalysisCode16,'')),
+        (17, ISNULL(si.AnalysisCode17,'')),
+        (18, ISNULL(si.AnalysisCode18,'')),
+        (19, ISNULL(si.AnalysisCode19,'')),
+        (20, ISNULL(si.AnalysisCode20,''))
+) v(SlotNo, Val)
+WHERE LTRIM(RTRIM(si.Code)) = @Code
+  AND NULLIF(v.Val,'') IS NOT NULL
+
+UNION ALL
+
+SELECT 'OLIVER HARVEY',
+       v.SlotNo,
+       'AnalysisCode' + CAST(v.SlotNo AS varchar(2)),
+       '[' + v.Val + ']',
+       CASE WHEN v.SlotNo = 7 THEN '<< the slot the query reads' ELSE '' END
+FROM        OliverHarveyLive.dbo.StockItem si
+CROSS APPLY (VALUES
+        ( 1, ISNULL(si.AnalysisCode1,'')),
+        ( 2, ISNULL(si.AnalysisCode2,'')),
+        ( 3, ISNULL(si.AnalysisCode3,'')),
+        ( 4, ISNULL(si.AnalysisCode4,'')),
+        ( 5, ISNULL(si.AnalysisCode5,'')),
+        ( 6, ISNULL(si.AnalysisCode6,'')),
+        ( 7, ISNULL(si.AnalysisCode7,'')),
+        ( 8, ISNULL(si.AnalysisCode8,'')),
+        ( 9, ISNULL(si.AnalysisCode9,'')),
+        (10, ISNULL(si.AnalysisCode10,'')),
+        (11, ISNULL(si.AnalysisCode11,'')),
+        (12, ISNULL(si.AnalysisCode12,'')),
+        (13, ISNULL(si.AnalysisCode13,'')),
+        (14, ISNULL(si.AnalysisCode14,'')),
+        (15, ISNULL(si.AnalysisCode15,'')),
+        (16, ISNULL(si.AnalysisCode16,'')),
+        (17, ISNULL(si.AnalysisCode17,'')),
+        (18, ISNULL(si.AnalysisCode18,'')),
+        (19, ISNULL(si.AnalysisCode19,'')),
+        (20, ISNULL(si.AnalysisCode20,''))
+) v(SlotNo, Val)
+WHERE LTRIM(RTRIM(si.Code)) = @Code
+  AND NULLIF(v.Val,'') IS NOT NULL
+
+ORDER BY Company, SlotNo;
