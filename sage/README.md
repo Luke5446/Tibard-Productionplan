@@ -633,6 +633,11 @@ actually wrong.
 - **Part-despatched orders.** The query returns qty *outstanding*, not qty
   ordered, so a half-shipped order raises a works order for the remainder only.
 - **Returns excluded.** `DocumentTypeID = 0` keeps sales returns out.
+- **`<NONE>` is a real value, not an empty field.** Oliver Harvey's Stock
+  Location Consignment and one other analysis code hold the literal string
+  `<NONE>`. Any future rule that tests an analysis code for "is it set" must
+  treat `<NONE>` as empty — `NULLIF(NULLIF(LTRIM(RTRIM(code)),''),'<NONE>')` —
+  or it will read "no value" as "a value".
 - **Refresh, then copy.** With background refresh off (2.4) this is safe — but
   it's still worth telling Production: Refresh All, wait for the row count to
   settle, then copy.
