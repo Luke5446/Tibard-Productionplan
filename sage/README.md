@@ -11,6 +11,7 @@ Excel works order + Google Sheet step the sales office does today.
 | `10-special-makes-live.sql` | **The query the sheet runs.** Finished and validated — this is the one to paste. |
 | `00-discovery.sql` | The schema and data investigation behind it, kept as a record of how each rule was established. |
 | `08-find-analysis-code.sql` | Profiles all 20 analysis code slots — how the stock-held flag was located. |
+| `09-confirm-stock-held-slot.sql` | **Settles which slot each company really uses**, with Yes/No/blank counts per slot. Run after any doubt about the flag. |
 | `20-validate-against-known-specials.sql` | Runs real codes from the manual sheet through the rules. Re-run it after any rule change. |
 | `30-why-is-this-code-missing.sql` | **Run this when the sheet and Sage disagree about a code** — missing when it should be there, or present when it should not. Put the code in and it names the reason. |
 
