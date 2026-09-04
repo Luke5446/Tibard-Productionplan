@@ -15,6 +15,9 @@ Excel works order + Google Sheet step the sales office does today.
 | `20-validate-against-known-specials.sql` | Runs real codes from the manual sheet through the rules. Re-run it after any rule change. |
 | `30-why-is-this-code-missing.sql` | **Run this when the sheet and Sage disagree about a code** — missing when it should be there, or present when it should not. Put the code in and it names the reason. |
 | `40-product-setup-exceptions.sql` | **Weekly check.** Products with a live order whose set-up will make the sheet wrong. An empty result means the product file agrees with the rules. |
+| `PROFIT.md` | **Separate strand — profit per product per month.** Where it got to, what is still open, and the traps that carry over. Start there, not in the SQL. |
+| `50-profit-discovery.sql` | Profit report, step 1: what Sage records about the money on a sale. Not yet run. |
+| `51-grouping-coverage.sql` | Profit report, step 1b: whether sizes can be rolled up into a garment. Not yet run. |
 
 ---
 
