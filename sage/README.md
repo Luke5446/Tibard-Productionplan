@@ -14,6 +14,7 @@ Excel works order + Google Sheet step the sales office does today.
 | `09-confirm-stock-held-slot.sql` | **Settles which slot each company really uses**, with Yes/No/blank counts per slot. Run after any doubt about the flag. |
 | `20-validate-against-known-specials.sql` | Runs real codes from the manual sheet through the rules. Re-run it after any rule change. |
 | `30-why-is-this-code-missing.sql` | **Run this when the sheet and Sage disagree about a code** — missing when it should be there, or present when it should not. Put the code in and it names the reason. |
+| `40-product-setup-exceptions.sql` | **Weekly check.** Products with a live order whose set-up will make the sheet wrong. An empty result means the product file agrees with the rules. |
 
 ---
 
@@ -560,6 +561,44 @@ a slot other than 3 (Tibard) or 7 (Oliver Harvey) for some products, the query
 is reading the wrong field for them and the *query* needs changing, not the
 product. `08-find-analysis-code.sql` profiles all 20 slots across the whole
 product file if it turns out to be widespread.
+
+---
+
+### Both real failures were the product record, not the query
+
+Two incidents, days apart, and neither was a fault in the SQL:
+
+| Product | Set-up | What the sheet did |
+|---|---|---|
+| `OHAPB0001` | `Manufacturer` = `"Aprons"` — a category typed into the manufacturer field when IT created the code | Classified `BOUGHT IN`, **dropped silently** |
+| `OHAPP063015HP1S` | Stock-held flag set in `AnalysisCode3`; Oliver Harvey is read on `AnalysisCode7`, which was blank | Blank means not-stock-held, so a stock item was **offered as a special make** |
+
+Both were caught by eye. That is the thing worth fixing — not either product.
+
+**The slots are confirmed, and they do differ by company.** Measured across both
+whole product files by `09-confirm-stock-held-slot.sql`:
+
+| Company | Slot read | Yes | No | of |
+|---|---|---|---|---|
+| Tibard | `AnalysisCode3` | 1,561 | 805 | 107,352 products |
+| Oliver Harvey | `AnalysisCode7` | 2,170 | 56 | 8,280 products |
+
+So the differing-slot rule is right, and worth stating plainly because it looks
+like a mistake: **do not "tidy" the two halves of the query to match.** Oliver
+Harvey's `AnalysisCode3` holds nothing but `Yes`, on 23 products out of 8,280 —
+that is what a mis-keyed flag looks like, not a code in use.
+
+**Blank is the normal state.** 98% of Tibard products and 73% of Oliver Harvey's
+have no flag at all, and blank correctly means not stock held. It also means the
+sheet's correctness for any one product depends on somebody having set the field
+right — which is why the exceptions report exists rather than a cleverer rule.
+
+`40-product-setup-exceptions.sql` catches both classes, restricted to products
+with a live order so every row is actionable today. Its first run will be noisy:
+goods we genuinely buy in are dropped correctly and the report cannot tell them
+from a mis-typed manufacturer. Work through the manufacturers once, add the real
+suppliers to its `known_bought_in` list, and after that a row means something is
+actually wrong.
 
 ---
 
