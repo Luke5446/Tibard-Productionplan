@@ -249,10 +249,10 @@ body.planner-mode .planner-wrap{display:block}
 .sm-sum b{display:block;font-size:19px;color:#7A1F3D}
 .sm-sum span{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px}
 .sm-h{font-size:13px;margin:16px 0 8px;font-weight:700}
-.sm-bh{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:9px 12px;margin:16px 0 8px;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
-.sm-bh:hover{background:#f9fafb}
+.sm-bh{display:flex;align-items:center;gap:9px;background:#1f6b4a;border:1px solid #1f6b4a;color:#fff;border-radius:8px;padding:9px 12px;margin:16px 0 8px;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
+.sm-bh:hover{background:#0f4d33}
 .sm-bh.shut{margin-bottom:0}
-.sm-bh .cv{color:#9ca3af;font-size:10px;width:9px;flex:none}
+.sm-bh .cv{color:#a7d4bb;font-size:10px;width:9px;flex:none}
 .sm-bh .ttl{flex:1}
 .sm-bh .act{font-weight:400;cursor:default}
 .sm-pend{background:#fff;border:1px solid #e5e7eb;border-left:4px solid #c2872b;border-radius:7px;padding:10px 12px;margin-bottom:7px}
@@ -407,7 +407,7 @@ body.planner-mode .planner-wrap{display:block}
           <button class="btn btn-p edit-only" style="font-size:12px" onclick="showWOForm()">&#43; Add works order</button>
           <button class="btn" style="font-size:12px" onclick="openPriorityList()" title="Ranked list of live works orders by urgency">&#128203; Priority list</button>
           <button class="btn" style="font-size:12px" onclick="openDueDateRisk()" title="Live WOs where stock runs out before the due date">&#9888; Due date risk</button>
-          <input type="text" id="woSearch" placeholder="&#128269; Search works orders by SKU code..." oninput="renderWOCards()" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;min-width:230px;font-family:Arial,sans-serif">
+          <input type="text" id="woSearch" placeholder="&#128269; Search - code, works order no, customer..." oninput="renderWOCards()" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;min-width:230px;font-family:Arial,sans-serif">
           <span style="font-size:11px;color:#6b7280;margin-left:auto" id="woSearchCount"></span>
         </div>
         <div id="woForm" class="pbox hidden" style="margin-top:10px">
@@ -1141,8 +1141,13 @@ function renderWOCards(){
   var list=WOs.map(function(wo,i){ return {wo:wo, i:i}; });
   if(srch){
     list=list.filter(function(o){
-      return o.wo.items.some(function(it){ return it.code.toLowerCase().indexOf(srch)>=0; })
-        || (o.wo.ref||'').toLowerCase().indexOf(srch)>=0;
+      var wo=o.wo, ref=wo.ref||'';
+      var hay=ref+' '+wo.items.map(function(it){ return it.code; }).join(' ')
+        /* collapsed ref variants so S869335 / STIB869335 match S-TIB869335-Pt1 */
+        +' '+ref.replace(/[^a-zA-Z0-9]+/g,'')
+        +' '+ref.replace(/^S-?(TIB|OH)/i,'S').replace(/[^a-zA-Z0-9]+/g,'')
+        +(wo.sm?' '+(wo.sm.so||'')+' '+(wo.sm.customer||'')+' '+(wo.sm.custName||'')+' '+(wo.sm.custOrder||'')+' '+smCustomerFor(wo.sm, wo.items[0]&&wo.items[0].code):'');
+      return smMatch(hay, srch);
     });
   } else {
     // No search: show only UNPRINTED works orders (stock WO-#### and manual S/E/A
@@ -1190,6 +1195,7 @@ function renderWOCards(){
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
       +'<span class="woc-wks" style="background:'+wbg+'">'+wl+'</span>'
       +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
+      +'<div style="font-size:10.5px;color:#1F3245;font-weight:700;margin-top:2px">'+esc(wo.items.slice(0,3).map(function(it){ return it.code; }).join(', ')+(wo.items.length>3?' +'+(wo.items.length-3)+' more':''))+'</div>'
       +(wo.sm?'<div style="font-size:10px;color:#6b7280;margin-top:2px">'+esc(smCustomerFor(wo.sm, wo.items[0]&&wo.items[0].code))
         +(smPrintable(wo.items[0].code)?'':' &middot; <span style="color:#b45309;font-weight:700">no print template</span>')+'</div>':'')
       +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
@@ -1970,6 +1976,9 @@ function fetchShared(cb){
   }).then(function(s){
     if(s && s.rows){
       rows=s.rows||[]; WOs=s.WOs||[]; completedWOs=s.completedWOs||[];
+      smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{};
+      smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[];
+      smDocs=s.smDocs||{}; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
       var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
       var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+sa;
       var wu=document.getElementById('whUpdated'); if(wu) wu.textContent='Data published: '+sa;
