@@ -12,7 +12,7 @@ Excel works order + Google Sheet step the sales office does today.
 | `00-discovery.sql` | The schema and data investigation behind it, kept as a record of how each rule was established. |
 | `08-find-analysis-code.sql` | Profiles all 20 analysis code slots — how the stock-held flag was located. |
 | `20-validate-against-known-specials.sql` | Runs real codes from the manual sheet through the rules. Re-run it after any rule change. |
-| `30-why-is-this-code-missing.sql` | **Run this when a code does not appear on the sheet.** Put the code in and it names the reason. |
+| `30-why-is-this-code-missing.sql` | **Run this when the sheet and Sage disagree about a code** — missing when it should be there, or present when it should not. Put the code in and it names the reason. |
 
 ---
 
@@ -493,7 +493,9 @@ Flagging these now because they change how the Special Makes tab is built:
 
 ---
 
-## 5. A code has a live order but is not on the sheet
+## 5. When the sheet and Sage disagree about a code
+
+### A code has a live order but is not on the sheet
 
 Run **`30-why-is-this-code-missing.sql`** — put the code at the top and it
 returns the reason in plain English. Do not go hunting; the query drops very
@@ -520,6 +522,43 @@ through as `REVIEW - code not in stock file`, deliberately: an unknown code is
 the case most likely to need a person, so it is shown rather than hidden. The
 same goes for a product with no manufacturer set — `REVIEW - no manufacturer
 set`. If a code is missing *entirely*, it is one of the six above.
+
+---
+
+### The other direction: something on the sheet that should not be there
+
+Same file, same `@Code` — grid 1's **MatchesStockHeldRule** and grid 3 answer it.
+
+The live query's test is exact:
+
+```sql
+WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'  THEN 'STOCK HELD'   -- Tibard
+WHEN ISNULL(si.AnalysisCode7,'') = 'Yes'  THEN 'STOCK HELD'   -- Oliver Harvey
+```
+
+Anything that is not that value is treated as a **special make** and put on the
+sheet. SQL Server's default collation is case-insensitive and ignores *trailing*
+spaces, so `YES`, `yes` and `Yes ` all match. These do **not**:
+
+| Stored value | Why it fails |
+|---|---|
+| `Y` | not the word |
+| ` Yes` | leading spaces are **not** ignored, unlike trailing ones |
+| blank or NULL | nothing to match |
+| the flag in a different analysis slot | the query reads slot 3 / slot 7 only |
+
+Grid 1 prints the flag in `[brackets]` so a leading space or a short form is
+visible — an empty cell and a cell holding a space look identical otherwise.
+Grid 3 lists every populated slot in both companies, which is how you tell a
+flag that says the wrong thing from a flag that is in the wrong place.
+
+**Worth confirming before assuming the data is wrong.** These analysis codes are
+maintained by hand and are not necessarily the same thing as whatever the Sage
+product screen labels "stock held". If grid 3 shows the Yes/No values sitting in
+a slot other than 3 (Tibard) or 7 (Oliver Harvey) for some products, the query
+is reading the wrong field for them and the *query* needs changing, not the
+product. `08-find-analysis-code.sql` profiles all 20 slots across the whole
+product file if it turns out to be widespread.
 
 ---
 
