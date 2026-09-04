@@ -14,25 +14,34 @@
                        BOUGHT IN and dropped it. SILENT: nothing appeared
                        anywhere, and it was caught by eye.
 
-     OHAPP063015HP1S   Stock-held flag set in AnalysisCode3 instead of
-                       AnalysisCode7. The rule read slot 7, found it blank,
-                       and blank means not-stock-held - so a stock item was
-                       offered as a special make. Also caught by eye.
+     OHAPP063015HP1S   Stock held, but not on the website. Oliver Harvey's
+                       "Stock Held" code is AnalysisCode3 and "Website" is
+                       AnalysisCode7, and the rule read only Website - so a
+                       stock item was offered as a special make. Also caught by
+                       eye. FIXED IN THE RULE: Oliver Harvey now reads both,
+                       which is why this report no longer looks for it.
 
    Neither was a fault in the query. Both were a product set up in a way the
    rules could not read, and in both cases the sheet looked perfectly normal.
    That is what this report is for.
 
-   WHICH SLOT EACH COMPANY USES - measured, not assumed. From
-   09-confirm-stock-held-slot.sql:
+   WHAT COUNTS AS STOCK HELD - measured, not assumed, from
+   09-confirm-stock-held-slot.sql and confirmed against the code names in Sage:
 
-     TIBARD         AnalysisCode3   1,561 Yes / 805 No     of 107,352 products
-     OLIVER HARVEY  AnalysisCode7   2,170 Yes /  56 No     of   8,280 products
+     TIBARD         AnalysisCode3   "Stock Held"  1,561 Yes / 805 No  of 107,352
+     OLIVER HARVEY  AnalysisCode3   "Stock Held"     23 Yes           of   8,280
+                    AnalysisCode7   "Website"     2,170 Yes /  56 No  of   8,280
 
-   Blank is the normal state in both companies, and blank correctly means
-   "not stock held". So a blank flag is NOT reported here on its own - it would
-   bury the real exceptions. It is reported only when ANOTHER slot carries a
-   Yes, which is what a mis-keyed flag looks like.
+   Oliver Harvey rely on Website rather than Stock Held, because anything on the
+   website is held in stock, so either one saying Yes means stock held there.
+
+   Blank is the normal state in both companies and correctly means "not stock
+   held", so a blank flag is not reported here - it would bury the real
+   exceptions under thousands of rows.
+
+   SO THIS REPORT IS NOW ABOUT THE MANUFACTURER. The stock-held classes above
+   are handled by the rule itself; what a rule cannot fix is a manufacturer
+   field holding something that is not a manufacturer.
 
    FIRST RUN WILL BE NOISY, and that is expected. Goods we genuinely buy in are
    dropped correctly, but this report cannot tell them from a mis-typed
@@ -90,13 +99,6 @@ SELECT
          AND NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL
         THEN 'ON THE SHEET AS REVIEW - no manufacturer set. Set it.'
 
-        /* Slot 8 carries Yes on 140 Tibard products. What that code is has not
-           been confirmed, so this is raised as a question, not a fault. */
-        WHEN ISNULL(si.AnalysisCode3,'') = ''
-         AND ISNULL(si.AnalysisCode8,'') = 'Yes'
-        THEN 'CHECK - stock-held slot is blank but AnalysisCode8 says Yes. If '
-             + 'that is the stock-held flag, this is being offered as a special '
-             + 'make when it is stock.'
         ELSE NULL
     END                                                        AS Issue
 FROM        S200_LIVE.dbo.SOPOrderReturn      sor
@@ -125,11 +127,12 @@ SELECT
                                   sor.RequestedDeliveryDate,
                                   sorl.RequestedDeliveryDate), 23),
     LTRIM(RTRIM(ISNULL(cust.CustomerAccountName,''))),
-    'AnalysisCode7',
-    '[' + ISNULL(si.AnalysisCode7,'') + ']',
+    'AnalysisCode3 + 7',
+    'StockHeld[' + ISNULL(si.AnalysisCode3,'') + '] Website[' + ISNULL(si.AnalysisCode7,'') + ']',
     ISNULL(NULLIF(LTRIM(RTRIM(si.Manufacturer)),''),'(blank)'),
     CASE
-        WHEN ISNULL(si.AnalysisCode7,'') <> 'Yes'
+        WHEN ISNULL(si.AnalysisCode3,'') <> 'Yes'
+         AND ISNULL(si.AnalysisCode7,'') <> 'Yes'
          AND NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NOT NULL
          AND si.Manufacturer NOT LIKE '%Tibard%'
          AND si.Manufacturer NOT LIKE '%Oliver Harvey%'
@@ -138,18 +141,11 @@ SELECT
         THEN 'DROPPED SILENTLY - manufacturer is "' + LTRIM(RTRIM(si.Manufacturer))
              + '". If we make it, set the manufacturer to Tibard or Oliver Harvey.'
 
-        WHEN ISNULL(si.AnalysisCode7,'') <> 'Yes'
+        WHEN ISNULL(si.AnalysisCode3,'') <> 'Yes'
+         AND ISNULL(si.AnalysisCode7,'') <> 'Yes'
          AND NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL
         THEN 'ON THE SHEET AS REVIEW - no manufacturer set. Set it.'
 
-        /* THE OHAPP063015HP1S CASE. Slot 3 is blank on 8,257 of 8,280 OH
-           products and holds nothing but Yes on the other 23 - which is what a
-           mis-keyed flag looks like, not a code in real use. */
-        WHEN ISNULL(si.AnalysisCode7,'') = ''
-         AND ISNULL(si.AnalysisCode3,'') = 'Yes'
-        THEN 'STOCK ITEM OFFERED AS A SPECIAL - stock-held flag was set in '
-             + 'AnalysisCode3. Move it to AnalysisCode7, which is the one this '
-             + 'company is read on.'
         ELSE NULL
     END
 FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
@@ -170,8 +166,5 @@ SELECT Company, Issue, ProductCode, ProductDesc, Customer,
 FROM   flagged
 WHERE  Issue IS NOT NULL
 /* Silent failures first - those are the ones nobody would ever notice. */
-ORDER BY CASE WHEN Issue LIKE 'DROPPED SILENTLY%' THEN 0
-              WHEN Issue LIKE 'STOCK ITEM%'       THEN 1
-              WHEN Issue LIKE 'CHECK%'            THEN 2
-              ELSE 3 END,
+ORDER BY CASE WHEN Issue LIKE 'DROPPED SILENTLY%' THEN 0 ELSE 1 END,
          PromisedDate, Company, ProductCode;

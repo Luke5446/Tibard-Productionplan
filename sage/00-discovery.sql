@@ -592,3 +592,44 @@ FROM (
 ) x
 GROUP BY Company, Disagreement
 ORDER BY Company, Lines DESC;
+
+/* --- 0.9  Read the analysis code NAMES, rather than counting rows in the UI
+
+   The stock-held rules depend on knowing which AnalysisCodeN column is which
+   named code. That mapping was worked out by matching the Sage product screen
+   against the stored values:
+
+     AnalysisCode1  ePO Lead Time                (blank)
+     AnalysisCode2  Exclude From Stock Uploads   Yes
+     AnalysisCode3  Stock Held                   Yes
+     AnalysisCode4  Stock Location Home          B181A
+     AnalysisCode5  Stock Location Consignment   (blank)
+
+   Five values in a row lined up, so the UI lists the codes in column order for
+   Tibard. That is good evidence, not proof, and it was NOT separately checked
+   for Oliver Harvey - where the meaning matters most, because OH also uses
+   AnalysisCode7 ("Website") and the two companies hold different things.
+
+   RUN THIS to replace the inference with the stored names. Step 1 finds the
+   table that holds them - Sage's name for it is not assumed here, because
+   every schema guess made on this project so far has been wrong. */
+SELECT TABLE_CATALOG, TABLE_NAME, COLUMN_NAME, DATA_TYPE
+FROM   S200_LIVE.INFORMATION_SCHEMA.COLUMNS
+WHERE  TABLE_NAME LIKE '%Analysis%'
+UNION ALL
+SELECT TABLE_CATALOG, TABLE_NAME, COLUMN_NAME, DATA_TYPE
+FROM   OliverHarveyLive.INFORMATION_SCHEMA.COLUMNS
+WHERE  TABLE_NAME LIKE '%Analysis%'
+ORDER BY TABLE_CATALOG, TABLE_NAME, COLUMN_NAME;
+
+/* Step 2: whichever table comes back holding a code number and a label, read
+   it for both companies and check that
+
+     Tibard         AnalysisCode3 = Stock Held
+     Oliver Harvey  AnalysisCode3 = Stock Held
+                    AnalysisCode7 = Website
+
+   If Oliver Harvey's names do not come out that way, the rule in
+   10-special-makes-live.sql is reading the wrong fields and needs correcting -
+   the numbers in 09-confirm-stock-held-slot.sql would then be measuring
+   something other than what we think. */

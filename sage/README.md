@@ -571,30 +571,51 @@ Two incidents, days apart, and neither was a fault in the SQL:
 | Product | Set-up | What the sheet did |
 |---|---|---|
 | `OHAPB0001` | `Manufacturer` = `"Aprons"` — a category typed into the manufacturer field when IT created the code | Classified `BOUGHT IN`, **dropped silently** |
-| `OHAPP063015HP1S` | Stock-held flag set in `AnalysisCode3`; Oliver Harvey is read on `AnalysisCode7`, which was blank | Blank means not-stock-held, so a stock item was **offered as a special make** |
+| `OHAPP063015HP1S` | Stock held, but not on the website — and Oliver Harvey was read on `Website` only | A stock item was **offered as a special make** |
 
 Both were caught by eye. That is the thing worth fixing — not either product.
+The second one was a fault in the rule and is fixed there; the first was a
+product record, and only a report catches that class.
 
-**The slots are confirmed, and they do differ by company.** Measured across both
-whole product files by `09-confirm-stock-held-slot.sql`:
+**The two companies do not hold the same thing in the same place.** Counts from
+`09-confirm-stock-held-slot.sql`, names read off the Sage product screen:
 
-| Company | Slot read | Yes | No | of |
-|---|---|---|---|---|
-| Tibard | `AnalysisCode3` | 1,561 | 805 | 107,352 products |
-| Oliver Harvey | `AnalysisCode7` | 2,170 | 56 | 8,280 products |
+| Company | Code | Name | Yes | No | of |
+|---|---|---|---|---|---|
+| Tibard | `AnalysisCode3` | Stock Held | 1,561 | 805 | 107,352 |
+| Oliver Harvey | `AnalysisCode3` | Stock Held | 23 | — | 8,280 |
+| Oliver Harvey | `AnalysisCode7` | **Website** | 2,170 | 56 | 8,280 |
 
-So the differing-slot rule is right, and worth stating plainly because it looks
-like a mistake: **do not "tidy" the two halves of the query to match.** Oliver
-Harvey's `AnalysisCode3` holds nothing but `Yes`, on 23 products out of 8,280 —
-that is what a mis-keyed flag looks like, not a code in use.
+Oliver Harvey barely use Stock Held. They rely on **Website**, because anything
+sold on the website is by definition held in stock. So:
+
+> **Tibard** is stock held when Stock Held says Yes.
+> **Oliver Harvey** is stock held when **either** Stock Held **or** Website does.
+
+That is why `OHAPP063015HP1S` came through as a special make — stock held, but
+not on the website, and the rule read only Website. It now reads both.
+
+**Do not "tidy" the two halves of the query to match.** The asymmetry looks like
+a slot number that drifted. It isn't: they are different tests because the two
+companies record the fact differently.
+
+**The slot-to-name mapping is good evidence, not proof.** It was established by
+matching the Sage product screen against the stored values — five codes lined up
+in order for Tibard (`ePO Lead Time`, `Exclude From Stock Uploads`, `Stock Held`,
+`Stock Location Home`, `Stock Location Consignment` against blank / `Yes` / `Yes`
+/ `B181A` / blank). Oliver Harvey's names were read off its own screen but not
+separately checked against stored values. Discovery step **0.9** reads the names
+from the database and settles it; worth running, because if OH's `AnalysisCode7`
+is not `Website` then these counts are measuring something else.
 
 **Blank is the normal state.** 98% of Tibard products and 73% of Oliver Harvey's
 have no flag at all, and blank correctly means not stock held. It also means the
 sheet's correctness for any one product depends on somebody having set the field
 right — which is why the exceptions report exists rather than a cleverer rule.
 
-`40-product-setup-exceptions.sql` catches both classes, restricted to products
-with a live order so every row is actionable today. Its first run will be noisy:
+`40-product-setup-exceptions.sql` catches the manufacturer class, restricted to
+products with a live order so every row is actionable today. It no longer looks
+for a mis-read stock-held flag, because the rule itself now handles that. Its first run will be noisy:
 goods we genuinely buy in are dropped correctly and the report cannot tell them
 from a mis-typed manufacturer. Work through the manufacturers once, add the real
 suppliers to its `known_bought_in` list, and after that a row means something is
