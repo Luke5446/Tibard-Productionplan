@@ -10,6 +10,12 @@
      3. EVERY ANALYSIS CODE SLOT    - every populated slot, both companies,
                                       values shown in [brackets]
 
+   RUNNING IT FROM EXCEL? Power Query returns ONLY THE FIRST result set of a
+   multi-statement batch, so you will see grid 1 and nothing else. Either run
+   the file in SQL Server Management Studio, which shows all three, or paste
+   one grid at a time into Excel - each is self-contained apart from the
+   DECLARE at the top, so copy that line with it.
+
    Read grid 2's REASON column first. If it says the line SHOULD be there, the
    sheet just needs refreshing.
 
