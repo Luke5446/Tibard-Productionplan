@@ -96,6 +96,7 @@ SELECT
         WHEN cust.CustomerAccountNumber = 'OLIVER'   THEN 'INTERCOMPANY - no works order'
         WHEN sorl.LineTypeID = 1                     THEN 'NOTE - free text'
         WHEN pg.Code = '54'                          THEN 'NOTE - charge or logo line'
+        /* AnalysisCode3 is Tibard's "Stock Held" analysis code. */
         WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'     THEN 'STOCK HELD'
         WHEN sorl.ItemCode = 'FREETEXT'              THEN 'REVIEW - FREETEXT placeholder'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
@@ -157,9 +158,19 @@ UNION ALL
 
 /* -------------------------------------------------------- OLIVER HARVEY -- */
 /* Identical, except the database, the key prefix, the company label, the
-   inter-company account, and AnalysisCode7 in place of AnalysisCode3 - the two
-   companies were set up separately and use different analysis code slots.
-   Do not tidy them to match. */
+   inter-company account, and the stock-held test.
+
+   THE STOCK-HELD TEST IS GENUINELY DIFFERENT BETWEEN THE TWO COMPANIES, and it
+   is not a slot number that drifted - the analysis codes hold different things:
+
+     TIBARD         AnalysisCode3 = "Stock Held"         1,561 Yes / 805 No
+     OLIVER HARVEY  AnalysisCode3 = "Stock Held"            23 Yes
+                    AnalysisCode7 = "Website"            2,170 Yes /  56 No
+
+   Oliver Harvey hardly use Stock Held and rely on Website, because anything on
+   the website is held in stock. So OH is stock held if EITHER says Yes, and
+   Tibard is stock held on its own Stock Held code. Do not tidy the two halves
+   to match - they are not the same test. */
 SELECT
     'OH-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20)),
     'OLIVER HARVEY',
@@ -181,7 +192,15 @@ SELECT
         WHEN cust.CustomerAccountNumber = 'TIB003'   THEN 'INTERCOMPANY - no works order'
         WHEN sorl.LineTypeID = 1                     THEN 'NOTE - free text'
         WHEN pg.Code = '54'                          THEN 'NOTE - charge or logo line'
-        WHEN ISNULL(si.AnalysisCode7,'') = 'Yes'     THEN 'STOCK HELD'
+        /* TWO fields, and this is the important difference from Tibard.
+           AnalysisCode3 is "Stock Held" and AnalysisCode7 is "Website".
+           Oliver Harvey barely use Stock Held - 23 products out of 8,280 - and
+           rely on Website instead, because anything sold on the website is by
+           definition held in stock. Reading Website alone missed
+           OHAPP063015HP1S: stock held, not on the website, and so offered to
+           production as a special make. Read BOTH. */
+        WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'
+          OR ISNULL(si.AnalysisCode7,'') = 'Yes'     THEN 'STOCK HELD'
         WHEN sorl.ItemCode = 'FREETEXT'              THEN 'REVIEW - FREETEXT placeholder'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
         WHEN si.Manufacturer LIKE '%Tibard%'

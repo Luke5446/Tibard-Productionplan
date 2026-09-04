@@ -20,12 +20,13 @@
    sheet just needs refreshing.
 
    IT ALSO ANSWERS THE OPPOSITE QUESTION - a stock item appearing on the sheet
-   when it should not. That is nearly always the stock-held flag not saying
-   what you think it says. Grid 1's StockHeldFlag is shown in [brackets] so
+   when it should not. Grid 1's StockHeldFlag is shown in [brackets] so blanks,
    leading spaces and short forms are visible, and MatchesStockHeldRule applies
    the live query's test exactly: only [Yes] counts. [Y], [ Yes] and [] do not,
-   and the item is then treated as a special make. Grid 3 shows every slot, so
-   if the flag was entered in a different one you will see it there.
+   and the item is then treated as a special make. For Oliver Harvey the flag
+   shows both codes the rule reads - StockHeld[...] Website[...] - because
+   either saying Yes is enough. Grid 3 shows every populated slot, so a value
+   entered in the wrong field is visible there.
 
    A code that is genuinely missing can only be missing for one of these
    reasons, because everything else - including a code the stock file has never
@@ -42,9 +43,10 @@ DECLARE @Code varchar(60) = 'OHAPP063015HP1S';        /* <<< the code to look up
 
 /* ---------------------------------------------------------------------------
    1. HOW THE PRODUCT IS SET UP
-   Tibard reads AnalysisCode3, Oliver Harvey reads AnalysisCode7. The two
-   companies were set up separately and use different slots - that is expected,
-   not a mistake to tidy.
+   Tibard is stock held when AnalysisCode3 ("Stock Held") says Yes. Oliver
+   Harvey is stock held when EITHER AnalysisCode3 ("Stock Held") or
+   AnalysisCode7 ("Website") does - OH treat anything on the website as stock.
+   That difference is real, not a slot number that drifted.
    No rows at all here means the code is in neither stock file, which is NOT a
    reason to be missing: those come through as "REVIEW - code not in stock file".
 --------------------------------------------------------------------------- */
@@ -81,17 +83,19 @@ UNION ALL
 
 SELECT
     'OLIVER HARVEY',
-    'AnalysisCode7',
+    'AnalysisCode3 Stock Held + AnalysisCode7 Website',
     LTRIM(RTRIM(si.Code)),
     CASE WHEN DATALENGTH(si.Code) <> DATALENGTH(LTRIM(RTRIM(si.Code)))
          THEN 'YES - stray spaces in the code' ELSE 'no' END,
-    '[' + ISNULL(si.AnalysisCode7,'') + ']',
-    CASE WHEN ISNULL(si.AnalysisCode7,'') = 'Yes' THEN 'YES - treated as stock held, kept off the sheet'
+    'StockHeld[' + ISNULL(si.AnalysisCode3,'') + '] Website[' + ISNULL(si.AnalysisCode7,'') + ']',
+    CASE WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'
+           OR ISNULL(si.AnalysisCode7,'') = 'Yes' THEN 'YES - treated as stock held, kept off the sheet'
          ELSE 'no - treated as a special make' END,
     ISNULL(NULLIF(LTRIM(RTRIM(si.Manufacturer)),''),'(blank)'),
     ISNULL(pg.Code,'(none)'),
     CASE
-        WHEN ISNULL(si.AnalysisCode7,'') = 'Yes' THEN 'STOCK HELD >> DROPPED - set the stock-held code to No or blank'
+        WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'
+          OR ISNULL(si.AnalysisCode7,'') = 'Yes' THEN 'STOCK HELD >> DROPPED - Stock Held or Website says Yes'
         WHEN pg.Code = '54'                      THEN 'NOTE - charge or logo line, only shown alongside a works order'
         WHEN si.Manufacturer LIKE '%Tibard%'
           OR si.Manufacturer LIKE '%Oliver Harvey%' THEN 'WORKS ORDER - should be on the sheet'
@@ -165,7 +169,8 @@ SELECT
         WHEN cust.CustomerAccountNumber = 'TIB003'   THEN 'INTERCOMPANY - no works order'
         WHEN sorl.LineTypeID = 1                     THEN 'NOTE - free text'
         WHEN pg.Code = '54'                          THEN 'NOTE - charge or logo line'
-        WHEN ISNULL(si.AnalysisCode7,'') = 'Yes'     THEN 'STOCK HELD'
+        WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'
+          OR ISNULL(si.AnalysisCode7,'') = 'Yes'     THEN 'STOCK HELD'
         WHEN sorl.ItemCode = 'FREETEXT'              THEN 'REVIEW - FREETEXT placeholder'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
         WHEN si.Manufacturer LIKE '%Tibard%'
@@ -212,11 +217,10 @@ ORDER BY Company, SalesOrderNo, LineSeq;
    form like [Y] is visible - neither matches the rule, and the item is then
    treated as a special make and put on the sheet.
 
-   The slot the live query reads is AnalysisCode3 for Tibard and AnalysisCode7
-   for Oliver Harvey. The two companies were set up separately; that difference
-   is deliberate. If the Yes/No stock-held values turn up in a DIFFERENT slot
-   here, that is the finding - the rule is reading the wrong field for this
-   product, and the query needs changing rather than the product.
+   The codes the live query reads are Tibard AnalysisCode3 ("Stock Held"), and
+   for Oliver Harvey BOTH AnalysisCode3 ("Stock Held") and AnalysisCode7
+   ("Website") - OH treat anything on the website as stock. Those are always
+   shown, even when empty.
 
    SlotNo is in the select list on purpose: after a UNION, ORDER BY can only
    use columns that are selected.
@@ -225,7 +229,7 @@ SELECT 'TIBARD' AS Company,
        v.SlotNo,
        'AnalysisCode' + CAST(v.SlotNo AS varchar(2)) AS Slot,
        '[' + v.Val + ']'                             AS Value,
-       CASE WHEN v.SlotNo = 3 THEN '<< the slot the query reads' ELSE '' END AS Note
+       CASE WHEN v.SlotNo = 3 THEN '<< Stock Held - read by the query' ELSE '' END AS Note
 FROM        S200_LIVE.dbo.StockItem si
 CROSS APPLY (VALUES
         ( 1, ISNULL(si.AnalysisCode1,'')),
@@ -261,7 +265,9 @@ SELECT 'OLIVER HARVEY',
        v.SlotNo,
        'AnalysisCode' + CAST(v.SlotNo AS varchar(2)),
        '[' + v.Val + ']',
-       CASE WHEN v.SlotNo = 7 THEN '<< the slot the query reads' ELSE '' END
+       CASE WHEN v.SlotNo = 3 THEN '<< Stock Held - read by the query'
+            WHEN v.SlotNo = 7 THEN '<< Website - also read by the query'
+            ELSE '' END
 FROM        OliverHarveyLive.dbo.StockItem si
 CROSS APPLY (VALUES
         ( 1, ISNULL(si.AnalysisCode1,'')),
@@ -286,6 +292,6 @@ CROSS APPLY (VALUES
         (20, ISNULL(si.AnalysisCode20,''))
 ) v(SlotNo, Val)
 WHERE LTRIM(RTRIM(si.Code)) = @Code
-  AND (NULLIF(v.Val,'') IS NOT NULL OR v.SlotNo = 7)
+  AND (NULLIF(v.Val,'') IS NOT NULL OR v.SlotNo IN (3,7))
 
 ORDER BY Company, SlotNo;

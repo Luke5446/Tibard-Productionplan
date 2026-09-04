@@ -43,11 +43,14 @@ LEFT JOIN  S200_LIVE.dbo.StockItem si ON si.Code = s.Code
 UNION ALL
 
 SELECT 'OLIVER HARVEY', s.Code,
-       ISNULL(NULLIF(si.AnalysisCode7,''),'(blank)'),
+       'StockHeld[' + ISNULL(si.AnalysisCode3,'') + '] Website[' + ISNULL(si.AnalysisCode7,'') + ']',
        ISNULL(NULLIF(si.Manufacturer,''),'(blank)'),
        CASE
          WHEN si.Code IS NULL                         THEN '-- not in this company --'
-         WHEN si.AnalysisCode7 = 'Yes'                THEN 'MISSED - flagged stock held'
+         /* Oliver Harvey is stock held on EITHER code - see the header of
+            10-special-makes-live.sql. Website implies stock there. */
+         WHEN si.AnalysisCode3 = 'Yes'
+           OR si.AnalysisCode7 = 'Yes'                THEN 'MISSED - flagged stock held'
          WHEN si.Manufacturer LIKE '%Tibard%'
            OR si.Manufacturer LIKE '%Oliver Harvey%'  THEN 'WORKS ORDER'
          WHEN NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL

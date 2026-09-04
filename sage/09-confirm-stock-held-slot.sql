@@ -5,13 +5,21 @@
    (it is a single statement, so Power Query returns all of it).
 
    WHY THIS EXISTS
-   10-special-makes-live.sql reads AnalysisCode3 for Tibard and AnalysisCode7
-   for Oliver Harvey. Product OHAPP063015HP1S showed the OH flag sitting in
-   AnalysisCode3, with AnalysisCode7 empty - so the rule read an empty field,
-   decided the item was not stock held, and put a stock item on the special
-   makes sheet. 08-find-analysis-code.sql profiled the slots originally;
-   this settles which slot each company actually uses, on the whole file
-   rather than one product.
+   Product OHAPP063015HP1S, a stock item, was offered as a special make. The
+   query read only Oliver Harvey's AnalysisCode7, which was empty on it.
+
+   WHAT IT FOUND - the two companies do not hold the same thing in the same
+   place, and the names settle it:
+
+     TIBARD         AnalysisCode3   "Stock Held"  1,561 Yes / 805 No  of 107,352
+     OLIVER HARVEY  AnalysisCode3   "Stock Held"     23 Yes           of   8,280
+                    AnalysisCode7   "Website"     2,170 Yes /  56 No  of   8,280
+
+   Oliver Harvey hardly use Stock Held and rely on Website, because anything on
+   the website is held in stock. The live query now reads BOTH for that company,
+   which is what OHAPP063015HP1S needed - stock held, but not on the website.
+
+   Re-run this after any change to the product file's analysis codes.
 
    HOW TO READ IT
    The stock-held slot is the one where SaysYes + SaysNo accounts for nearly
@@ -26,15 +34,15 @@
                the sheet as if it were a special make.
      Other     a value that is neither Yes nor No
 
-   THE NUMBER THAT MATTERS: SaysYes for the slot each company is currently
-   read on. If that is 0, the rule has never excluded a single stock item for
-   that company.
+   THE NUMBER THAT MATTERS: SaysYes for each code the company is read on. If
+   one is 0, that code has never excluded a single item - which is worth
+   knowing before trusting it.
    ========================================================================= */
 
 SELECT 'TIBARD'                                        AS Company,
        v.SlotNo,
        'AnalysisCode' + CAST(v.SlotNo AS varchar(2))   AS Slot,
-       CASE WHEN v.SlotNo = 3 THEN '<< read by the live query' ELSE '' END AS ReadByTheRule,
+       CASE WHEN v.SlotNo = 3 THEN '<< Stock Held - read by the live query' ELSE '' END AS ReadByTheRule,
        COUNT(*)                                        AS Products,
        SUM(CASE WHEN v.Val = 'Yes' THEN 1 ELSE 0 END)  AS SaysYes,
        SUM(CASE WHEN v.Val = 'No'  THEN 1 ELSE 0 END)  AS SaysNo,
@@ -74,7 +82,9 @@ UNION ALL
 SELECT 'OLIVER HARVEY',
        v.SlotNo,
        'AnalysisCode' + CAST(v.SlotNo AS varchar(2)),
-       CASE WHEN v.SlotNo = 7 THEN '<< read by the live query' ELSE '' END,
+       CASE WHEN v.SlotNo = 3 THEN '<< Stock Held - read by the live query'
+            WHEN v.SlotNo = 7 THEN '<< Website - also read by the live query'
+            ELSE '' END,
        COUNT(*),
        SUM(CASE WHEN v.Val = 'Yes' THEN 1 ELSE 0 END),
        SUM(CASE WHEN v.Val = 'No'  THEN 1 ELSE 0 END),
