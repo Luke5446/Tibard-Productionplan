@@ -18,6 +18,7 @@ Run against the real `index.html` in Chromium. No build step, no test runner —
 | `test-createdat.js` | Creation date stamps: every route a works order is born through, a split inheriting its parent's date, the completed record carrying created/printed dates, a re-opened legacy record staying blank, and a special make's first-seen date following it from the queue to the works order |
 | `test-snapshot.js` | The per-paste buffer snapshot: same counts as the tiles, a same-day re-paste replacing rather than appending, the next day appending in order, and the series surviving a reload and reaching the saved state |
 | `test-kpi.js` | The KPI tab against a fixture worked out by hand: per-works-order on-time % and lead-time medians (a two-SKU job counted once), specials raised/dismissed, snapshot averages and days below target, the hero and its delta, the tiles, and a hover tooltip |
+| `test-shared.js` | That a viewer loading data.json gets everything that was published - special makes history, imported works order data, snapshots - and that an editor absorbs published snapshots by date while keeping its own |
 | `test-regress.js` | That the existing buffer flow still works alongside it — buffer paste, stock `WO-####` auto-numbering, and that a special make does not count towards buffer `On WOP` |
 
 Set `CHROME_PATH` if your Chromium is elsewhere.

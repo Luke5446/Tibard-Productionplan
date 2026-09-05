@@ -1026,7 +1026,9 @@ function recordCompleted(wo, it){
     printedAt: wo.printedAt,
     seenAt: wo.sm ? wo.sm.seenAt : undefined,
     sm: wo.sm ? true : undefined,
-    customer: wo.sm ? wo.sm.customer : undefined
+    customer: wo.sm ? wo.sm.customer : undefined,
+    company:  wo.sm ? wo.sm.company  : undefined,
+    promised: (wo.sm && !wo.sm.dateAssumed) ? wo.sm.promised : undefined
   });
 }
 
@@ -2008,6 +2010,14 @@ function fetchShared(cb){
   }).then(function(s){
     if(s && s.rows){
       rows=s.rows||[]; WOs=s.WOs||[]; completedWOs=s.completedWOs||[];
+      // Everything else publishData writes. Before this only the three above
+      // were restored, so a viewer never saw the special makes history or the
+      // imported works order data, and an editor whose browser had been cleared
+      // would fall through to here and then republish with all of it wiped.
+      smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{};
+      smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{};
+      styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
+      bufSnaps=s.bufSnaps||[];
       var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
       var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+sa;
       var wu=document.getElementById('whUpdated'); if(wu) wu.textContent='Data published: '+sa;
@@ -2017,6 +2027,27 @@ function fetchShared(cb){
     }
     if(cb) cb(true);
   }).catch(function(){ if(cb) cb(false); });
+}
+
+// The editor's own state is the truth, but the daily snapshot series can gain
+// rows from outside it - a backfill committed to data.json, or a paste done on
+// another machine. Union by date; a row the editor already has is kept as is.
+// Silent on file:// or when data.json is missing, so nothing else changes.
+function mergePublishedSnapshots(){
+  if(!/^https?:/.test(location.protocol)) return;
+  fetch('data.json?t='+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(s){
+    if(!s || !s.bufSnaps || !s.bufSnaps.length) return;
+    if(absorbSnapshots(s.bufSnaps)){ saveState();
+      if(document.getElementById('tabKpi') && document.getElementById('tabKpi').classList.contains('on')) kpiRender(); }
+  }).catch(function(){});
+}
+// Union by date into bufSnaps. A date already held locally is kept as is -
+// the editor's own paste is the truth for that day. Returns how many were added.
+function absorbSnapshots(list){
+  var have={}; bufSnaps.forEach(function(x){ have[x.date]=true; });
+  var added=0; (list||[]).forEach(function(x){ if(x && x.date && !have[x.date]){ bufSnaps.push(x); have[x.date]=true; added++; } });
+  if(added) bufSnaps.sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+  return added;
 }
 
 // Publish current data for the team (editor only)
@@ -2276,6 +2307,7 @@ document.addEventListener('DOMContentLoaded',function(){
     fetchShared();          // warehouse reads the published data
   } else if(IS_EDITOR){
     if(!loadState()) fetchShared();
+    else mergePublishedSnapshots();
   } else {
     fetchShared();
   }
@@ -2489,7 +2521,7 @@ function smLog(o, ref, part){
   smMade.push({key:o.key, ref:ref, part:part, code:o.code, desc:o.desc,
                qty:smTake0(o), ordered:o.qty,
                so:o.so, company:o.company, customer:o.customer,
-               seenAt:o.seenAt, raisedAt:d2s(now())});
+               promised:o.promised, seenAt:o.seenAt, raisedAt:d2s(now())});
 }
 
 function smDismiss(key){
@@ -3072,12 +3104,24 @@ var smDocs={};                 // works order ref -> {name, at}  (file name in t
 var bufSnaps=[];               // [{date, skus, critical, low, ok, healthy, pct, unitsShort, onWOP}]
 function snapshotBuffer(){
   if(!rows.length) return;
-  var n={critical:0, low:0, ok:0, healthy:0}, short=0, onWOP=0;
-  rows.forEach(function(r){ n[r.status]=(n[r.status]||0)+1; short+=(r.wopRec||0); onWOP+=(r.onWOP||0); });
-  var snap={ date:d2s(now()), skus:rows.length,
+  var n={critical:0, low:0, ok:0, healthy:0}, short=0, onWOP=0, critNoWOP=0, lowNoWOP=0, sales=0, salesGood=0;
+  rows.forEach(function(r){
+    n[r.status]=(n[r.status]||0)+1; short+=(r.wopRec||0); onWOP+=(r.onWOP||0);
+    if(r.status==='critical' && !(r.onWOP>0)) critNoWOP++;
+    if(r.status==='low'      && !(r.onWOP>0)) lowNoWOP++;
+    if(r.dailyUsage>0){ sales++; if(r.status==='ok'||r.status==='healthy') salesGood++; }
+  });
+  var today=d2s(now()), openUnits=0, overdue=0;
+  WOs.forEach(function(w){ if(w.due && w.due<today) overdue++; w.items.forEach(function(i){ openUnits+=(i.qty||0); }); });
+  var snap={ date:today, skus:rows.length,
              critical:n.critical, low:n.low, ok:n.ok, healthy:n.healthy,
              pct: Math.round(1000*(n.ok+n.healthy)/rows.length)/10,
-             unitsShort: Math.round(short), onWOP: Math.round(onWOP) };
+             // the same figure on SKUs that actually sell - no-sales SKUs are
+             // forced Healthy by mkRow, which flatters the headline
+             pctSales: sales ? Math.round(1000*salesGood/sales)/10 : null, salesSkus:sales,
+             critNoWOP:critNoWOP, lowNoWOP:lowNoWOP,
+             unitsShort: Math.round(short), onWOP: Math.round(onWOP),
+             openWOs:WOs.length, openUnits:Math.round(openUnits), overdueWOs:overdue };
   bufSnaps=bufSnaps.filter(function(x){ return x.date!==snap.date; });
   bufSnaps.push(snap);
   bufSnaps.sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
@@ -3157,7 +3201,7 @@ function kpiLivePct(){
 
 function kpiCompute(){
   var today=d2s(now()), months=kpiMonths(6), by={};
-  months.forEach(function(k){ by[k]={refs:{}, lines:0, units:0, onTime:0, late:0, leadStart:[], leadRaised:[], smRaised:0, smUnits:0, smDismissed:0, snaps:[]}; });
+  months.forEach(function(k){ by[k]={refs:{}, lines:0, units:0, onTime:0, late:0, leadStart:[], leadRaised:[], smRaised:0, smUnits:0, smDismissed:0, smDone:{}, smDoneUnits:0, snaps:[]}; });
   // The history holds one row per SKU line, but the questions are about WORKS
   // ORDERS - so lines are folded back into their job first. A job is done when
   // its last line is done, and late if any line was late; a two-SKU order must
@@ -3165,6 +3209,7 @@ function kpiCompute(){
   completedWOs.forEach(function(c){
     var b=by[kpiKey(c.completed)]; if(!b) return;
     b.lines++; b.units+=(c.qty||0);
+    if(c.sm || /^[SEA]/i.test(c.ref||'')){ b.smDone[c.ref]=1; b.smDoneUnits+=(c.qty||0); }
     var j=b.refs[c.ref] || (b.refs[c.ref]={completed:'', late:false, start:c.start, createdAt:c.createdAt, due:c.due});
     if(c.completed>j.completed) j.completed=c.completed;
     if(c.due && c.completed>c.due) j.late=true;
@@ -3191,6 +3236,7 @@ function kpiCompute(){
       medStart:kpiMedian(b.leadStart), nStart:b.leadStart.length,
       medRaised:kpiMedian(b.leadRaised), nRaised:b.leadRaised.length,
       smRaised:b.smRaised, smUnits:b.smUnits, smDismissed:b.smDismissed,
+      smDone:Object.keys(b.smDone).length, smDoneUnits:b.smDoneUnits,
       avgPct:kpiMean(pcts), minPct:pcts.length?Math.min.apply(null,pcts):null,
       daysBelow:pcts.filter(function(x){return x<=KPI_TARGET;}).length, snapDays:pcts.length };
   });
@@ -3235,7 +3281,7 @@ function kpiLineChart(snaps){
   pts.forEach(function(p,i){
     var last=i===pts.length-1;
     out+='<circle class="mark" cx="'+X(p.date).toFixed(1)+'" cy="'+Y(p.pct).toFixed(1)+'" r="'+(last?5:4)+'" fill="'+KPI_SERIES+'" stroke="#fff" stroke-width="2" '
-        +'data-tip="<b>'+esc(fmtD(p.date))+'</b><br>'+p.pct+'% in stock<br>'+p.critical+' critical &middot; '+p.low+' low<br>'+kpiN(p.unitsShort)+' units short"/>';
+        +'data-tip="<b>'+esc(fmtD(p.date))+'</b><br>'+p.pct+'% in stock'+(p.pctSales!=null?' &middot; '+p.pctSales+'% on selling lines':'')+'<br>'+p.critical+' critical &middot; '+p.low+' low'+(p.critNoWOP!=null?' &middot; '+p.critNoWOP+' critical with no works order':'')+'<br>'+kpiN(p.unitsShort)+' units short"/>';
     if(last) out+='<text x="'+(X(p.date)-8).toFixed(1)+'" y="'+(Y(p.pct)-9).toFixed(1)+'" font-size="11" font-weight="700" fill="#111827" text-anchor="end">'+p.pct+'%</text>';
   });
   var lab=function(dt){ return new Date(dt+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short'}); };
@@ -3302,7 +3348,7 @@ function kpiRender(){
     +'<th>Month</th><th>Works orders</th><th>Units</th><th>On time</th>'
     +'<th class="grp" title="median days from the planned start date to completion">Planned start &rarr; done</th>'
     +'<th title="median days from the day the job was raised to completion">Raised &rarr; done</th>'
-    +'<th class="grp">Specials raised</th><th>Special units</th><th>Dismissed</th>'
+    +'<th class="grp" title="works orders whose reference starts S, E or A, or raised from the Sage paste">Specials done</th><th>Specials raised</th><th>Dismissed</th>'
     +'<th class="grp">In stock, avg</th><th>Low point</th><th>Days &le; '+KPI_TARGET+'%</th>'
     +'</tr></thead><tbody>'
     +k.months.map(function(m){
@@ -3310,7 +3356,7 @@ function kpiRender(){
         +'<td>'+kpiN(m.wos)+'</td><td>'+kpiN(m.units)+'</td>'+pc(m.onTimePct, m.onTimePct!=null&&m.onTimePct<90)
         +'<td class="grp">'+(m.medStart==null?'<span class="mut" style="color:#9ca3af">&mdash;</span>':kpiN(m.medStart,m.medStart%1?1:0)+'d')+'</td>'
         +'<td>'+(m.medRaised==null?'<span style="color:#9ca3af">&mdash;</span>':kpiN(m.medRaised,m.medRaised%1?1:0)+'d <span style="color:#9ca3af;font-weight:400">/'+m.nRaised+'</span>')+'</td>'
-        +'<td class="grp">'+kpiN(m.smRaised)+'</td><td>'+kpiN(m.smUnits)+'</td><td>'+kpiN(m.smDismissed)+'</td>'
+        +'<td class="grp">'+kpiN(m.smDone)+'<span style="color:#9ca3af;font-weight:400"> &middot; '+kpiN(m.smDoneUnits)+'u</span></td><td>'+kpiN(m.smRaised)+'</td><td>'+kpiN(m.smDismissed)+'</td>'
         +'<td class="grp">'+(m.avgPct==null?'<span style="color:#9ca3af">&mdash;</span>':kpiN(m.avgPct,1)+'%')+'</td>'
         +'<td>'+(m.minPct==null?'<span style="color:#9ca3af">&mdash;</span>':kpiN(m.minPct,1)+'%')+'</td>'
         +'<td'+(m.daysBelow?' class="bad"':'')+'>'+(m.snapDays?kpiN(m.daysBelow)+' <span style="color:#9ca3af;font-weight:400">/'+m.snapDays+'</span>':'<span style="color:#9ca3af">&mdash;</span>')+'</td>'

@@ -32,7 +32,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  const s4=await p.evaluate(()=>{ const saved=JSON.parse(localStorage.getItem('tibard_production'));
    return {afterReload:bufSnaps.length, inSaved:(saved.bufSnaps||[]).length, cleared:(function(){return true;})()}; });
  console.log('after reload    ->', JSON.stringify(s4));
- const pass = s1.snaps===1 && s1.last.pct===50 && s1.last.critical===1 && s1.last.low===1 && s1.last.ok===1 && s1.last.healthy===1
+ const pass = s1.snaps===1 && s1.last.pct===50 && s1.last.pctSales===50 && s1.last.salesSkus===4 && s1.last.critNoWOP===1 && s1.last.lowNoWOP===1 && s1.last.openWOs===0 && s1.last.overdueWOs===0 && s1.last.critical===1 && s1.last.low===1 && s1.last.ok===1 && s1.last.healthy===1
    && s2.snaps===1 && s2.last.pct===100 && s3.dates.join()==='2026-09-04:100,2026-09-05:50' && s4.afterReload===2 && s4.inSaved===2;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();
