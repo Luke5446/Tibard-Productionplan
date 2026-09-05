@@ -287,6 +287,41 @@ body.planner-mode .planner-wrap{display:block}
 .sm-mon-b{padding:4px 8px 8px}
 .sm-hsub{font-size:11px;font-weight:700;color:#6b7280;margin:10px 0 5px}
 .sm-empty{text-align:center;padding:34px 16px;color:#6b7280}
+
+/* ── KPI dashboard ─────────────────────────────────────────────────────── */
+.kpi-hero{display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:#fff;border:1px solid #dde3ed;border-radius:8px;padding:16px 20px;margin:12px 0}
+.kpi-hero .num{font-size:52px;font-weight:600;line-height:1;color:#111827;letter-spacing:-.5px}
+.kpi-hero .lbl{font-size:12px;color:#4b5563;margin-top:6px}
+.kpi-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;border:1.5px solid}
+.kpi-pill.good{color:#0a5c0a;border-color:#0ca30c;background:#eef9ee}
+.kpi-pill.bad{color:#8a2222;border-color:#d03b3b;background:#fbeeee}
+.kpi-delta{font-size:12px;color:#4b5563}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.kpi-tile{background:#fff;border:1px solid #dde3ed;border-radius:7px;padding:10px 12px}
+.kpi-tile .l{font-size:10.5px;color:#4b5563;line-height:1.3;margin-bottom:3px}
+.kpi-tile .v{font-size:22px;font-weight:600;color:#111827;line-height:1.1}
+.kpi-tile .s{font-size:10.5px;color:#6b7280;margin-top:3px}
+.kpi-tile.warn .v{color:#111827}
+.kpi-tile .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.kpi-sec{background:#fff;border:1px solid #dde3ed;border-radius:8px;padding:12px 14px;margin:12px 0}
+.kpi-sec h3{margin:0 0 2px;font-size:13px;font-weight:700;color:#111827}
+.kpi-sec .sub{font-size:11px;color:#6b7280;margin-bottom:8px}
+.kpi-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:860px){.kpi-grid2{grid-template-columns:1fr}}
+.kpi-tbl{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.kpi-tbl th{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:#4b5563;text-align:right;padding:6px 8px;border-bottom:1px solid #e5e7eb;font-weight:700;white-space:nowrap}
+.kpi-tbl th:first-child,.kpi-tbl td:first-child{text-align:left}
+.kpi-tbl td{text-align:right;padding:6px 8px;border-bottom:1px solid #f3f4f6;color:#111827}
+.kpi-tbl tr.cur td{background:#fafbfd}
+.kpi-tbl td.mut{color:#9ca3af}
+.kpi-tbl td.bad{color:#8a2222;font-weight:700}
+.kpi-tbl .grp{border-left:1px solid #e5e7eb}
+.kpi-note{font-size:11px;color:#6b7280;margin-top:8px;line-height:1.5}
+.kpi-chart svg{width:100%;height:auto;display:block}
+.kpi-chart .mark{cursor:pointer}
+.kpi-tip{position:fixed;z-index:60;pointer-events:none;background:#111827;color:#fff;font-size:11.5px;line-height:1.45;padding:6px 9px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18);max-width:240px}
+.kpi-tip b{font-weight:700}
+.kpi-empty{color:#6b7280;font-size:12px;padding:18px 0;text-align:center}
 </style>
 </head>
 <body>
@@ -316,6 +351,7 @@ body.planner-mode .planner-wrap{display:block}
 <nav class="smtabs non-warehouse" id="smTabs">
   <button id="tabBuffer" class="on" onclick="smShowTab('buffer')">&#127981; Buffer Stock</button>
   <button id="tabSpecial" onclick="smShowTab('special')">&#9986; Special Makes<span class="cnt" id="smTabCount">0</span></button>
+  <button id="tabKpi" onclick="smShowTab('kpi')">&#128202; KPIs</button>
 </nav>
 
 <div class="viewer-banner">&#128065; Read-only view of the production buffer plan published by the production team. Tap any row for its stock runway. <span id="bannerDate" style="font-weight:700"></span></div>
@@ -517,6 +553,11 @@ body.planner-mode .planner-wrap{display:block}
       <strong style="color:#0369a1">Pipeline</strong> = units completed but not yet in Sage (counts towards stock until 7am the next day). <strong>ACT WOP</strong> = your adjusted make qty. Days stock = (In stock − On SOP + Pipeline) ÷ daily usage. Click a row for the stock runway.
     </p>
 
+  </div>
+
+  <div id="kpiView" class="hidden">
+    <div id="kpiBody"></div>
+    <div id="kpiTip" class="kpi-tip" hidden></div>
   </div>
 
   <div id="smView" class="hidden">
@@ -2322,17 +2363,20 @@ function smPrefix(c){ return c.indexOf('OLIVER')>=0 ? 'OH' : 'TIB'; }
 function smIsOH(c){ return (c||'').indexOf('OLIVER')>=0; }
 
 function smShowTab(which){
-  var buf = which!=='special';
+  var sp = which==='special', kpi = which==='kpi', buf = !sp && !kpi;
   document.getElementById('tabBuffer').classList.toggle('on', buf);
-  document.getElementById('tabSpecial').classList.toggle('on', !buf);
-  document.getElementById('smView').classList.toggle('hidden', buf);
+  document.getElementById('tabSpecial').classList.toggle('on', sp);
+  var tk=document.getElementById('tabKpi'); if(tk) tk.classList.toggle('on', kpi);
+  document.getElementById('smView').classList.toggle('hidden', !sp);
+  var kv=document.getElementById('kpiView'); if(kv) kv.classList.toggle('hidden', !kpi);
   ['uzone','dataWrap','pastePanel'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display = buf ? '' : 'none';
   });
   // The toolbar is buffer-specific (its paste button and SKU counts). Special
   // Makes has its own paste button, so hide it rather than show two.
   var tb=document.querySelector('.toolbar'); if(tb) tb.style.display = buf ? '' : 'none';
-  if(!buf) smRender();
+  if(sp) smRender();
+  if(kpi) kpiRender();
 }
 
 function smTogglePaste(){
@@ -3112,6 +3156,225 @@ function smDocMeta(wo){
 
 
 
+
+// ══════════════════════════════════════════════════════════════════════════
+// KPI DASHBOARD
+//
+// Everything here is computed from state the app already persists - nothing
+// is fetched, nothing new is stored - so it is exactly as good as the history
+// behind it, and it says so: each figure names the date its data starts.
+//
+// Two lead times are shown side by side on purpose. "Planned start -> done"
+// exists for every job ever completed, because the PM always typed a start
+// date. "Raised -> done" only exists for jobs raised after createdAt began
+// being stamped, and is the true lead time. Mixing them into one median would
+// quietly change what the number means from one month to the next.
+var KPI_TARGET=93;      // the buffer tile turns green only ABOVE this (updateStats)
+var KPI_SERIES='#2a78d6', KPI_GOOD='#0ca30c', KPI_CRIT='#d03b3b', KPI_WARN='#fab219';
+
+function kpiKey(ds){ return (ds||'').slice(0,7); }
+function kpiMonthLabel(k){ return new Date(k+'-01T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}); }
+function kpiDays(a,b){ return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5); }
+function kpiMedian(a){ if(!a.length) return null; var s=a.slice().sort(function(x,y){return x-y;}), m=s.length>>1; return s.length%2 ? s[m] : (s[m-1]+s[m])/2; }
+function kpiMean(a){ return a.length ? a.reduce(function(x,y){return x+y;},0)/a.length : null; }
+function kpiN(n,d){ return (n==null||isNaN(n)) ? '&mdash;' : Number(n).toLocaleString('en-GB',{minimumFractionDigits:d||0, maximumFractionDigits:d||0}); }
+function kpiMonths(n){
+  var t=now(), out=[];
+  for(var i=n-1;i>=0;i--){ var m=new Date(t.getFullYear(), t.getMonth()-i, 1); out.push(m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')); }
+  return out;
+}
+function kpiUnits(list){ return list.reduce(function(s,w){ return s+w.items.reduce(function(t,i){return t+(i.qty||0);},0); },0); }
+
+// The in-stock % exactly as the buffer tile computes it, for when there is no
+// snapshot yet but a buffer is loaded - so the hero is never blank on day one.
+function kpiLivePct(){
+  if(!rows.length) return null;
+  var ok=rows.filter(function(r){return r.status==='ok'||r.status==='healthy';}).length;
+  return Math.round(1000*ok/rows.length)/10;
+}
+
+function kpiCompute(){
+  var today=d2s(now()), months=kpiMonths(6), by={};
+  months.forEach(function(k){ by[k]={refs:{}, lines:0, units:0, onTime:0, late:0, leadStart:[], leadRaised:[], smRaised:0, smUnits:0, smDismissed:0, snaps:[]}; });
+  // The history holds one row per SKU line, but the questions are about WORKS
+  // ORDERS - so lines are folded back into their job first. A job is done when
+  // its last line is done, and late if any line was late; a two-SKU order must
+  // not count twice in a median.
+  completedWOs.forEach(function(c){
+    var b=by[kpiKey(c.completed)]; if(!b) return;
+    b.lines++; b.units+=(c.qty||0);
+    var j=b.refs[c.ref] || (b.refs[c.ref]={completed:'', late:false, start:c.start, createdAt:c.createdAt, due:c.due});
+    if(c.completed>j.completed) j.completed=c.completed;
+    if(c.due && c.completed>c.due) j.late=true;
+    if(c.start && !j.start) j.start=c.start;
+    if(c.createdAt && !j.createdAt) j.createdAt=c.createdAt;
+    if(c.due) j.due=c.due;
+  });
+  months.forEach(function(k){ var b=by[k];
+    Object.keys(b.refs).forEach(function(ref){ var j=b.refs[ref];
+      if(j.due){ if(j.late) b.late++; else b.onTime++; }
+      if(j.start)     b.leadStart.push(kpiDays(j.start, j.completed));
+      if(j.createdAt) b.leadRaised.push(kpiDays(j.createdAt, j.completed));
+    });
+  });
+  smMade.forEach(function(m){ var b=by[kpiKey(m.raisedAt)]; if(b){ b.smRaised++; b.smUnits+=(m.qty||0); } });
+  smDropped.forEach(function(o){ var b=by[kpiKey(o.dismissedAt)]; if(b) b.smDismissed++; });
+  bufSnaps.forEach(function(x){ var b=by[kpiKey(x.date)]; if(b) b.snaps.push(x); });
+
+  var out=months.map(function(k){
+    var b=by[k], pcts=b.snaps.map(function(x){return x.pct;});
+    return { key:k, label:kpiMonthLabel(k), cur:k===kpiKey(today),
+      wos:Object.keys(b.refs).length, lines:b.lines, units:b.units,
+      onTimePct:(b.onTime+b.late) ? 100*b.onTime/(b.onTime+b.late) : null, late:b.late,
+      medStart:kpiMedian(b.leadStart), nStart:b.leadStart.length,
+      medRaised:kpiMedian(b.leadRaised), nRaised:b.leadRaised.length,
+      smRaised:b.smRaised, smUnits:b.smUnits, smDismissed:b.smDismissed,
+      avgPct:kpiMean(pcts), minPct:pcts.length?Math.min.apply(null,pcts):null,
+      daysBelow:pcts.filter(function(x){return x<=KPI_TARGET;}).length, snapDays:pcts.length };
+  });
+
+  var latest=bufSnaps.length ? bufSnaps[bufSnaps.length-1] : null;
+  var prev=bufSnaps.length>1 ? bufSnaps[bufSnaps.length-2] : null;
+  var stock=WOs.filter(function(w){return !w.sm;}), specials=WOs.filter(function(w){return w.sm;});
+  var ages=WOs.map(function(w){ return w.createdAt ? kpiDays(w.createdAt,today) : null; }).filter(function(x){return x!=null;});
+  var wk=new Date(now()); wk.setDate(wk.getDate()-7); var since=d2s(wk);
+  var last7=completedWOs.filter(function(c){ return c.completed>since && c.completed<=today; });
+  var waiting=smPending.map(function(o){ return o.seenAt ? kpiDays(o.seenAt,today) : null; }).filter(function(x){return x!=null;});
+  var createdDates=WOs.concat(completedWOs).map(function(w){return w.createdAt;}).filter(Boolean).sort();
+  return {
+    today:today, months:out, latest:latest, prev:prev, livePct:kpiLivePct(),
+    stock:{n:stock.length, units:kpiUnits(stock)}, specials:{n:specials.length, units:kpiUnits(specials)},
+    overdue:WOs.filter(function(w){ return w.due && w.due<today; }).length,
+    oldestOpen:ages.length ? Math.max.apply(null,ages) : null, agedN:ages.length, liveN:WOs.length,
+    last7:{ wos:Object.keys(last7.reduce(function(a,c){a[c.ref]=1;return a;},{})).length, units:last7.reduce(function(s,c){return s+(c.qty||0);},0) },
+    pending:{ n:smPending.length, oldest:waiting.length ? Math.max.apply(null,waiting) : null },
+    firstSnap:bufSnaps.length ? bufSnaps[0].date : null,
+    firstCreated:createdDates[0]||null,
+    firstCompleted:completedWOs.length ? completedWOs.map(function(c){return c.completed;}).sort()[0] : null
+  };
+}
+
+// ── charts: plain SVG, one series each, hover tooltip on every mark ────────
+function kpiLineChart(snaps){
+  var W=640, H=200, L=38, R=14, T=16, B=28;
+  var pts=snaps.slice(-60);
+  if(pts.length<2) return '<div class="kpi-empty">'+(pts.length?'One day so far - the line appears from the second paste.':'No snapshots yet - the series starts with the next buffer paste on this version.')+'</div>';
+  var lo=Math.min(KPI_TARGET-3, Math.floor(Math.min.apply(null,pts.map(function(p){return p.pct;}))/5)*5), hi=100;
+  var x0=new Date(pts[0].date+'T00:00:00'), x1=new Date(pts[pts.length-1].date+'T00:00:00');
+  var span=Math.max(1,(x1-x0)/864e5);
+  var X=function(d){ return L+((new Date(d+'T00:00:00')-x0)/864e5)/span*(W-L-R); };
+  var Y=function(v){ return T+(hi-v)/(hi-lo)*(H-T-B); };
+  var out='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Daily in-stock percentage">';
+  [lo, Math.round((lo+hi)/2), hi].forEach(function(v){ out+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#e5e7eb" stroke-width="1"/><text x="'+(L-6)+'" y="'+(Y(v)+3.5)+'" font-size="10" fill="#6b7280" text-anchor="end">'+v+'%</text>'; });
+  out+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(KPI_TARGET)+'" y2="'+Y(KPI_TARGET)+'" stroke="#9ca3af" stroke-width="1"/>'
+      +'<text x="'+(L+4)+'" y="'+(Y(KPI_TARGET)-4)+'" font-size="10" fill="#6b7280">target '+KPI_TARGET+'%</text>';   // left edge: the right edge belongs to the last point's label
+  var d=pts.map(function(p,i){ return (i?'L':'M')+X(p.date).toFixed(1)+' '+Y(p.pct).toFixed(1); }).join(' ');
+  out+='<path d="'+d+'" fill="none" stroke="'+KPI_SERIES+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+  pts.forEach(function(p,i){
+    var last=i===pts.length-1;
+    out+='<circle class="mark" cx="'+X(p.date).toFixed(1)+'" cy="'+Y(p.pct).toFixed(1)+'" r="'+(last?5:4)+'" fill="'+KPI_SERIES+'" stroke="#fff" stroke-width="2" '
+        +'data-tip="<b>'+esc(fmtD(p.date))+'</b><br>'+p.pct+'% in stock<br>'+p.critical+' critical &middot; '+p.low+' low<br>'+kpiN(p.unitsShort)+' units short"/>';
+    if(last) out+='<text x="'+(X(p.date)-8).toFixed(1)+'" y="'+(Y(p.pct)-9).toFixed(1)+'" font-size="11" font-weight="700" fill="#111827" text-anchor="end">'+p.pct+'%</text>';
+  });
+  var lab=function(dt){ return new Date(dt+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short'}); };
+  out+='<text x="'+L+'" y="'+(H-8)+'" font-size="10" fill="#6b7280">'+lab(pts[0].date)+'</text>'
+      +'<text x="'+(W-R)+'" y="'+(H-8)+'" font-size="10" fill="#6b7280" text-anchor="end">'+lab(pts[pts.length-1].date)+'</text>';
+  return out+'</svg>';
+}
+function kpiColumnChart(months){
+  var W=640, H=200, L=44, R=14, T=22, B=28, n=months.length;
+  var max=Math.max.apply(null, months.map(function(m){return m.units;}).concat([1]));
+  var step=Math.pow(10, Math.floor(Math.log10(max))); var top=Math.ceil(max/step)*step; if(top/step<3) top=Math.ceil(max/(step/2))*(step/2);
+  var Y=function(v){ return T+(1-v/top)*(H-T-B); }, band=(W-L-R)/n, bw=Math.min(24, band*0.5);
+  var out='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Units completed per month">';
+  [0, top/2, top].forEach(function(v){ out+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#e5e7eb" stroke-width="1"/><text x="'+(L-6)+'" y="'+(Y(v)+3.5)+'" font-size="10" fill="#6b7280" text-anchor="end">'+kpiN(v)+'</text>'; });
+  months.forEach(function(m,i){
+    var cx=L+band*(i+0.5), x=cx-bw/2, y=Y(m.units), h=Y(0)-y, r=Math.min(4,h);
+    var path=h>0 ? 'M'+x+' '+Y(0)+' V'+(y+r)+' a'+r+' '+r+' 0 0 1 '+r+' -'+r+' H'+(x+bw-r)+' a'+r+' '+r+' 0 0 1 '+r+' '+r+' V'+Y(0)+' Z' : '';
+    out+='<rect class="mark" x="'+(cx-band/2)+'" y="'+T+'" width="'+band+'" height="'+(H-T-B)+'" fill="transparent" data-tip="<b>'+m.label+(m.cur?' (to date)':'')+'</b><br>'+kpiN(m.units)+' units &middot; '+m.wos+' works orders<br>on time '+(m.onTimePct==null?'&mdash;':kpiN(m.onTimePct)+'%')+'"/>';
+    if(path) out+='<path d="'+path+'" fill="'+KPI_SERIES+'" pointer-events="none"/>';
+    out+='<text x="'+cx+'" y="'+(y-5)+'" font-size="10.5" font-weight="700" fill="#111827" text-anchor="middle" pointer-events="none">'+kpiN(m.units)+'</text>'
+        +'<text x="'+cx+'" y="'+(H-8)+'" font-size="10" fill="'+(m.cur?'#111827':'#6b7280')+'" text-anchor="middle">'+m.label.replace(' 20',' ’')+'</text>';
+  });
+  return out+'</svg>';
+}
+
+function kpiRender(){
+  var el=document.getElementById('kpiBody'); if(!el) return;
+  var k=kpiCompute(), h='';
+
+  // ── hero: in-stock % today ─────────────────────────────────────────────
+  var pct=k.latest ? k.latest.pct : k.livePct, src=k.latest ? ('snapshot '+fmtD(k.latest.date)) : (k.livePct!=null ? 'current buffer, not yet snapshotted' : null);
+  if(pct==null){
+    h+='<div class="kpi-hero"><div><div class="num" style="color:#9ca3af">&mdash;</div><div class="lbl">In stock (OK + Healthy) &middot; no buffer loaded yet</div></div></div>';
+  } else {
+    var good=pct>KPI_TARGET, delta=(k.latest&&k.prev) ? (k.latest.pct-k.prev.pct) : null;
+    h+='<div class="kpi-hero"><div><div class="num">'+kpiN(pct,1)+'%</div><div class="lbl">In stock &mdash; SKUs at OK or Healthy &middot; '+esc(src)+'</div></div>'
+      +'<div><span class="kpi-pill '+(good?'good':'bad')+'">'+(good?'&#10003; On target':'&#9888; Below target')+' &middot; '+KPI_TARGET+'%</span>'
+      +(delta!=null ? '<div class="kpi-delta" style="margin-top:7px">'+(delta>=0?'+':'')+kpiN(delta,1)+' pts vs '+fmtD(k.prev.date)+'</div>' : '')+'</div>'
+      +(k.latest ? '<div class="kpi-delta" style="margin-left:auto;text-align:right"><span class="dot" style="background:'+KPI_CRIT+'"></span>'+k.latest.critical+' critical &nbsp; <span class="dot" style="background:'+KPI_WARN+'"></span>'+k.latest.low+' low<br>'+kpiN(k.latest.unitsShort)+' units short of the 28-day buffer</div>' : '')
+      +'</div>';
+  }
+
+  // ── tiles ──────────────────────────────────────────────────────────────
+  var tile=function(l,v,s,cls){ return '<div class="kpi-tile'+(cls?' '+cls:'')+'"><div class="l">'+l+'</div><div class="v">'+v+'</div>'+(s?'<div class="s">'+s+'</div>':'')+'</div>'; };
+  h+='<div class="kpi-row">'
+    +tile('Completed, last 7 days', kpiN(k.last7.wos), kpiN(k.last7.units)+' units')
+    +tile('Live works orders', kpiN(k.liveN), kpiN(k.stock.units+k.specials.units)+' units on WOP &middot; '+k.specials.n+' special')
+    +tile('Overdue works orders', kpiN(k.overdue), k.overdue ? '<span class="dot" style="background:'+KPI_CRIT+'"></span>past their due date' : 'none past due')
+    +tile('Oldest open job', k.oldestOpen==null ? '&mdash;' : kpiN(k.oldestOpen)+'d', k.agedN ? 'days since raised &middot; '+k.agedN+' of '+k.liveN+' dated' : 'needs jobs raised on this version')
+    +tile('Specials awaiting review', kpiN(k.pending.n), k.pending.oldest==null ? (k.pending.n?'waiting time from next paste':'queue empty') : 'oldest waiting '+k.pending.oldest+'d')
+    +'</div>';
+
+  // ── charts ─────────────────────────────────────────────────────────────
+  h+='<div class="kpi-grid2">'
+    +'<div class="kpi-sec kpi-chart"><h3>In stock, daily</h3><div class="sub">One point per buffer paste &middot; '+(k.firstSnap?'from '+fmtD(k.firstSnap):'series not started')+'</div>'+kpiLineChart(bufSnaps)+'</div>'
+    +'<div class="kpi-sec kpi-chart"><h3>Units completed, monthly</h3><div class="sub">From the completed history &middot; '+(k.firstCompleted?'from '+fmtD(k.firstCompleted):'nothing completed yet')+'</div>'+kpiColumnChart(k.months)+'</div>'
+    +'</div>';
+
+  // ── monthly table ──────────────────────────────────────────────────────
+  var pc=function(v,bad){ return v==null ? '<td class="mut">&mdash;</td>' : '<td'+(bad?' class="bad"':'')+'>'+kpiN(v)+'%</td>'; };
+  var d=function(v,n){ return v==null ? '<td class="mut">&mdash;</td>' : '<td>'+kpiN(v,v%1?1:0)+'<span style="color:#9ca3af;font-weight:400"> /'+n+'</span></td>'; };
+  h+='<div class="kpi-sec"><h3>By month</h3><div class="sub">Last six months, newest last &middot; the current month is to date</div>'
+    +'<div style="overflow-x:auto"><table class="kpi-tbl"><thead><tr>'
+    +'<th>Month</th><th>Works orders</th><th>Units</th><th>On time</th>'
+    +'<th class="grp" title="median days from the planned start date to completion">Planned start &rarr; done</th>'
+    +'<th title="median days from the day the job was raised to completion">Raised &rarr; done</th>'
+    +'<th class="grp">Specials raised</th><th>Special units</th><th>Dismissed</th>'
+    +'<th class="grp">In stock, avg</th><th>Low point</th><th>Days &le; '+KPI_TARGET+'%</th>'
+    +'</tr></thead><tbody>'
+    +k.months.map(function(m){
+      return '<tr'+(m.cur?' class="cur"':'')+'><td>'+m.label+(m.cur?' <span style="color:#9ca3af">to date</span>':'')+'</td>'
+        +'<td>'+kpiN(m.wos)+'</td><td>'+kpiN(m.units)+'</td>'+pc(m.onTimePct, m.onTimePct!=null&&m.onTimePct<90)
+        +'<td class="grp">'+(m.medStart==null?'<span class="mut" style="color:#9ca3af">&mdash;</span>':kpiN(m.medStart,m.medStart%1?1:0)+'d')+'</td>'
+        +'<td>'+(m.medRaised==null?'<span style="color:#9ca3af">&mdash;</span>':kpiN(m.medRaised,m.medRaised%1?1:0)+'d <span style="color:#9ca3af;font-weight:400">/'+m.nRaised+'</span>')+'</td>'
+        +'<td class="grp">'+kpiN(m.smRaised)+'</td><td>'+kpiN(m.smUnits)+'</td><td>'+kpiN(m.smDismissed)+'</td>'
+        +'<td class="grp">'+(m.avgPct==null?'<span style="color:#9ca3af">&mdash;</span>':kpiN(m.avgPct,1)+'%')+'</td>'
+        +'<td>'+(m.minPct==null?'<span style="color:#9ca3af">&mdash;</span>':kpiN(m.minPct,1)+'%')+'</td>'
+        +'<td'+(m.daysBelow?' class="bad"':'')+'>'+(m.snapDays?kpiN(m.daysBelow)+' <span style="color:#9ca3af;font-weight:400">/'+m.snapDays+'</span>':'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'</tr>';
+    }).join('')
+    +'</tbody></table></div>'
+    +'<div class="kpi-note">'
+    +'<b>On time</b> is completed on or before the due date the PM set. '
+    +'<b>Planned start &rarr; done</b> is the median days from the start date typed on the works order - it exists for every job ever completed. '
+    +'<b>Raised &rarr; done</b> is the median from the day the job actually entered the system'+(k.firstCreated?', stamped since '+fmtD(k.firstCreated):'')+' - the true lead time, shown with how many jobs it rests on, and blank until jobs raised on this version complete. '
+    +'<b>In stock</b> columns come from one snapshot per buffer paste'+(k.firstSnap?', starting '+fmtD(k.firstSnap):'')+'; nothing before that can be reconstructed.'
+    +'</div></div>';
+
+  el.innerHTML=h;
+  kpiWireTips(el);
+}
+
+// One tooltip for every mark: the mark carries its own text in data-tip.
+function kpiWireTips(root){
+  var tip=document.getElementById('kpiTip'); if(!tip) return;
+  root.querySelectorAll('.mark').forEach(function(m){
+    m.addEventListener('mousemove', function(e){ tip.innerHTML=m.getAttribute('data-tip'); tip.hidden=false;
+      var x=e.clientX+12, y=e.clientY+12; if(x+250>window.innerWidth) x=e.clientX-250; tip.style.left=x+'px'; tip.style.top=y+'px'; });
+    m.addEventListener('mouseleave', function(){ tip.hidden=true; });
+  });
+}
 </script>
 <script>
 function showTrimCosts(){
