@@ -678,7 +678,7 @@ function loadPaste(){
   rows=built;
   document.getElementById('pasteTA').value='';
   document.getElementById('pastePanel').classList.add('hidden');
-  recalcWOs(); recalcQtys(); showData(); saveState();
+  recalcWOs(); recalcQtys(); snapshotBuffer(); showData(); saveState();
 }
 
 function mkRow(code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m){
@@ -2017,7 +2017,7 @@ function publishData(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
   if(!rows.length){ alert('Load buffer data first.'); return; }
   var state={rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,
     savedAt:new Date().toISOString()};
   var blob=new Blob([JSON.stringify(state)],{type:'application/json'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
@@ -2224,7 +2224,7 @@ function dbSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveState,1200)
 function saveState(){
   try{
     localStorage.setItem('tibard_production',JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,
       savedAt:new Date().toISOString()}));
     var ind=document.getElementById('saveInd'); if(ind){ind.innerHTML='✓ Saved';setTimeout(function(){ind.textContent='';},2000);}
   }catch(e){console.log('Save failed:',e);}
@@ -2237,7 +2237,7 @@ function loadState(){
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
-    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
+    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; bufSnaps=s.bufSnaps||[]; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
     // Anything left in the old review list becomes a queue item needing a decision.
     (s.smReview||[]).forEach(function(o){
       if(!smSeen[o.key] && !smPending.some(function(p){return p.key===o.key;})) smPending.push(o);
@@ -2255,7 +2255,7 @@ function clearAll(){ if(!IS_EDITOR) return;
   try{
     localStorage.removeItem('tibard_production');
     rows=[];WOs=[];completedWOs=[];
-    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};styleEdits={};chartEdits={};chartColEdits={};
+    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};
     document.getElementById('dataWrap').classList.add('hidden');
     document.getElementById('uzone').classList.remove('hidden');
     document.getElementById('lastUpdated').textContent='';
@@ -3055,6 +3055,27 @@ function smCustomerFor(sm, code){
 // the same way data.json is. The app stores only the file name, so the link
 // survives a cleared browser and every viewer gets it from the same place.
 var smDocs={};                 // works order ref -> {name, at}  (file name in the repo folder)
+
+// ── buffer snapshots: the in-stock % as a series ────────────────────────────
+// The buffer paste replaces `rows` wholesale, so the 93% figure on the tiles
+// only ever describes today and the monthly trend can never be rebuilt after
+// the fact. This keeps one small row per day the buffer was pasted - the same
+// counts the tiles show, taken at the same moment - so the series exists from
+// now on. A second paste on the same day replaces that day's row: the latest
+// figures are the day's figures, and twice-a-day pasting must not double-count.
+var bufSnaps=[];               // [{date, skus, critical, low, ok, healthy, pct, unitsShort, onWOP}]
+function snapshotBuffer(){
+  if(!rows.length) return;
+  var n={critical:0, low:0, ok:0, healthy:0}, short=0, onWOP=0;
+  rows.forEach(function(r){ n[r.status]=(n[r.status]||0)+1; short+=(r.wopRec||0); onWOP+=(r.onWOP||0); });
+  var snap={ date:d2s(now()), skus:rows.length,
+             critical:n.critical, low:n.low, ok:n.ok, healthy:n.healthy,
+             pct: Math.round(1000*(n.ok+n.healthy)/rows.length)/10,
+             unitsShort: Math.round(short), onWOP: Math.round(onWOP) };
+  bufSnaps=bufSnaps.filter(function(x){ return x.date!==snap.date; });
+  bufSnaps.push(snap);
+  bufSnaps.sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+}
 var SM_DOC_DIR='works-orders/';
 function smDocUrl(name){ return SM_DOC_DIR+name; }
 function smLinkDoc(ref){
