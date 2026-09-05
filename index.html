@@ -644,6 +644,16 @@ function fmtD(ds){ if(!ds)return''; return new Date(ds).toLocaleDateString('en-G
 function dash(){ return '<span style="color:#e5e7eb">&mdash;</span>'; }
 function d2s(d){ var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0'); return y+'-'+m+'-'+dd; }
 
+// Every works order is born through here, so the day it was raised is never
+// missed. 'start' is the PLANNED start the PM types in and 'due' the target,
+// so neither says when the job actually entered the system - which is the
+// date lead time and backlog age have to be measured from. A split keeps the
+// original's date: it is the same job in two halves, not a new one.
+function stampWO(wo, inherit){
+  wo.createdAt = inherit || d2s(now());
+  return wo;
+}
+
 // ── UI ─────────────────────────────────────────────────────────────────────
 function togglePaste(){ var p=document.getElementById('pastePanel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')) document.getElementById('pasteTA').focus(); }
 function togglePB(id){ document.getElementById(id).classList.toggle('open'); }
@@ -862,7 +872,7 @@ function saveBulk(){ if(!IS_EDITOR) return;
     if(code.toLowerCase()==='code'||(parts[0].toLowerCase()==='start')) return; // header row
     if(!start){ skipped++; errors.push('Line '+(idx+1)+': unrecognised date "'+parts[0]+'"'); return; }
     if(!code||qty<=0){ skipped++; errors.push('Line '+(idx+1)+': missing code or qty'); return; }
-    WOs.push({ref:nextWORef(), start:start, due:dueStr, items:[{code:code, qty:qty}]});
+    WOs.push(stampWO({ref:nextWORef(), start:start, due:dueStr, items:[{code:code, qty:qty}]}));
     created++;
   });
   if(!created){ alert('No valid rows imported.\n\n'+errors.slice(0,8).join('\n')); return; }
@@ -913,7 +923,7 @@ function saveWO(){ if(!IS_EDITOR) return;
     items.push({code:code, qty:qty});
   }
   if(!items.length){ alert('No valid SKU/quantity lines found.\n\nUse: code [tab] quantity, one per line.'); return; }
-  WOs.push({ref:ref, start:start, due:due, items:items});
+  WOs.push(stampWO({ref:ref, start:start, due:due, items:items}));
   document.getElementById('woRef').value='';
   document.getElementById('woStart').value='';
   document.getElementById('woDue').value='';
@@ -968,6 +978,12 @@ function recordCompleted(wo, it){
     start: wo.start || '',
     due: wo.due || '',
     completed: d2s(now()),
+    // The day it was raised, the day it was printed, and for a special make the
+    // day its line first arrived from Sage. Without these the history could
+    // only ever say WHEN a job finished, never how long it took.
+    createdAt: wo.createdAt,
+    printedAt: wo.printedAt,
+    seenAt: wo.sm ? wo.sm.seenAt : undefined,
     sm: wo.sm ? true : undefined,
     customer: wo.sm ? wo.sm.customer : undefined
   });
@@ -1515,7 +1531,7 @@ function splitWO(i){ if(!IS_EDITOR) return;
   wo.items=wo.items.filter(function(x){return x.qty>0;});
   // Create the new WO (fresh auto number, same dates - edit its due date in the popup that opens)
   var newRef=nextWORef();
-  WOs.push({ref:newRef, start:wo.start, due:wo.due, items:moved});
+  WOs.push(stampWO({ref:newRef, start:wo.start, due:wo.due, items:moved}, wo.createdAt));
   var newIdx=WOs.length-1;
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderCompleted(); saveState();
   alert('Split done.\n\n'+wo.ref+' keeps '+wo.items.map(function(x){return Math.round(x.qty)+' x '+x.code;}).join(', ')
@@ -1649,7 +1665,7 @@ function undoCompleted(idx){ if(!IS_EDITOR) return;
     var it=existing.items.find(function(x){ return x.code===c.code; });
     if(it) it.qty+=c.qty; else existing.items.push({code:c.code, qty:c.qty});
   } else {
-    WOs.push({ref:c.ref, start:c.start, due:c.due, items:[{code:c.code, qty:c.qty}]});
+    WOs.push({ref:c.ref, start:c.start, due:c.due, items:[{code:c.code, qty:c.qty}], createdAt:c.createdAt});
   }
   completedWOs.splice(idx,1);
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
@@ -1947,7 +1963,7 @@ function doCreateWOs(){ if(!IS_EDITOR) return;
   er.forEach(function(r){
     var ref=nextWORef(reserved);
     reserved[ref.toUpperCase()]=true;
-    WOs.push({ref:ref, start:start, due:due, items:[{code:r.code, qty:r.actWop}]});
+    WOs.push(stampWO({ref:ref, start:start, due:due, items:[{code:r.code, qty:r.actWop}]}));
   });
   // Untick every row now the works orders are made — prevents accidentally creating them again
   rows.forEach(function(r){ r.included=false; });
@@ -2393,7 +2409,7 @@ function smLoadPaste(){
     if(seen && seen.what==='wo'){ already++; return; }
     if(seen && seen.what==='dismissed'){ dismissedBefore++; return; }
     if(pendKeys[o.key]) return;                      // already waiting
-    smPending.push(o); pendKeys[o.key]=true; added++;
+    o.seenAt=d2s(now()); smPending.push(o); pendKeys[o.key]=true; added++;
   });
 
   // Sort the queue by sales order then line order, so multi-product orders are
@@ -2447,10 +2463,10 @@ function smCreate(key){
   var o=smTake(key); if(!o) return;
   var part=smNextPart(smSoKey(o)), ref=smMakeRef(o,part);
   var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
-  WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
-    sm:{ lineKey:o.key, company:o.company, so:o.so, seq:o.seq, part:part,
+  WOs.push(stampWO({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
+    sm:{ lineKey:o.key, seenAt:o.seenAt||'', company:o.company, so:o.so, seq:o.seq, part:part,
          customer:o.customer, desc:o.desc, maker:o.maker,
-         promised:o.promised, dateAssumed:!hasDate, notes:[] } });
+         promised:o.promised, dateAssumed:!hasDate, notes:[] } }));
   smSeen[o.key]={what:'wo', ref:ref};
   smLog(o, ref, part);
   smAfterChange();
@@ -2462,7 +2478,8 @@ function smCreate(key){
 function smLog(o, ref, part){
   smMade.push({key:o.key, ref:ref, part:part, code:o.code, desc:o.desc,
                qty:smTake0(o), ordered:o.qty,
-               so:o.so, company:o.company, customer:o.customer, raisedAt:d2s(now())});
+               so:o.so, company:o.company, customer:o.customer,
+               seenAt:o.seenAt, raisedAt:d2s(now())});
 }
 
 function smDismiss(key){
@@ -2499,11 +2516,11 @@ function smCreateAllShown(){
     var o=smTake(k); if(!o) return;
     var part=smNextPart(smSoKey(o)), ref=smMakeRef(o,part);
     var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
-    WOs.push({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
-      sm:{ lineKey:o.key, company:o.company, so:o.so, seq:o.seq, part:part,
+    WOs.push(stampWO({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
+      sm:{ lineKey:o.key, seenAt:o.seenAt||'', company:o.company, so:o.so, seq:o.seq, part:part,
            customer:o.customer, custOrder:o.custOrder||'',
            custName:o.custName||o.customer||'', desc:o.desc, maker:o.maker,
-           promised:o.promised, dateAssumed:!hasDate, notes:[] } });
+           promised:o.promised, dateAssumed:!hasDate, notes:[] } }));
     smSeen[o.key]={what:'wo', ref:ref};
     smLog(o, ref, part);
   });
