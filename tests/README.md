@@ -16,6 +16,7 @@ Run against the real `index.html` in Chromium. No build step, no test runner —
 | `test-costedcust.js` | That the customer a product was costed for stands in when Sage has no name at all — the one-customer-per-special rule, so it is safe |
 | `test-collapse.js` | The two lists as collapsible banners — collapsing one only, remembering the choice across a reload, a button in a banner not collapsing it, and the live list carrying no action buttons |
 | `test-createdat.js` | Creation date stamps: every route a works order is born through, a split inheriting its parent's date, the completed record carrying created/printed dates, a re-opened legacy record staying blank, and a special make's first-seen date following it from the queue to the works order |
+| `test-snapshot.js` | The per-paste buffer snapshot: same counts as the tiles, a same-day re-paste replacing rather than appending, the next day appending in order, and the series surviving a reload and reaching the saved state |
 | `test-regress.js` | That the existing buffer flow still works alongside it — buffer paste, stock `WO-####` auto-numbering, and that a special make does not count towards buffer `On WOP` |
 
 Set `CHROME_PATH` if your Chromium is elsewhere.
