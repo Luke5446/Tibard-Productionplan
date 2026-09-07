@@ -46,9 +46,11 @@ five-minute Sage routine already reads.
    category are constants at the top of `exportFabricWriteOff` if they ever
    change.
 
-   **The file is saved as `TIB_WRITE_OFF_STOCK_TAKE.csv`**, the name of the
-   last file the routine accepted. Because the name is fixed, only one file
-   can wait in the folder at a time.
+   **Each export is its own file**, `Fabric_WriteOff_<date>_<hhmm>.csv`. The
+   routine takes any name (proven), so a dated, timed name means two exports
+   in a day cannot collide, a file still waiting in the folder cannot be
+   overwritten, and every Sage movement can be paired with the exact file
+   that caused it.
 
    **A forward-dated line is discarded silently.** Two test files dated
    08/09/2026 on 07/09/2026 were swept from the folder without posting and
@@ -101,6 +103,5 @@ the OH jackets; it is not yet used.
 ## First run
 
 Complete a works order on this version, press the button, and save the file
-to the shared folder **under its own name**. The routine takes it within five
-minutes; the movement shows in Sage's stock item history with Reference1
+to the shared folder. The routine takes it within five minutes; the movement shows in Sage's stock item history with Reference1
 `Cutting` and the works order number as the second reference.

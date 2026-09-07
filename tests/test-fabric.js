@@ -45,7 +45,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && kept.join()==='OHCJSCUMBRIA5601:10.1,ZZNOUSAGE:undefined'
    && f && f.std===9.3 && f.actual===10.1 && f.perGarment===1.55 && f.source==='All Costings' && g===null
    && csvLines.length===2 && csvLines[0]==='StockCode,Location,Bin,Qty,Reference1,Reference2,ActivityDate,WriteOffCat'
-   && csvLines[1]==='PC2001ECO,HOME,,10.1,Cutting,S-FAB1,08/09/2026,Manual Reduction' && (wo.text||'').indexOf('\r\n')>0 && wo.marked===1 && wo.dl==='TIB_WRITE_OFF_STOCK_TAKE.csv'
+   && csvLines[1]==='PC2001ECO,HOME,,10.1,Cutting,S-FAB1,08/09/2026,Manual Reduction' && (wo.text||'').indexOf('\r\n')>0 && wo.marked===1 && wo.dl==='Fabric_WriteOff_2026-09-08_1000.csv'
    && /1 write-off line\(s\) from 1 completed line\(s\), 10 m/.test(wo.first[0]) && /skipped/.test(wo.first[0]) && /Nothing new/.test(wo.second[0])
    && k.fabStd===9.3 && k.fabAct===10.1 && Math.abs(k.fabVar-8.6)<0.1 && k.fabLines===1 && k.fabMissing===1 && k.heads[2]==='Fabric m' && k.cells[2].startsWith('9') && k.cells[3]==='+8.6%';
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
