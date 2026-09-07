@@ -82,23 +82,40 @@ The largest gaps are `TI00x109` / `BANDANA109` (118 units each) and a handful
 of OH aprons and specials. Adding a code to All Costings, or importing it from
 the costing app, closes each one.
 
-## The size caveat
+## Per-size markers for the jackets
 
-All Costings holds **one usage per code**, and it gives most sizes of a style
-the same figure: every Cheshire long-sleeve jacket reads 1.45 m. The markers
-sheet (Google Sheets, *variants and markers*) says 1.41 m at 32" rising to
-1.73 m at 64" — a 23% spread. So the standard is right on average across a size
-mix and wrong by up to ~15% on an individual size. That is still far better
-than a hand-written number, but a per-size marker table is the next refinement
-if the variance figure turns out to matter. The markers sheet has that data for
-the OH jackets; it is not yet used.
+All Costings holds one usage per code and gives most sizes of a style the same
+figure. For the jackets that is wrong by size: on a 64" Stratford the flat
+figure is 1.15 m against a marker of 1.66 m. So the app carries a second table,
+`FABRIC_MARKERS`, from the Google Sheet *OH Jackets - Lay Plan - Varients*
+(both tabs): **361 codes** across 18 jacket styles, each with metres per
+garment — the marker length divided by the garments in the marker, so a
+two-garment marker is averaged across the two — and, for **100** of them, the
+mesh inserts' marker over its garments as a second fabric.
+
+Rules applied when the sheet was read: the default-fabric marker wins where a
+code has several; rows flagged do-not-use, patterns-only or damaged-fabric-only
+are left out. Markers take precedence over All Costings for the codes they
+cover; everything else is unchanged. Against All Costings the markers agree
+within 2% on average and disagree by up to 44% on individual sizes, which is
+the point.
+
+The marker says how much; the fabric itself still comes from All Costings (or
+the style's works order data), and the mesh's Sage code is whichever of the
+style's fabrics is a mesh — `MESH2290901` for Cheshire and Dorset. Mesh goes on
+the write-off as its own line, standard only; the cutting room's actual is for
+the main cloth.
+
+In the completed history since June, 135 codes and 2,906 units are now on
+per-size figures. To refresh the table after the sheet changes, re-run the
+parse in this session's notes — it is a plain CSV export of the sheet.
 
 ## Sources
 
 - All Costings via the costing app repo, `COSTDATA` (source file marked
   updated 19/09/24 — so anything costed since is only in the costing app's
   specials, which the import route covers).
-- Markers and variants: the two Google Sheets Luke linked on 7 Sep 2026.
+- Markers and variants: *OH Jackets - Lay Plan - Varients* (Google Sheet, both tabs), linked 7 Sep 2026. The aprons sheet holds lay quantities but no marker lengths, so it is not used.
 
 ## First run
 

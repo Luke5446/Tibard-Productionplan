@@ -20,6 +20,7 @@ Run against the real `index.html` in Chromium. No build step, no test runner —
 | `test-kpi.js` | The KPI tab against a fixture worked out by hand: per-works-order on-time % and lead-time medians (a two-SKU job counted once), specials raised/dismissed, snapshot averages and days below target, the hero and its delta, the tiles, and a hover tooltip |
 | `test-shared.js` | That a viewer loading data.json gets everything that was published - special makes history, imported works order data, snapshots - and that an editor absorbs published snapshots by date while keeping its own |
 | `test-fabric.js` | Fabric usage: the All Costings lookup, the *Metres cut* column pre-filled with the standard, an actual typed by the cutting room surviving a reload, the completed record carrying standard and actual, the write-off CSV with its exported marker and a second run finding nothing, and the KPI fabric columns |
+| `test-markers.js` | Per-size markers: a 32" and a 64" Cheshire getting their own figures plus mesh, a two-garment Cumbria marker averaged, precedence over the flat All Costings figure, an apron staying on All Costings, mesh as its own write-off line, and the KPI total including it |
 | `test-regress.js` | That the existing buffer flow still works alongside it — buffer paste, stock `WO-####` auto-numbering, and that a special make does not count towards buffer `On WOP` |
 
 Set `CHROME_PATH` if your Chromium is elsewhere.
