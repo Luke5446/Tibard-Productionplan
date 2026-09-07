@@ -31,9 +31,9 @@ five-minute Sage routine already reads.
    is written off; type over it and that is the actual, and the variance shows
    on the KPI tab.
 
-4. **The write-off is a button.** *Fabric write-off (Excel)* beside the
-   history export produces a real `.xlsx` in the routine's own layout,
-   confirmed against a row from the live sheet:
+4. **The write-off is a button.** *Fabric write-off (CSV)* beside the
+   history export produces a CSV in the routine's own layout, confirmed
+   against a row from the live sheet:
 
    | StockCode | Location | Bin | Qty | Reference1 | Reference2 | ActivityDate | WriteOffCat |
    |---|---|---|---|---|---|---|---|
@@ -48,10 +48,8 @@ five-minute Sage routine already reads.
 
    Qty is written to two decimal places. The hand-typed sheet carried whole
    metres; if the routine turns out to reject a decimal, round at that constant.
-
-   The workbook is built without a library — a stored zip of the six XML parts
-   Excel needs, dates as serials with a `dd/mm/yyyy` format — and the test
-   validates it with an independent parser, not the code that wrote it.
+   Dates are `dd/mm/yyyy` text, line endings are Windows `\r\n`, and a value
+   containing a comma or quote is quoted the way Excel would.
 
 5. **KPI tab:** *Fabric m* per month (standard, with a count of lines that had
    no usage) and *Cut vs std* where actuals were typed. ±5% or more is flagged.
@@ -93,4 +91,4 @@ Complete a works order on this version, press the button, and drop the file
 in the shared folder. The first file is the test of the routine's parser: if
 it posts, everything after is routine. If it does not, the two things to look
 at are whether the routine wants whole metres in Qty, and whether it expects
-a particular sheet name (this writes `Sheet1`).
+a particular file name (this writes `Fabric_WriteOff_<date>.csv`).
