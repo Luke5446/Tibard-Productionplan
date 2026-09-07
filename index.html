@@ -1738,7 +1738,15 @@ function exportCompleted(){
 // running it twice a day never writes the same fabric off twice; the lines
 // are marked when the file is produced. Windows line endings, because that is
 // what Excel itself writes and what a Windows routine expects.
+//
+// THE FILE NAME IS PART OF THE CONTRACT. The routine only processes a file
+// called TIB_WRITE_OFF_STOCK_TAKE.csv; anything else in the folder is swept
+// away unprocessed and without a rejection email - which is how two
+// correctly formatted test files vanished without moving stock. Because the
+// name is fixed, only one file can wait in the folder at a time: save it,
+// wait for the routine to take it, then save the next.
 var WRITEOFF_LOCATION='HOME', WRITEOFF_REF1='Cutting', WRITEOFF_CAT='Manual Reduction';
+var WRITEOFF_FILENAME='TIB_WRITE_OFF_STOCK_TAKE.csv';
 function ukDate(iso){ return iso ? iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4) : ''; }
 function csvCell(v){ v=(v==null)?'':String(v); return /[",\r\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
 function fabricWriteOffRows(todo){
@@ -1763,9 +1771,9 @@ function exportFabricWriteOff(){
   saveState();
   var text=rows.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n')+'\r\n';
   var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8;'}));
-  a.download='Fabric_WriteOff_'+stamp+'.csv'; a.click();
+  a.download=WRITEOFF_FILENAME; a.click();
   var total=rows.slice(1).reduce(function(t,r){ return t+r[3]; },0);
-  alert((rows.length-1)+' write-off line(s) from '+todo.length+' completed line(s), '+Math.round(total)+' m in total.\n\nSave the file to the shared folder for the Sage routine.'+skipNote);
+  alert((rows.length-1)+' write-off line(s) from '+todo.length+' completed line(s), '+Math.round(total)+' m in total.\n\nSave '+WRITEOFF_FILENAME+' to the shared folder, keeping that exact name - the routine ignores any other. If a previous file is still waiting there, let the routine take it first.'+skipNote);
 }
 
 // ── Stats / tiles ──────────────────────────────────────────────────────────

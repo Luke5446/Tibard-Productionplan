@@ -46,10 +46,17 @@ five-minute Sage routine already reads.
    category are constants at the top of `exportFabricWriteOff` if they ever
    change.
 
-   Qty is written to two decimal places. The hand-typed sheet carried whole
-   metres; if the routine turns out to reject a decimal, round at that constant.
+   **The file name is part of the contract: `TIB_WRITE_OFF_STOCK_TAKE.csv`.**
+   The routine only processes that name. Two correctly formatted files with
+   other names were swept out of the folder unprocessed and without a
+   rejection email — the failure is silent. Because the name is fixed, only
+   one file can wait in the folder at a time.
+
+   Decimals in Qty are accepted (the last hand-typed file carried a `27.6`).
    Dates are `dd/mm/yyyy` text, line endings are Windows `\r\n`, and a value
-   containing a comma or quote is quoted the way Excel would.
+   containing a comma or quote is quoted the way Excel would. Verified byte
+   for byte against a file the routine accepted: no BOM, same header, same
+   endings, trailing newline.
 
 5. **KPI tab:** *Fabric m* per month (standard, with a count of lines that had
    no usage) and *Cut vs std* where actuals were typed. ±5% or more is flagged.
@@ -87,8 +94,7 @@ the OH jackets; it is not yet used.
 
 ## First run
 
-Complete a works order on this version, press the button, and drop the file
-in the shared folder. The first file is the test of the routine's parser: if
-it posts, everything after is routine. If it does not, the two things to look
-at are whether the routine wants whole metres in Qty, and whether it expects
-a particular file name (this writes `Fabric_WriteOff_<date>.csv`).
+Complete a works order on this version, press the button, and save the file
+to the shared folder **under its own name**. The routine takes it within five
+minutes; the movement shows in Sage's stock item history with Reference1
+`Cutting` and the works order number as the second reference.
