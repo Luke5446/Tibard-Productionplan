@@ -1359,7 +1359,7 @@ function printWOP(ref, code, qty, due, sm){
     return false;
   }
   var st=hit.style, size=hit.size;
-  var hasBrand=(st.brandType&&st.brandType!=='None')||!!st.logoImg||!!st.brandPlace;
+  var hasBrand=(st.brandType&&st.brandType!=='None')||!!st.logoImg||!!st.brandPlace||!!st.placeImg;
   qty=Math.round(qty||0);
   var chart=chartFor(st.chart);
   var cols=chartColsFor(st.chart);
@@ -1435,6 +1435,8 @@ function printWOP(ref, code, qty, due, sm){
           +(st.brandPlace?e(st.brandPlace):'<span style="color:#b45309">&#9888; Branding placement not set on this works order \u2014 sales to confirm the spec with the office before this is embroidered.</span>')
         +'</td></tr>'
         +'<tr><th>Customer artwork</th><td colspan="2" style="text-align:center;vertical-align:middle">'+(st.logoImg?'<img src="'+st.logoImg+'" alt="customer artwork" style="max-height:90px;max-width:220px">':'\u2014')+'</td></tr>'
+        /* photo of the logo in position on the garment, alongside the artwork */
+        +(st.placeImg?'<tr><th>Placement photo</th><td colspan="2" style="text-align:center;vertical-align:middle"><img src="'+st.placeImg+'" alt="logo placement photo" style="max-height:200px;max-width:300px"></td></tr>':'')
         +'</table>'
       : '')
     +'<div class="band">LECTRA PATTERN</div><table>'+(st.variant?'<tr><th>Pattern</th><td colspan="3">'+e(st.lectra)+'</td></tr><tr><th>Variant (cutting room)</th><td colspan="3" style="font-weight:700;font-size:15px">'+e(st.variant)+'</td></tr>':'<tr><td>'+e(st.lectra)+'</td></tr>')
@@ -2067,10 +2069,12 @@ function absorbBranding(pubEdits){
   var n=0;
   Object.keys(pubEdits||{}).forEach(function(code){
     var p=pubEdits[code], l=styleEdits[code];
-    if(!p || !l || !p.brandPlace || l.brandPlace) return;
-    l.brandPlace=p.brandPlace;
+    if(!p || !l) return;
+    if(!(p.brandPlace && !l.brandPlace) && !(p.placeImg && !l.placeImg)) return;
+    if(p.brandPlace && !l.brandPlace) l.brandPlace=p.brandPlace;
     if(p.brandType && (!l.brandType || l.brandType==='None')) l.brandType=p.brandType;
     if(p.logoImg && !l.logoImg) l.logoImg=p.logoImg;
+    if(p.placeImg && !l.placeImg) l.placeImg=p.placeImg;
     n++;
   });
   return n;
@@ -2915,6 +2919,7 @@ function smRenderInner(){
           return '<div class="sm-dism"><span><strong>'+esc(st.code)+'</strong>'
             +(smPrintable(st.code)?'<span class="sm-tag ok">prints</span>':'')
             +(st.logoImg?'<span class="sm-tag ok">artwork</span>':'')
+            +(st.placeImg?'<span class="sm-tag ok">placement photo</span>':'')
             +' &middot; '+esc(st.name||'')
             +(st.customer?' &middot; '+esc(st.customer):'')
             +(st.sr?' &middot; from '+esc(st.sr)+((st.srVersion||1)>1?' V'+st.srVersion:''):'')
@@ -3078,7 +3083,7 @@ function smDoImport(txt){
       markerLen:d.markerLen||null, layQty:d.layQty||null,
       hasMesh:!!d.hasMesh, meshLen:d.meshLen||null, meshLay:d.meshLay||null,
       sr:d.sr||'', srVersion:d.srVersion||null, customer:d.customer||'',
-      brandType:d.brandType||'', brandPlace:d.brandPlace||'', logoImg:d.logoImg||'',
+      brandType:d.brandType||'', brandPlace:d.brandPlace||'', logoImg:d.logoImg||'', placeImg:d.placeImg||'',
       importedAt:d2s(now())
     };
     if(d.chart && d.chartRows && d.chartRows.length){
