@@ -50,14 +50,13 @@ five-minute Sage routine already reads.
    last file the routine accepted. Because the name is fixed, only one file
    can wait in the folder at a time.
 
-   **Two test files were swept from the folder without posting and without a
-   rejection email.** They differed from the accepted file in two ways at
-   once: the name, and an `ActivityDate` of 08/09/2026 when the day was
-   07/09/2026 — a forward date, which Sage would refuse. The app can never
-   produce a forward date (it writes the completion date), and it now writes
-   the accepted name, so production is covered either way; which of the two
-   the routine actually objected to is settled by the single-variable test
-   files in `tests/out/` on the first real run.
+   **A forward-dated line is discarded silently.** Two test files dated
+   08/09/2026 on 07/09/2026 were swept from the folder without posting and
+   without a rejection email; the same row dated the actual day posted at
+   once. The app writes the completion date - the day the works order was
+   completed - so it cannot produce a forward date. If a workstation's clock
+   is ever wrong, this is the symptom to recognise: file taken, nothing
+   posted, no email.
 
    Decimals in Qty are accepted (the last hand-typed file carried a `27.6`).
    Dates are `dd/mm/yyyy` text, line endings are Windows `\r\n`, and a value
