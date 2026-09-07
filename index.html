@@ -1353,7 +1353,6 @@ function printWOP(ref, code, qty, due, sm){
   /* `sm` is the special make block off the works order, or null for a stock
      one. A stock works order has no customer; a special make is made FOR
      somebody, and that has to be on the paper the machinist works from. */
-  var notes=(sm&&sm.notes)||null;
   var hit=styleForCode(code);
   if(!hit){
     alert('No works order data for "'+code+'" yet.\n\nThis product has not been added to the works order data — contact the operations manager to add the works order, and it will print from then on.');
@@ -1413,7 +1412,7 @@ function printWOP(ref, code, qty, due, sm){
     +'<table class="kv" style="margin-top:14px">'
     +'<tr><th>Date issued</th><td>'+e(today)+'</td><th style="width:26%">Date required</th><td>'+e(dueTxt)+'</td></tr>'
     +'<tr><th>Product code</th><td>'+e(code)+'</td><th>Quantity</th><td>'+qty.toLocaleString()+'</td></tr>'
-    +'<tr><th>Size</th><td>'+e(sizeTxt)+'</td><th>Embroidery</th><td>'+((notes&&notes.length)?'Yes &mdash; see below':'No')+'</td></tr>'
+    +'<tr><th>Size</th><td>'+e(sizeTxt)+'</td><th>Embroidery</th><td>'+(hasBrand?'Yes &mdash; see CUSTOMER BRANDING':'No')+'</td></tr>'
     /* Always shown on a special make, even when Sage has left it blank - an
        empty row asks the question, a missing row hides it. */
     +(sm
@@ -1425,31 +1424,17 @@ function printWOP(ref, code, qty, due, sm){
     +'</table>'
     +'<div class="band" style="display:flex;justify-content:space-between"><span>GARMENT</span><span>LOCATION</span></div><table><tr><td style="font-weight:700">'+e(st.name)+'</td><td style="width:20%;text-align:center;font-weight:700;border-left:1px solid #999">'+e(stockLoc)+'</td></tr></table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(st.desc)+'</td></tr></table>'
-    /* branding spec imported from the costing app, with the sales order's own
-       logo/personalisation lines beside the artwork - the machinist sees the
-       artwork and the order's logo instructions together. A branded garment on
-       a special make order with NO note lines prints a warning instead of
-       silence: that means the sheet paste did not carry the LOGOAPPLICATION
-       rows (or this browser never saw that paste). */
+    /* Branding spec from the product's own works order (set in the costing app
+       or edited here). Sales order LOGO/transfer lines from the Special Makes
+       sheet are no longer printed - if the spec needs changing, sales request
+       the change and the works order is updated. */
     +(hasBrand
       ? '<div class="band">CUSTOMER BRANDING &amp; LOGO</div><table>'
-        +'<tr><th>Type</th><td colspan="2">'+e(st.brandType||'\u2014')+(st.brandPlace?' \u2014 '+e(st.brandPlace):'')+'</td></tr>'
-        +'<tr><th>Customer artwork</th>'
-        +'<td style="width:32%;text-align:center;vertical-align:middle">'+(st.logoImg?'<img src="'+st.logoImg+'" alt="customer artwork" style="max-height:90px;max-width:220px">':'\u2014')+'</td>'
-        +'<td style="background:#FFF8E1">'
-          +((notes&&notes.length)
-            ? notes.map(function(n,ix){ return '<div style="margin:2px 0"><strong>'+(ix+1)+'. '+e(n.code||'Note')+':</strong> '+e(n.desc)+'</div>'; }).join('')
-            : (sm?'<span style="color:#b45309;font-weight:700">&#9888; No logo lines from the Special Makes sheet are attached to this order. If Sage has LOGOAPPLICATION lines for it, re-paste the full sheet (columns A\u2013K, unfiltered) and reprint.</span>':'\u2014'))
+        +'<tr><th>Type</th><td colspan="2">'+e(st.brandType||'\u2014')+'</td></tr>'
+        +'<tr><th>Placement / spec</th><td colspan="2" style="background:#FFF8E1;font-weight:700">'
+          +(st.brandPlace?e(st.brandPlace):'<span style="color:#b45309">&#9888; Branding placement not set on this works order \u2014 sales to confirm the spec with the office before this is embroidered.</span>')
         +'</td></tr>'
-        +'</table>'
-      : '')
-    /* Personalisation on its own when the garment itself has no branding spec.
-       Printed here so the spec travels with the job instead of being looked
-       up in Sage. */
-    +((!hasBrand&&notes&&notes.length)
-      ? '<div class="band">LOGO / PERSONALISATION</div><table>'
-        +notes.map(function(n,ix){ return '<tr><td class="num">'+(ix+1)+'</td><th style="width:22%">'
-          +e(n.code||'Note')+'</th><td style="background:#FFF8E1">'+e(n.desc)+'</td></tr>'; }).join('')
+        +'<tr><th>Customer artwork</th><td colspan="2" style="text-align:center;vertical-align:middle">'+(st.logoImg?'<img src="'+st.logoImg+'" alt="customer artwork" style="max-height:90px;max-width:220px">':'\u2014')+'</td></tr>'
         +'</table>'
       : '')
     +'<div class="band">LECTRA PATTERN</div><table>'+(st.variant?'<tr><th>Pattern</th><td colspan="3">'+e(st.lectra)+'</td></tr><tr><th>Variant (cutting room)</th><td colspan="3" style="font-weight:700;font-size:15px">'+e(st.variant)+'</td></tr>':'<tr><td>'+e(st.lectra)+'</td></tr>')
@@ -2067,10 +2052,28 @@ function fetchShared(cb){
 function mergePublishedSnapshots(){
   if(!/^https?:/.test(location.protocol)) return;
   fetch('data.json?t='+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(s){
-    if(!s || !s.bufSnaps || !s.bufSnaps.length) return;
-    if(absorbSnapshots(s.bufSnaps)){ saveState();
+    if(!s) return;
+    var changed=false;
+    if(s.bufSnaps && s.bufSnaps.length && absorbSnapshots(s.bufSnaps)) changed=true;
+    if(absorbBranding(s.styleEdits)) changed=true;
+    if(changed){ saveState();
       if(document.getElementById('tabKpi') && document.getElementById('tabKpi').classList.contains('on')) kpiRender(); }
   }).catch(function(){});
+}
+// Branding spec committed to data.json (e.g. set by the office for a special)
+// fills in a works order whose local copy has none. A placement already held
+// locally is kept - the editor's own edit is the truth. Returns how many filled.
+function absorbBranding(pubEdits){
+  var n=0;
+  Object.keys(pubEdits||{}).forEach(function(code){
+    var p=pubEdits[code], l=styleEdits[code];
+    if(!p || !l || !p.brandPlace || l.brandPlace) return;
+    l.brandPlace=p.brandPlace;
+    if(p.brandType && (!l.brandType || l.brandType==='None')) l.brandType=p.brandType;
+    if(p.logoImg && !l.logoImg) l.logoImg=p.logoImg;
+    n++;
+  });
+  return n;
 }
 // Union by date into bufSnaps. A date already held locally is kept as is -
 // the editor's own paste is the truth for that day. Returns how many were added.
@@ -2370,6 +2373,9 @@ document.addEventListener('DOMContentLoaded',function(){
 // data does not. Dismissing is remembered, so the same line is never offered
 // twice however often the sheet is pasted.
 //
+// LOGO / transfer / charge lines (category NOTE) are skipped: the branding spec
+// is on the product's own works order and only changes when sales request it.
+//
 // Accepted works orders join the SAME `WOs` array as everything else, carrying
 // an `sm` block, so cards, completion, warehouse booking-in and history all
 // work on them unchanged. Refs start with S, matching the manual convention
@@ -2467,11 +2473,10 @@ function smLoadPaste(){
   lines.forEach(function(o){
     var seen=smSeen[o.key];
     if(o.cat.indexOf('NOTE')===0){
-      if(seen){ return; }
-      var sk=smSoKey(o);
-      if(!smNotes[sk]) smNotes[sk]=[];
-      smNotes[sk].push({key:o.key, code:o.code, desc:o.desc, qty:o.qty});
-      smSeen[o.key]={what:'note'};
+      /* LOGO / transfer / charge lines are NOT brought in any more - the branding
+         spec lives on the product's own works order and changes only when sales
+         request it. The line is still marked seen so it is never offered again. */
+      if(!seen) smSeen[o.key]={what:'note'};
       notes++; return;
     }
     if(o.cat.indexOf('INTERCOMPANY')===0){
@@ -2499,7 +2504,7 @@ function smLoadPaste(){
   var bits=[];
   if(already)         bits.push(already+' already raised');
   if(dismissedBefore) bits.push(dismissedBefore+' dismissed previously');
-  if(notes)           bits.push('<strong>'+notes+'</strong> logo/charge line'+(notes===1?'':'s')+' attached as notes');
+  if(notes)           bits.push('<strong>'+notes+'</strong> logo/charge line'+(notes===1?'':'s')+' skipped (branding comes from the product works order)');
   if(inter)           bits.push(inter+' inter-company line'+(inter===1?'':'s')+' ignored');
   var r=document.getElementById('smResult');
   r.innerHTML='<strong>'+added+'</strong> line'+(added===1?'':'s')+' ready for review'
@@ -2607,12 +2612,13 @@ function smAfterChange(){
   renderWOCards(); refreshWOModal(); smRender();
 }
 
-// Copy each sales order's notes onto every special make works order for that
-// order, so the logo spec travels with the job instead of sitting in Sage.
+// Sales order logo/charge lines used to be copied onto every special make
+// works order for that order. They are no longer used (the branding spec is on
+// the product's own works order), so anything still attached is cleared.
 function smAttachNotes(){
   WOs.forEach(function(wo){
     if(!wo.sm) return;
-    wo.sm.notes=(smNotes[smSoKey(wo.sm)]||[]).slice();
+    wo.sm.notes=[];
   });
 }
 
@@ -2807,7 +2813,7 @@ function smRenderInner(){
   live.forEach(function(wo){
     if(!smMatch(wo.ref+' '+wo.sm.so+' '+wo.sm.customer+' '+(wo.sm.custName||'')+' '+(wo.sm.custOrder||'')+' '+wo.sm.desc+' '+wo.sm.company+' '
        +wo.items.map(function(i){return i.code;}).join(' ')
-       +' '+(wo.sm.notes||[]).map(function(n){return n.code+' '+n.desc;}).join(' '), q)) return;
+       , q)) return;
     rowsOut.push({kind:'live', wo:wo, code:wo.items[0].code, qty:wo.items[0].qty,
                   pipe:pipelineForCode(wo.items[0].code), due:wo.due});
   });
@@ -2852,9 +2858,6 @@ function smRenderInner(){
             :smPrintable(r.code)?'<span class="sm-tag ok">ready to print</span>'
             :'<span class="sm-tag warn">no works order data</span>')
           +'<div class="sm-sub">'+esc(wo.sm.desc)+'</div>'
-          +(wo.sm.notes||[]).map(function(n){
-              return '<div class="sm-note"><strong>'+esc(n.code||'Note')+'</strong> '+esc(n.desc)+'</div>';
-            }).join('')
           +'</td>'
           +'<td><strong>'+esc(smCustomerFor(wo.sm, r.code))+'</strong>'
             +(wo.sm.customer&&wo.sm.customer!==wo.sm.custName?'<div class="sm-sub">'+esc(wo.sm.customer)+'</div>':'')
