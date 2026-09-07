@@ -485,7 +485,7 @@ body.planner-mode .planner-wrap{display:block}
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;flex-wrap:wrap">
           <input type="text" id="completedSearch" placeholder="&#128269; Search by code, description or WO ref..." oninput="renderCompleted()" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;background:#fff;min-width:220px;font-family:Arial,sans-serif">
           <button class="btn" style="font-size:11px;padding:4px 9px" onclick="exportCompleted()">&#8659; Export history (CSV)</button>
-          <button class="btn" style="font-size:11px;padding:4px 9px" onclick="exportFabricWriteOff()" title="Fabric consumed by works orders completed since the last export, for the Sage write-off">&#129525; Fabric write-off (CSV)</button>
+          <button class="btn" style="font-size:11px;padding:4px 9px" onclick="exportFabricWriteOff()" title="Fabric consumed by works orders completed since the last export, in the layout the Sage write-off routine reads">&#129525; Fabric write-off (Excel)</button>
           <span style="font-size:11px;color:#6b7280;margin-left:auto" id="completedCount"></span>
         </div>
         <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #dde3ed;border-radius:7px">
@@ -1727,30 +1727,93 @@ function exportCompleted(){
   a.download='Completed_Works_Orders_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
 }
 
-// The fabric write-off for Sage: one line per completed works-order line, the
-// metres being the cutting room's actual where they typed one and the
-// standard otherwise. Only lines not already exported, so running it twice a
-// day never writes the same fabric off twice. COLUMN LAYOUT IS PROVISIONAL
-// until the format the five-minute routine expects is confirmed.
+// ── A minimal .xlsx writer ─────────────────────────────────────────────────
+// The write-off routine reads an Excel workbook, so the export has to be a
+// real .xlsx. This builds one with no library: a zip holding the handful of
+// XML parts Excel needs, stored uncompressed (the file is a few KB), with a
+// CRC-32 per entry because the zip format requires it. Text is written as
+// inline strings and dates as Excel serials with a dd/mm/yyyy format, so the
+// routine sees the same kinds of cells the hand-typed sheet gave it.
+var CRC_TABLE=(function(){ var t=[],c; for(var n=0;n<256;n++){ c=n; for(var k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1); t[n]=c>>>0; } return t; })();
+function crc32(bytes){ var c=0xFFFFFFFF; for(var i=0;i<bytes.length;i++) c=CRC_TABLE[(c^bytes[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipStored(files){   // files: [{name, text}] -> Uint8Array
+  var enc=new TextEncoder(), parts=[], central=[], offset=0;
+  function u16(n){ return [n&255,(n>>8)&255]; }
+  function u32(n){ return [n&255,(n>>8)&255,(n>>16)&255,(n>>>24)&255]; }
+  files.forEach(function(f){
+    var name=enc.encode(f.name), data=enc.encode(f.text), crc=crc32(data);
+    var local=[].concat([0x50,0x4B,3,4], u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0));
+    parts.push(new Uint8Array(local), name, data);
+    central.push([].concat([0x50,0x4B,1,2], u16(20), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset)), name);
+    offset+=local.length+name.length+data.length;
+  });
+  var cdStart=offset, cdLen=0;
+  central.forEach(function(x){ var b=(x instanceof Uint8Array)?x:new Uint8Array(x); parts.push(b); cdLen+=b.length; });
+  parts.push(new Uint8Array([].concat([0x50,0x4B,5,6], u16(0), u16(0), u16(files.length), u16(files.length), u32(cdLen), u32(cdStart), u16(0))));
+  var total=parts.reduce(function(t,b){ return t+b.length; },0), out=new Uint8Array(total), pos=0;
+  parts.forEach(function(b){ out.set(b,pos); pos+=b.length; });
+  return out;
+}
+function xmlEsc(v){ return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function excelSerial(iso){ return Math.round((Date.UTC(+iso.slice(0,4), +iso.slice(5,7)-1, +iso.slice(8,10)) - Date.UTC(1899,11,30))/864e5); }
+// rows: arrays of cells; a cell is a string, a number, or {date:'yyyy-mm-dd'}
+function xlsxBlob(rows, sheetName){
+  var colRef=function(i){ var s=''; i++; while(i>0){ var m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=(i-m-1)/26; } return s; };
+  var sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'
+    +rows.map(function(r,ri){ return '<row r="'+(ri+1)+'">'+r.map(function(c,ci){
+        var ref=colRef(ci)+(ri+1);
+        if(c!=null && typeof c==='object' && c.date) return '<c r="'+ref+'" s="1"><v>'+excelSerial(c.date)+'</v></c>';
+        if(typeof c==='number') return '<c r="'+ref+'"><v>'+c+'</v></c>';
+        if(c==null || c==='') return '<c r="'+ref+'"/>';
+        return '<c r="'+ref+'" t="inlineStr"><is><t>'+xmlEsc(c)+'</t></is></c>';
+      }).join('')+'</row>'; }).join('')
+    +'</sheetData></worksheet>';
+  var files=[
+    {name:'[Content_Types].xml', text:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'},
+    {name:'_rels/.rels', text:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
+    {name:'xl/workbook.xml', text:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="'+xmlEsc(sheetName||'Sheet1')+'" sheetId="1" r:id="rId1"/></sheets></workbook>'},
+    {name:'xl/_rels/workbook.xml.rels', text:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'},
+    {name:'xl/styles.xml', text:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/></numFmts><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs></styleSheet>'},
+    {name:'xl/worksheets/sheet1.xml', text:sheet}
+  ];
+  return new Blob([zipStored(files)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+// ── The fabric write-off for Sage ─────────────────────────────────────────
+// The layout is the sheet the five-minute routine already reads, confirmed
+// against a real row from it:
+//   StockCode | Location | Bin | Qty | Reference1 | Reference2 | ActivityDate | WriteOffCat
+//   CO5241ECO | HOME     |     | 17  | Cutting    | <WO number>| 07/09/2026   | Manual Reduction
+// One line per works order per fabric, aggregated - a two-SKU order on the
+// same cloth is one write-off. Qty is metres: the cutting room's actual where
+// they typed one, the standard otherwise. Only lines not already exported, so
+// running it twice a day never writes the same fabric off twice; the lines
+// are marked when the file is produced.
+var WRITEOFF_LOCATION='HOME', WRITEOFF_REF1='Cutting', WRITEOFF_CAT='Manual Reduction';
+function fabricWriteOffRows(todo){
+  var agg={}, order=[];
+  todo.forEach(function(c){
+    var f=c.fabric, m=(f.actual!=null)?f.actual:f.std, key=c.ref+'|'+f.code+'|'+c.completed;
+    if(!agg[key]){ agg[key]={code:f.code, ref:c.ref, date:c.completed, metres:0, lines:0}; order.push(key); }
+    agg[key].metres+=m; agg[key].lines++;
+  });
+  return order.map(function(k){ var a=agg[k];
+    return [a.code, WRITEOFF_LOCATION, '', Math.round(a.metres*100)/100, WRITEOFF_REF1, a.ref, {date:a.date}, WRITEOFF_CAT]; });
+}
 function exportFabricWriteOff(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
-  var todo=completedWOs.filter(function(c){ return c.fabric && !c.fabricExportedAt && (c.fabric.actual!=null || c.fabric.std!=null); });
-  var missing=completedWOs.filter(function(c){ return c.fabric===null && !c.fabricExportedAt; }).length;
+  var todo=completedWOs.filter(function(c){ return c.fabric && c.fabric.code && !c.fabricExportedAt && (c.fabric.actual!=null || c.fabric.std!=null); });
+  var missing=completedWOs.filter(function(c){ return (c.fabric===null || (c.fabric && !c.fabric.code)) && !c.fabricExportedAt; }).length;
   var skipNote=missing ? '\n\n'+missing+' completed line(s) have no fabric usage on file and were skipped - add the code to All Costings, or type the metres on the works order before completing.' : '';
   if(!todo.length){ alert('Nothing new to write off.'+skipNote); return; }
-  var lines=['Date,WO Ref,Product Code,Description,Qty Made,Fabric Code,Fabric,Metres,Basis,Std Metres,Actual Metres'];
-  todo.sort(function(a,b){ return (a.completed||'').localeCompare(b.completed||''); }).forEach(function(c){
-    var f=c.fabric, m=(f.actual!=null)?f.actual:f.std;
-    lines.push([c.completed, c.ref, c.code, '"'+(c.desc||'').replace(/"/g,'')+'"', c.qty, f.code, '"'+(f.name||'').replace(/"/g,'')+'"',
-                m, (f.actual!=null?'actual':'standard'), (f.std!=null?f.std:''), (f.actual!=null?f.actual:'')].join(','));
-  });
+  var rows=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat']].concat(fabricWriteOffRows(todo));
   var stamp=d2s(now());
   todo.forEach(function(c){ c.fabricExportedAt=stamp; });
   saveState();
-  var blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='Fabric_WriteOff_'+stamp+'.csv'; a.click();
-  alert(todo.length+' line(s) written off, '+Math.round(todo.reduce(function(t,c){ var f=c.fabric; return t+((f.actual!=null)?f.actual:f.std); },0))+' m in total.'+skipNote);
+  var a=document.createElement('a'); a.href=URL.createObjectURL(xlsxBlob(rows,'Sheet1'));
+  a.download='Fabric_WriteOff_'+stamp+'.xlsx'; a.click();
+  var total=rows.slice(1).reduce(function(t,r){ return t+r[3]; },0);
+  alert((rows.length-1)+' write-off line(s) from '+todo.length+' completed line(s), '+Math.round(total)+' m in total.\n\nSave the file to the shared folder for the Sage routine.'+skipNote);
 }
 
 // ── Stats / tiles ──────────────────────────────────────────────────────────

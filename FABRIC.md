@@ -1,8 +1,7 @@
 # Fabric usage by works order
 
-**Status: built, awaiting the write-off file format.** Everything below works
-today; the export's column layout is provisional until the format the
-five-minute Sage routine expects is confirmed.
+**Status: built and live.** The export produces the exact workbook the
+five-minute Sage routine already reads.
 
 ## What Luke asked for
 
@@ -32,10 +31,27 @@ five-minute Sage routine expects is confirmed.
    is written off; type over it and that is the actual, and the variance shows
    on the KPI tab.
 
-4. **The write-off is a button.** *Fabric write-off (CSV)* beside the history
-   export. One line per completed works-order line not yet exported, so twice
-   a day never writes the same fabric off twice. Lines are marked exported when
-   the file is produced. The PM saves it to the shared folder as today.
+4. **The write-off is a button.** *Fabric write-off (Excel)* beside the
+   history export produces a real `.xlsx` in the routine's own layout,
+   confirmed against a row from the live sheet:
+
+   | StockCode | Location | Bin | Qty | Reference1 | Reference2 | ActivityDate | WriteOffCat |
+   |---|---|---|---|---|---|---|---|
+   | fabric Sage code | `HOME` | blank | metres | `Cutting` | works order ref | dd/mm/yyyy | `Manual Reduction` |
+
+   One line per works order per fabric — a two-SKU order on the same cloth is
+   one write-off. Only completed lines not yet exported, marked when the file
+   is produced, so twice a day never writes the same fabric off twice. The PM
+   saves it to the shared folder as today. Location, Reference1 and the
+   category are constants at the top of `exportFabricWriteOff` if they ever
+   change.
+
+   Qty is written to two decimal places. The hand-typed sheet carried whole
+   metres; if the routine turns out to reject a decimal, round at that constant.
+
+   The workbook is built without a library — a stored zip of the six XML parts
+   Excel needs, dates as serials with a `dd/mm/yyyy` format — and the test
+   validates it with an independent parser, not the code that wrote it.
 
 5. **KPI tab:** *Fabric m* per month (standard, with a count of lines that had
    no usage) and *Cut vs std* where actuals were typed. ±5% or more is flagged.
@@ -71,9 +87,10 @@ the OH jackets; it is not yet used.
   specials, which the import route covers).
 - Markers and variants: the two Google Sheets Luke linked on 7 Sep 2026.
 
-## Still needed
+## First run
 
-**The write-off file the routine consumes** — columns, units, warehouse or
-location code, one line per fabric or per works order. The export produces:
-`Date, WO Ref, Product Code, Description, Qty Made, Fabric Code, Fabric,
-Metres, Basis, Std Metres, Actual Metres` until told otherwise.
+Complete a works order on this version, press the button, and drop the file
+in the shared folder. The first file is the test of the routine's parser: if
+it posts, everything after is routine. If it does not, the two things to look
+at are whether the routine wants whole metres in Qty, and whether it expects
+a particular sheet name (this writes `Sheet1`).

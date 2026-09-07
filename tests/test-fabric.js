@@ -26,24 +26,25 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  const rec=await p.evaluate(()=>{ const i=WOs.findIndex(w=>w.ref==='S-FAB1'); completeWholeWO(i);
    return completedWOs.filter(c=>c.ref==='S-FAB1').map(c=>({code:c.code, fabric:c.fabric})); });
  console.log('completed      ->', JSON.stringify(rec));
- // write-off export: capture the CSV, check the marker, second run has nothing
- const csv=await p.evaluate(async()=>{ let blob=null; URL.createObjectURL=b=>{blob=b; return 'blob:x';}; HTMLAnchorElement.prototype.click=function(){};
-   exportFabricWriteOff(); const text=blob? await blob.text() : null; const first=window.__alerts.slice(); window.__alerts=[];
-   exportFabricWriteOff(); return {text, first, second:window.__alerts, marked:completedWOs.filter(c=>c.fabricExportedAt).length}; });
- console.log('write-off csv  ->', JSON.stringify(csv.text)); console.log('  alerts:', JSON.stringify(csv.first), '| again:', JSON.stringify(csv.second), '| marked:', csv.marked);
+ // write-off export: capture the .xlsx, save it for an independent check, second run has nothing
+ const xl=await p.evaluate(async()=>{ let blob=null; URL.createObjectURL=b=>{blob=b; return 'blob:x';}; HTMLAnchorElement.prototype.click=function(){};
+   exportFabricWriteOff(); const buf=blob? Array.from(new Uint8Array(await blob.arrayBuffer())) : null; const first=window.__alerts.slice(); window.__alerts=[];
+   exportFabricWriteOff(); return {buf, type:blob&&blob.type, first, second:window.__alerts, marked:completedWOs.filter(c=>c.fabricExportedAt).length}; });
+ require('fs').mkdirSync(__dirname+'/out',{recursive:true}); require('fs').writeFileSync(__dirname+'/out/writeoff.xlsx', Buffer.from(xl.buf));
+ console.log('write-off xlsx ->', xl.buf.length, 'bytes', xl.type); console.log('  alerts:', JSON.stringify(xl.first), '| again:', JSON.stringify(xl.second), '| marked:', xl.marked);
  // KPI columns
  const k=await p.evaluate(()=>{ smShowTab('kpi'); const m=kpiCompute().months.find(x=>x.key==='2026-09');
    const row=[...document.querySelectorAll('.kpi-tbl tbody tr')].find(tr=>tr.children[0].textContent.startsWith('Sept'));
    return {fabStd:m.fabStd, fabAct:m.fabAct, fabVar:m.fabVar, fabLines:m.fabLines, fabMissing:m.fabMissing, heads:[...document.querySelectorAll('.kpi-tbl thead th')].map(t=>t.textContent.trim()).slice(4,8), cells:[...row.children].map(td=>td.textContent.trim().replace(/\s+/g,' ')).slice(4,8)}; });
  console.log('kpi            ->', JSON.stringify(k));
  const f=rec.find(r=>r.code==='OHCJSCUMBRIA5601').fabric, g=rec.find(r=>r.code==='ZZNOUSAGE').fabric;
- const lines=(csv.text||'').split('\n');
+
  const pass = u.cumbria && u.cumbria.metres===1.55 && u.cumbria.code && u.none===null && u.count>8000
    && panel.header.includes('Metres cut') && panel.placeholders[0]==='9.3' && /no usage on file/.test(panel.cells[1])
    && kept.join()==='OHCJSCUMBRIA5601:10.1,ZZNOUSAGE:undefined'
    && f && f.std===9.3 && f.actual===10.1 && f.perGarment===1.55 && f.source==='All Costings' && g===null
-   && lines.length===2 && /S-FAB1,OHCJSCUMBRIA5601,/.test(lines[1]) && /,10.1,actual,9.3,10.1$/.test(lines[1]) && csv.marked===1
-   && /1 line\(s\) written off, 10 m/.test(csv.first[0]) && /skipped/.test(csv.first[0]) && /Nothing new/.test(csv.second[0])
+   && xl.buf && xl.buf.length>1500 && /spreadsheetml/.test(xl.type) && xl.marked===1
+   && /1 write-off line\(s\) from 1 completed line\(s\), 10 m/.test(xl.first[0]) && /skipped/.test(xl.first[0]) && /Nothing new/.test(xl.second[0])
    && k.fabStd===9.3 && k.fabAct===10.1 && Math.abs(k.fabVar-8.6)<0.1 && k.fabLines===1 && k.fabMissing===1 && k.heads[2]==='Fabric m' && k.cells[2].startsWith('9') && k.cells[3]==='+8.6%';
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();
