@@ -29,11 +29,11 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  console.log('completed      ->', JSON.stringify(rec));
  // write-off export: capture the CSV, check every field against the routine's row, second run has nothing
  const wo=await p.evaluate(async()=>{ let blob=null; URL.createObjectURL=b=>{blob=b; return 'blob:x';}; let dl=null; HTMLAnchorElement.prototype.click=function(){ dl=this.download; };
-   exportFabricWriteOff(); const text=blob? await blob.text() : null; const first=window.__alerts.slice(); window.__alerts=[];
-   exportFabricWriteOff(); return {text, dl, first, second:window.__alerts, marked:completedWOs.filter(c=>c.fabricExportedAt).length}; });
+   smShowTab('fabric'); fabTickAll(true); exportFabricWriteOff(); const text=blob? await blob.text() : null; const first=window.__alerts.slice(); window.__alerts=[];
+   fabTickAll(true); exportFabricWriteOff(); return {text, dl, first, second:window.__alerts, marked:completedWOs.filter(c=>c.fabricExportedAt).length, file:completedWOs.find(c=>c.fabricExportedAt).fabricExportFile}; });
  require('fs').mkdirSync(__dirname+'/out',{recursive:true}); require('fs').writeFileSync(__dirname+'/out/writeoff.csv', wo.text||'');
  const csvLines=(wo.text||'').split('\r\n').filter(Boolean);
- console.log('write-off csv  ->', JSON.stringify(csvLines), '| file name:', wo.dl); console.log('  alerts:', JSON.stringify(wo.first), '| again:', JSON.stringify(wo.second), '| marked:', wo.marked);
+ console.log('write-off csv  ->', JSON.stringify(csvLines), '| file name:', wo.dl); console.log('  alerts:', JSON.stringify(wo.first), '| again:', JSON.stringify(wo.second), '| marked:', wo.marked, '| file on record:', wo.file);
  // KPI columns
  const k=await p.evaluate(()=>{ smShowTab('kpi'); const m=kpiCompute().months.find(x=>x.key==='2026-09');
    const row=[...document.querySelectorAll('.kpi-tbl tbody tr')].find(tr=>tr.children[0].textContent.startsWith('Sept'));
@@ -47,7 +47,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && f && f.std===9 && f.actual===9.9 && f.perGarment===0.6 && f.source==='All Costings' && g===null
    && csvLines.length===2 && csvLines[0]==='StockCode,Location,Bin,Qty,Reference1,Reference2,ActivityDate,WriteOffCat'
    && csvLines[1]==='CO5014DEN,HOME,,9.9,Cutting,S-FAB1,08/09/2026,Manual Reduction' && (wo.text||'').indexOf('\r\n')>0 && wo.marked===1 && wo.dl==='Fabric_WriteOff_2026-09-08_1000.csv'
-   && /1 write-off line\(s\) from 1 completed line\(s\), 10 m/.test(wo.first[0]) && /skipped/.test(wo.first[0]) && /Nothing new/.test(wo.second[0])
+   && /1 write-off line\(s\) from 1 completed line\(s\), 10 m/.test(wo.first[0]) && /Tick the lines/.test(wo.second[0]) && wo.file==='Fabric_WriteOff_2026-09-08_1000.csv'
    && k.fabStd===9 && k.fabAct===9.9 && Math.abs(k.fabVar-10)<0.1 && k.fabLines===1 && k.fabMissing===1 && k.heads[2]==='Fabric m' && k.cells[2].startsWith('9') && k.cells[3]==='+10.0%';
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

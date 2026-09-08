@@ -117,8 +117,53 @@ parse in this session's notes — it is a plain CSV export of the sheet.
   specials, which the import route covers).
 - Markers and variants: *OH Jackets - Lay Plan - Varients* (Google Sheet, both tabs), linked 7 Sep 2026. The aprons sheet holds lay quantities but no marker lengths, so it is not used.
 
+## The Fabric tab
+
+Everything to do with the write-off lives on its own tab, next to KPIs.
+
+**The ledger.** Every completed line that carries fabric is listed on the day
+it was completed, grouped by month and then by day, collapsed. A line has one
+of three states, kept on the completed record itself so they publish with the
+history and a viewer sees the same ledger:
+
+| State | Meaning | Fields |
+|---|---|---|
+| Open | waiting to be written off | — |
+| Exported | went into a CSV for the Sage routine | `fabricExportedAt`, `fabricExportFile` |
+| Dismissed | the PM decided it is not written off from here | `fabricDismissedAt` |
+
+Exported and Dismissed are both *complete*: neither can be ticked again, so a
+line cannot go into a second file by accident. Dismiss has an Undo. Undoing an
+export is behind a warning, for the one case where the file never reached the
+shared folder. A line put back with Undo on the completed history and
+completed again keeps its state.
+
+**Export.** Tick the lines (per line, per day, per month, or *Tick all
+open*), press *Export ticked (CSV)*. Only ticked lines go in the file; each is
+marked with the date and the file name as the file is produced. A line with
+no usage on file cannot be ticked — it shows in red until the code is added to
+All Costings, or dismissed.
+
+**Cut m.** The cutting room's actual can be typed on the works order panel
+before completion or in the tab afterwards, until the line is exported. The
+*Var* column and the *Cut vs standard* tile show how far the standard is from
+what was cut — this is the comparison to watch before trusting the standards.
+
+**Usage.** Tiles for today, this week (Monday start) and this month; metres
+per day for the last 30 days; by-week and by-month tables. Usage counts open
+and exported lines; dismissed metres sit in their own column. Cost is metres
+times `FABRIC_PRICES` — the Sage fabric price list as held in the costing app
+(727 fabrics), All Costings' own figure where Sage has none — frozen onto each
+line the day it completes, so a later price change does not re-cost history.
+Rebuild the table from the costing app when either source changes.
+
+**Later.** Trims would be a second kind of line in the same ledger with the
+same three states. An automatic poster on a site server would read the open
+lines, post them, and stamp them exported; neither the tab nor the CSV layout
+would change.
+
 ## First run
 
-Complete a works order on this version, press the button, and save the file
-to the shared folder. The routine takes it within five minutes; the movement shows in Sage's stock item history with Reference1
+Complete a works order on this version, tick it on the Fabric tab, press
+*Export ticked (CSV)*, and save the file to the shared folder. The routine takes it within five minutes; the movement shows in Sage's stock item history with Reference1
 `Cutting` and the works order number as the second reference.

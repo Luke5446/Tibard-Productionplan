@@ -18,7 +18,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  const rec=await p.evaluate(()=>{ const i=WOs.findIndex(w=>w.ref==='S-MK1'); completeWholeWO(i); return completedWOs.find(c=>c.ref==='S-MK1').fabric; });
  console.log('record  ->', JSON.stringify(rec));
  const wo=await p.evaluate(async()=>{ let blob=null; URL.createObjectURL=b=>{blob=b; return 'blob:x';}; HTMLAnchorElement.prototype.click=function(){};
-   exportFabricWriteOff(); return (await blob.text()).split('\r\n').filter(Boolean); });
+   smShowTab('fabric'); fabTickAll(true); exportFabricWriteOff(); return (await blob.text()).split('\r\n').filter(Boolean); });
  console.log('write-off ->', JSON.stringify(wo));
  const k=await p.evaluate(()=>{ const m=kpiCompute().months.find(x=>x.key==='2026-09'); return {fabStd:m.fabStd}; });
  console.log('kpi     ->', JSON.stringify(k));
