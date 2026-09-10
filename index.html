@@ -3188,6 +3188,33 @@ function smDoImport(txt){
   catch(err){ alert('That is not a costing app export.\n\nIn the costing app press "Convert to product…" then "Download for buffer app", and choose the downloaded _product.json file here.\n\n'+err.message); return; }
   var list=Array.isArray(data)?data:[data];
   var done=[], skipped=[];
+  if(data && data.source==='works-order-editor' && Array.isArray(data.styles)){
+    /* An export from the Works Order Editor. Its styles are already in this app's own edited
+       shape (trims [label, detail, qty, sageCode, cost], fabrics [name, code, location, rating,
+       cost]) with the charts they use alongside, so they are stored as they are. A code the
+       baked-in master does not know is a new special and is listed as imported; an edited
+       stock style simply replaces what prints for that code. */
+    var known={};
+    (STYLE_MASTER.styles||[]).forEach(function(st){ known[String(st.code||'').toUpperCase()]=true; });
+    data.styles.forEach(function(s){
+      if(!s || !s.code){ skipped.push('an entry with no product code'); return; }
+      var code=String(s.code).toUpperCase();
+      var st=JSON.parse(JSON.stringify(s)); st.code=code;
+      st.editedAt=s.editedAt||d2s(now());
+      if(!known[code]) st.importedAt=(styleEdits[code]&&styleEdits[code].importedAt)||d2s(now());
+      else delete st.importedAt;
+      styleEdits[code]=st;
+      var rows=(data.charts||{})[st.chart];
+      done.push({code:code, sr:st.sr||'', trims:(st.trims||[]).length, fabrics:(st.fabrics||[]).length,
+                 meas:(st.chart&&rows&&(rows.length>0)&&!known[code])?rows.length:0, logo:!!st.logoImg,
+                 noCode:(st.trims||[]).filter(function(x){return !x[3];}).length, edited:!!known[code]});
+    });
+    Object.keys(data.charts||{}).forEach(function(k){ if(Array.isArray(data.charts[k])) chartEdits[k]=data.charts[k]; });
+    Object.keys(data.chartCols||{}).forEach(function(k){ if(Array.isArray(data.chartCols[k])) chartColEdits[k]=data.chartCols[k]; });
+    /* a costing product's measurement table (CODE-MEAS) always has the two costing headings */
+    Object.keys(data.charts||{}).forEach(function(k){ if(/-MEAS$/.test(k) && !chartColEdits[k]) chartColEdits[k]=['Measurement','Value']; });
+    list=[];
+  }
   list.forEach(function(d){
     if(!d || !d.code){ skipped.push('an entry with no product code'); return; }
     var code=String(d.code).toUpperCase();
@@ -3238,8 +3265,9 @@ function smDoImport(txt){
   renderWOCards(); smRender();
   if(done.length){
     smCloseImport();
+    var newN=done.filter(function(d){ return !d.edited; }).length, edN=done.length-newN;
     var lines=done.map(function(d){
-      return '• '+d.code+(d.sr?' (from '+d.sr+')':'')+' — '
+      return '• '+d.code+(d.sr?' (from '+d.sr+')':'')+(d.edited?' (stock style, edited)':'')+' — '
         +d.fabrics+' fabric'+(d.fabrics===1?'':'s')+', '+d.trims+' trim'+(d.trims===1?'':'s')
         +(d.meas?', '+d.meas+' measurement'+(d.meas===1?'':'s'):'')
         +(d.logo?', artwork attached':'')
@@ -3247,7 +3275,9 @@ function smDoImport(txt){
     });
     alert('✓ Imported successfully\n\n'+lines.join('\n')
       +(skipped.length?'\n\nSkipped '+skipped.join(', ')+'.':'')
-      +'\n\nNow listed under 📥 Imported from costing on the Special Makes tab — it prints straight away and reaches the team on the next Publish.');
+      +'\n\n'+(newN?(newN===1?'It is':'The new codes are')+' now listed under 📥 Imported from costing on the Special Makes tab — ':'')
+      +(edN?(edN===1?'The edited stock style prints':'The edited stock styles print')+' with these details from now on — ':'')
+      +'everything prints straight away and reaches the team on the next Publish.');
   } else {
     document.getElementById('impResult').innerHTML='<p style="color:#b91c1c">Nothing imported'+(skipped.length?' — skipped '+skipped.map(esc).join(', '):'')+'.</p>';
   }
@@ -3830,9 +3860,10 @@ Object.assign(window,{openPlanner:openPlanner,closePlanner:closePlanner,plnrRefr
       <p style="font-size:12px;color:#4b5563;margin:0 0 10px">
         In the costing app, press <strong>Convert to product&hellip;</strong> on the approved SR, then <strong>Download for buffer app</strong> &mdash;
         it saves a <code>&lt;CODE&gt;_product.json</code> file. Choose that file here.
+        The <strong>Works Order Editor</strong>'s export (<code>style-edits-&hellip;.json</code>) is accepted here too: new codes are added and edited stock styles replace what prints for them.
       </p>
       <div style="display:flex;gap:7px;margin-top:8px">
-        <button class="btn btn-p" onclick="smImportFile()">&#128193; Choose _product.json&hellip;</button>
+        <button class="btn btn-p" onclick="smImportFile()">&#128193; Choose _product.json or style-edits&hellip;.json</button>
       </div>
       <div id="impResult" style="margin-top:12px;font-size:12.5px"></div>
       <p style="font-size:11px;color:#6b7280;margin:12px 0 0">
