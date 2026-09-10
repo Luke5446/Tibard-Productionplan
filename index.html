@@ -2700,6 +2700,7 @@ function smUndismiss(key){
     if(smDropped[i].key===key){
       var o=smDropped.splice(i,1)[0];
       delete smSeen[o.key];
+      delete o.dismissedAt;      // it is not dismissed any more; the date must not linger on it
       smPending.push(o);
       break;
     }
