@@ -2590,8 +2590,22 @@ function smLoadPaste(){
     return;
   }
 
-  var added=0, already=0, dismissedBefore=0, notes=0, inter=0;
+  var added=0, already=0, dismissedBefore=0, notes=0, inter=0, updated=0;
   var pendKeys={}; smPending.forEach(function(p){ pendKeys[p.key]=true; });
+  var known={}; smPending.concat(smDropped).forEach(function(p){ known[p.key]=p; });
+  // A line the app already holds is refreshed from Sage rather than skipped:
+  // the outstanding balance falls as the order part-despatches, and promised
+  // dates move. The first quantity seen is kept as qtyWas so the change shows.
+  // A works order already raised is left alone - it is the PM's number now.
+  function refresh(p, o){
+    var changed=false;
+    if(p.qty!==o.qty){ if(p.qtyWas==null) p.qtyWas=p.qty; if(p.take==null || p.take===p.qty || p.take>o.qty) p.take=(p.take==null?undefined:o.qty); p.qty=o.qty; changed=true; }
+    if(p.qtyWas!=null && p.qtyWas===p.qty) delete p.qtyWas;
+    if(p.promised!==o.promised){ p.promised=o.promised; changed=true; }
+    if(o.desc && p.desc!==o.desc) p.desc=o.desc;
+    if(o.custName && p.custName!==o.custName) p.custName=o.custName;
+    if(changed){ p.changedAt=d2s(now()); updated++; }
+  }
 
   lines.forEach(function(o){
     var seen=smSeen[o.key];
@@ -2608,8 +2622,8 @@ function smLoadPaste(){
     }
     // WORKS ORDER and REVIEW lines both need a human decision
     if(seen && seen.what==='wo'){ already++; return; }
-    if(seen && seen.what==='dismissed'){ dismissedBefore++; return; }
-    if(pendKeys[o.key]) return;                      // already waiting
+    if(seen && seen.what==='dismissed'){ dismissedBefore++; if(known[o.key]) refresh(known[o.key], o); return; }
+    if(pendKeys[o.key]){ if(known[o.key]) refresh(known[o.key], o); return; }   // already waiting: keep it current
     o.seenAt=d2s(now()); smPending.push(o); pendKeys[o.key]=true; added++;
   });
 
@@ -2627,6 +2641,7 @@ function smLoadPaste(){
   var bits=[];
   if(already)         bits.push(already+' already raised');
   if(dismissedBefore) bits.push(dismissedBefore+' dismissed previously');
+  if(updated)         bits.push('<strong>'+updated+'</strong> known line'+(updated===1?'':'s')+' updated from Sage (quantity or date changed)');
   if(notes)           bits.push('<strong>'+notes+'</strong> logo/charge line'+(notes===1?'':'s')+' skipped (branding comes from the product works order)');
   if(inter)           bits.push(inter+' inter-company line'+(inter===1?'':'s')+' ignored');
   var r=document.getElementById('smResult');
@@ -2907,7 +2922,7 @@ function smRenderInner(){
             +(o.customer&&o.customer!==o.custName?'<div class="sm-sub">'+esc(o.customer)+'</div>':'')
             +(o.custOrder&&o.custOrder!==o.custName?'<div class="sm-sub">'+esc(o.custOrder)+'</div>':'')+'</td>'
           +'<td class="sm-sub" style="white-space:nowrap">'+esc(o.so.replace(/^0+/,''))+'</td>'
-          +'<td style="text-align:right">'+o.qty+'</td>'
+          +'<td style="text-align:right">'+o.qty+(o.qtyWas!=null?'<div class="sm-sub" title="the outstanding balance in Sage changed on a later paste">was '+o.qtyWas+'</div>':'')+'</td>'
           +'<td style="text-align:center;white-space:nowrap">'
             +(IS_EDITOR
               ? '<button class="btn" style="font-size:11px;padding:1px 6px" onclick="smAdj(\''+esc(o.key)+'\',-1)">&minus;</button>'
@@ -3013,7 +3028,7 @@ function smRenderInner(){
         },'made-'):'')
       +(smDropped.length?'<div class="sm-hsub">&#10005; Dismissed ('+smDropped.length+')</div>'
         +smMonthBlocks(smDropped,'dismissedAt',function(o){
-          return '<div class="sm-dism"><span>'+esc(o.code||'(no code)')+' &times; '+o.qty
+          return '<div class="sm-dism"><span>'+esc(o.code||'(no code)')+' &times; '+o.qty+(o.qtyWas!=null?' <span title="the outstanding balance in Sage changed on a later paste">(was '+o.qtyWas+')</span>':'')
             +' &middot; SO '+esc(o.so.replace(/^0+/,''))+' &middot; '+esc(o.customer||'')+'</span>'
             +(IS_EDITOR?'<button class="btn" style="font-size:10px;padding:2px 8px" onclick="smUndismiss(\''+esc(o.key)+'\')">Undo</button>':'')
             +'</div>';
