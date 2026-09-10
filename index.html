@@ -271,6 +271,7 @@ body.planner-mode .planner-wrap{display:block}
 .sm-ref{font-weight:700;color:#7A1F3D;font-size:13px}
 .sm-card.oh .sm-ref{color:#1f6b4a}
 .sm-note{font-size:11.5px;background:#fffbeb;border-left:3px solid #f0b429;padding:4px 8px;margin-top:5px;border-radius:0 4px 4px 0}
+.woc-logo{font-size:10px;color:#92400e;background:#fffbeb;border-left:3px solid #f0b429;padding:2px 6px;margin-top:3px;border-radius:0 3px 3px 0;text-align:left}
 .sm-dism{background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;margin-bottom:5px;font-size:11.5px;color:#6b7280;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .sm-tblwrap{background:#fff;border:1px solid #e5e7eb;border-radius:7px;overflow-x:auto}
 .sm-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -1231,7 +1232,7 @@ function renderWOCards(){
         /* collapsed ref variants so S869335 / STIB869335 match S-TIB869335-Pt1 */
         +' '+ref.replace(/[^a-zA-Z0-9]+/g,'')
         +' '+ref.replace(/^S-?(TIB|OH)/i,'S').replace(/[^a-zA-Z0-9]+/g,'')
-        +(wo.sm?' '+(wo.sm.so||'')+' '+(wo.sm.customer||'')+' '+(wo.sm.custName||'')+' '+(wo.sm.custOrder||'')+' '+smCustomerFor(wo.sm, wo.items[0]&&wo.items[0].code):'');
+        +(wo.sm?' '+smLogoText(wo)+' '+(wo.sm.so||'')+' '+(wo.sm.customer||'')+' '+(wo.sm.custName||'')+' '+(wo.sm.custOrder||'')+' '+smCustomerFor(wo.sm, wo.items[0]&&wo.items[0].code):'');
       return smMatch(hay, srch);
     });
   } else {
@@ -1282,7 +1283,8 @@ function renderWOCards(){
       +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
       +'<div style="font-size:10.5px;color:#1F3245;font-weight:700;margin-top:2px">'+esc(wo.items.slice(0,3).map(function(it){ return it.code; }).join(', ')+(wo.items.length>3?' +'+(wo.items.length-3)+' more':''))+'</div>'
       +(wo.sm?'<div style="font-size:10px;color:#6b7280;margin-top:2px">'+esc(smCustomerFor(wo.sm, wo.items[0]&&wo.items[0].code))
-        +(smPrintable(wo.items[0].code)?'':' &middot; <span style="color:#b45309;font-weight:700">no print template</span>')+'</div>':'')
+        +(smPrintable(wo.items[0].code)?'':' &middot; <span style="color:#b45309;font-weight:700">no print template</span>')+'</div>'
+        +smLogoHtml(wo,'woc-logo'):'')
       +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
       +'<button class="btn" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button>'
       +'</div>';
@@ -1414,6 +1416,7 @@ function printWOP(ref, code, qty, due, sm){
   }
   var st=hit.style, size=hit.size;
   var hasBrand=(st.brandType&&st.brandType!=='None')||!!st.logoImg||!!st.brandPlace||!!st.placeImg;
+  var logo=sm ? smLogoFor(sm, code) : [];    // the sales order's logo/text lines, stock styles only
   qty=Math.round(qty||0);
   var chart=chartFor(st.chart);
   var cols=chartColsFor(st.chart);
@@ -1466,7 +1469,11 @@ function printWOP(ref, code, qty, due, sm){
     +'<table class="kv" style="margin-top:14px">'
     +'<tr><th>Date issued</th><td>'+e(today)+'</td><th style="width:26%">Date required</th><td>'+e(dueTxt)+'</td></tr>'
     +'<tr><th>Product code</th><td>'+e(code)+'</td><th>Quantity</th><td>'+qty.toLocaleString()+'</td></tr>'
-    +'<tr><th>Size</th><td>'+e(sizeTxt)+'</td><th>Embroidery</th><td>'+(hasBrand?'Yes &mdash; see CUSTOMER BRANDING':'No')+'</td></tr>'
+    +'<tr><th>Size</th><td>'+e(sizeTxt)+'</td><th>Embroidery</th><td>'+(hasBrand?'Yes &mdash; see CUSTOMER BRANDING':(logo.length?'<strong>Yes &mdash; from the sales order, below</strong>':'No'))+'</td></tr>'
+    /* A stock style's embroidery is whatever sales put on the order: the logo
+       and text lines entered under this garment, printed right here where the
+       machinist reads Embroidery: Yes. */
+    +logo.map(function(n){ return '<tr><th>'+e(smNoteLabel(n))+(n.qty?' &times; '+n.qty:'')+'</th><td colspan="3" style="background:#FFF8E1;font-weight:700">'+e(n.desc)+'</td></tr>'; }).join('')
     /* Always shown on a special make, even when Sage has left it blank - an
        empty row asks the question, a missing row hides it. */
     +(sm
@@ -1479,9 +1486,9 @@ function printWOP(ref, code, qty, due, sm){
     +'<div class="band" style="display:flex;justify-content:space-between"><span>GARMENT</span><span>LOCATION</span></div><table><tr><td style="font-weight:700">'+e(st.name)+'</td><td style="width:20%;text-align:center;font-weight:700;border-left:1px solid #999">'+e(stockLoc)+'</td></tr></table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(st.desc)+'</td></tr></table>'
     /* Branding spec from the product's own works order (set in the costing app
-       or edited here). Sales order LOGO/transfer lines from the Special Makes
-       sheet are no longer printed - if the spec needs changing, sales request
-       the change and the works order is updated. */
+       or edited here) - a customer-owned style. A stock style has none of this;
+       its embroidery comes from the sales order's logo lines, printed under
+       Embroidery above. */
     +(hasBrand
       ? '<div class="band">CUSTOMER BRANDING &amp; LOGO</div><table>'
         +'<tr><th>Type</th><td colspan="2">'+e(st.brandType||'\u2014')+'</td></tr>'
@@ -2607,14 +2614,16 @@ function smLoadPaste(){
     if(changed){ p.changedAt=d2s(now()); updated++; }
   }
 
+  notes=smKeepNotes(lines);
+
   lines.forEach(function(o){
     var seen=smSeen[o.key];
     if(o.cat.indexOf('NOTE')===0){
-      /* LOGO / transfer / charge lines are NOT brought in any more - the branding
-         spec lives on the product's own works order and changes only when sales
-         request it. The line is still marked seen so it is never offered again. */
+      /* Logo, text and free-text lines are kept with their sales order by
+         smKeepNotes above, anchored to the garment line they sit under. They
+         are never offered as jobs; marked seen so nothing else picks them up. */
       if(!seen) smSeen[o.key]={what:'note'};
-      notes++; return;
+      return;
     }
     if(o.cat.indexOf('INTERCOMPANY')===0){
       if(!seen) smSeen[o.key]={what:'intercompany'};
@@ -2642,13 +2651,16 @@ function smLoadPaste(){
   if(already)         bits.push(already+' already raised');
   if(dismissedBefore) bits.push(dismissedBefore+' dismissed previously');
   if(updated)         bits.push('<strong>'+updated+'</strong> known line'+(updated===1?'':'s')+' updated from Sage (quantity or date changed)');
-  if(notes)           bits.push('<strong>'+notes+'</strong> logo/charge line'+(notes===1?'':'s')+' skipped (branding comes from the product works order)');
+  if(notes)           bits.push('<strong>'+notes+'</strong> logo/text line'+(notes===1?'':'s')+' kept with the sales order (printed on stock-style works orders)');
   if(inter)           bits.push(inter+' inter-company line'+(inter===1?'':'s')+' ignored');
   var r=document.getElementById('smResult');
   r.innerHTML='<strong>'+added+'</strong> line'+(added===1?'':'s')+' ready for review'
     +(added?' &mdash; accept or dismiss each below.':'.')
     +(bits.length?'<br>'+bits.join(' &middot; ')+'.':'');
   r.classList.remove('hidden');
+  // The paste itself changes state - new queue lines, refreshed balances, the
+  // order's logo lines - and must not depend on a later click to be saved.
+  saveState();
   smRender();
 }
 
@@ -2754,12 +2766,76 @@ function smAfterChange(){
 // Sales order logo/charge lines used to be copied onto every special make
 // works order for that order. They are no longer used (the branding spec is on
 // the product's own works order), so anything still attached is cleared.
-function smAttachNotes(){
-  WOs.forEach(function(wo){
-    if(!wo.sm) return;
-    wo.sm.notes=[];
-  });
+// ── Logo lines from the sales order, for stock styles ─────────────────────
+// A stock style in an unstocked size - a 60" Suffolk, an XS Tibard trouser -
+// arrives as a special make, and any customer can have it embroidered. Its
+// own works order data carries no customer branding (it is nobody's style),
+// so the only place the embroidery detail exists is the sales order's LOGO
+// APPLICATION (a customer logo) and TEXT APPLICATION (a name or initials)
+// lines, plus any free-text line sales typed. Sales enter those lines under
+// the garment they belong to, so each is anchored to the nearest garment
+// line above it on the order - never copied across the whole order, which
+// is how unrelated transfers once got printed on the wrong jacket.
+//
+// A customer-owned style (OHAPB0001 and the like) keeps the branding from
+// its own works order data and ignores these lines; they attach only when
+// the garment is a stock style. Charges (handling and the rest) are not
+// branding and are dropped. The lines are kept per sales order in smNotes,
+// replaced on every paste, so a changed spec reaches the works order.
+function smNoteKind(o){
+  var c=(o.code||'').toUpperCase();
+  if(/^LOGO/.test(c)) return /ORIGIN/.test(c) ? 'origination' : 'logo';
+  if(/^TEXT/.test(c)) return 'text';
+  if(!c || (o.cat||'').indexOf('NOTE - FREE TEXT')===0) return 'note';
+  return null;
 }
+function smNoteLabel(n){ return {logo:'Logo application', origination:'Logo origination', text:'Text application', note:'Note'}[n.kind]||'Note'; }
+function smKeepNotes(lines){
+  var byOrder={}, order=[];
+  lines.forEach(function(o){ var k=smSoKey(o); if(!byOrder[k]){ byOrder[k]=[]; order.push(k); } byOrder[k].push(o); });
+  var kept=0;
+  order.forEach(function(k){
+    var ls=byOrder[k].slice().sort(function(a,b){ return (a.seq||0)-(b.seq||0); });
+    var anchor=null, first=null, out=[];
+    ls.forEach(function(o){
+      if(o.cat.indexOf('NOTE')!==0){ anchor=o; if(!first) first=o; return; }
+      var kind=smNoteKind(o); if(!kind) return;
+      out.push({key:o.key, seq:o.seq, code:o.code, desc:o.desc, qty:o.qty, kind:kind, forKey:anchor?anchor.key:null});
+    });
+    // a note typed above the first garment belongs to that garment
+    out.forEach(function(n){ if(n.forKey==null && first) n.forKey=first.key; });
+    smNotes[k]=out; kept+=out.length;
+  });
+  return kept;
+}
+// Is this a stock style, at any size? OH: any style in the works order data
+// (the range, as size templates - a 60" matches the same template as a 40").
+// Tibard: the same family and colour as a buffer SKU with only the size
+// token different - the buffer holds every Tibard stock family.
+function smStyleFamily(code){
+  var m=(code||'').toUpperCase().match(/^([A-Z]+\d{3,4})(XXXL|XXL|XL|XS|SS|MM|LL|S|M|L|\d{2,3}[RLS]?)(\d{2})$/);
+  return m ? m[1]+'--'+m[3] : null;
+}
+function smIsStockStyle(code){
+  var c=(code||'').trim().toUpperCase(); if(!c) return false;
+  try{ var hit=styleForCode(c);
+       if(hit && STYLE_MASTER.styles.some(function(st){ return (st.code||'').toUpperCase()===(hit.style.code||'').toUpperCase(); })) return true; }catch(e){}
+  var f=smStyleFamily(c);
+  for(var i=0;i<rows.length;i++){ var rc=(rows[i].code||'').toUpperCase(); if(rc===c) return true; if(f && smStyleFamily(rc)===f) return true; }
+  return false;
+}
+// The logo lines for one works order: those anchored to its sales order
+// line, and only when the garment is a stock style.
+function smLogoFor(sm, code){
+  if(!sm || !sm.lineKey || !smIsStockStyle(code)) return [];
+  return (smNotes[smSoKey(sm)]||[]).filter(function(n){ return n.forKey===sm.lineKey; });
+}
+function smLogoText(wo){ return smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code).map(function(n){ return smNoteLabel(n)+' '+n.desc; }).join(' '); }
+function smLogoHtml(wo, cls){
+  return smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code).map(function(n){
+    return '<div class="'+(cls||'sm-note')+'">&#129525; <strong>'+esc(smNoteLabel(n))+(n.qty?' &times; '+n.qty:'')+'</strong> '+esc(n.desc)+'</div>'; }).join('');
+}
+function smAttachNotes(){ /* logo lines are looked up live from smNotes - nothing to copy */ }
 
 // ── review queue helpers: tick + editable quantity, mirroring the buffer ───
 // Each pending line carries `take` (units to make, defaulting to the ordered
@@ -2950,7 +3026,7 @@ function smRenderInner(){
   // never made.
   var rowsOut=[];
   live.forEach(function(wo){
-    if(!smMatch(wo.ref+' '+wo.sm.so+' '+wo.sm.customer+' '+(wo.sm.custName||'')+' '+(wo.sm.custOrder||'')+' '+wo.sm.desc+' '+wo.sm.company+' '
+    if(!smMatch(wo.ref+' '+wo.sm.so+' '+wo.sm.customer+' '+(wo.sm.custName||'')+' '+(wo.sm.custOrder||'')+' '+wo.sm.desc+' '+wo.sm.company+' '+smLogoText(wo)+' '
        +wo.items.map(function(i){return i.code;}).join(' ')
        , q)) return;
     rowsOut.push({kind:'live', wo:wo, code:wo.items[0].code, qty:wo.items[0].qty,
@@ -2997,6 +3073,7 @@ function smRenderInner(){
             :smPrintable(r.code)?'<span class="sm-tag ok">ready to print</span>'
             :'<span class="sm-tag warn">no works order data</span>')
           +'<div class="sm-sub">'+esc(wo.sm.desc)+'</div>'
+          +smLogoHtml(wo)
           +'</td>'
           +'<td><strong>'+esc(smCustomerFor(wo.sm, r.code))+'</strong>'
             +(wo.sm.customer&&wo.sm.customer!==wo.sm.custName?'<div class="sm-sub">'+esc(wo.sm.customer)+'</div>':'')
@@ -3416,15 +3493,16 @@ function smLinkDoc(ref){
 // live with the job itself, where the PM opens it.
 function smDocMeta(wo){
   if(!wo || !wo.sm) return '';
+  var logo=smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code).map(function(n){ return ' &nbsp;|&nbsp; &#129525; <strong>'+esc(smNoteLabel(n))+'</strong> '+esc(n.desc); }).join('');
   var d=smDocs[wo.ref];
   if(d){
     return ' &nbsp;|&nbsp; &#128206; <a href="'+esc(smDocUrl(d.name))+'" target="_blank" rel="noopener">'
       +esc(d.name.length>28?d.name.slice(0,26)+'…':d.name)+'</a>'
-      +(IS_EDITOR?' <a href="#" onclick="smLinkDoc(\'' +esc(wo.ref)+ '\');return false" title="Change or remove the linked file">&#9998;</a>':'');
+      +(IS_EDITOR?' <a href="#" onclick="smLinkDoc(\'' +esc(wo.ref)+ '\');return false" title="Change or remove the linked file">&#9998;</a>':'')+logo;
   }
-  return IS_EDITOR
+  return logo+(IS_EDITOR
     ? ' &nbsp;<button class="btn" style="font-size:10px;padding:3px 9px" title="Link a works order file from the repo\'s works-orders/ folder" onclick="smLinkDoc(\''+esc(wo.ref)+'\')">&#128206; Link file</button>'
-    : '';
+    : '');
 }
 
 
