@@ -1,0 +1,82 @@
+{
+ "source": "works-order-editor",
+ "exportedAt": "2026-09-10T15:59:37.798Z",
+ "mode": "changes",
+ "styleCount": 1,
+ "styles": [
+  {
+   "code": "CT0001",
+   "name": "Chef trousers — Clean Linen",
+   "desc": "BLACK ELASTICATED/DRAWSTRING CHEFS TROUSERS SZ SML (26-28) CUT DOWN TO 29” SHORT LEG LENGTH",
+   "lectra": "",
+   "variant": "",
+   "chart": "CT0001-MEAS",
+   "fabrics": [],
+   "trims": [
+    [
+     "",
+     "BLACK ELASTICATED/DRAWSTRING CHEFS TROUSERS SZ SML (26-28)",
+     "1",
+     "BULKCT3082SS03",
+     3.45048
+    ],
+    [
+     "",
+     "BLACK ECOVERDE EPIC 80T40 09700 THREAD",
+     "4",
+     "CMP-THR-EP80-09700-03",
+     0.00071
+    ]
+   ],
+   "mfg": [
+    "CUTTING ROOM - To cut down leg length by 4.5cm.  Trouser to then finish after hemming 29\" leg length.",
+    "Must have additional printed label that states SHORT LEG 29\"",
+    "Stitch each side of leg to straighten width at hem",
+    "Double turn hem and topstitch 1.5cm",
+    "Add additional label with leg length detail and set on top of care label. New label to state  SHORT LEG 29\""
+   ],
+   "fin": [
+    "Check, trim hem stitching and fold."
+   ],
+   "machMins": 5,
+   "finMins": 2,
+   "cutBatch": 1,
+   "cutMins": 2.5,
+   "oneSize": true,
+   "markerMain": "1",
+   "markerMesh": "",
+   "markerLen": 1,
+   "layQty": 1,
+   "hasMesh": false,
+   "meshLen": null,
+   "meshLay": null,
+   "sr": "SR0003",
+   "srVersion": 1,
+   "customer": "Clean Linen",
+   "brandType": "None",
+   "brandPlace": "",
+   "logoImg": "",
+   "placeImg": "",
+   "alias": [],
+   "tol": "",
+   "editedAt": "2026-09-10"
+  }
+ ],
+ "charts": {
+  "CT0001-MEAS": [
+   [
+    "Inside leg length in cm",
+    "74"
+   ],
+   [
+    "Waist relaxed",
+    "61"
+   ],
+   [
+    "Waist stretched ",
+    "91"
+   ]
+  ]
+ },
+ "chartCols": {}
+}
