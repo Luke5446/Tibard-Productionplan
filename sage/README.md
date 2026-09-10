@@ -382,6 +382,31 @@ and `Heat Seal Transfers / Tax Tab`, so the grouping exists in Sage and will
 keep working as new service codes are added. Free-text lines (`LineTypeID = 1`)
 are notes by definition.
 
+### What the app does with them now (September 2026)
+
+The first version copied every note on an order onto every works order raised
+from it, and a jacket printed with another garment's transfers, so the notes
+were dropped for a while. The rule now is narrower and matches how sales enter
+orders:
+
+- A logo or text line is **anchored to the garment line above it** on the
+  order (by line sequence). A line typed above the first garment belongs to
+  the first garment. `LOGOAPPLICATION` is a customer logo, `TEXTAPPLICATION`
+  a name or initials, `LOGOORIGINATION` the origination charge, and free text
+  is a note. `HANDLINGCHARGE` and other charges are not branding and are
+  dropped.
+- The lines are shown **only on stock styles** — a stock style in an
+  unstocked size (a 60" Suffolk, an XS Tibard trouser) arrives as a special
+  make and any customer can have it embroidered, but its own works order data
+  carries no branding. A stock style is an Oliver Harvey style in the works
+  order data at any size, or a Tibard code in the same family and colour as a
+  buffer SKU with only the size different (every Tibard stock family is in the
+  buffer). A customer-owned style keeps the branding from its own works order
+  data and ignores the order's lines.
+- They appear on the works order card, the live special makes list, the works
+  order panel, and the printed works order directly under *Embroidery: Yes*.
+  They are re-read from every paste, so a changed spec reaches a live job.
+
 ### Line classification, measured from the live feed
 
 | What | Lines (TIB / OH) | Treatment |
