@@ -126,7 +126,7 @@ step on the right — the SQL statement box reopens. Paste the corrected
 
 ### 2.7 No filtering needed — and do not filter on Manufacturer
 
-Copy columns **A to L**, all rows, **without the header**, and paste the lot.
+Copy columns **A to N**, all rows, **without the header**, and paste the lot.
 
 > #### ⚠️ Never filter on column K (Manufacturer)
 >
@@ -391,14 +391,14 @@ orders:
 
 - A logo or text line is **anchored to the garment line above it** on the
   order (by line sequence). A line typed above the first garment belongs to
-  the first garment. For that to be right the sheet must show every garment
-  line of the order, so the SQL now returns the stock-held and bought-in lines
-  of any order that carries a job, categorised `STOCK HELD` / `BOUGHT IN`; the
-  app never offers them, they are there only as anchors. On an older sheet
-  without them a gap in the line sequence is treated as a garment the sheet
-  cannot show, and the note after it is left unattached and counted in the
-  paste summary rather than given to the wrong works order. A note whose
-  garment has left the sheet (despatched) stays with that garment. `LOGOAPPLICATION` is a customer logo, `TEXTAPPLICATION`
+  the first garment. The SQL works this out from the whole order and puts the
+  garment's line key in column N (`ForLine`) on every note row, so a note under
+  a stock-held or bought-in garment - which the sheet does not show - is
+  anchored to that garment and never printed on the special make below it.
+  On an older sheet without column N a gap in the line sequence is treated as
+  a garment the sheet cannot show, and the note after it is left unattached
+  and counted in the paste summary rather than given to the wrong works order.
+  A note whose garment has left the sheet (despatched) stays with that garment. `LOGOAPPLICATION` is a customer logo, `TEXTAPPLICATION`
   a name or initials, `LOGOORIGINATION` the origination charge, and free text
   is a note. `HANDLINGCHARGE` and other charges are not branding and are
   dropped.

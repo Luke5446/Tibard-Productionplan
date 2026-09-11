@@ -63,7 +63,16 @@ const NOTE='NOTE - charge or logo line';
  const c2=await p.evaluate(()=>{ smShowTab('buffer'); return [...document.querySelectorAll('.woc-logo')].map(e=>e.textContent).filter(t=>/Logo D CHANGED/.test(t)).length; });
  console.log('card       ->', 'D raised? '+(await p.evaluate(()=>WOs.some(w=>w.sm&&w.sm.so==='0000200004'))), c1, '=>', c2);
 
- const pass = a1==='A-2>-!,A-4>A-3,A-6>-!' && /2 logo\/text lines sit under a garment the sheet does not show/.test(r1)
+ // 8. the current sheet: column N names the garment, worked out from the whole order - a note under a stock-held
+ //    garment the sheet does not show is anchored to it (and never prints), the special make's own note is exact,
+ //    and the sequence-gap guess is switched off
+ const LN=(key,so,seq,code,desc,qty,cat,forLine)=>L(key,so,seq,code,desc,qty,cat)+'\t'+forLine;
+ const r8=await paste([LN('F-2','0000200008',2,'LOGOAPPLICATION','Stock jacket logo',20,NOTE,'F-1'), LN('F-4','0000200008',4,'OHCJSSUFFOLK6001','SUFFOLK 60',4,'WORKS ORDER',''), LN('F-5','0000200008',5,'LOGOAPPLICATION','Special logo',4,NOTE,'F-4'), LN('F-7','0000200008',7,'TEXTAPPLICATION','Text after a bought-in line',2,NOTE,'F-6')].join('\n'));
+ const a8=await anchors('0000200008');
+ console.log('column N   ->', a8, '|', r8);
+
+ const pass = a8==='F-2>F-1,F-5>F-4,F-7>F-6' && /1 logo\/text line kept/.test(r8) && !/not attached/.test(r8)
+   && a1==='A-2>-!,A-4>A-3,A-6>-!' && /2 logo\/text lines sit under a garment the sheet does not show/.test(r1)
    && a2==='B-2>B-1,B-4>B-3' && !/B-1/.test(pend) && /B-3/.test(pend)
    && before==='C-1:Logo for C-1 | C-3:Text for C-3' && after==='C-1:Logo for C-1 | C-3:Text for C-3'
    && filtered==='C-2>C-1,C-4>C-3' && dup==='D-2>D-1'
