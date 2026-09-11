@@ -87,15 +87,17 @@ SELECT
     LTRIM(RTRIM(si.Code)),
     CASE WHEN DATALENGTH(si.Code) <> DATALENGTH(LTRIM(RTRIM(si.Code)))
          THEN 'YES - stray spaces in the code' ELSE 'no' END,
-    'StockHeld[' + ISNULL(si.AnalysisCode3,'') + '] Website[' + ISNULL(si.AnalysisCode7,'') + ']',
-    CASE WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'
-           OR ISNULL(si.AnalysisCode7,'') = 'Yes' THEN 'YES - treated as stock held, kept off the sheet'
+    'StockHeld[' + ISNULL(si.AnalysisCode3,'') + '] Website[' + ISNULL(si.AnalysisCode7,'') + '] TibardStockHeld[' + ISNULL(tsi.AnalysisCode3,'') + ']',
+    CASE WHEN ISNULL(si.AnalysisCode3,'')  = 'Yes'
+           OR ISNULL(si.AnalysisCode7,'')  = 'Yes'
+           OR ISNULL(tsi.AnalysisCode3,'') = 'Yes' THEN 'YES - treated as stock held, kept off the sheet'
          ELSE 'no - treated as a special make' END,
     ISNULL(NULLIF(LTRIM(RTRIM(si.Manufacturer)),''),'(blank)'),
     ISNULL(pg.Code,'(none)'),
     CASE
         WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'
           OR ISNULL(si.AnalysisCode7,'') = 'Yes' THEN 'STOCK HELD >> DROPPED - Stock Held or Website says Yes'
+        WHEN ISNULL(tsi.AnalysisCode3,'') = 'Yes' THEN 'STOCK HELD >> DROPPED - a Tibard stock code (Stock Held at Tibard), sold through OH'
         WHEN pg.Code = '54'                      THEN 'NOTE - charge or logo line, only shown alongside a works order'
         WHEN si.Manufacturer LIKE '%Tibard%'
           OR si.Manufacturer LIKE '%Oliver Harvey%' THEN 'WORKS ORDER - should be on the sheet'
@@ -104,6 +106,7 @@ SELECT
         ELSE 'BOUGHT IN >> DROPPED - manufacturer is "' + LTRIM(RTRIM(si.Manufacturer)) + '", set it to Tibard or Oliver Harvey'
     END
 FROM       OliverHarveyLive.dbo.StockItem    si
+LEFT JOIN  S200_LIVE.dbo.StockItem           tsi ON tsi.Code = si.Code   -- Tibard's record for the same code
 LEFT JOIN  OliverHarveyLive.dbo.ProductGroup pg ON pg.ProductGroupID = si.ProductGroupID
 WHERE LTRIM(RTRIM(si.Code)) = @Code;
 
@@ -169,8 +172,9 @@ SELECT
         WHEN cust.CustomerAccountNumber = 'TIB003'   THEN 'INTERCOMPANY - no works order'
         WHEN sorl.LineTypeID = 1                     THEN 'NOTE - free text'
         WHEN pg.Code = '54'                          THEN 'NOTE - charge or logo line'
-        WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'
-          OR ISNULL(si.AnalysisCode7,'') = 'Yes'     THEN 'STOCK HELD'
+        WHEN ISNULL(si.AnalysisCode3,'')  = 'Yes'
+          OR ISNULL(si.AnalysisCode7,'')  = 'Yes'
+          OR ISNULL(tsi.AnalysisCode3,'') = 'Yes'    THEN 'STOCK HELD'   -- stock held at Tibard, same code
         WHEN sorl.ItemCode = 'FREETEXT'              THEN 'REVIEW - FREETEXT placeholder'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
         WHEN si.Manufacturer LIKE '%Tibard%'
@@ -182,6 +186,7 @@ SELECT
 FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
 INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
 LEFT  JOIN  OliverHarveyLive.dbo.StockItem           si   ON si.Code                  = sorl.ItemCode
+LEFT  JOIN  S200_LIVE.dbo.StockItem                  tsi  ON tsi.Code                 = sorl.ItemCode
 LEFT  JOIN  OliverHarveyLive.dbo.ProductGroup        pg   ON pg.ProductGroupID        = si.ProductGroupID
 LEFT  JOIN  OliverHarveyLive.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
 WHERE LTRIM(RTRIM(sorl.ItemCode)) = @Code

@@ -625,7 +625,16 @@ Oliver Harvey barely use Stock Held. They rely on **Website**, because anything
 sold on the website is by definition held in stock. So:
 
 > **Tibard** is stock held when Stock Held says Yes.
-> **Oliver Harvey** is stock held when **either** Stock Held **or** Website does.
+> **Oliver Harvey** is stock held when **either** Stock Held **or** Website does,
+> **or** when Tibard's record for the same code says Stock Held.
+
+The last clause came from the third incident (11 Sep 2026): `CT3082MM03` and
+`CJ0193LL01` are Tibard buffer stock, and both companies hold a record for the
+code, but only the Tibard record carries the flag. Sold through an Oliver
+Harvey order they were offered to production as special makes. The OH block
+now joins Tibard's stock record on the code and reads its Stock Held too —
+one join, the same test in `30-why-is-this-code-missing.sql` and
+`20-validate-against-known-specials.sql`.
 
 That is why `OHAPP063015HP1S` came through as a special make — stock held, but
 not on the website, and the rule read only Website. It now reads both.

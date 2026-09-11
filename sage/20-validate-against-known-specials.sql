@@ -43,14 +43,16 @@ LEFT JOIN  S200_LIVE.dbo.StockItem si ON si.Code = s.Code
 UNION ALL
 
 SELECT 'OLIVER HARVEY', s.Code,
-       'StockHeld[' + ISNULL(si.AnalysisCode3,'') + '] Website[' + ISNULL(si.AnalysisCode7,'') + ']',
+       'StockHeld[' + ISNULL(si.AnalysisCode3,'') + '] Website[' + ISNULL(si.AnalysisCode7,'') + '] TibardStockHeld[' + ISNULL(tsi.AnalysisCode3,'') + ']',
        ISNULL(NULLIF(si.Manufacturer,''),'(blank)'),
        CASE
          WHEN si.Code IS NULL                         THEN '-- not in this company --'
          /* Oliver Harvey is stock held on EITHER code - see the header of
-            10-special-makes-live.sql. Website implies stock there. */
+            10-special-makes-live.sql. Website implies stock there. A Tibard
+            stock code sold through OH is stock held on Tibard's record. */
          WHEN si.AnalysisCode3 = 'Yes'
-           OR si.AnalysisCode7 = 'Yes'                THEN 'MISSED - flagged stock held'
+           OR si.AnalysisCode7 = 'Yes'
+           OR tsi.AnalysisCode3 = 'Yes'               THEN 'MISSED - flagged stock held'
          WHEN si.Manufacturer LIKE '%Tibard%'
            OR si.Manufacturer LIKE '%Oliver Harvey%'  THEN 'WORKS ORDER'
          WHEN NULLIF(LTRIM(RTRIM(si.Manufacturer)),'') IS NULL
@@ -58,6 +60,7 @@ SELECT 'OLIVER HARVEY', s.Code,
          ELSE                                              'MISSED - reads as bought in'
        END
 FROM       sample s
-LEFT JOIN  OliverHarveyLive.dbo.StockItem si ON si.Code = s.Code
+LEFT JOIN  OliverHarveyLive.dbo.StockItem si  ON si.Code  = s.Code
+LEFT JOIN  S200_LIVE.dbo.StockItem        tsi ON tsi.Code = s.Code
 
 ORDER BY SheetCode, Company;

@@ -175,7 +175,14 @@ UNION ALL
    Oliver Harvey hardly use Stock Held and rely on Website, because anything on
    the website is held in stock. So OH is stock held if EITHER says Yes, and
    Tibard is stock held on its own Stock Held code. Do not tidy the two halves
-   to match - they are not the same test. */
+   to match - they are not the same test.
+
+   AND A TIBARD STOCK CODE SOLD THROUGH OLIVER HARVEY IS STILL STOCK. The same
+   code exists in both stock files, but only the Tibard record carries the
+   Stock Held flag - CT3082MM03 and CJ0193LL01 on OH orders were offered to
+   production as special makes because OH's copy of the record says nothing.
+   So the OH block also reads the TIBARD stock record for the same code, and
+   treats the line as stock held if Tibard says so. */
 SELECT
     'OH-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20)),
     'OLIVER HARVEY',
@@ -204,8 +211,9 @@ SELECT
            definition held in stock. Reading Website alone missed
            OHAPP063015HP1S: stock held, not on the website, and so offered to
            production as a special make. Read BOTH. */
-        WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'
-          OR ISNULL(si.AnalysisCode7,'') = 'Yes'     THEN 'STOCK HELD'
+        WHEN ISNULL(si.AnalysisCode3,'')  = 'Yes'
+          OR ISNULL(si.AnalysisCode7,'')  = 'Yes'
+          OR ISNULL(tsi.AnalysisCode3,'') = 'Yes'    THEN 'STOCK HELD'   -- stock held at Tibard, same code
         WHEN sorl.ItemCode = 'FREETEXT'              THEN 'REVIEW - FREETEXT placeholder'
         WHEN si.Code IS NULL                         THEN 'REVIEW - code not in stock file'
         WHEN si.Manufacturer LIKE '%Tibard%'
@@ -231,6 +239,8 @@ SELECT
 FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
 INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
 LEFT  JOIN  OliverHarveyLive.dbo.StockItem           si   ON si.Code                  = sorl.ItemCode
+/* Tibard's record for the same code: a Tibard stock line on an OH order. */
+LEFT  JOIN  S200_LIVE.dbo.StockItem                  tsi  ON tsi.Code                 = sorl.ItemCode
 LEFT  JOIN  OliverHarveyLive.dbo.ProductGroup        pg   ON pg.ProductGroupID        = si.ProductGroupID
 LEFT  JOIN  OliverHarveyLive.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
 WHERE
