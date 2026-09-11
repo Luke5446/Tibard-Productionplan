@@ -14,9 +14,14 @@
      REVIEW - ...                    needs a human decision
      NOTE - ...                      logo/charge detail for an order above
      INTERCOMPANY - no works order   kept only so the count stays visible
+     STOCK HELD / BOUGHT IN          NOT jobs - the app never offers them. On
+                                     the sheet only for orders that also carry
+                                     a job, so every line of such an order is
+                                     present in sequence and a logo line can be
+                                     matched to the garment it sits under.
 
-   Stock-held items and bought-in goods are dropped here, so they never reach
-   the sheet at all.
+   Stock-held items and bought-in goods on orders with nothing to make are
+   dropped here, so they never reach the sheet at all.
 
    WHO THE JOB IS FOR takes all three of I, L and M. Column I is the Sage
    ACCOUNT and column L the customer's own reference, and neither is reliably
@@ -250,6 +255,17 @@ WHERE
        when the sheet is filtered, and stops notes arriving for orders that are
        entirely bought-in. */
     OR (l.Category LIKE 'NOTE%'
+        AND EXISTS (SELECT 1 FROM lines x
+                    WHERE  x.Company      = l.Company
+                      AND  x.SalesOrderNo = l.SalesOrderNo
+                      AND (x.Category = 'WORKS ORDER' OR x.Category LIKE 'REVIEW%')))
+
+    /* ...and, for those same orders, the garment lines that are NOT made here.
+       Not as jobs - the app skips them - but so the order's lines are all on
+       the sheet in sequence. Sales enter a logo line directly under the
+       garment it belongs to; with the stock-held line missing, a stock
+       jacket's logo would sit under the special make above it instead. */
+    OR (l.Category IN ('STOCK HELD', 'BOUGHT IN')
         AND EXISTS (SELECT 1 FROM lines x
                     WHERE  x.Company      = l.Company
                       AND  x.SalesOrderNo = l.SalesOrderNo

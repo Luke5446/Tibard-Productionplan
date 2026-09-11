@@ -1417,6 +1417,7 @@ function printWOP(ref, code, qty, due, sm){
   var st=hit.style, size=hit.size;
   var hasBrand=(st.brandType&&st.brandType!=='None')||!!st.logoImg||!!st.brandPlace||!!st.placeImg;
   var logo=sm ? smLogoFor(sm, code) : [];    // the sales order's logo/text lines, stock styles only
+  var emb=logo.some(function(n){ return n.kind!=='note'; });   // a free-text note is not embroidery
   qty=Math.round(qty||0);
   var chart=chartFor(st.chart);
   var cols=chartColsFor(st.chart);
@@ -1469,7 +1470,7 @@ function printWOP(ref, code, qty, due, sm){
     +'<table class="kv" style="margin-top:14px">'
     +'<tr><th>Date issued</th><td>'+e(today)+'</td><th style="width:26%">Date required</th><td>'+e(dueTxt)+'</td></tr>'
     +'<tr><th>Product code</th><td>'+e(code)+'</td><th>Quantity</th><td>'+qty.toLocaleString()+'</td></tr>'
-    +'<tr><th>Size</th><td>'+e(sizeTxt)+'</td><th>Embroidery</th><td>'+(hasBrand?'Yes &mdash; see CUSTOMER BRANDING':(logo.length?'<strong>Yes &mdash; from the sales order, below</strong>':'No'))+'</td></tr>'
+    +'<tr><th>Size</th><td>'+e(sizeTxt)+'</td><th>Embroidery</th><td>'+(hasBrand?'Yes &mdash; see CUSTOMER BRANDING'+(emb?' and the sales order lines below':''):(emb?'<strong>Yes &mdash; from the sales order, below</strong>':'No'))+'</td></tr>'
     /* A stock style's embroidery is whatever sales put on the order: the logo
        and text lines entered under this garment, printed right here where the
        machinist reads Embroidery: Yes. */
@@ -2614,7 +2615,7 @@ function smLoadPaste(){
     if(changed){ p.changedAt=d2s(now()); updated++; }
   }
 
-  notes=smKeepNotes(lines);
+  var keptNotes=smKeepNotes(lines); notes=keptNotes.kept;
 
   lines.forEach(function(o){
     var seen=smSeen[o.key];
@@ -2629,6 +2630,9 @@ function smLoadPaste(){
       if(!seen) smSeen[o.key]={what:'intercompany'};
       inter++; return;
     }
+    /* Stock-held and bought-in garment lines are on the sheet only so a logo
+       line can be matched to the garment it sits under. They are never jobs. */
+    if(/^(STOCK HELD|BOUGHT IN)/.test(o.cat)){ if(!seen) smSeen[o.key]={what:'anchor'}; return; }
     // WORKS ORDER and REVIEW lines both need a human decision
     if(seen && seen.what==='wo'){ already++; return; }
     if(seen && seen.what==='dismissed'){ dismissedBefore++; if(known[o.key]) refresh(known[o.key], o); return; }
@@ -2652,6 +2656,7 @@ function smLoadPaste(){
   if(dismissedBefore) bits.push(dismissedBefore+' dismissed previously');
   if(updated)         bits.push('<strong>'+updated+'</strong> known line'+(updated===1?'':'s')+' updated from Sage (quantity or date changed)');
   if(notes)           bits.push('<strong>'+notes+'</strong> logo/text line'+(notes===1?'':'s')+' kept with the sales order (printed on stock-style works orders)');
+  if(keptNotes.lost)  bits.push('<span style="color:#b45309">'+keptNotes.lost+' logo/text line'+(keptNotes.lost===1?'':'s')+' sit under a garment the sheet does not show (stock held or bought in) and were not attached</span>');
   if(inter)           bits.push(inter+' inter-company line'+(inter===1?'':'s')+' ignored');
   var r=document.getElementById('smResult');
   r.innerHTML='<strong>'+added+'</strong> line'+(added===1?'':'s')+' ready for review'
@@ -2662,6 +2667,7 @@ function smLoadPaste(){
   // order's logo lines - and must not depend on a later click to be saved.
   saveState();
   smRender();
+  renderWOCards(); refreshWOModal();     // a changed logo line reaches the card and the open panel too
 }
 
 // Pt numbers must CONTINUE, never restart. A morning paste giving Pt 1 and
@@ -2791,34 +2797,61 @@ function smNoteKind(o){
 }
 function smNoteLabel(n){ return {logo:'Logo application', origination:'Logo origination', text:'Text application', note:'Note'}[n.kind]||'Note'; }
 function smKeepNotes(lines){
+  // A paste with garment rows but not one note row anywhere is a filtered
+  // sheet: leave what is known alone rather than wipe every order's lines.
+  if(!lines.some(function(o){ return o.cat.indexOf('NOTE')===0; })) return {kept:0, lost:0};
+  // The current sheet returns every garment line of an order, stock held and
+  // bought in included, so a gap in the line sequence is nothing but a deleted
+  // line. An older sheet dropped those garments: then a gap means a garment
+  // the sheet cannot show, and the note after it belongs to THAT garment - not
+  // to the special make above the gap, which is how a stock jacket's logo once
+  // landed on the wrong works order.
+  var complete=lines.some(function(o){ return /^(STOCK HELD|BOUGHT IN)/.test(o.cat); });
   var byOrder={}, order=[];
   lines.forEach(function(o){ var k=smSoKey(o); if(!byOrder[k]){ byOrder[k]=[]; order.push(k); } byOrder[k].push(o); });
-  var kept=0;
+  var kept=0, lost=0;
   order.forEach(function(k){
     var ls=byOrder[k].slice().sort(function(a,b){ return (a.seq||0)-(b.seq||0); });
-    var anchor=null, first=null, out=[];
+    var prev={}; (smNotes[k]||[]).forEach(function(n){ if(n.forKey) prev[n.key]=n.forKey; });
+    var here={}; ls.forEach(function(o){ if(o.cat.indexOf('NOTE')!==0) here[o.key]=1; });
+    var anchor=null, first=null, lastSeq=null, gapped=false, out=[], seen={};
     ls.forEach(function(o){
-      if(o.cat.indexOf('NOTE')!==0){ anchor=o; if(!first) first=o; return; }
-      var kind=smNoteKind(o); if(!kind) return;
-      out.push({key:o.key, seq:o.seq, code:o.code, desc:o.desc, qty:o.qty, kind:kind, forKey:anchor?anchor.key:null});
+      if(o.cat.indexOf('NOTE')!==0){ anchor=o; if(!first) first=o; lastSeq=o.seq; gapped=false; return; }
+      if(!complete && ((lastSeq!=null && o.seq-lastSeq>1) || (lastSeq==null && o.seq>1))) gapped=true;
+      lastSeq=o.seq;    // a charge line is dropped below, but it still occupies its line: no gap
+      var kind=smNoteKind(o); if(!kind || seen[o.key]) return; seen[o.key]=1;
+      var fk = gapped ? null : (anchor ? anchor.key : null);
+      // its garment has left the sheet - despatched, most likely - so the note
+      // stays with it rather than moving to the next garment down
+      if(prev[o.key] && !here[prev[o.key]]) fk=prev[o.key];
+      out.push({key:o.key, seq:o.seq, code:o.code, desc:o.desc, qty:o.qty, kind:kind, forKey:fk, orphan:(gapped&&!fk)?true:undefined});
     });
     // a note typed above the first garment belongs to that garment
-    out.forEach(function(n){ if(n.forKey==null && first) n.forKey=first.key; });
-    smNotes[k]=out; kept+=out.length;
+    out.forEach(function(n){ if(n.forKey==null && !n.orphan && first) n.forKey=first.key; });
+    if(out.length) smNotes[k]=out; else delete smNotes[k];
+    out.forEach(function(n){ if(n.forKey) kept++; else lost++; });
   });
-  return kept;
+  return {kept:kept, lost:lost};
 }
 // Is this a stock style, at any size? OH: any style in the works order data
 // (the range, as size templates - a 60" matches the same template as a 40").
 // Tibard: the same family and colour as a buffer SKU with only the size
 // token different - the buffer holds every Tibard stock family.
+// Style stem = letters + four digits (+ ECO for that range); then the size
+// token; then the two-digit colour; then an optional length letter (long,
+// short, regular) which is a size matter and not part of the family. Four
+// digits exactly, so an unsized apron code such as OHAPP0651248 never parses
+// as style 065 in size 12.
 function smStyleFamily(code){
-  var m=(code||'').toUpperCase().match(/^([A-Z]+\d{3,4})(XXXL|XXL|XL|XS|SS|MM|LL|S|M|L|\d{2,3}[RLS]?)(\d{2})$/);
+  var m=(code||'').toUpperCase().match(/^([A-Z]+\d{4}(?:ECO)?)(XXXXL|XXXL|XXL|XL|XXS|XS|SS|MM|LL|S|M|L|[3-6]XL|\d{2})(\d{2})(LS|L|S|R)?$/);
   return m ? m[1]+'--'+m[3] : null;
 }
 function smIsStockStyle(code){
   var c=(code||'').trim().toUpperCase(); if(!c) return false;
   try{ var hit=styleForCode(c);
+       // an OH length variant with no template of its own (a 64" long black
+       // Cumbria) is still the Cumbria: try again without the length letter
+       if(!hit){ var lm=c.match(/^(.*\d{2})(LS|L|S)$/); if(lm) hit=styleForCode(lm[1]); }
        if(hit && STYLE_MASTER.styles.some(function(st){ return (st.code||'').toUpperCase()===(hit.style.code||'').toUpperCase(); })) return true; }catch(e){}
   var f=smStyleFamily(c);
   for(var i=0;i<rows.length;i++){ var rc=(rows[i].code||'').toUpperCase(); if(rc===c) return true; if(f && smStyleFamily(rc)===f) return true; }
