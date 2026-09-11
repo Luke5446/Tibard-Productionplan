@@ -586,7 +586,7 @@ tr.fab-done td{color:#6b7280}
 
     <div id="smPastePanel" class="pbox hidden">
       <h3>&#9986; Paste Special Makes data</h3>
-      <p>In <strong>Special Makes Live.xlsx</strong>: Refresh All &rarr; select columns <strong>A to K</strong>, all rows, <strong>without the header</strong> &rarr; Ctrl+C &rarr; click below &rarr; Ctrl+V.<br>
+      <p>In <strong>Special Makes Live.xlsx</strong>: Refresh All &rarr; select columns <strong>A to N</strong>, all rows, <strong>without the header</strong> &rarr; Ctrl+C &rarr; click below &rarr; Ctrl+V.<br>
       No filtering needed &mdash; paste the whole sheet. Nothing is created straight away: garment lines land in a review list for you to accept or dismiss one at a time.</p>
       <textarea id="smTA" placeholder="Click here then Ctrl+V..."></textarea>
       <div style="display:flex;gap:6px">
@@ -2568,6 +2568,7 @@ function smMatch(hay, srch){
 // 11 CustomerOrderNo - the customer's own reference
 // 12 CustomerName     - which of the two actually names the customer, resolved
 //    in SQL because it depends on the account, not on the text.
+// 13 ForLine          - notes only: the LineKey of the garment the note belongs to
 function smParse(txt){
   var out=[], lines=txt.split('\n');
   for(var i=0;i<lines.length;i++){
@@ -2583,7 +2584,11 @@ function smParse(txt){
       /* Column M is the resolved name - the account on a real trading account,
          the customer's own reference on a placeholder one. Falls back to the
          account name so an older 12-column paste still names somebody. */
-      custName:((c[12]||'').trim() || (c[8]||'').trim()) });
+      custName:((c[12]||'').trim() || (c[8]||'').trim()),
+      /* Column N, notes only: the key of the garment line the note sits under,
+         worked out by the SQL from the WHOLE order - so the sheet need not show
+         stock-held or bought-in garments for the note to find its garment. */
+      forLine:(c[13]||'').trim() });
   }
   return out;
 }
@@ -2594,7 +2599,7 @@ function smLoadPaste(){
   if(!txt){ alert('Nothing pasted - click in the box then Ctrl+V.'); return; }
   var lines=smParse(txt);
   if(!lines.length){
-    alert('No valid rows found.\n\nSelect columns A to L from Special Makes Live.xlsx (without the header row), Ctrl+C, then paste here.');
+    alert('No valid rows found.\n\nSelect columns A to N from Special Makes Live.xlsx (without the header row), Ctrl+C, then paste here.');
     return;
   }
 
@@ -2806,7 +2811,7 @@ function smKeepNotes(lines){
   // the sheet cannot show, and the note after it belongs to THAT garment - not
   // to the special make above the gap, which is how a stock jacket's logo once
   // landed on the wrong works order.
-  var complete=lines.some(function(o){ return /^(STOCK HELD|BOUGHT IN)/.test(o.cat); });
+  var complete=lines.some(function(o){ return o.forLine || /^(STOCK HELD|BOUGHT IN)/.test(o.cat); });
   var byOrder={}, order=[];
   lines.forEach(function(o){ var k=smSoKey(o); if(!byOrder[k]){ byOrder[k]=[]; order.push(k); } byOrder[k].push(o); });
   var kept=0, lost=0;
@@ -2824,12 +2829,17 @@ function smKeepNotes(lines){
       // its garment has left the sheet - despatched, most likely - so the note
       // stays with it rather than moving to the next garment down
       if(prev[o.key] && !here[prev[o.key]]) fk=prev[o.key];
+      // the sheet's own answer, from the whole order, beats any guess from
+      // the lines that happen to be on it
+      if(o.forLine){ fk=o.forLine; gapped=false; }
       out.push({key:o.key, seq:o.seq, code:o.code, desc:o.desc, qty:o.qty, kind:kind, forKey:fk, orphan:(gapped&&!fk)?true:undefined});
     });
     // a note typed above the first garment belongs to that garment
     out.forEach(function(n){ if(n.forKey==null && !n.orphan && first) n.forKey=first.key; });
     if(out.length) smNotes[k]=out; else delete smNotes[k];
-    out.forEach(function(n){ if(n.forKey) kept++; else lost++; });
+    // a note whose garment is one the sheet never shows (stock held, bought
+    // in) is kept, but it will never print here - not a loss, not a job
+    out.forEach(function(n){ if(n.forKey && (here[n.forKey] || prev[n.key])) kept++; else if(!n.forKey) lost++; });
   });
   return {kept:kept, lost:lost};
 }
@@ -3080,7 +3090,7 @@ function smRenderInner(){
          +(smOpen.live?'<div class="sm-empty" style="padding:18px">'
            +(live.length?'Nothing matches that search.':'None live.')+'</div>':''))
       : '<div class="sm-empty"><h3 style="margin:0 0 6px">No special makes loaded</h3>'
-        +'<p style="margin:0;font-size:12.5px">Refresh <strong>Special Makes Live.xlsx</strong>, copy columns A to L without the header, and paste them above.</p></div>';
+        +'<p style="margin:0;font-size:12.5px">Refresh <strong>Special Makes Live.xlsx</strong>, copy columns A to N without the header, and paste them above.</p></div>';
   } else {
     el.innerHTML=smBanner('live','&#128296; '+rowsOut.length+' live special works order'+(rowsOut.length===1?'':'s'),'')
       +(!smOpen.live?'':

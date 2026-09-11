@@ -7,21 +7,19 @@
    results are in sage/README.md. Column names are all confirmed against the
    live database.
 
-   NO FILTERING NEEDED. Copy columns A to M, all rows, without the header.
+   NO FILTERING NEEDED. Copy columns A to N, all rows, without the header.
    Everything returned is relevant:
 
      WORKS ORDER                     make it
      REVIEW - ...                    needs a human decision
      NOTE - ...                      logo/charge detail for an order above
      INTERCOMPANY - no works order   kept only so the count stays visible
-     STOCK HELD / BOUGHT IN          NOT jobs - the app never offers them. On
-                                     the sheet only for orders that also carry
-                                     a job, so every line of such an order is
-                                     present in sequence and a logo line can be
-                                     matched to the garment it sits under.
 
-   Stock-held items and bought-in goods on orders with nothing to make are
-   dropped here, so they never reach the sheet at all.
+   Stock-held items and bought-in goods are dropped here, so they never reach
+   the sheet at all. A logo line still knows which garment it sits under:
+   column N (ForLine) is the LineKey of the nearest garment line above it on
+   the order - any garment, stock held and bought in included - worked out
+   here from the whole order, so the sheet does not have to show that garment.
 
    WHO THE JOB IS FOR takes all three of I, L and M. Column I is the Sage
    ACCOUNT and column L the customer's own reference, and neither is reliably
@@ -46,7 +44,7 @@
    Output order is FIXED - the app parses by position:
      A LineKey  B Company  C SalesOrderNo  D LineSeq  E ProductCode
      F ProductDesc  G Qty  H PromisedDate  I Customer  J Category  K Manufacturer
-     L CustomerOrderNo  M CustomerName
+     L CustomerOrderNo  M CustomerName  N ForLine (notes only: the garment line's key)
    ========================================================================= */
 
 WITH lines AS (
@@ -252,7 +250,22 @@ WHERE
 
 SELECT LineKey, Company, SalesOrderNo, LineSeq, ProductCode, ProductDesc,
        Qty, PromisedDate, Customer, Category, Manufacturer, CustomerOrderNo,
-       CustomerName
+       CustomerName,
+       /* N ForLine: for a note, the garment line it belongs to - the nearest
+          garment ABOVE it on the order, or the first garment below when sales
+          typed the note above everything. Any garment counts, stock held and
+          bought in included, so the sheet need not show them. Blank on a
+          garment line. */
+       CASE WHEN l.Category LIKE 'NOTE%' THEN COALESCE(
+            (SELECT TOP 1 x.LineKey FROM lines x
+             WHERE  x.Company = l.Company AND x.SalesOrderNo = l.SalesOrderNo
+               AND  x.Category NOT LIKE 'NOTE%' AND x.LineSeq < l.LineSeq
+             ORDER BY x.LineSeq DESC),
+            (SELECT TOP 1 x.LineKey FROM lines x
+             WHERE  x.Company = l.Company AND x.SalesOrderNo = l.SalesOrderNo
+               AND  x.Category NOT LIKE 'NOTE%' AND x.LineSeq > l.LineSeq
+             ORDER BY x.LineSeq ASC))
+            ELSE '' END                                          AS ForLine
 FROM   lines l
 WHERE
     /* Anything needing a works order or a decision, plus the inter-company
@@ -265,17 +278,6 @@ WHERE
        when the sheet is filtered, and stops notes arriving for orders that are
        entirely bought-in. */
     OR (l.Category LIKE 'NOTE%'
-        AND EXISTS (SELECT 1 FROM lines x
-                    WHERE  x.Company      = l.Company
-                      AND  x.SalesOrderNo = l.SalesOrderNo
-                      AND (x.Category = 'WORKS ORDER' OR x.Category LIKE 'REVIEW%')))
-
-    /* ...and, for those same orders, the garment lines that are NOT made here.
-       Not as jobs - the app skips them - but so the order's lines are all on
-       the sheet in sequence. Sales enter a logo line directly under the
-       garment it belongs to; with the stock-held line missing, a stock
-       jacket's logo would sit under the special make above it instead. */
-    OR (l.Category IN ('STOCK HELD', 'BOUGHT IN')
         AND EXISTS (SELECT 1 FROM lines x
                     WHERE  x.Company      = l.Company
                       AND  x.SalesOrderNo = l.SalesOrderNo
