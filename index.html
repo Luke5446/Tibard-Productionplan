@@ -1432,6 +1432,8 @@ function printWOP(ref, code, qty, due, sm){
   /* Tibard size tokens double the letter (SS, MM, LL) - print the size they mean */
   var szTok=(typeof size==='string')?size.toUpperCase().replace(/^(SS|MM|LL)$/,function(m){ return m.charAt(0); }):size;
   var sizeTxt=st.oneSize?'One size':(size!=null?(typeof size==='number'?size+'"':String(szTok)):'\u2014');
+  /* a costing-app product carries its size in the record (CJ0002M is size M), not as a code token */
+  if(size==null && !st.oneSize && st.size) sizeTxt=String(st.size);
   if(st.ladies&&size!=null) sizeTxt='Size '+size;
   /* colour-per-code styles (e.g. OHSTRAP241WAIST): the captured token is a colour, not a size */
   var cw=null, cwWarn=false;
@@ -3441,7 +3443,7 @@ function smDoImport(txt){
       markerMain:d.markerMain||'', markerMesh:d.markerMesh||'',
       markerLen:d.markerLen||null, layQty:d.layQty||null,
       hasMesh:!!d.hasMesh, meshLen:d.meshLen||null, meshLay:d.meshLay||null,
-      sr:d.sr||'', srVersion:d.srVersion||null, customer:d.customer||'',
+      sr:d.sr||'', srVersion:d.srVersion||null, customer:d.customer||'', size:d.size||'',
       brandType:d.brandType||'', brandPlace:d.brandPlace||'', logoImg:d.logoImg||'', placeImg:d.placeImg||'',
       importedAt:d2s(now())
     };
