@@ -1416,7 +1416,7 @@ function printWOP(ref, code, qty, due, sm){
     return false;
   }
   var st=hit.style, size=hit.size;
-  var hasBrand=(st.brandType&&st.brandType!=='None')||!!st.logoImg||!!st.brandPlace||!!st.placeImg;
+  var hasBrand=(st.brandType&&st.brandType!=='None')||!!st.logoImg||!!st.logo2Img||!!st.brandPlace||!!st.placeImg;
   var logo=sm ? smLogoFor(sm, code) : [];    // the sales order's logo/text lines, stock styles only
   var emb=logo.some(function(n){ return n.kind!=='note'; });   // a free-text note is not embroidery
   qty=Math.round(qty||0);
@@ -1502,6 +1502,8 @@ function printWOP(ref, code, qty, due, sm){
           +(st.brandPlace?e(st.brandPlace):'<span style="color:#b45309">&#9888; Branding placement not set on this works order \u2014 sales to confirm the spec with the office before this is embroidered.</span>')
         +'</td></tr>'
         +'<tr><th>Customer artwork</th><td colspan="2" style="text-align:center;vertical-align:middle">'+(st.logoImg?'<img src="'+st.logoImg+'" alt="customer artwork" style="max-height:90px;max-width:220px">':'\u2014')+'</td></tr>'
+        /* a second logo or piece of artwork (a back print, a sleeve badge) from the costing app */
+        +(st.logo2Img?'<tr><th>Second logo / artwork</th><td colspan="2" style="text-align:center;vertical-align:middle"><img src="'+st.logo2Img+'" alt="second logo" style="max-height:90px;max-width:220px"></td></tr>':'')
         /* photo of the logo in position on the garment, alongside the artwork */
         +(st.placeImg?'<tr><th>Placement photo</th><td colspan="2" style="text-align:center;vertical-align:middle"><img src="'+st.placeImg+'" alt="logo placement photo" style="max-height:200px;max-width:300px"></td></tr>':'')
         +'</table>'
@@ -2209,11 +2211,12 @@ function absorbBranding(pubEdits){
   Object.keys(pubEdits||{}).forEach(function(code){
     var p=pubEdits[code], l=styleEdits[code];
     if(!p || !l) return;
-    if(!(p.brandPlace && !l.brandPlace) && !(p.placeImg && !l.placeImg)) return;
+    if(!(p.brandPlace && !l.brandPlace) && !(p.placeImg && !l.placeImg) && !(p.logo2Img && !l.logo2Img)) return;
     if(p.brandPlace && !l.brandPlace) l.brandPlace=p.brandPlace;
     if(p.brandType && (!l.brandType || l.brandType==='None')) l.brandType=p.brandType;
     if(p.logoImg && !l.logoImg) l.logoImg=p.logoImg;
     if(p.placeImg && !l.placeImg) l.placeImg=p.placeImg;
+    if(p.logo2Img && !l.logo2Img) l.logo2Img=p.logo2Img;
     n++;
   });
   return n;
@@ -3189,6 +3192,7 @@ function smRenderInner(){
           return '<div class="sm-dism"><span><strong>'+esc(st.code)+'</strong>'
             +(smPrintable(st.code)?'<span class="sm-tag ok">prints</span>':'')
             +(st.logoImg?'<span class="sm-tag ok">artwork</span>':'')
+            +(st.logo2Img?'<span class="sm-tag ok">2nd artwork</span>':'')
             +(st.placeImg?'<span class="sm-tag ok">placement photo</span>':'')
             +' &middot; '+esc(st.name||'')
             +(st.customer?' &middot; '+esc(st.customer):'')
@@ -3444,7 +3448,7 @@ function smDoImport(txt){
       markerLen:d.markerLen||null, layQty:d.layQty||null,
       hasMesh:!!d.hasMesh, meshLen:d.meshLen||null, meshLay:d.meshLay||null,
       sr:d.sr||'', srVersion:d.srVersion||null, customer:d.customer||'', size:d.size||'',
-      brandType:d.brandType||'', brandPlace:d.brandPlace||'', logoImg:d.logoImg||'', placeImg:d.placeImg||'',
+      brandType:d.brandType||'', brandPlace:d.brandPlace||'', logoImg:d.logoImg||'', logo2Img:d.logo2Img||'', placeImg:d.placeImg||'',
       importedAt:d2s(now())
     };
     if(d.chart && d.chartRows && d.chartRows.length){
