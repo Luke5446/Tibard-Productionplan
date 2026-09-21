@@ -219,40 +219,46 @@ columns A to L, Ctrl+C, paste, then say what they are.
   as *Sage - cutting sheet*, so it can never go into a file from here. The
   sheet's metres are kept as the cut figure, so the KPIs have the history.
   A line completed before the ledger existed (no fabric on its record) gets
-  a record built from the sheet. A works order still live is flagged on its
-  line and arrives on the ledger already exported when it is booked in.
+  a record built from the works order's own usage. A works order still live
+  is flagged on its line and arrives on the ledger already exported when it
+  is booked in.
 - **Still to write off** (the rest). Each row is placed the same way, the
   line is set to the sheet's metres and ticked; **Export ticked (CSV)**
-  then makes the file as usual. A row with no metres on the sheet (`-`,
-  `WASTE`) is matched but left open and listed, never guessed at.
+  then makes the file as usual. A row with no metres (`-`, or `WASTE` —
+  the cutting room used waste from another run) puts the line at nil: it
+  completes with the rest but no row goes to Sage for it.
 
 How a row finds its line. `W/O 1131`, `WO-1131`, `W/O/ 1131` all mean
 `WO-1131`; a manual ref finds the same characters, or the same six-figure
 sales order number with a compatible part (`S-OH115764-PT1` finds
-`S-OH115764-Pt1`; `S869335` finds `S869335`, `S869335a` and `S869335 pt1`).
-The cut date must sit within a fortnight of the record's life, so a
-three-figure typo (`W/O 121`) cannot land on last quarter's works order of
-that number. Within the works order the row goes to the line whose record
-carries that cloth (main or mesh); failing that to the line the row names
-by style, or to every line when they are all on the one cloth — and then
-the sheet's code replaces the record's, because the sheet is what left the
-shelf (`PC2015ECO` on an apron All Costings had on `PC2082ECO`). A second
-row for a line that already has its cloth is added as a second cloth (a
-mesh row for a style whose usage carries no mesh). One sheet figure over
-several lines is shared by their standard metres. A works order with lines
-on several cloths and no row that names one is listed as *could not be
-placed* for the PM to do by hand.
+`S-OH115764-Pt1`; `S869335` finds `S869335`, `S869335a` and `S869335 pt1`;
+a seven-figure number is a slipped key, tried with each figure dropped, so
+`S-OH1160079` finds `S-OH116079-Pt1`). The cut date must sit within a
+fortnight of the record's life, so a three-figure typo (`W/O 121`) cannot
+land on last quarter's works order of that number. Within the works order
+the row goes to the line whose record carries that cloth (main or mesh);
+failing that to the line the row names by style, or to every line when they
+are all on the one cloth. **The cloth on the record stays as the works
+order has it** — Luke's rule: match the fabric on the works order, not the
+sheet — and only the metres are taken; these rows are listed so the
+difference is seen (`PC2082` on the sheet, `PC2082ECO` on the order). A
+further row for a line that already has its cloth is added as a second
+cloth (a mesh row for a style whose usage carries no mesh). One sheet
+figure over several lines is shared by their standard metres. A works
+order with lines on several cloths and no row that names one is listed as
+*could not be placed* for the PM to do by hand.
 
-Rows the app does not know — samples (`SR0005`), embroidery jobs (`EMB`),
-a sales order raised outside the app — are listed with the reason. On a
-*still to write off* paste, the ones with metres can be downloaded as a
-write-off file of their own (Reference2 is the sheet's W/O number); they
-are not on the ledger, the sheet is their record.
+`SR` rows are samples and `EMB` rows embroidery backing — not works orders.
+They are listed for a manual write-off and never go into a file from here.
+Other rows the app does not know (a typo'd number, a sales order raised
+outside the app) are listed with the reason; on a *still to write off*
+paste the ones with metres can be downloaded as a write-off file of their
+own (Reference2 is the sheet's W/O number) once checked.
 
 `test-fabsheet.js` covers all of it. The first real run, on the published
-data of 21 Sep 2026: 616 green rows placed 496 lines (397 records built);
-149 later rows ticked 46 lines for 642 m and left 8 rows for a file of
-their own.
+data of 21 Sep 2026: 616 green rows placed 496 lines (405 records built);
+149 later rows ticked 53 lines for 649 m, 8 of them at nil, and left 4 rows
+for a file of their own and 6 for a manual write-off.
 
 ## Fabric stock against live works orders
 

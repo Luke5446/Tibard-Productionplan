@@ -1879,7 +1879,7 @@ function fabricWriteOffRows(todo){
   var agg={}, order=[];
   function add(ref,date,code,m){ var key=ref+'|'+code+'|'+date; if(!agg[key]){ agg[key]={code:code, ref:ref, date:date, metres:0}; order.push(key); } agg[key].metres+=m; }
   todo.forEach(function(c){
-    var f=c.fabric; add(c.ref, c.completed, f.code, (f.actual!=null)?f.actual:f.std);
+    var f=c.fabric, m=(f.actual!=null)?f.actual:f.std; if(m>0) add(c.ref, c.completed, f.code, m);   // a line at nil (cut from waste) completes with no row
     (f.extras||[]).forEach(function(x){ var xm=(x.actual!=null)?x.actual:x.std; if(x.code && xm>0) add(c.ref, c.completed, x.code, xm); });
   });
   return order.map(function(k){ var a=agg[k];
@@ -1893,6 +1893,7 @@ function exportFabricWriteOff(){
   var todo=fabTickedLines().map(function(l){ return l.c; });
   if(!todo.length){ alert('Tick the lines to write off first.'); return; }
   var rows=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat']].concat(fabricWriteOffRows(todo));
+  if(rows.length===1 && !confirm('Every ticked line is at nil metres - nothing goes to Sage. Mark them exported anyway?')) return;
   var stamp=d2s(now()), fname=writeOffFileName();
   todo.forEach(function(c){ c.fabricExportedAt=stamp; c.fabricExportFile=fname; });
   fabTicked=[];
@@ -4016,8 +4017,12 @@ function fabSheetRef(s){ s=(s||'').trim().toUpperCase().replace(/\s+/g,' '); var
 // finds S-OH115764-Pt1; S869335 finds S869335, S869335a and S869335 pt1)
 function fabSheetFindRefs(sheetRef, refs){ var k=fabSheetRefKey(sheetRef); if(!k) return [];
   var exact=refs.filter(function(r){ return fabSheetRefKey(r)===k; }); if(exact.length || /^WO\d/.test(k)) return exact;
-  var so=(k.match(/(\d{6})/)||[])[1]; if(!so) return []; var part=(k.match(/PT(\d)/)||[])[1]||'';
-  return refs.filter(function(r){ var rk=fabSheetRefKey(r); if(/^WO\d/.test(rk) || rk.indexOf(so)<0) return false; var rp=(rk.match(/PT(\d)/)||[])[1]||''; return !part || !rp || part===rp; }); }
+  var num=(k.match(/(\d{6,7})/)||[])[1]; if(!num) return []; var part=(k.match(/PT(\d)/)||[])[1]||'';
+  // six figures as typed; seven is a slipped key - try it with each figure dropped (1160079 -> 116079)
+  var tries=num.length===6 ? [num] : num.split('').map(function(_,i){ return num.slice(0,i)+num.slice(i+1); });
+  var byNum=function(so){ return refs.filter(function(r){ var rk=fabSheetRefKey(r); if(/^WO\d/.test(rk) || rk.indexOf(so)<0) return false; var rp=(rk.match(/PT(\d)/)||[])[1]||''; return !part || !rp || part===rp; }); };
+  for(var t=0;t<tries.length;t++){ var hit=byNum(tries[t]); if(hit.length) return hit; }
+  return []; }
 // Columns A to L as on the sheet (0 Date 1 Customer 2 W/O Number 3 Garment 4 Style
 // 5 QTY 6 Supplier 7 Fabric 8 Colour 9 Name 10 Fabric Number 11 Meters), or just
 // three columns: W/O number, fabric code, metres.
@@ -4049,20 +4054,26 @@ function fabSheetSetMetres(p, m){ var f=p.c.fabric; if(p.extra>=0) f.extras[p.ex
 function fabSheetLineName(c){ return c.ref+' '+c.code+' &times; '+c.qty; }
 // mode 'done': the rows are written off in Sage already. mode 'todo': set the metres and tick.
 // Two passes: rows whose cloth is on the record (main or a mesh extra) are
-// placed first; only then are the rest placed by style or by elimination -
-// on a line nothing else claimed the sheet's code replaces the record's, on
-// a line already claimed (a mesh row for a style whose usage has no mesh)
-// it is added as a second cloth. A row with no metres never changes a cloth.
+// placed first; only then are the rest placed by style or by elimination.
+// The cloth on the record stays as the works order had it - the sheet only
+// says how much - except on a line already claimed by another row, where a
+// further cloth (a mesh row for a style whose usage has no mesh) is added.
+// A row with no metres (`-`, WASTE: cut from another run's waste) is the
+// line's figure at nil - it completes with nothing to write off.
 function fabSheetApply(groups, mode){
   var today=d2s(now()), stampFile='Sage - cutting sheet', refsC={}, refsL={};
   completedWOs.forEach(function(c,i){ (refsC[c.ref]=refsC[c.ref]||[]).push(i); });
   WOs.forEach(function(w,i){ refsL[w.ref]=i; });
   var allRefs=Object.keys(refsC).concat(Object.keys(refsL).filter(function(r){ return !refsC[r]; }));
-  var res={mode:mode, groups:groups.length, done:[], ticked:[], live:[], already:[], noMetres:[], unknown:[], ambiguous:[], created:0, changed:0, added:0, metres:0};
-  var claimed=[];   // completed records a row of this paste placed by code
+  var res={mode:mode, groups:groups.length, done:[], ticked:[], live:[], already:[], zero:[], kept:[], unknown:[], manual:[], ambiguous:[], created:0, added:0, metres:0};
+  var claimed=[];   // completed records a row of this paste placed
   var mainOf=function(c){ var f=c.fabric; return f&&f.code ? f.code.toUpperCase() : ''; };
   var extraIdx=function(c,code){ var f=c.fabric; return f ? (f.extras||[]).findIndex(function(x){ return (x.code||'').toUpperCase()===code; }) : -1; };
   var byStyleOf=function(list, style, codeOf){ return style ? list.filter(function(x){ var pc=codeOf(x).toUpperCase(); return pc===style || (style.length>=4 && pc.indexOf(style)>=0); }) : []; };
+  // a record for a line completed before the ledger: the works order's own usage, the sheet's cloth only where there is none
+  var build=function(c){ var u=fabricUsageFor(c.code); if(!u) return null; res.created++;
+    return {code:u.code, name:u.name||'', perGarment:u.metres, std:Math.round(u.metres*c.qty*100)/100, actual:null, source:u.source, price:fabPriceFor(u.code),
+            extras:(u.extras&&u.extras.length) ? u.extras.map(function(x){ return {code:x.code, name:x.name, perGarment:x.metres, std:Math.round(x.metres*c.qty*100)/100, price:fabPriceFor(x.code)}; }) : undefined}; };
   var prepared=groups.map(function(g){
     var refs=fabSheetFindRefs(g.ref, allRefs);
     // the cut sits inside the record's life, give or take a fortnight - a
@@ -4070,12 +4081,14 @@ function fabSheetApply(groups, mode){
     var fits=function(c){ if(!g.date) return true; if(c.createdAt && c.createdAt>fabAddDays(g.date,14)) return false; if(c.completed && c.completed<fabAddDays(g.date,-14)) return false; return true; };
     var cands=[]; refs.forEach(function(r){ (refsC[r]||[]).forEach(function(i){ if(fits(completedWOs[i])) cands.push(completedWOs[i]); }); });
     var liveIdx=refs.map(function(r){ return refsL[r]; }).filter(function(i){ return i!=null; });
+    cands.forEach(function(c){ if(!c.fabric) c.fabric=build(c); });
     var byMain=cands.filter(function(c){ return mainOf(c)===g.code; }), byExtra=cands.filter(function(c){ return extraIdx(c,g.code)>=0; });
     var picks=byMain.length ? byMain.map(function(c){ return {c:c, extra:-1}; }) : byExtra.map(function(c){ return {c:c, extra:extraIdx(c,g.code)}; });
     picks.forEach(function(p){ if(claimed.indexOf(p.c)<0) claimed.push(p.c); });
     return {g:g, refs:refs, cands:cands, liveIdx:liveIdx, picks:picks, byCode:picks.length>0};
   });
   prepared.forEach(function(pr){ var g=pr.g, stamp=g.date||today, picks=pr.picks;
+    if(/^(SR|EMB)/.test(fabSheetRefKey(g.ref)) || /^N\/?A$/.test(g.ref)){ g.why=/^SR/.test(fabSheetRefKey(g.ref))?'sample':(/^EMB/.test(fabSheetRefKey(g.ref))?'embroidery backing':'no works order'); res.manual.push(g); return; }
     if(!g.code){ g.why='no fabric code on the sheet'; res.unknown.push(g); return; }
     if(!pr.cands.length && !pr.liveIdx.length){ g.why=pr.refs.length?'its works order is from another time':'no works order with this number'; res.unknown.push(g); return; }
     if(pr.cands.length && !pr.byCode){
@@ -4083,25 +4096,27 @@ function fabSheetApply(groups, mode){
       var mains={}; pr.cands.forEach(function(c){ mains[mainOf(c)]=1; });
       var set=byStyle.length ? byStyle : (Object.keys(mains).length===1 ? pr.cands : []);
       if(!set.length){ res.ambiguous.push({g:g, lines:pr.cands}); return; }
-      picks=set.map(function(c){ return {c:c, extra:-1, override:claimed.indexOf(c)<0, addExtra:claimed.indexOf(c)>=0}; });
-      if(g.metres!=null) set.forEach(function(c){ if(claimed.indexOf(c)<0) claimed.push(c); });   // the next row on this line is a second cloth
+      // a no-metres row on a line another row already placed says nothing new - list it, change nothing
+      if(g.metres==null){ var fresh=set.filter(function(c){ return claimed.indexOf(c)<0; }); set.filter(function(c){ return claimed.indexOf(c)>=0; }).forEach(function(c){ res.zero.push({g:g, c:c, noop:true}); }); set=fresh; if(!set.length) return; }
+      picks=set.map(function(c){ return {c:c, extra:-1, addExtra:claimed.indexOf(c)>=0}; });
+      set.forEach(function(c){ if(claimed.indexOf(c)<0) claimed.push(c); });   // the next row on this line is a further cloth
     }
     if(pr.cands.length){
       picks.forEach(function(p){ var c=p.c, st=fabState(c);
         if((mode==='todo' && st!=='open') || (mode==='done' && st==='exported')){ res.already.push({g:g, c:c, st:st}); return; }
-        if(g.metres==null && (p.override||p.addExtra) && c.fabric && c.fabric.code) return;   // no metres: leave the cloth alone
-        if(!c.fabric){ c.fabric={code:'', name:'', perGarment:null, std:null, actual:null, source:'Cutting sheet', price:null}; res.created++; }
         if(p.addExtra){ c.fabric.extras=(c.fabric.extras||[]).slice(); c.fabric.extras.push({code:g.code, name:fabricNameFor(g.code), perGarment:null, std:null, actual:null, price:fabPriceFor(g.code)}); p.extra=c.fabric.extras.length-1; res.added++; }
-        else if(p.override || !c.fabric.code){
-          if(c.fabric.code){ res.changed++; c.fabric.edited=true; c.fabric.source=(c.fabric.source||'').replace(/ · cutting sheet$/,'')+' · cutting sheet'; }
-          c.fabric.code=g.code; c.fabric.name=fabricNameFor(g.code); c.fabric.price=fabPriceFor(g.code); }
+        else if(!c.fabric){ c.fabric={code:g.code, name:fabricNameFor(g.code), perGarment:null, std:null, actual:null, source:'Cutting sheet', price:fabPriceFor(g.code)}; res.created++; }   // no usage on file: the sheet's cloth is all there is
+        else if(!pr.byCode && g.metres!=null && res.kept.every(function(k){ return k.c!==c || k.g!==g; })) res.kept.push({g:g, c:c});
       });
       var setOn=picks.filter(function(p){ return res.already.every(function(a){ return a.c!==p.c; }); });
-      if(g.metres!=null && setOn.length){ var share=fabSheetSpread(setOn, g.metres); setOn.forEach(function(p,k){ fabSheetSetMetres(p, share[k]); }); }
+      if(setOn.length){
+        if(g.metres!=null){ var share=fabSheetSpread(setOn, g.metres); setOn.forEach(function(p,k){ fabSheetSetMetres(p, share[k]); }); }
+        else if(mode==='todo') setOn.forEach(function(p){ if(!p.addExtra) fabSheetSetMetres(p, 0); });
+      }
       setOn.forEach(function(p){ var c=p.c;
         if(mode==='done'){ delete c.fabricDismissedAt; c.fabricExportedAt=stamp; c.fabricExportFile=stampFile; var t=fabTicked.indexOf(c); if(t>=0) fabTicked.splice(t,1); res.done.push({g:g, c:c}); }
-        else if(g.metres==null){ res.noMetres.push({g:g, c:c}); }
-        else { if(fabTicked.indexOf(c)<0) fabTicked.push(c); if(res.ticked.every(function(t){ return t.c!==c; })) res.ticked.push({g:g, c:c}); res.metres+=g.metres/setOn.length; }
+        else { if(fabTicked.indexOf(c)<0) fabTicked.push(c); if(res.ticked.every(function(t){ return t.c!==c; })) res.ticked.push({g:g, c:c});
+               if(g.metres!=null) res.metres+=g.metres/setOn.length; else res.zero.push({g:g, c:c}); }
       });
     }
     pr.liveIdx.forEach(function(li){ var wo=WOs[li];
@@ -4110,7 +4125,7 @@ function fabSheetApply(groups, mode){
       if(!its.length){ res.ambiguous.push({g:g, lines:wo.items.map(function(it){ return {ref:wo.ref, code:it.code, qty:it.qty, live:true}; })}); return; }
       its.forEach(function(it){
         if(mode==='done'){ if(!it.fabricExportedAt){ it.fabricExportedAt=stamp; it.fabricExportFile=stampFile; } }
-        else if(g.metres!=null && its.length===1 && it.metresActual==null){ var u=fabricUsageFor(it.code); if(!u || (u.code||'').toUpperCase()===g.code || it.fabricCode) it.metresActual=g.metres; }
+        else if(its.length===1 && it.metresActual==null){ var u=fabricUsageFor(it.code); if(!u || (u.code||'').toUpperCase()===g.code || it.fabricCode || !(u.extras||[]).some(function(x){ return (x.code||'').toUpperCase()===g.code; })) it.metresActual=(g.metres!=null)?g.metres:0; }
         res.live.push({g:g, ref:wo.ref, code:it.code, qty:it.qty});
       });
     });
@@ -4133,18 +4148,21 @@ function fabLoadSheet(mode){
   document.getElementById('fabSheetResult').innerHTML=fabSheetResultHtml(res, rows.length);
 }
 function fabSheetResultHtml(res, nRows){
-  var li=function(s){ return '<li>'+s+'</li>'; }, mono=function(s){ return '<span style="font-family:monospace">'+esc(s)+'</span>'; };
+  var li=function(s){ return '<li>'+s+'</li>'; }, mono=function(s){ return '<span style="font-family:monospace">'+esc(s)+'</span>'; }, ul=function(items){ return '<ul style="margin:3px 0 0 18px;padding:0">'+items.join('')+'</ul>'; };
   var gm=function(g){ return mono(g.ref)+' '+mono(g.code||'(no code)')+' '+(g.metres!=null?fabM(g.metres)+' m':'<span style="color:#b45309">'+esc(g.mtxt.join(', ')||'no metres')+'</span>')+(g.date?' <span class="sm-sub" style="display:inline">'+fmtD(g.date)+'</span>':''); };
+  var n=function(k,w){ return k+' '+w+(k===1?'':'s'); };
   var h='<div class="sm-result" style="margin-top:10px">';
-  h+='<div><b>'+nRows+' row'+(nRows===1?'':'s')+' &rarr; '+res.groups+' works order / cloth pair'+(res.groups===1?'':'s')+'.</b> ';
-  if(res.mode==='done') h+=res.done.length+' line'+(res.done.length===1?'':'s')+' marked <span class="fab-st exported">Exported</span> (Sage - cutting sheet)';
-  else h+=res.ticked.length+' line'+(res.ticked.length===1?'':'s')+' set to the sheet\'s metres and ticked, '+fabM(res.metres,1)+' m - press <b>Export ticked (CSV)</b> for the file';
-  h+=(res.created?'; '+res.created+' record'+(res.created===1?'':'s')+' built from the sheet (completed before the ledger existed)':'')+(res.changed?'; the cloth changed on '+res.changed+' line'+(res.changed===1?'':'s')+' to the sheet\'s code':'')+(res.added?'; a second cloth added to '+res.added+' line'+(res.added===1?'':'s'):'')+'.</div>';
-  if(res.live.length) h+='<div style="margin-top:6px"><b>'+res.live.length+' line'+(res.live.length===1?'':'s')+' still live</b> - '+(res.mode==='done'?'flagged as written off; they will show Exported when booked in':'not written off until booked in; the sheet\'s metres are kept as the cut figure')+':<ul style="margin:3px 0 0 18px;padding:0">'+res.live.map(function(x){ return li(mono(x.ref)+' '+mono(x.code)+' &times; '+x.qty+' &middot; '+gm(x.g)); }).join('')+'</ul></div>';
-  if(res.noMetres.length) h+='<div style="margin-top:6px"><b>'+res.noMetres.length+' matched but no metres on the sheet</b> - left open, nothing ticked:<ul style="margin:3px 0 0 18px;padding:0">'+res.noMetres.map(function(x){ return li(fabSheetLineName(x.c)+' &middot; '+gm(x.g)); }).join('')+'</ul></div>';
-  if(res.already.length) h+='<div style="margin-top:6px"><b>'+res.already.length+' already '+(res.mode==='done'?'marked':'complete')+' in the ledger</b> - not touched:<ul style="margin:3px 0 0 18px;padding:0">'+res.already.map(function(x){ return li(fabSheetLineName(x.c)+' &middot; '+x.st+(x.c.fabricExportedAt?' '+fmtD(x.c.fabricExportedAt)+(x.c.fabricExportFile?' &middot; '+esc(x.c.fabricExportFile):''):'')+' &middot; '+gm(x.g)); }).join('')+'</ul></div>';
-  if(res.ambiguous.length) h+='<div style="margin-top:6px"><b style="color:#8a2222">'+res.ambiguous.length+' could not be placed on a line</b> - the works order has several lines on other cloths; do these by hand (edit fabric / tick on the ledger):<ul style="margin:3px 0 0 18px;padding:0">'+res.ambiguous.map(function(x){ return li(gm(x.g)+' &rarr; '+x.lines.map(function(c){ return mono(c.code)+' &times; '+c.qty+(c.live?' (live)':(c.fabric&&c.fabric.code?' on '+mono(c.fabric.code):'')); }).join(', ')); }).join('')+'</ul></div>';
-  if(res.unknown.length) h+='<div style="margin-top:6px"><b style="color:#8a2222">'+res.unknown.length+' not in the app</b>'+(res.mode==='todo'&&fabSheetExtra.length?' - <button class="btn" style="font-size:11px;padding:3px 8px" onclick="exportSheetExtras()">&#8659; Write-off CSV for the '+fabSheetExtra.length+' with metres</button> (Reference2 is the sheet\'s W/O number)':'')+':<ul style="margin:3px 0 0 18px;padding:0">'+res.unknown.map(function(g){ return li(gm(g)+(g.customer?' &middot; '+esc(g.customer):'')+' &middot; <span class="sm-sub" style="display:inline">'+esc(g.why)+'; sheet row'+(g.rows.length===1?' ':'s ')+g.rows.join(', ')+'</span>'); }).join('')+'</ul></div>';
+  h+='<div><b>'+n(nRows,'row')+' &rarr; '+n(res.groups,'works order / cloth pair')+'.</b> ';
+  if(res.mode==='done') h+=n(res.done.length,'line')+' marked <span class="fab-st exported">Exported</span> (Sage - cutting sheet)';
+  else h+=n(res.ticked.length,'line')+' set to the sheet\'s metres and ticked, '+fabM(res.metres,1)+' m - press <b>Export ticked (CSV)</b> for the file';
+  h+=(res.created?'; '+n(res.created,'record')+' built for lines completed before the ledger existed':'')+(res.added?'; a further cloth added to '+n(res.added,'line'):'')+'.</div>';
+  if(res.zero.length) h+='<div style="margin-top:6px"><b>'+n(res.zero.length,'row')+' with no metres</b> - waste, or "-"; the line completes with nothing to write off for it:'+ul(res.zero.map(function(x){ return li(fabSheetLineName(x.c)+' &middot; '+gm(x.g)+(x.noop?' <span class="sm-sub" style="display:inline">(another row already gives this line its metres)</span>':'')); }))+'</div>';
+  if(res.kept.length) h+='<div style="margin-top:6px"><b>'+n(res.kept.length,'row')+' on another cloth than the works order</b> - the works order\'s cloth is kept, the sheet\'s metres taken:'+ul(res.kept.map(function(x){ return li(fabSheetLineName(x.c)+' on '+mono(x.c.fabric.code)+' &middot; sheet: '+gm(x.g)); }))+'</div>';
+  if(res.live.length) h+='<div style="margin-top:6px"><b>'+n(res.live.length,'line')+' still live</b> - '+(res.mode==='done'?'flagged as written off; they will show Exported when booked in':'not written off until booked in; the sheet\'s metres are kept as the cut figure')+':'+ul(res.live.map(function(x){ return li(mono(x.ref)+' '+mono(x.code)+' &times; '+x.qty+' &middot; '+gm(x.g)); }))+'</div>';
+  if(res.already.length) h+='<div style="margin-top:6px"><b>'+res.already.length+' already '+(res.mode==='done'?'marked':'complete')+' in the ledger</b> - not touched:'+ul(res.already.map(function(x){ return li(fabSheetLineName(x.c)+' &middot; '+x.st+(x.c.fabricExportedAt?' '+fmtD(x.c.fabricExportedAt)+(x.c.fabricExportFile?' &middot; '+esc(x.c.fabricExportFile):''):'')+' &middot; '+gm(x.g)); }))+'</div>';
+  if(res.ambiguous.length) h+='<div style="margin-top:6px"><b style="color:#8a2222">'+res.ambiguous.length+' could not be placed on a line</b> - the works order has several lines on other cloths; do these by hand (tick on the ledger):'+ul(res.ambiguous.map(function(x){ return li(gm(x.g)+' &rarr; '+x.lines.map(function(c){ return mono(c.code)+' &times; '+c.qty+(c.live?' (live)':(c.fabric&&c.fabric.code?' on '+mono(c.fabric.code):'')); }).join(', ')); }))+'</div>';
+  if(res.manual.length) h+='<div style="margin-top:6px"><b style="color:#8a2222">'+n(res.manual.length,'row')+' for a manual write-off</b> - samples and embroidery backing are not works orders; not in any file from here:'+ul(res.manual.map(function(g){ return li(gm(g)+(g.customer?' &middot; '+esc(g.customer):'')+' &middot; <span class="sm-sub" style="display:inline">'+esc(g.why)+'; sheet row'+(g.rows.length===1?' ':'s ')+g.rows.join(', ')+'</span>'); }))+'</div>';
+  if(res.unknown.length) h+='<div style="margin-top:6px"><b style="color:#8a2222">'+res.unknown.length+' not in the app</b>'+(res.mode==='todo'&&fabSheetExtra.length?' - <button class="btn" style="font-size:11px;padding:3px 8px" onclick="exportSheetExtras()">&#8659; Write-off CSV for the '+fabSheetExtra.length+' with metres</button> (Reference2 is the sheet\'s W/O number)':'')+':'+ul(res.unknown.map(function(g){ return li(gm(g)+(g.customer?' &middot; '+esc(g.customer):'')+' &middot; <span class="sm-sub" style="display:inline">'+esc(g.why)+'; sheet row'+(g.rows.length===1?' ':'s ')+g.rows.join(', ')+'</span>'); }))+'</div>';
   return h+'</div>';
 }
 // The rows the app cannot place, as their own write-off file - the cloth
