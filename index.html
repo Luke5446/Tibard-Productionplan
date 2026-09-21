@@ -3846,8 +3846,16 @@ function kpiWireTips(root, tipEl){
 // three states are meant to carry trims later, and to be what an automatic
 // poster reads once there is a server: it would take the OPEN lines, post
 // them, and stamp them EXPORTED - the tab and the CSV would not change.
-var fabOpen={mon:{}, day:{}, hideDone:false, showAll:false, allFabrics:false, supplier:''};   // one person's view, local key only
-try{ var _fo=JSON.parse(localStorage.getItem('tibard_fab_sections')||'null'); if(_fo){ fabOpen.mon=_fo.mon||{}; fabOpen.day=_fo.day||{}; fabOpen.hideDone=!!_fo.hideDone; fabOpen.showAll=!!_fo.showAll; fabOpen.allFabrics=!!_fo.allFabrics; fabOpen.supplier=_fo.supplier||''; } }catch(e){}
+var fabOpen={mon:{}, day:{}, hideDone:false, showAll:false, allFabrics:false, supplier:'', sec:{stock:true, ledger:true, usage:true}};   // one person's view, local key only
+try{ var _fo=JSON.parse(localStorage.getItem('tibard_fab_sections')||'null'); if(_fo){ fabOpen.mon=_fo.mon||{}; fabOpen.day=_fo.day||{}; fabOpen.hideDone=!!_fo.hideDone; fabOpen.showAll=!!_fo.showAll; fabOpen.allFabrics=!!_fo.allFabrics; fabOpen.supplier=_fo.supplier||'';
+  if(_fo.sec){ fabOpen.sec.stock=_fo.sec.stock!==false; fabOpen.sec.ledger=_fo.sec.ledger!==false; fabOpen.sec.usage=_fo.sec.usage!==false; } } }catch(e){}
+function fabToggleSec(k){ fabOpen.sec[k]=!fabOpen.sec[k]; fabSavePrefs(); fabRender(); }
+// The same collapsible banner as the Special Makes tab, on this tab's state.
+function fabBanner(k, title, act){
+  var open=fabOpen.sec[k];
+  return '<div class="sm-bh'+(open?'':' shut')+'" onclick="fabToggleSec(\''+k+'\')"><span class="cv">'+(open?'&#9662;':'&#9656;')+'</span><span class="ttl">'+title+'</span>'
+    +(act?'<span class="act" onclick="event.stopPropagation()">'+act+'</span>':'')+'</div>';
+}
 function fabSavePrefs(){ try{ localStorage.setItem('tibard_fab_sections',JSON.stringify(fabOpen)); }catch(e){} }
 function fabToggle(kind,k){ fabOpen[kind][k]=!fabOpen[kind][k]; fabSavePrefs(); fabRender(); }
 function fabToggleDone(){ fabOpen.hideDone=!fabOpen.hideDone; fabSavePrefs(); fabRender(); }
@@ -3981,15 +3989,17 @@ function fabOrderHtml(acc, name){
     +(ed?'<span style="margin-left:auto;display:flex;gap:6px">'+(minOrder&&total<minOrder?'<button class="btn btn-p" style="font-size:11px;padding:5px 10px" onclick="fabOrderTopUp(\''+esc(acc)+'\')">&#8679; Top up to '+fabM(minOrder,0)+' m</button>':'')
       +'<button class="btn" style="font-size:11px;padding:5px 10px" onclick="fabOrderReset(\''+esc(acc)+'\')">&#8634; Back to suggested</button></span>':'')+'</div>';
   if(!lines.length) return h+'<div class="sm-empty" style="padding:14px">No monitored fabric from this supplier on the Sage sheet.</div></div>';
-  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr><th>Fabric</th><th style="text-align:right">After live</th><th style="text-align:right">Min</th><th style="text-align:right">Suggested</th><th style="text-align:right">Order m</th><th style="text-align:right">&pound;</th></tr></thead><tbody>'
+  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr><th>Fabric</th><th style="text-align:right">In Sage</th><th style="text-align:right">On order</th><th style="text-align:right">After live</th><th style="text-align:right">Min</th><th style="text-align:right">Suggested</th><th style="text-align:right">Order m</th><th style="text-align:right">&pound;</th></tr></thead><tbody>'
     +lines.map(function(l){ var x=l.x, price=x.row&&x.row.price>0?x.row.price:null;
       return '<tr'+(l.qty>0?'':' class="fab-done"')+'><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
+        +'<td class="fab-num">'+(x.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.inSage,1))+'</td>'
+        +'<td class="fab-num">'+(x.onOrder?fabM(x.onOrder,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num" style="'+(x.after!=null&&x.after<0?'color:#8a2222;font-weight:700':'')+'">'+(x.after==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.after,1))+'</td>'
         +'<td class="fab-num">'+(x.min?fabM(x.min,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.order?fabM(x.order,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(ed?'<input type="number" step="10" min="0" value="'+(l.qty||'')+'" placeholder="0" onchange="fabSetOrderQty(\''+esc(acc)+'\',\''+esc(x.code)+'\',this.value)" style="width:78px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px'+(l.typed?';font-weight:700;color:#7A1F3D':'')+'">':fabM(l.qty,0))+'</td>'
         +'<td class="fab-num">'+(price&&l.qty?fabGBP(price*l.qty,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td></tr>'; }).join('')
-    +'<tr><td style="font-weight:700">Total</td><td></td><td></td><td class="fab-num">'+fabM(lines.reduce(function(s,l){return s+l.x.order;},0),0)+'</td>'
+    +'<tr><td style="font-weight:700">Total</td><td></td><td></td><td></td><td></td><td class="fab-num">'+fabM(lines.reduce(function(s,l){return s+l.x.order;},0),0)+'</td>'
     +'<td class="fab-num" style="font-weight:700;'+(minOrder&&total<minOrder?'color:#b45309':'')+'">'+fabM(total,0)+(minOrder?' <span style="font-weight:400;color:#6b7280">/ '+fabM(minOrder,0)+'</span>':'')+'</td>'
     +'<td class="fab-num" style="font-weight:700">'+fabGBP(lines.reduce(function(s,l){ var p=l.x.row&&l.x.row.price>0?l.x.row.price:0; return s+p*(l.qty||0); },0),0)+'</td></tr>'
     +'</tbody></table></div>'
@@ -3999,10 +4009,13 @@ function fabOrderHtml(acc, name){
 }
 function fabStockHtml(q){
   var k=fabStockCompute(), ed=IS_EDITOR;
-  var h='<div class="kpi-sec" style="padding:12px 14px 8px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div><h3>Fabric stock against live works orders</h3>'
-    +'<div class="sub">'+(k.n ? k.n+' fabrics from Sage, pasted '+fmtD(k.pastedAt) : 'No Sage stock pasted yet')+' &middot; '+k.monitored.length+' monitored (with a minimum level) &middot; free to cut = in Sage less cut-not-written-off &middot; after live = free less committed, plus on order'
-    +(k.noUsage?' &middot; <span style="color:#b45309">'+k.noUsage+' live line(s) with no usage on file are not in the demand</span>':'')+'</div></div>'
-    +(ed?'<button class="btn btn-p edit-only" style="font-size:11px;padding:5px 10px;margin-left:auto" onclick="fabTogglePaste()">&#9998; Paste fabric stock</button>':'')+'</div>';
+  var h=fabBanner('stock', '&#129525; Fabric stock against live works orders'
+      +' <span style="font-weight:400;color:#a7d4bb">&middot; '+(k.n ? k.n+' from Sage, pasted '+fmtD(k.pastedAt) : 'no Sage stock pasted yet')+' &middot; '+k.monitored.length+' monitored'
+      +(k.short.length?' &middot; '+k.short.length+' short':'')+(k.low.length?' &middot; '+k.low.length+' below min':'')+'</span>',
+      ed?'<button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="fabTogglePaste()">&#9998; Paste fabric stock</button>':'');
+  if(!fabOpen.sec.stock) return h;
+  h+='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div class="sub">free to cut = in Sage less cut-not-written-off &middot; after live = free less committed, plus on order'
+    +(k.noUsage?' &middot; <span style="color:#b45309">'+k.noUsage+' live line(s) with no usage on file are not in the demand</span>':'')+'</div>';
   // supplier chips, from the monitored fabrics
   var sups={}; k.monitored.forEach(function(x){ if(x.supAcc) sups[x.supAcc]=x.supName||x.supAcc; });
   var chip=function(acc,label,n){ var on=(fabOpen.supplier||'')===acc; return '<button class="fab-chip'+(on?' on':'')+'" onclick="fabOpen.supplier=\''+esc(acc)+'\';fabSavePrefs();fabRender()">'+esc(label)+(n?' <span class="cnt">'+n+'</span>':'')+'</button>'; };
@@ -4211,7 +4224,9 @@ function fabRender(){
       +'</tr>';
   }
   var head='<tr>'+(ed?'<th></th>':'')+'<th>Works order</th><th>Line</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th style="text-align:right">Cut m</th><th style="text-align:right">Var</th><th style="text-align:right">Write off</th><th style="text-align:right">Cost</th><th>State</th>'+(ed?'<th></th>':'')+'</tr>';
-  h+='<div class="kpi-sec" style="padding:12px 14px 8px"><h3>Booked fabric, by month and day</h3><div class="sub">Every completed line that carries fabric, on the day it was completed'+(q?' &middot; filtered':'')+' &middot; '+k.total+' line(s) in all</div>';
+  h+=fabBanner('ledger', '&#128203; Booked fabric, by month and day <span style="font-weight:400;color:#a7d4bb">&middot; '+k.total+' line(s)'+(k.open.lines?' &middot; '+k.open.lines+' awaiting export':'')+(q?' &middot; filtered':'')+'</span>', '');
+  if(fabOpen.sec.ledger){
+  h+='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div class="sub">Every completed line that carries fabric, on the day it was completed</div>';
   if(!mkeys.length) h+='<div class="sm-empty">'+(k.total?'Nothing matches.':'Nothing yet - the first line appears when a works order is completed on this version.')+'</div>';
   mkeys.forEach(function(mk){
     var ml=byMon[mk], mopen=!!fabOpen.mon[mk] || !!q;
@@ -4228,8 +4243,11 @@ function fabRender(){
     h+='</div>';
   });
   h+='</div>';
+  }
 
   // ── usage ──────────────────────────────────────────────────────────────
+  h+=fabBanner('usage', '&#128200; Fabric usage <span style="font-weight:400;color:#a7d4bb">&middot; by day, week and month</span>', '');
+  if(fabOpen.sec.usage){
   h+='<div class="kpi-grid2">'
     +'<div class="kpi-sec kpi-chart"><h3>Metres per day</h3><div class="sub">Last 30 days, by completion date &middot; today in maroon</div>'+fabDayChart(k.days)+'</div>'
     +'<div class="kpi-sec"><h3>By week</h3><div class="sub">Last eight weeks, Monday to Sunday</div><div style="overflow-x:auto"><table class="kpi-tbl"><thead><tr><th>Week</th><th>Lines</th><th>Metres</th><th>Cost</th></tr></thead><tbody>'
@@ -4254,6 +4272,7 @@ function fabRender(){
     +'<div class="kpi-note"><b>Metres</b> and <b>Cost</b> count open and exported lines - fabric that was, or is about to be, written off - at the cutting room\'s actual where they typed one and the standard otherwise; dismissed lines sit in their own column. '
     +'<b>Cost</b> is metres times the price per metre from the Sage fabric price list, or All Costings where Sage has none, frozen on the line the day it completed. '
     +'A line is <b>Open</b> until it goes into a write-off file (<b>Exported</b>, with the file it went in) or is <b>Dismissed</b>; neither can be exported again.</div></div>';
+  }
 
   el.innerHTML=h;
   kpiWireTips(el, document.getElementById('fabTip'));

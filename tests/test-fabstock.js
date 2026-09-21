@@ -46,6 +46,13 @@ const sheet=[
  const t3=await p.evaluate(()=>{ window.now=()=>new Date('2026-09-21T10:00:00'); smShowTab('fabric'); const k=fabStockCompute(); return {n:k.n, den:k.list.find(x=>x.code==='CO5014DEN').after}; });
  await p.goto('file://'+require('path').join(__dirname,'..','index.html')); await p.waitForTimeout(400);
  const t4=await p.evaluate(()=>{ loadState(); smShowTab('fabric'); return {btn:document.querySelectorAll('#fabBody .btn').length, rows:document.querySelectorAll('#fabBody .fab-stk tbody tr').length, short:fabStockCompute().low.map(x=>x.code).join()}; });
+ // banners: the stock section collapses on its banner and stays collapsed across a reload; the order table shows In Sage and On order
+ const t5=await p.evaluate(()=>{ fabOpen.supplier='TIA001EU'; fabRender(); const heads=[...document.querySelectorAll('#fabBody .fab-stk thead th')].map(t=>t.textContent).slice(0,3).join('|');
+   const before=document.querySelectorAll('#fabBody .fab-stk').length; document.querySelector('#fabBody .sm-bh').click(); const after=document.querySelectorAll('#fabBody .fab-stk').length;
+   return heads+' '+before+'>'+after+' '+JSON.parse(localStorage.getItem('tibard_fab_sections')).sec.stock; });
+ await p.reload(); await p.waitForTimeout(400);
+ const t5b=await p.evaluate(()=>{ smShowTab('fabric'); const n=document.querySelectorAll('#fabBody .fab-stk').length; fabToggleSec('stock'); fabOpen.supplier=''; fabSavePrefs(); fabRender(); return n; });
+ console.log('banners   ', t5, '| after reload', t5b);
  console.log('lead edit', t2b);
  console.log('show all', t2, '| reload', JSON.stringify(t3), '| viewer', JSON.stringify(t4));
  const pass = t0.n===0 && /CO5014DEN:unknown:9.00:6/.test(t0.list) && /PC14001:unknown:7.05:0/.test(t0.list) && /MESH2290901:unknown:0.51:0/.test(t0.list) && t0.tile===1
@@ -53,6 +60,6 @@ const sheet=[
    && t1.rows[0]==='CO5014DEN:low:20:6:14:9:0:5:10:50' && t1.rows[1]==='PC14001:low:5:0:5:7.05:20:17.95:500:490' && t1.rows[2]==='MESH2290901:unknown::0::0.51:0:-999:500:0'
    && t1.rows.some(r=>r==='POPLAZA03:ok:30:0:30:0:0:30:0:0')
    && t1.rowsShown===33 && /Tiajo Comercio ?10 working days/.test(t1.sup)
-   && t2===33 && t2c==='CO5014DEN=50|50|true|4000|4200|true|50|25:low' && t2b==='12:app:12' && t3.n===1 && t3.den===5 && t4.btn===0 && t4.rows===33 && t4.short==='CO5014DEN';
+   && t5==='Fabric|In Sage|On order 2>0 false' && t5b===0 && t2===33 && t2c==='CO5014DEN=50|50|true|4000|4200|true|50|25:low' && t2b==='12:app:12' && t3.n===1 && t3.den===5 && t4.btn===0 && t4.rows===33 && t4.short==='CO5014DEN';
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();
