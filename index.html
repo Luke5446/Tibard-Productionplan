@@ -308,6 +308,10 @@ body.planner-mode .planner-wrap{display:block}
 .fab-st.low{background:#fef3c7;color:#92400e}
 .fab-st.unknown{background:#e5e7eb;color:#4b5563}
 .fab-st.ok{background:#d1fae5;color:#065f46}
+.fab-chip{background:#fff;border:1px solid #c8d0df;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:600;color:#374151;cursor:pointer}
+.fab-chip.on{background:#7A1F3D;border-color:#7A1F3D;color:#fff}
+.fab-chip .cnt{display:inline-block;min-width:16px;padding:0 4px;margin-left:4px;border-radius:8px;background:#fee2e2;color:#991b1b;font-size:10px;line-height:15px;text-align:center}
+.fab-chip.on .cnt{background:#fff;color:#7A1F3D}
 .fab-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 tr.fab-done td{color:#6b7280}
 
@@ -3842,8 +3846,8 @@ function kpiWireTips(root, tipEl){
 // three states are meant to carry trims later, and to be what an automatic
 // poster reads once there is a server: it would take the OPEN lines, post
 // them, and stamp them EXPORTED - the tab and the CSV would not change.
-var fabOpen={mon:{}, day:{}, hideDone:false, showAll:false};   // one person's view, local key only
-try{ var _fo=JSON.parse(localStorage.getItem('tibard_fab_sections')||'null'); if(_fo){ fabOpen.mon=_fo.mon||{}; fabOpen.day=_fo.day||{}; fabOpen.hideDone=!!_fo.hideDone; fabOpen.showAll=!!_fo.showAll; } }catch(e){}
+var fabOpen={mon:{}, day:{}, hideDone:false, showAll:false, allFabrics:false, supplier:''};   // one person's view, local key only
+try{ var _fo=JSON.parse(localStorage.getItem('tibard_fab_sections')||'null'); if(_fo){ fabOpen.mon=_fo.mon||{}; fabOpen.day=_fo.day||{}; fabOpen.hideDone=!!_fo.hideDone; fabOpen.showAll=!!_fo.showAll; fabOpen.allFabrics=!!_fo.allFabrics; fabOpen.supplier=_fo.supplier||''; } }catch(e){}
 function fabSavePrefs(){ try{ localStorage.setItem('tibard_fab_sections',JSON.stringify(fabOpen)); }catch(e){} }
 function fabToggle(kind,k){ fabOpen[kind][k]=!fabOpen[kind][k]; fabSavePrefs(); fabRender(); }
 function fabToggleDone(){ fabOpen.hideDone=!fabOpen.hideDone; fabSavePrefs(); fabRender(); }
@@ -3890,7 +3894,7 @@ function fabLoadStockPaste(){
   if(!txt){ alert('Nothing pasted - click in the box then Ctrl+V.'); return; }
   var rows=fabParseStock(txt);
   if(!rows){ alert('No valid rows found.\n\nSelect columns A to N from Fabric Stock.xlsx (without the header row), Ctrl+C, then paste here.'); return; }
-  fabStock={rows:rows, pastedAt:d2s(now()), leads:fabStock.leads||{}};   // the supplier lead times outlive the paste
+  fabStock={rows:rows, pastedAt:d2s(now()), leads:fabStock.leads||{}, mins:fabStock.mins||{}, po:fabStock.po||{}};   // the app's own settings outlive the paste
   document.getElementById('fabTA').value=''; document.getElementById('fabPastePanel').classList.add('hidden');
   saveState(); fabRender();
   var k=fabStockCompute();
@@ -3908,37 +3912,113 @@ function fabLiveDemand(){
   }); });
   return {by:by, noUsage:noUsage};
 }
+// Minimum levels, in metres, from the office's supplier sheets (Cloth -
+// Tiajo, P&R etc., 21 Sep 2026): the fabrics that are monitored. Sage's own
+// minimum wins where one is set there; an edit on the tab overrides these.
+var FAB_MIN_LEVELS={"CO5001ECO":300.0,"CO5003DEN":100.0,"CO5003ECO":200.0,"CO5014DEN":100.0,"CO5015ECO":300.0,"CO5083ECO":100.0,"CO5153ECO":100.0,"CO5173ECO":50.0,"CO5222ECO":150.0,"CO5224DEN":50.0,"CO5241ECO":300.0,"CO5364ECO":100.0,"CO5TEXAS912":100.0,"CO6030":500.0,"LEATHERHIDE":2.0,"MESH2290901":500.0,"MESH2290903":200.0,"PC14001":500.0,"PC2001ECO":1000.0,"PC2003ECO":1000.0,"PC2015ECO":400.0,"PC2064ECO":300.0,"PC2082ECO":200.0,"PC2083ECO":300.0,"PC2X13306":50.0,"PC2X13307":50.0,"PC2X133153":100.0,"PC2X133180VAT":100.0,"PC2X13383":50.0,"PC6X42014":100.0,"PC9068":50.0,"PC90682":20.0,"PC999K382":50.0};
+// Annual call-off with Tiajo, in metres - the weights used to spread a top-up
+// to the free-shipping minimum across the order.
+var FAB_CALL_OFF={"CO5001ECO":4000,"CO5003ECO":3000,"CO5015ECO":4700,"CO5083ECO":1000,"CO5153ECO":1250,"CO5173ECO":1000,"CO5222ECO":1500,"CO5241ECO":10200,"CO5364ECO":1250,"PC2001ECO":41000,"PC2003ECO":43384,"PC2015ECO":11200,"PC2064ECO":19500,"PC2082ECO":2750,"PC2083ECO":16000};
+// Order minimums per supplier account: Tiajo ship free from 4,000 m, so an
+// order is always built up to it.
+var FAB_SUPPLIER_MIN={'TIA001EU':4000};
+function fabMinFor(code, r){ if(r && r.min>0) return {m:r.min, src:'Sage'}; var o=(fabStock.mins||{})[code]; if(o!=null) return {m:o, src:'app'}; var d=FAB_MIN_LEVELS[code]; return d>0 ? {m:d, src:'sheet'} : {m:0, src:''}; }
+function fabSetMin(code){ if(!IS_EDITOR) return; var cur=fabMinFor(code, fabStock.rows[code]).m; var v=prompt('Minimum level for '+code+', in metres. 0 stops monitoring it.', cur||''); if(v===null) return;
+  var n=parseFloat(v); fabStock.mins=fabStock.mins||{}; if(isNaN(n)||n<0) return; fabStock.mins[code]=n; saveState(); fabRender(); }
+function fabRound(m, step){ return Math.ceil(m/step)*step; }
 function fabStockCompute(){
   var demand=fabLiveDemand(), cutOpen={};
   fabLines().forEach(function(l){ if(l.state!=='open') return;
     if(l.fabCode && l.main>0) cutOpen[l.fabCode]=(cutOpen[l.fabCode]||0)+l.main;
     l.extras.forEach(function(x){ if(x.code && x.metres>0) cutOpen[x.code]=(cutOpen[x.code]||0)+x.metres; }); });
-  var codes={}; Object.keys(fabStock.rows).forEach(function(c){codes[c]=1;}); Object.keys(demand.by).forEach(function(c){codes[c]=1;}); Object.keys(cutOpen).forEach(function(c){codes[c]=1;});
+  var codes={}; Object.keys(fabStock.rows).forEach(function(c){codes[c]=1;}); Object.keys(demand.by).forEach(function(c){codes[c]=1;}); Object.keys(cutOpen).forEach(function(c){codes[c]=1;}); if(fabStock.pastedAt) Object.keys(FAB_MIN_LEVELS).forEach(function(c){codes[c]=1;});   // a monitored fabric missing from a pasted sheet is worth a row; before any paste it is just noise
   var out=Object.keys(codes).map(function(c){
-    var r=fabStock.rows[c]||null, d=demand.by[c]||{metres:0,refs:{}};
-    var inSage=r?r.inStock:null, cut=cutOpen[c]||0, com=d.metres, oo=r?r.onOrder:0, min=r?r.min:0;
+    var r=fabStock.rows[c]||null, d=demand.by[c]||{metres:0,refs:{}}, mn=fabMinFor(c, r);
+    var inSage=r?r.inStock:null, cut=cutOpen[c]||0, com=d.metres, oo=r?r.onOrder:0, min=mn.m;
     var free=(inSage==null)?null:inSage-cut, after=(free==null)?null:free-com+oo;
     var st = inSage==null ? 'unknown' : after<0 ? 'short' : (min>0 && after<min) ? 'low' : 'ok';
-    return { code:c, row:r, name:r?r.desc:(FABRIC_NAMES[c]||''), inSage:inSage, cut:cut, committed:com, refs:Object.keys(d.refs).length, onOrder:oo, min:min,
-             free:free, after:after, state:st, order:(after!=null && (after<0 || (min>0&&after<min))) ? Math.max(min-after, r&&r.reorderQty>0?r.reorderQty:0) : 0 };
+    // suggested order: enough to be back at the minimum after the live jobs,
+    // rounded up to 10 m, never less than the supplier's usual quantity
+    var gap=(after==null) ? 0 : Math.max(0, min-after, -after);
+    var order=gap>0 ? Math.max(fabRound(gap,10), r&&r.reorderQty>0?r.reorderQty:0) : 0;
+    return { code:c, row:r, name:r?r.desc:(FABRIC_NAMES[c]||''), supAcc:r?r.supAcc:'', supName:r?r.supName:'', inSage:inSage, cut:cut, committed:com, refs:Object.keys(d.refs).length, onOrder:oo, min:min, minSrc:mn.src, monitored:min>0,
+             free:free, after:after, state:st, order:order };
   });
   var rank={short:0, low:1, unknown:2, ok:3};
   out.sort(function(a,b){ return rank[a.state]-rank[b.state] || (b.committed-a.committed) || a.code.localeCompare(b.code); });
-  return { list:out, short:out.filter(function(x){return x.state==='short';}), low:out.filter(function(x){return x.state==='low';}),
-           unknown:out.filter(function(x){return x.state==='unknown';}), noUsage:demand.noUsage, pastedAt:fabStock.pastedAt, n:Object.keys(fabStock.rows).length };
+  var mon=out.filter(function(x){return x.monitored;});
+  return { list:out, monitored:mon, short:mon.filter(function(x){return x.state==='short';}), low:mon.filter(function(x){return x.state==='low';}),
+           unknown:mon.filter(function(x){return x.state==='unknown';}), noUsage:demand.noUsage, pastedAt:fabStock.pastedAt, n:Object.keys(fabStock.rows).length };
+}
+// ── the order for one supplier ────────────────────────────────────────────
+// Every monitored fabric from the supplier, plus any short one, with the
+// suggested metres and a box to change them. The lines and the typed
+// quantities are kept (fabStock.po) so the purchase order file can be built
+// from them later. "Top up" spreads the metres still needed to reach the
+// supplier's minimum across the lines in proportion to annual call-off, in
+// 50 m steps, so the free-shipping order is filled with what gets used.
+function fabOrderLines(acc){
+  var k=fabStockCompute(), po=(fabStock.po||{})[acc]||{};
+  return k.list.filter(function(x){ return x.supAcc===acc && (x.monitored || x.state==='short'); })
+    .map(function(x){ return {x:x, qty:(po[x.code]!=null)?po[x.code]:x.order, typed:po[x.code]!=null}; });
+}
+function fabOrderTotal(acc){ return fabOrderLines(acc).reduce(function(s,l){ return s+(l.qty||0); },0); }
+function fabSetOrderQty(acc, code, v){ if(!IS_EDITOR) return; fabStock.po=fabStock.po||{}; var m=fabStock.po[acc]||(fabStock.po[acc]={}); var n=parseFloat(v); if(v===''||isNaN(n)||n<0) delete m[code]; else m[code]=Math.round(n*100)/100; saveState(); fabRender(); }
+function fabOrderReset(acc){ if(!IS_EDITOR) return; if(fabStock.po) delete fabStock.po[acc]; saveState(); fabRender(); }
+function fabOrderTopUp(acc){ if(!IS_EDITOR) return;
+  var need=(FAB_SUPPLIER_MIN[acc]||0)-fabOrderTotal(acc); if(need<=0) return;
+  var lines=fabOrderLines(acc), w=lines.map(function(l){ return FAB_CALL_OFF[l.x.code]||0; }), tw=w.reduce(function(a,b){return a+b;},0);
+  if(!tw){ lines.forEach(function(l){ w[lines.indexOf(l)]=1; }); tw=lines.length; }
+  fabStock.po=fabStock.po||{}; var m=fabStock.po[acc]||(fabStock.po[acc]={});
+  var added=0;
+  lines.forEach(function(l,i){ var share=fabRound(need*w[i]/tw, 50); m[l.x.code]=(l.qty||0)+share; added+=share; });
+  saveState(); fabRender();
+}
+function fabOrderHtml(acc, name){
+  var lines=fabOrderLines(acc), total=fabOrderTotal(acc), minOrder=FAB_SUPPLIER_MIN[acc]||0, ed=IS_EDITOR;
+  var h='<div class="kpi-sec" style="padding:12px 14px 8px;border-left:4px solid #7A1F3D"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div><h3>Order for '+esc(name||acc)+'</h3>'
+    +'<div class="sub">Suggested metres bring each fabric back to its minimum after the live works orders'+(minOrder?' &middot; '+esc(name||acc)+' ship free from '+fabM(minOrder,0)+' m':'')+'</div></div>'
+    +(ed?'<span style="margin-left:auto;display:flex;gap:6px">'+(minOrder&&total<minOrder?'<button class="btn btn-p" style="font-size:11px;padding:5px 10px" onclick="fabOrderTopUp(\''+esc(acc)+'\')">&#8679; Top up to '+fabM(minOrder,0)+' m</button>':'')
+      +'<button class="btn" style="font-size:11px;padding:5px 10px" onclick="fabOrderReset(\''+esc(acc)+'\')">&#8634; Back to suggested</button></span>':'')+'</div>';
+  if(!lines.length) return h+'<div class="sm-empty" style="padding:14px">No monitored fabric from this supplier on the Sage sheet.</div></div>';
+  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr><th>Fabric</th><th style="text-align:right">After live</th><th style="text-align:right">Min</th><th style="text-align:right">Suggested</th><th style="text-align:right">Order m</th><th style="text-align:right">&pound;</th></tr></thead><tbody>'
+    +lines.map(function(l){ var x=l.x, price=x.row&&x.row.price>0?x.row.price:null;
+      return '<tr'+(l.qty>0?'':' class="fab-done"')+'><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
+        +'<td class="fab-num" style="'+(x.after!=null&&x.after<0?'color:#8a2222;font-weight:700':'')+'">'+(x.after==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.after,1))+'</td>'
+        +'<td class="fab-num">'+(x.min?fabM(x.min,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num">'+(x.order?fabM(x.order,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num">'+(ed?'<input type="number" step="10" min="0" value="'+(l.qty||'')+'" placeholder="0" onchange="fabSetOrderQty(\''+esc(acc)+'\',\''+esc(x.code)+'\',this.value)" style="width:78px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px'+(l.typed?';font-weight:700;color:#7A1F3D':'')+'">':fabM(l.qty,0))+'</td>'
+        +'<td class="fab-num">'+(price&&l.qty?fabGBP(price*l.qty,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td></tr>'; }).join('')
+    +'<tr><td style="font-weight:700">Total</td><td></td><td></td><td class="fab-num">'+fabM(lines.reduce(function(s,l){return s+l.x.order;},0),0)+'</td>'
+    +'<td class="fab-num" style="font-weight:700;'+(minOrder&&total<minOrder?'color:#b45309':'')+'">'+fabM(total,0)+(minOrder?' <span style="font-weight:400;color:#6b7280">/ '+fabM(minOrder,0)+'</span>':'')+'</td>'
+    +'<td class="fab-num" style="font-weight:700">'+fabGBP(lines.reduce(function(s,l){ var p=l.x.row&&l.x.row.price>0?l.x.row.price:0; return s+p*(l.qty||0); },0),0)+'</td></tr>'
+    +'</tbody></table></div>'
+    +(minOrder ? '<div class="kpi-note">'+(total>=minOrder ? '<b>'+fabM(total,0)+' m</b> - at or above the '+fabM(minOrder,0)+' m free-shipping minimum.' : '<b>'+fabM(minOrder-total,0)+' m short</b> of the '+fabM(minOrder,0)+' m free-shipping minimum - type more against the fabrics you want, or top up and the difference is spread by annual call-off.')+' Bold quantities were typed here; the rest are the suggestion.</div>' : '')
+    +'</div>';
+  return h;
 }
 function fabStockHtml(q){
   var k=fabStockCompute(), ed=IS_EDITOR;
   var h='<div class="kpi-sec" style="padding:12px 14px 8px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div><h3>Fabric stock against live works orders</h3>'
-    +'<div class="sub">'+(k.n ? k.n+' fabrics from Sage, pasted '+fmtD(k.pastedAt) : 'No Sage stock pasted yet')+' &middot; free to cut = in Sage less cut-not-written-off &middot; after live = free less committed, plus on order'
+    +'<div class="sub">'+(k.n ? k.n+' fabrics from Sage, pasted '+fmtD(k.pastedAt) : 'No Sage stock pasted yet')+' &middot; '+k.monitored.length+' monitored (with a minimum level) &middot; free to cut = in Sage less cut-not-written-off &middot; after live = free less committed, plus on order'
     +(k.noUsage?' &middot; <span style="color:#b45309">'+k.noUsage+' live line(s) with no usage on file are not in the demand</span>':'')+'</div></div>'
     +(ed?'<button class="btn btn-p edit-only" style="font-size:11px;padding:5px 10px;margin-left:auto" onclick="fabTogglePaste()">&#9998; Paste fabric stock</button>':'')+'</div>';
-  var list=k.list.filter(function(x){ return !q || smNorm(x.code+' '+x.name+' '+(x.row?x.row.supName:'')).indexOf(q)>=0; });
+  // supplier chips, from the monitored fabrics
+  var sups={}; k.monitored.forEach(function(x){ if(x.supAcc) sups[x.supAcc]=x.supName||x.supAcc; });
+  var chip=function(acc,label,n){ var on=(fabOpen.supplier||'')===acc; return '<button class="fab-chip'+(on?' on':'')+'" onclick="fabOpen.supplier=\''+esc(acc)+'\';fabSavePrefs();fabRender()">'+esc(label)+(n?' <span class="cnt">'+n+'</span>':'')+'</button>'; };
+  h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0">'+chip('','All suppliers',0)
+    +Object.keys(sups).sort(function(a,b){ return sups[a].localeCompare(sups[b]); }).map(function(acc){ var n=k.monitored.filter(function(x){return x.supAcc===acc && x.state!=='ok';}).length; return chip(acc, sups[acc], n); }).join('')
+    +'<label style="margin-left:auto;font-size:11px;color:#4b5563;cursor:pointer"><input type="checkbox" onchange="fabOpen.allFabrics=this.checked;fabSavePrefs();fabRender()"'+(fabOpen.allFabrics?' checked':'')+'> Include fabrics with no minimum level</label>'
+    +'<label style="font-size:11px;color:#4b5563;cursor:pointer"><input type="checkbox" onchange="fabOpen.showAll=this.checked;fabSavePrefs();fabRender()"'+(fabOpen.showAll?' checked':'')+'> Show fabrics that are fine too</label>'
+    +'</div>';
+  if(fabOpen.supplier && sups[fabOpen.supplier]) h+=fabOrderHtml(fabOpen.supplier, sups[fabOpen.supplier]);
+  var list=k.list.filter(function(x){ return !q || smNorm(x.code+' '+x.name+' '+x.supName).indexOf(q)>=0; });
+  if(!fabOpen.allFabrics) list=list.filter(function(x){ return x.monitored; });
+  if(fabOpen.supplier) list=list.filter(function(x){ return x.supAcc===fabOpen.supplier; });
   if(!fabOpen.showAll) list=list.filter(function(x){ return x.state!=='ok'; });
   if(!k.list.length) return h+'<div class="sm-empty">Nothing to show - paste the Sage sheet, or raise a works order.</div></div>';
-  h+='<div style="font-size:11px;color:#4b5563;margin:6px 0"><label style="cursor:pointer"><input type="checkbox" onchange="fabOpen.showAll=this.checked;fabSavePrefs();fabRender()"'+(fabOpen.showAll?' checked':'')+'> Show fabrics that are fine too</label>'
-    +' &nbsp; <span class="fab-st short">'+k.short.length+' short</span> <span class="fab-st low">'+k.low.length+' low</span>'+(k.unknown.length?' <span class="fab-st nofab">'+k.unknown.length+' not on the Sage sheet</span>':'')+'</div>';
-  if(!list.length) return h+'<div class="sm-empty" style="padding:14px">'+(q?'Nothing matches.':'Nothing short or low.')+'</div></div>';
+  h+='<div style="font-size:11px;color:#4b5563;margin:6px 0"><span class="fab-st short">'+k.short.length+' short</span> <span class="fab-st low">'+k.low.length+' below min</span>'+(k.unknown.length?' <span class="fab-st nofab">'+k.unknown.length+' not on the Sage sheet</span>':'')+' <span style="color:#9ca3af">of the '+k.monitored.length+' monitored</span></div>';
+  if(!list.length) return h+'<div class="sm-empty" style="padding:14px">'+(q?'Nothing matches.':'Nothing short or below minimum.')+'</div></div>';
   h+='<div class="sm-tblwrap"><table class="fab-stk"><thead><tr><th>Fabric</th><th>Supplier</th><th style="text-align:right">In Sage</th><th style="text-align:right" title="open lines on the ledger: cut, not yet written off">Cut, not written off</th><th style="text-align:right">Free to cut</th>'
     +'<th style="text-align:right" title="standard metres on every live works order">Committed</th><th style="text-align:right">On order</th><th style="text-align:right">After live</th><th style="text-align:right">Min</th><th>State</th></tr></thead><tbody>'
     +list.map(function(x){ var lbl={short:'Short',low:'Below min',unknown:'Not on sheet',ok:'OK'}[x.state];
@@ -3951,11 +4031,12 @@ function fabStockHtml(q){
         +'<td class="fab-num">'+(x.committed?fabM(x.committed,1)+'<div class="sm-sub">'+x.refs+' WO'+(x.refs===1?'':'s')+'</div>':'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.onOrder?fabM(x.onOrder,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num" style="font-weight:700;'+(x.after!=null&&x.after<0?'color:#8a2222':'')+'">'+(x.after==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.after,1))+'</td>'
-        +'<td class="fab-num">'+(x.min?fabM(x.min,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num">'+(x.min?fabM(x.min,0)+(x.minSrc!=='Sage'?' <span title="'+(x.minSrc==='app'?'set here':'from the office sheet')+'">&#9998;</span>':''):'<span style="color:#9ca3af">&mdash;</span>')+(ed?'<div class="sm-sub"><a href="#" onclick="fabSetMin(\''+esc(x.code)+'\');return false">edit</a></div>':'')+'</td>'
         +'<td><span class="fab-st '+x.state+'">'+lbl+'</span>'+(x.order>0?'<div class="sm-sub">order '+fabM(x.order,0)+' m</div>':'')+'</td></tr>'; }).join('')
     +'</tbody></table></div></div>';
   return h;
 }
+
 function fabState(c){ return c.fabricExportedAt ? 'exported' : (c.fabricDismissedAt ? 'dismissed' : 'open'); }
 function fabPriceFor(code){ var c=(code||'').trim().toUpperCase(); return (typeof FABRIC_PRICES!=='undefined' && FABRIC_PRICES[c]>0) ? FABRIC_PRICES[c] : null; }
 function fabGBP(v,d){ return v==null ? '&mdash;' : '&pound;'+Number(v).toLocaleString('en-GB',{minimumFractionDigits:d==null?2:d, maximumFractionDigits:d==null?2:d}); }
@@ -4072,7 +4153,8 @@ function fabRender(){
     +tile('This month <span style="font-weight:400">&middot; '+k.monthLabel+'</span>', fabM(k.month.metres,0)+' <span style="font-size:13px;color:#6b7280">m</span>', costNote(k.month)+' &middot; '+k.month.refs+' works order(s)')
     +tile('Cut vs standard, this month', k.month.nAct ? ((k.month.act>=k.month.std?'+':'')+kpiN(100*(k.month.act-k.month.std)/(k.month.std||1),1)+'%') : '&mdash;', k.month.nAct ? 'on '+k.month.nAct+' line(s) where the cutting room typed a figure' : 'no actuals typed yet')
     +tile('Awaiting export', kpiN(k.open.lines), fabM(k.open.metres,1)+' m &middot; '+fabGBP(k.open.cost,0)+(k.noFab?' &middot; <span style="color:#b45309">'+k.noFab+' with no usage on file</span>':''))
-    +(function(){ var st=fabStockCompute(); return tile('Fabrics short', st.n ? kpiN(st.short.length) : '&mdash;', st.n ? (st.short.length?'<span class="dot" style="background:'+KPI_CRIT+'"></span>':'')+'against live works orders &middot; '+st.low.length+' below min' : 'paste the Sage stock sheet'); })()
+    +(function(){ var st=fabStockCompute(); return tile('Fabrics short', st.n ? kpiN(st.short.length) : '&mdash;', st.n ? (st.short.length?'<span class="dot" style="background:'+KPI_CRIT+'"></span>':'')+'of '+st.monitored.length+' monitored &middot; '+st.low.length+' below min' : 'paste the Sage stock sheet')
+        +tile('Tiajo order', st.n ? fabM(fabOrderTotal('TIA001EU'),0)+' <span style="font-size:13px;color:#6b7280">m</span>' : '&mdash;', st.n ? (fabOrderTotal('TIA001EU')>=4000?'at the 4,000 m free-shipping minimum':fabM(4000-fabOrderTotal('TIA001EU'),0)+' m short of the 4,000 m minimum') : 'paste the Sage stock sheet'); })()
     +'</div>';
 
   // ── toolbar ────────────────────────────────────────────────────────────

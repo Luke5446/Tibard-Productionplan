@@ -191,6 +191,22 @@ via *edit* under the supplier name, kept across pastes. **Minimum levels**
 are 0 on every fabric in Sage today, so *below min* cannot fire until they
 are set there; *short* does not depend on them.
 
+**Monitored fabrics.** The office's supplier sheets (Cloth - Tiajo, P&R
+etc.) gave 33 minimum levels across Tiajo, P&R, Utexbel, Carrington,
+Clockwork and Leather Hides; they are built in as `FAB_MIN_LEVELS`. Sage's
+own minimum wins where set, and *edit* under a Min figure overrides either.
+Only fabrics with a minimum are shown unless *Include fabrics with no
+minimum level* is ticked; the supplier chips filter to one supplier.
+
+**The supplier order.** Choosing a supplier chip opens the order for that
+supplier: every monitored fabric with a suggested quantity - enough to be
+back at the minimum after the live works orders, rounded up to 10 m, never
+below Sage's usual order quantity - and a box to change it. Tiajo ship free
+from 4,000 m (`FAB_SUPPLIER_MIN`); *Top up* spreads the metres still needed
+across the lines in proportion to annual call-off (`FAB_CALL_OFF`, from the
+Tiajo tab) in 50 m steps. Typed quantities are kept in `fabStock.po` and
+published, and are what the purchase order file will be built from.
+
 The sheet is pasted, so it is as current as the last paste; a direct link is
 the same query run by the site server and nothing on the tab changes. The
 `60-fabric-stock.sql` header explains the first run: step 0 lists the stock
