@@ -7,7 +7,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  const p=await b.newPage(); const errs=[]; p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
  await p.goto(URL); await p.waitForTimeout(400);
  await p.evaluate(()=>{ window.now=()=>new Date('2026-09-08T10:00:00'); window.confirm=()=>true; window.__alerts=[]; window.alert=m=>window.__alerts.push(m); });
- const u=await p.evaluate(()=>({cumbria:fabricUsageFor('ohapp0534gd'), none:fabricUsageFor('ZZNOUSAGE'), count:Object.keys(FABRIC_USAGE).length}));
+ const u=await p.evaluate(()=>({cumbria:fabricUsageFor('ohapp0534gd'), none:fabricUsageFor('ZZNOUSAGE'), count:Object.keys(FABRIC_USAGE).length, burgundy:fabricUsageFor('OHAPP078606'), khaki:fabricUsageFor('OHAPP0786153')}));
  console.log('usage lookup   ->', JSON.stringify(u));
  // a works order with one costed line and one unknown line
  await p.evaluate(()=>{ document.getElementById('woRef').value='S-FAB1'; document.getElementById('woStart').value='2026-09-01'; document.getElementById('woDue').value='2026-09-20';
@@ -41,7 +41,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  console.log('kpi            ->', JSON.stringify(k));
  const f=rec.find(r=>r.code==='OHAPP0534GD').fabric, g=rec.find(r=>r.code==='ZZNOUSAGE').fabric;
 
- const pass = u.cumbria && u.cumbria.metres===0.6 && u.cumbria.code==='CO5014DEN' && u.cumbria.source==='All Costings' && u.cumbria.code && u.none===null && u.count>8000
+ const pass = u.burgundy.code==='PC2X13306' && /BURGUNDY/.test(u.burgundy.name) && u.khaki.code==='PC2X133153' && u.cumbria && u.cumbria.metres===0.6 && u.cumbria.code==='CO5014DEN' && u.cumbria.source==='All Costings' && u.cumbria.code && u.none===null && u.count>8000
    && panel.header.includes('Metres cut') && panel.placeholders[0]==='9' && /no usage on file/.test(panel.cells[1])
    && kept.join()==='OHAPP0534GD:9.9,ZZNOUSAGE:undefined'
    && f && f.std===9 && f.actual===9.9 && f.perGarment===0.6 && f.source==='All Costings' && g===null

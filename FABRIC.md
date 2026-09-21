@@ -110,6 +110,34 @@ In the completed history since June, 135 codes and 2,906 units are now on
 per-size figures. To refresh the table after the sheet changes, re-run the
 parse in this session's notes — it is a plain CSV export of the sheet.
 
+## Corrections to All Costings
+
+The usage table is All Costings' fabric column, and it has some products on
+the wrong colour of the same cloth. Spotted on 21 Sep 2026 when WO-1030 for
+OHAPP078606 (burgundy) showed khaki; found by checking every product's
+colour against its fabric's colour within the same family. Corrected in the
+app's table, and to be corrected in All Costings itself so the next rebuild
+does not bring them back:
+
+| Product | All Costings said | Corrected to |
+|---|---|---|
+| OHAPP078606 | PC2X133153 khaki | PC2X13306 burgundy |
+| OHAPP0786153 | PC2X13306 burgundy | PC2X133153 khaki |
+| OHAPP078682 | PC2083ECO olive | PC2082ECO brown |
+| OHAPP078615 | PC2082ECO brown | PC2015ECO navy |
+| OHAPP078683 | PC2064ECO storm grey | PC2083ECO olive |
+| OHAPP0786248 | PC2015ECO navy | PC2064ECO storm grey |
+| OHRSAPP060107 | CO5222ECO cocoa | CO5007 red |
+| OHRSAPP0601222 | CO5007 red | CO5222ECO cocoa |
+| OHSTRAP222NECK | CO5007 red | CO5222ECO cocoa |
+| HTM0152SS55 | PC2064ECO storm grey | PC2055 royal blue |
+| HTM0152SS248 | PC2055 royal blue | PC2064ECO storm grey |
+| CJM01936001 | PC2003ECO black | PC2001ECO white |
+
+Not changed, worth a look: OHAPP0630478HP1 is on CO5368 amber, and
+TB0201SS51 / the KIDSBIB 07 codes are on PC2X13307, whose colour could not
+be matched from the code alone.
+
 ## Sources
 
 - All Costings via the costing app repo, `COSTDATA` (source file marked
