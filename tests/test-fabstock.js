@@ -41,13 +41,30 @@ const sheet=[
    window.prompt=()=>'25'; fabSetMin('PC14001'); o.push(fabStockCompute().list.find(x=>x.code==='PC14001').min+':'+fabStockCompute().list.find(x=>x.code==='PC14001').state);
    fabOpen.supplier=''; fabRender(); return o.join('|'); });
  console.log('order      ', t2c);
+ // sortable columns, the Free + PO column, and the needs-ordering chip and tile
+ const t2d=await p.evaluate(()=>{ fabOpen.supplier=''; fabOpen.showAll=true; fabRender();
+   const heads=[...document.querySelectorAll('#fabBody .fab-stk thead th')].map(t=>t.textContent.replace(/[↕▼▲]/g,''));
+   const stock=()=>[...document.querySelectorAll('#fabBody .fab-stk tbody tr')].map(tr=>tr.children[2].textContent.trim()).filter(v=>v!=='—').slice(0,3).join();
+   [...document.querySelectorAll('#fabBody .fab-stk thead th')].find(t=>/^In Stock/.test(t.textContent)).click(); const desc=stock();
+   document.querySelector('#fabBody .fab-stk thead th.on').click(); const asc=stock();
+   document.querySelector('#fabBody .fab-stk thead th.on').click();
+   const need=fabStockCompute().need.map(x=>x.code).sort().join();
+   const chip=[...document.querySelectorAll('#fabBody .fab-chip')].find(b=>/Needs ordering/.test(b.textContent)).textContent.replace(/\s+/g,' ').trim();
+   fabOpen.need=true; fabRender(); const rows=[...document.querySelectorAll('#fabBody .fab-stk tbody tr')].map(tr=>tr.querySelector('span').textContent).sort().join();
+   const afterCol=[...document.querySelectorAll('#fabBody .fab-stk tbody tr')].map(tr=>tr.querySelector('span').textContent+'='+tr.children[7].textContent.trim()).sort().join();
+   const tile=[...document.querySelectorAll('.kpi-tile')].find(t=>/Needs ordering/.test(t.textContent)).querySelector('.v').textContent;
+   fabOpen.need=false; fabOpen.showAll=false; fabOpen.supplier='TIA001EU'; fabRender();
+   const oheads=[...document.querySelectorAll('#fabBody .fab-stk thead th')].map(t=>t.textContent.replace(/[↕▼▲]/g,'')).slice(5,8).join('|');
+   fabOpen.supplier=''; fabSavePrefs(); fabRender();
+   return {heads:heads.join('|'), desc, asc, sortLeft:!!fabOpen.sort.stock, need, chip, rows, afterCol, tile, oheads}; });
+ console.log('sort/need  ', JSON.stringify(t2d));
  const t2b=await p.evaluate(()=>{ window.prompt=()=>'12'; fabSetLead('TIA001EU','Tiajo Comercio'); const a=fabLeadFor(fabStock.rows['CO5014DEN']); fabTogglePaste(); document.getElementById('fabTA').value='CO5014DEN\tX\tMetre\tTIA001EU\tTiajo Comercio\t\t20\t0\t0\t10\t12\t50\t6.71\t0'; fabLoadStockPaste(); return a.days+':'+a.src+':'+fabLeadFor(fabStock.rows['CO5014DEN']).days; });
  await p.reload(); await p.waitForTimeout(400);
  const t3=await p.evaluate(()=>{ window.now=()=>new Date('2026-09-21T10:00:00'); smShowTab('fabric'); const k=fabStockCompute(); return {n:k.n, den:k.list.find(x=>x.code==='CO5014DEN').after}; });
  await p.goto('file://'+require('path').join(__dirname,'..','index.html')); await p.waitForTimeout(400);
  const t4=await p.evaluate(()=>{ loadState(); smShowTab('fabric'); return {btn:document.querySelectorAll('#fabBody .btn').length, rows:document.querySelectorAll('#fabBody .fab-stk tbody tr').length, short:fabStockCompute().low.map(x=>x.code).join()}; });
  // banners: the stock section collapses on its banner and stays collapsed across a reload; the order table shows In Sage and On order
- const t5=await p.evaluate(()=>{ fabOpen.supplier='TIA001EU'; fabRender(); const heads=[...document.querySelectorAll('#fabBody .fab-stk thead th')].map(t=>t.textContent).slice(0,3).join('|');
+ const t5=await p.evaluate(()=>{ fabOpen.supplier='TIA001EU'; fabRender(); const heads=[...document.querySelectorAll('#fabBody .fab-stk thead th')].map(t=>t.textContent.replace(/[↕▼▲]/g,'')).slice(0,3).join('|');
    const before=document.querySelectorAll('#fabBody .fab-stk').length; [...document.querySelectorAll('#fabBody .sm-bh')].find(b=>/Fabric stock/.test(b.textContent)).click(); const after=document.querySelectorAll('#fabBody .fab-stk').length;
    return heads+' '+before+'>'+after+' '+JSON.parse(localStorage.getItem('tibard_fab_sections')).sec.stock; });
  await p.reload(); await p.waitForTimeout(400);
@@ -60,6 +77,6 @@ const sheet=[
    && t1.rows[0]==='PC14001:short:5:0:-2.05:7.05:20:17.95:500:490' && t1.rows[1]==='CO5014DEN:low:20:6:5:9:0:5:10:50' && t1.rows[2]==='MESH2290901:unknown::0::0.51:0:-999:500:0'
    && t1.rows.some(r=>r==='POPLAZA03:ok:30:0:30:0:0:30:0:0')
    && t1.rowsShown===33 && /Tiajo Comercio ?10 working days/.test(t1.sup)
-   && t5==='Fabric|In Stock|On PO 2>0 false' && t5b===0 && t2===33 && t2c==='CO5014DEN=50|50|true|4000|4200|true|50|25:short' && t2b==='12:app:12' && t3.n===1 && t3.den===5 && t4.btn===0 && t4.rows===33 && t4.short==='CO5014DEN';
+   && t5==='Fabric|In Stock|On PO 2>0 false' && t5b===0 && t2===33 && t2c==='CO5014DEN=50|50|true|4000|4200|true|50|25:short' && t2b==='12:app:12' && t2d.heads==='Fabric|Supplier|In Stock|Live WO|Not written off|Free Stock|On PO|Free + PO|Min|State' && t2d.desc==='20.0,5.0' && t2d.asc==='5.0,20.0' && !t2d.sortLeft && t2d.need==='CO5014DEN,PC14001' && t2d.chip==='⚑ Needs ordering 2' && t2d.rows==='CO5014DEN,PC14001' && t2d.afterCol==='CO5014DEN=5.0,PC14001=18.0' && t2d.tile==='2' && t2d.oheads==='Free Stock|Free + PO|Min' && t3.n===1 && t3.den===5 && t4.btn===0 && t4.rows===33 && t4.short==='CO5014DEN';
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

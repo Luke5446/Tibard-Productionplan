@@ -316,6 +316,17 @@ tables' columns and the product groups holding the known fabric codes, so
 `fabric_groups` can be filled and any column name that differs on this Sage
 version corrected.
 
+**Sorting, Free + PO, needs ordering.** Both tables sort on a click of a
+heading: high to low first, low to high on the second click, back to the
+natural order (short, then below min, by live demand) on the third; the
+choice is one person's, kept with the view settings. **Free + PO** sits
+between Free Stock and Min in both tables: Free Stock plus what is on PO,
+the figure the suggestion works from, in red when it is under the minimum.
+A fabric **needs ordering** when Free + PO is under its minimum (or below
+nil) — the suggested order is exactly what closes that gap. The *Needs
+ordering* tile counts them with the metres suggested, and a click on the
+tile or the red *Needs ordering* chip lists only those fabrics.
+
 ## First run
 
 Complete a works order on this version, tick it on the Fabric tab, press
