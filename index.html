@@ -281,7 +281,9 @@ body.planner-mode .planner-wrap{display:block}
 .sm-tbl tr.pipe{background:#f0f9ff}
 .fab-stk{width:100%;border-collapse:collapse;font-size:12.5px}
 .fab-stk th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:#6b7280;padding:8px 10px;border-bottom:1px solid #e5e7eb;white-space:nowrap}
-.fab-stk td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+.fab-stk td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top;color:#111827}
+.fab-stk .sm-sub{color:#374151}
+.fab-stk .fab-num{font-weight:600}
 .fab-stk tr:last-child td{border-bottom:0}
 .sm-ref-s{font-weight:700;color:#7A1F3D;font-size:12px;white-space:nowrap}
 .sm-ref-s.oh{color:#1f6b4a}
@@ -3991,7 +3993,7 @@ function fabOrderHtml(acc, name){
   if(!lines.length) return h+'<div class="sm-empty" style="padding:14px">No monitored fabric from this supplier on the Sage sheet.</div></div>';
   h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr><th>Fabric</th><th style="text-align:right">In Sage</th><th style="text-align:right">On order</th><th style="text-align:right">After live</th><th style="text-align:right">Min</th><th style="text-align:right">Suggested</th><th style="text-align:right">Order m</th><th style="text-align:right">&pound;</th></tr></thead><tbody>'
     +lines.map(function(l){ var x=l.x, price=x.row&&x.row.price>0?x.row.price:null;
-      return '<tr'+(l.qty>0?'':' class="fab-done"')+'><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
+      return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
         +'<td class="fab-num">'+(x.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.inSage,1))+'</td>'
         +'<td class="fab-num">'+(x.onOrder?fabM(x.onOrder,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num" style="'+(x.after!=null&&x.after<0?'color:#8a2222;font-weight:700':'')+'">'+(x.after==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.after,1))+'</td>'
