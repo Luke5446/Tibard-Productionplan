@@ -3860,7 +3860,15 @@ var fabTicked=[];   // the completed records ticked for export: transient, never
 // committed, plus on order. Short is when that goes below nil; low when it
 // sits under the minimum level set in Sage. The shortfall appears the day the
 // job is raised, not the day the goods are booked in.
-var fabStock={rows:{}, pastedAt:''};
+var fabStock={rows:{}, pastedAt:'', leads:{}};
+// Lead time per SUPPLIER, in working days, used where Sage's item record
+// says nothing (it says 0 on all 46 Tiajo fabrics, and the supplier account
+// has no lead-time field at all). Editable on the tab; these are the starting
+// values.
+var FAB_LEAD_DEFAULTS={'TIA001EU':10};
+function fabLeadFor(r){ if(!r) return {days:0, src:''}; if(r.lead>0) return {days:r.lead, src:'Sage'}; var o=(fabStock.leads||{})[r.supAcc]; if(o>0) return {days:o, src:'app'}; var d=FAB_LEAD_DEFAULTS[r.supAcc]; return d>0 ? {days:d, src:'app'} : {days:0, src:''}; }
+function fabSetLead(acc, name){ if(!IS_EDITOR) return; var cur=fabLeadFor({lead:0, supAcc:acc}).days; var v=prompt('Lead time for '+name+' ('+acc+'), in working days.\nUsed for every fabric from this supplier where Sage holds no lead time.', cur||''); if(v===null) return;
+  var n=parseInt(v,10); fabStock.leads=fabStock.leads||{}; if(n>0) fabStock.leads[acc]=n; else delete fabStock.leads[acc]; saveState(); fabRender(); }
 function fabTogglePaste(){ var p=document.getElementById('fabPastePanel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')) document.getElementById('fabTA').focus(); }
 // Columns by POSITION, the order 60-fabric-stock.sql emits:
 // 0 FabricCode 1 Description 2 Unit 3 SupplierAccount 4 SupplierName 5 SupplierRef
@@ -3882,7 +3890,7 @@ function fabLoadStockPaste(){
   if(!txt){ alert('Nothing pasted - click in the box then Ctrl+V.'); return; }
   var rows=fabParseStock(txt);
   if(!rows){ alert('No valid rows found.\n\nSelect columns A to N from Fabric Stock.xlsx (without the header row), Ctrl+C, then paste here.'); return; }
-  fabStock={rows:rows, pastedAt:d2s(now())};
+  fabStock={rows:rows, pastedAt:d2s(now()), leads:fabStock.leads||{}};   // the supplier lead times outlive the paste
   document.getElementById('fabTA').value=''; document.getElementById('fabPastePanel').classList.add('hidden');
   saveState(); fabRender();
   var k=fabStockCompute();
@@ -3935,7 +3943,8 @@ function fabStockHtml(q){
     +'<th style="text-align:right" title="standard metres on every live works order">Committed</th><th style="text-align:right">On order</th><th style="text-align:right">After live</th><th style="text-align:right">Min</th><th>State</th></tr></thead><tbody>'
     +list.map(function(x){ var lbl={short:'Short',low:'Below min',unknown:'Not on sheet',ok:'OK'}[x.state];
       return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
-        +'<td>'+(x.row&&x.row.supName?esc(x.row.supName)+(x.row.lead?'<div class="sm-sub">'+x.row.lead+' day lead</div>':''):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td>'+(x.row&&x.row.supName ? esc(x.row.supName)+(function(){ var ld=fabLeadFor(x.row); return '<div class="sm-sub">'+(ld.days?ld.days+' working day'+(ld.days===1?'':'s')+(ld.src==='app'?' <span title="set here, not in Sage">&#9998;</span>':''):'<span style="color:#b45309">no lead time</span>')
+              +(ed?' <a href="#" onclick="fabSetLead(\''+esc(x.row.supAcc)+'\',\''+esc(x.row.supName).replace(/'/g,"\\'")+'\');return false" title="Set the lead time for this supplier">edit</a>':'')+'</div>'; })() : '<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.inSage,1))+'</td>'
         +'<td class="fab-num">'+(x.cut?fabM(x.cut,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num" style="font-weight:700">'+(x.free==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.free,1))+'</td>'

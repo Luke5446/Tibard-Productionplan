@@ -184,6 +184,13 @@ to the minimum and Sage's reorder quantity. Fabrics that are fine are hidden
 until *Show fabrics that are fine too* is ticked. Live lines with no usage on
 file are counted and shown, not silently left out of the demand.
 
+**Lead time** is Sage's item figure where set. It is 0 on every Tiajo item
+and the supplier account has no lead-time field, so the app holds a lead
+time per supplier in working days (Tiajo 10 to start), editable on the tab
+via *edit* under the supplier name, kept across pastes. **Minimum levels**
+are 0 on every fabric in Sage today, so *below min* cannot fire until they
+are set there; *short* does not depend on them.
+
 The sheet is pasted, so it is as current as the last paste; a direct link is
 the same query run by the site server and nothing on the tab changes. The
 `60-fabric-stock.sql` header explains the first run: step 0 lists the stock
