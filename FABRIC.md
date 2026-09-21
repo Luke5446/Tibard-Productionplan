@@ -204,6 +204,56 @@ same three states. An automatic poster on a site server would read the open
 lines, post them, and stamp them exported; neither the tab nor the CSV layout
 would change.
 
+## Catching up from the cutting sheet
+
+The cutting room's own record is **Cutting Sheet 2026.xlsx**: one row per
+works order and cloth — the W/O number in column C, the Sage fabric code in
+K, the metres in L — with the rows already written off in Sage highlighted
+green. The ledger only began when this version went live, and the first
+weeks ran ahead of it, so the two had to be squared. **Cutting sheet** on
+the Fabric tab's toolbar opens a paste box: select the rows in the sheet,
+columns A to L, Ctrl+C, paste, then say what they are.
+
+- **Already written off in Sage** (the green rows). Each row is placed on
+  its completed line and the line is marked *Exported* with the file shown
+  as *Sage - cutting sheet*, so it can never go into a file from here. The
+  sheet's metres are kept as the cut figure, so the KPIs have the history.
+  A line completed before the ledger existed (no fabric on its record) gets
+  a record built from the sheet. A works order still live is flagged on its
+  line and arrives on the ledger already exported when it is booked in.
+- **Still to write off** (the rest). Each row is placed the same way, the
+  line is set to the sheet's metres and ticked; **Export ticked (CSV)**
+  then makes the file as usual. A row with no metres on the sheet (`-`,
+  `WASTE`) is matched but left open and listed, never guessed at.
+
+How a row finds its line. `W/O 1131`, `WO-1131`, `W/O/ 1131` all mean
+`WO-1131`; a manual ref finds the same characters, or the same six-figure
+sales order number with a compatible part (`S-OH115764-PT1` finds
+`S-OH115764-Pt1`; `S869335` finds `S869335`, `S869335a` and `S869335 pt1`).
+The cut date must sit within a fortnight of the record's life, so a
+three-figure typo (`W/O 121`) cannot land on last quarter's works order of
+that number. Within the works order the row goes to the line whose record
+carries that cloth (main or mesh); failing that to the line the row names
+by style, or to every line when they are all on the one cloth — and then
+the sheet's code replaces the record's, because the sheet is what left the
+shelf (`PC2015ECO` on an apron All Costings had on `PC2082ECO`). A second
+row for a line that already has its cloth is added as a second cloth (a
+mesh row for a style whose usage carries no mesh). One sheet figure over
+several lines is shared by their standard metres. A works order with lines
+on several cloths and no row that names one is listed as *could not be
+placed* for the PM to do by hand.
+
+Rows the app does not know — samples (`SR0005`), embroidery jobs (`EMB`),
+a sales order raised outside the app — are listed with the reason. On a
+*still to write off* paste, the ones with metres can be downloaded as a
+write-off file of their own (Reference2 is the sheet's W/O number); they
+are not on the ledger, the sheet is their record.
+
+`test-fabsheet.js` covers all of it. The first real run, on the published
+data of 21 Sep 2026: 616 green rows placed 496 lines (397 records built);
+149 later rows ticked 46 lines for 642 m and left 8 rows for a file of
+their own.
+
 ## Fabric stock against live works orders
 
 Fabric leaves the shelf at cutting but leaves Sage at completion, so Sage
