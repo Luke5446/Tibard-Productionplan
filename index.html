@@ -3945,14 +3945,19 @@ function fabStockCompute(){
   var out=Object.keys(codes).map(function(c){
     var r=fabStock.rows[c]||null, d=demand.by[c]||{metres:0,refs:{}}, mn=fabMinFor(c, r);
     var inSage=r?r.inStock:null, cut=cutOpen[c]||0, com=d.metres, oo=r?r.onOrder:0, min=mn.m;
-    var free=(inSage==null)?null:inSage-cut, after=(free==null)?null:free-com+oo;
-    var st = inSage==null ? 'unknown' : after<0 ? 'short' : (min>0 && after<min) ? 'low' : 'ok';
-    // suggested order: enough to be back at the minimum after the live jobs,
+    // Free Stock is what is in Sage less the live works orders and the cut
+    // lines not yet written off - what could still be cut today. What is on
+    // PO is not in the building, so the state is judged on Free Stock; the
+    // suggestion allows for the PO so nothing is ordered twice.
+    var free=(inSage==null)?null:inSage-cut-com, after=(free==null)?null:free+oo;
+    var st = inSage==null ? 'unknown' : free<0 ? 'short' : (min>0 && free<min) ? 'low' : 'ok';
+    var covered = st!=='ok' && st!=='unknown' && after>=0 && (min<=0 || after>=min);
+    // suggested order: enough to be back at the minimum once the PO lands,
     // rounded up to 10 m, never less than the supplier's usual quantity
     var gap=(after==null) ? 0 : Math.max(0, min-after, -after);
     var order=gap>0 ? Math.max(fabRound(gap,10), r&&r.reorderQty>0?r.reorderQty:0) : 0;
     return { code:c, row:r, name:r?r.desc:(FABRIC_NAMES[c]||''), supAcc:r?r.supAcc:'', supName:r?r.supName:'', inSage:inSage, cut:cut, committed:com, refs:Object.keys(d.refs).length, onOrder:oo, min:min, minSrc:mn.src, monitored:min>0,
-             free:free, after:after, state:st, order:order };
+             free:free, after:after, state:st, covered:covered, order:order };
   });
   var rank={short:0, low:1, unknown:2, ok:3};
   out.sort(function(a,b){ return rank[a.state]-rank[b.state] || (b.committed-a.committed) || a.code.localeCompare(b.code); });
@@ -3987,21 +3992,23 @@ function fabOrderTopUp(acc){ if(!IS_EDITOR) return;
 function fabOrderHtml(acc, name){
   var lines=fabOrderLines(acc), total=fabOrderTotal(acc), minOrder=FAB_SUPPLIER_MIN[acc]||0, ed=IS_EDITOR;
   var h='<div class="kpi-sec" style="padding:12px 14px 8px;border-left:4px solid #7A1F3D"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div><h3>Order for '+esc(name||acc)+'</h3>'
-    +'<div class="sub">Suggested metres bring each fabric back to its minimum after the live works orders'+(minOrder?' &middot; '+esc(name||acc)+' ship free from '+fabM(minOrder,0)+' m':'')+'</div></div>'
+    +'<div class="sub">Suggested metres bring each fabric back to its minimum after the live works orders, allowing for what is already on PO'+(minOrder?' &middot; '+esc(name||acc)+' ship free from '+fabM(minOrder,0)+' m':'')+'</div></div>'
     +(ed?'<span style="margin-left:auto;display:flex;gap:6px">'+(minOrder&&total<minOrder?'<button class="btn btn-p" style="font-size:11px;padding:5px 10px" onclick="fabOrderTopUp(\''+esc(acc)+'\')">&#8679; Top up to '+fabM(minOrder,0)+' m</button>':'')
       +'<button class="btn" style="font-size:11px;padding:5px 10px" onclick="fabOrderReset(\''+esc(acc)+'\')">&#8634; Back to suggested</button></span>':'')+'</div>';
   if(!lines.length) return h+'<div class="sm-empty" style="padding:14px">No monitored fabric from this supplier on the Sage sheet.</div></div>';
-  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr><th>Fabric</th><th style="text-align:right">In Sage</th><th style="text-align:right">On order</th><th style="text-align:right">After live</th><th style="text-align:right">Min</th><th style="text-align:right">Suggested</th><th style="text-align:right">Order m</th><th style="text-align:right">&pound;</th></tr></thead><tbody>'
+  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr><th>Fabric</th><th style="text-align:right">In Stock</th><th style="text-align:right">On PO</th><th style="text-align:right" title="metres on live works orders not yet completed">Live WO</th><th style="text-align:right" title="completed, not yet written off">Not written off</th><th style="text-align:right" title="in stock less live WO less not written off">Free Stock</th><th style="text-align:right">Min</th><th style="text-align:right" title="allows for what is on PO">Suggested</th><th style="text-align:right">Order m</th><th style="text-align:right">&pound;</th></tr></thead><tbody>'
     +lines.map(function(l){ var x=l.x, price=x.row&&x.row.price>0?x.row.price:null;
       return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
         +'<td class="fab-num">'+(x.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.inSage,1))+'</td>'
         +'<td class="fab-num">'+(x.onOrder?fabM(x.onOrder,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
-        +'<td class="fab-num" style="'+(x.after!=null&&x.after<0?'color:#8a2222;font-weight:700':'')+'">'+(x.after==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.after,1))+'</td>'
+        +'<td class="fab-num">'+(x.committed?fabM(x.committed,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num">'+(x.cut?fabM(x.cut,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num" style="'+(x.free!=null&&x.free<0?'color:#8a2222;font-weight:700':'')+'">'+(x.free==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.free,1))+'</td>'
         +'<td class="fab-num">'+(x.min?fabM(x.min,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.order?fabM(x.order,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(ed?'<input type="number" step="10" min="0" value="'+(l.qty||'')+'" placeholder="0" onchange="fabSetOrderQty(\''+esc(acc)+'\',\''+esc(x.code)+'\',this.value)" style="width:78px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px'+(l.typed?';font-weight:700;color:#7A1F3D':'')+'">':fabM(l.qty,0))+'</td>'
         +'<td class="fab-num">'+(price&&l.qty?fabGBP(price*l.qty,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td></tr>'; }).join('')
-    +'<tr><td style="font-weight:700">Total</td><td></td><td></td><td></td><td></td><td class="fab-num">'+fabM(lines.reduce(function(s,l){return s+l.x.order;},0),0)+'</td>'
+    +'<tr><td style="font-weight:700">Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="fab-num">'+fabM(lines.reduce(function(s,l){return s+l.x.order;},0),0)+'</td>'
     +'<td class="fab-num" style="font-weight:700;'+(minOrder&&total<minOrder?'color:#b45309':'')+'">'+fabM(total,0)+(minOrder?' <span style="font-weight:400;color:#6b7280">/ '+fabM(minOrder,0)+'</span>':'')+'</td>'
     +'<td class="fab-num" style="font-weight:700">'+fabGBP(lines.reduce(function(s,l){ var p=l.x.row&&l.x.row.price>0?l.x.row.price:0; return s+p*(l.qty||0); },0),0)+'</td></tr>'
     +'</tbody></table></div>'
@@ -4016,7 +4023,7 @@ function fabStockHtml(q){
       +(k.short.length?' &middot; '+k.short.length+' short':'')+(k.low.length?' &middot; '+k.low.length+' below min':'')+'</span>',
       ed?'<button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="fabTogglePaste()">&#9998; Paste fabric stock</button>':'');
   if(!fabOpen.sec.stock) return h;
-  h+='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div class="sub">free to cut = in Sage less cut-not-written-off &middot; after live = free less committed, plus on order'
+  h+='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div class="sub">Free Stock = in stock less live works orders less completed-not-written-off &middot; what is on PO is not counted as stock, but the suggested order allows for it'
     +(k.noUsage?' &middot; <span style="color:#b45309">'+k.noUsage+' live line(s) with no usage on file are not in the demand</span>':'')+'</div>';
   // supplier chips, from the monitored fabrics
   var sups={}; k.monitored.forEach(function(x){ if(x.supAcc) sups[x.supAcc]=x.supName||x.supAcc; });
@@ -4034,20 +4041,20 @@ function fabStockHtml(q){
   if(!k.list.length) return h+'<div class="sm-empty">Nothing to show - paste the Sage sheet, or raise a works order.</div></div>';
   h+='<div style="font-size:11px;color:#4b5563;margin:6px 0"><span class="fab-st short">'+k.short.length+' short</span> <span class="fab-st low">'+k.low.length+' below min</span>'+(k.unknown.length?' <span class="fab-st nofab">'+k.unknown.length+' not on the Sage sheet</span>':'')+' <span style="color:#9ca3af">of the '+k.monitored.length+' monitored</span></div>';
   if(!list.length) return h+'<div class="sm-empty" style="padding:14px">'+(q?'Nothing matches.':'Nothing short or below minimum.')+'</div></div>';
-  h+='<div class="sm-tblwrap"><table class="fab-stk"><thead><tr><th>Fabric</th><th>Supplier</th><th style="text-align:right">In Sage</th><th style="text-align:right" title="open lines on the ledger: cut, not yet written off">Cut, not written off</th><th style="text-align:right">Free to cut</th>'
-    +'<th style="text-align:right" title="standard metres on every live works order">Committed</th><th style="text-align:right">On order</th><th style="text-align:right">After live</th><th style="text-align:right">Min</th><th>State</th></tr></thead><tbody>'
+  h+='<div class="sm-tblwrap"><table class="fab-stk"><thead><tr><th>Fabric</th><th>Supplier</th><th style="text-align:right">In Stock</th>'
+    +'<th style="text-align:right" title="metres on live works orders not yet completed">Live WO</th><th style="text-align:right" title="completed, not yet written off">Not written off</th>'
+    +'<th style="text-align:right" title="in stock less live WO less not written off">Free Stock</th><th style="text-align:right">On PO</th><th style="text-align:right">Min</th><th>State</th></tr></thead><tbody>'
     +list.map(function(x){ var lbl={short:'Short',low:'Below min',unknown:'Not on sheet',ok:'OK'}[x.state];
       return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
         +'<td>'+(x.row&&x.row.supName ? esc(x.row.supName)+(function(){ var ld=fabLeadFor(x.row); return '<div class="sm-sub">'+(ld.days?ld.days+' working day'+(ld.days===1?'':'s')+(ld.src==='app'?' <span title="set here, not in Sage">&#9998;</span>':''):'<span style="color:#b45309">no lead time</span>')
               +(ed?' <a href="#" onclick="fabSetLead(\''+esc(x.row.supAcc)+'\',\''+esc(x.row.supName).replace(/'/g,"\\'")+'\');return false" title="Set the lead time for this supplier">edit</a>':'')+'</div>'; })() : '<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.inSage,1))+'</td>'
-        +'<td class="fab-num">'+(x.cut?fabM(x.cut,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
-        +'<td class="fab-num" style="font-weight:700">'+(x.free==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.free,1))+'</td>'
         +'<td class="fab-num">'+(x.committed?fabM(x.committed,1)+'<div class="sm-sub">'+x.refs+' WO'+(x.refs===1?'':'s')+'</div>':'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num">'+(x.cut?fabM(x.cut,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num" style="font-weight:700;'+(x.free!=null&&x.free<0?'color:#8a2222':'')+'">'+(x.free==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.free,1))+'</td>'
         +'<td class="fab-num">'+(x.onOrder?fabM(x.onOrder,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
-        +'<td class="fab-num" style="font-weight:700;'+(x.after!=null&&x.after<0?'color:#8a2222':'')+'">'+(x.after==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.after,1))+'</td>'
         +'<td class="fab-num">'+(x.min?fabM(x.min,0)+(x.minSrc!=='Sage'?' <span title="'+(x.minSrc==='app'?'set here':'from the office sheet')+'">&#9998;</span>':''):'<span style="color:#9ca3af">&mdash;</span>')+(ed?'<div class="sm-sub"><a href="#" onclick="fabSetMin(\''+esc(x.code)+'\');return false">edit</a></div>':'')+'</td>'
-        +'<td><span class="fab-st '+x.state+'">'+lbl+'</span>'+(x.order>0?'<div class="sm-sub">order '+fabM(x.order,0)+' m</div>':'')+'</td></tr>'; }).join('')
+        +'<td><span class="fab-st '+x.state+'">'+lbl+'</span>'+(x.covered?'<div class="sm-sub">on PO covers it</div>':'')+(x.order>0?'<div class="sm-sub">order '+fabM(x.order,0)+' m</div>':'')+'</td></tr>'; }).join('')
     +'</tbody></table></div></div>';
   return h;
 }

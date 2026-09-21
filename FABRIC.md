@@ -171,16 +171,17 @@ what the app already knows:
 
 | Column | Source |
 |---|---|
-| In Sage | `sage/60-fabric-stock.sql`, pasted (columns A to N) — confirmed stock at HOME, on order on live POs, minimum and reorder levels, preferred supplier and lead time, last price |
-| Cut, not written off | the ledger's open lines, by fabric code |
-| Free to cut | in Sage less cut-not-written-off |
-| Committed | the metres on every live works order — actual where typed, standard otherwise, mesh at standard |
-| After live | free less committed, plus on order |
+| In Stock | `sage/60-fabric-stock.sql`, pasted (columns A to N) — confirmed stock at HOME, on PO, minimum and reorder levels, preferred supplier and lead time, last price |
+| Live WO | the metres on every live works order not yet completed — actual where typed, standard otherwise, mesh at standard |
+| Not written off | the ledger's open lines, by fabric code — completed, still in Sage |
+| Free Stock | in stock less live WO less not written off: what could still be cut today |
+| On PO | Sage's on-order figure; not stock, but the suggested order allows for it |
 
-**Short** is after-live below nil, **below min** is after-live under the
-Sage minimum level, **not on sheet** is a fabric the works orders want that
-the Sage sheet did not return. The order suggestion is the larger of the gap
-to the minimum and Sage's reorder quantity. Fabrics that are fine are hidden
+**Short** is Free Stock below nil, **below min** is Free Stock under the
+minimum level, **not on sheet** is a fabric the works orders want that the
+Sage sheet did not return; "on PO covers it" is added when the PO would put
+it right. The order suggestion brings the fabric back to its minimum once
+the PO lands, rounded up to 10 m, never below Sage's usual order quantity. Fabrics that are fine are hidden
 until *Show fabrics that are fine too* is ticked. Live lines with no usage on
 file are counted and shown, not silently left out of the demand.
 
