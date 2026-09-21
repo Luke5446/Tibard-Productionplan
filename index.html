@@ -310,6 +310,9 @@ body.planner-mode .planner-wrap{display:block}
 .fab-st.low{background:#fef3c7;color:#92400e}
 .fab-st.unknown{background:#e5e7eb;color:#4b5563}
 .fab-st.ok{background:#d1fae5;color:#065f46}
+.fab-pick-row{display:flex;gap:10px;align-items:center;padding:7px 10px;border-bottom:1px solid #f3f4f6;cursor:pointer}
+.fab-pick-row:hover{background:#fdf5f8}
+.fab-pick-row.cur{background:#fff7ed}
 .fab-chip{background:#fff;border:1px solid #c8d0df;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:600;color:#374151;cursor:pointer}
 .fab-chip.on{background:#7A1F3D;border-color:#7A1F3D;color:#fff}
 .fab-chip .cnt{display:inline-block;min-width:16px;padding:0 4px;margin-left:4px;border-radius:8px;background:#fee2e2;color:#991b1b;font-size:10px;line-height:15px;text-align:center}
@@ -693,6 +696,17 @@ tr.fab-done td{color:#6b7280}
   </div>
 </div>
 
+<div class="modal-bg" id="fabPick">
+  <div class="modal-box sm" style="max-height:80vh">
+    <div class="mhdr"><h3>&#129525; Choose a fabric</h3><button class="mclose" onclick="fabPickClose()">&times;</button></div>
+    <div class="mbody" style="padding:12px 14px;overflow:hidden;display:flex;flex-direction:column;gap:8px">
+      <div id="fabPickWhat" style="font-size:12px;color:#4b5563"></div>
+      <input id="fabPickQ" placeholder="Search the Sage fabric list by code, name or supplier..." oninput="fabPickRender()" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+      <div id="fabPickList" style="overflow:auto;max-height:50vh;border:1px solid #e5e7eb;border-radius:6px"></div>
+      <div style="display:flex;gap:6px;align-items:center"><button class="btn" onclick="fabPickChoose('')">&#8634; Back to the usage table</button><span id="fabPickNote" style="font-size:11px;color:#6b7280;margin-left:auto"></span></div>
+    </div>
+  </div>
+</div>
 <div class="modal-bg" id="trimCostModal">
   <div class="modal-box">
     <div class="mhdr"><h3>&#128183; Trim costs &amp; quote helper</h3><button class="mclose" onclick="closeTrimCosts()">&times;</button></div>
@@ -3324,22 +3338,45 @@ function fabricNameFor(code){ code=(code||'').toUpperCase(); return FABRIC_NAMES
 // table - the customer asked for another colour, or the table is wrong. The
 // metres per garment stay; only the cloth written off changes. On a live
 // line it is it.fabricCode; on a booked-in line the record itself is edited.
-function fabricPrompt(current, what){
-  var v=prompt('Fabric code for '+what+' - the Sage stock code the cloth is written off against.\nLeave blank to go back to the usage table.', current||'');
-  if(v===null) return null; v=v.trim().toUpperCase();
-  if(v && !fabricNameFor(v) && !confirm(v+' is not a fabric the app knows (not in the usage table or on the Sage stock sheet).\n\nUse it anyway?')) return null;
-  return v;
+// The Sage fabric list: the pasted stock sheet, and until one is pasted the
+// codes the usage table already carries (they are Sage codes too). A fabric
+// is only ever chosen from this list - no typing a code that Sage would
+// reject when the write-off file lands.
+function fabricList(){
+  var out={}, rows=(typeof fabStock!=='undefined' && fabStock.rows) ? fabStock.rows : {};
+  Object.keys(rows).forEach(function(c){ out[c]={code:c, name:rows[c].desc||'', sup:rows[c].supName||'', stock:rows[c].inStock}; });
+  Object.keys(FABRIC_NAMES).forEach(function(c){ if(!out[c] && FABRIC_NAMES[c]) out[c]={code:c, name:FABRIC_NAMES[c], sup:'', stock:null}; });
+  return out;
 }
+var fabPickState=null;   // {current, cb}
+function fabricPick(current, what, cb){
+  fabPickState={current:current||'', cb:cb};
+  document.getElementById('fabPickWhat').innerHTML='Fabric for <b>'+esc(what)+'</b>'+(current?' &middot; now <span style="font-family:monospace">'+esc(current)+'</span>':'')+'. Pick from the Sage list; the metres per garment stay as they are.';
+  var q=document.getElementById('fabPickQ'); q.value=''; document.getElementById('fabPick').classList.add('open'); fabPickRender(); q.focus();
+}
+function fabPickRender(){
+  var q=document.getElementById('fabPickQ').value, list=fabricList(), hits=[];
+  Object.keys(list).sort().forEach(function(c){ var f=list[c]; if(smMatch(c+' '+f.name+' '+f.sup, q)) hits.push(f); });
+  var top=hits.slice(0,80);
+  document.getElementById('fabPickNote').textContent=hits.length+' fabric'+(hits.length===1?'':'s')+(hits.length>top.length?', first '+top.length+' shown - type more':'')+(Object.keys(fabStock.rows||{}).length?'':' - paste the Sage stock sheet on the Fabric tab for the full list');
+  document.getElementById('fabPickList').innerHTML = top.length ? top.map(function(f){
+    return '<div class="fab-pick-row'+(f.code===fabPickState.current?' cur':'')+'" onclick="fabPickChoose(\''+esc(f.code)+'\')"><span style="font-family:monospace;font-size:11.5px;font-weight:700;min-width:130px">'+esc(f.code)+'</span>'
+      +'<span style="flex:1;font-size:12px">'+esc(f.name)+(f.sup?'<div class="sm-sub">'+esc(f.sup)+'</div>':'')+'</span>'
+      +(f.stock!=null?'<span class="fab-num" style="font-size:11px;color:#4b5563">'+fabM(f.stock,1)+' m</span>':'')+'</div>'; }).join('')
+    : '<div class="sm-empty" style="padding:14px">Nothing on the Sage list matches.</div>';
+}
+function fabPickClose(){ document.getElementById('fabPick').classList.remove('open'); fabPickState=null; }
+function fabPickChoose(code){ var st=fabPickState; if(!st) return; code=(code||'').toUpperCase(); if(code && !fabricList()[code]) return; fabPickClose(); st.cb(code); }
 function setFabricCode(i, code){ if(!IS_EDITOR) return; var wo=WOs[i]; if(!wo) return; var it=wo.items.find(function(x){ return x.code===code; }); if(!it) return;
-  var v=fabricPrompt(it.fabricCode||'', code+' on '+wo.ref); if(v===null) return;
-  if(v) it.fabricCode=v; else delete it.fabricCode;
-  saveState(); refreshWOModal(); renderWOCards(); }
+  fabricPick(it.fabricCode||'', code+' on '+wo.ref, function(v){
+    if(v) it.fabricCode=v; else delete it.fabricCode;
+    saveState(); refreshWOModal(); renderWOCards(); }); }
 function fabSetFabric(idx){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c || fabState(c)!=='open') return;
-  var v=fabricPrompt(c.fabric&&c.fabric.code||'', c.code+' on '+c.ref); if(v===null) return;
-  if(!v){ var u=fabricUsageFor(c.code); if(!u){ alert('No usage on file for '+c.code+' - type a fabric code instead.'); return; } v=u.code; }
-  if(!c.fabric) c.fabric={code:'', name:'', perGarment:null, std:null, actual:null, source:''};
-  c.fabric.code=v; c.fabric.name=fabricNameFor(v); c.fabric.price=fabPriceFor(v); c.fabric.edited=true; c.fabric.source=(c.fabric.source||'').replace(/ · edited$/,'')+' · edited';
-  saveState(); fabRender(); }
+  fabricPick(c.fabric&&c.fabric.code||'', c.code+' on '+c.ref, function(v){
+    if(!v){ var u=fabricUsageFor(c.code); if(!u){ alert('No usage on file for '+c.code+' - choose a fabric from the list instead.'); return; } v=u.code; }
+    if(!c.fabric) c.fabric={code:'', name:'', perGarment:null, std:null, actual:null, source:''};
+    c.fabric.code=v; c.fabric.name=fabricNameFor(v); c.fabric.price=fabPriceFor(v); c.fabric.edited=true; c.fabric.source=(c.fabric.source||'').replace(/ · edited$/,'')+' · edited';
+    saveState(); fabRender(); }); }
 function fabricRecordFor(it){
   var u=fabricUsageFor(it.code), actual=(it.metresActual!=null) ? it.metresActual : null;
   if(!u && actual==null && !it.fabricCode) return null;

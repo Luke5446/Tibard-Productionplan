@@ -118,8 +118,11 @@ Metres cut figure puts a live line on a different Sage stock code; the
 metres per garment stay, the code, name and price change, and the record
 carries the change into the ledger with a pencil mark. On the Fabric tab
 *edit fabric* on an open ledger line does the same to a booked-in line; an
-exported line cannot be changed. A code the app does not know is allowed
-after a confirm. Blank puts the line back on the usage table.
+exported line cannot be changed. The fabric is chosen from a picker over
+the Sage fabric list - the pasted stock sheet, with the usage table's codes
+until one is pasted - searchable by code, name or supplier, and nothing off
+that list can be chosen. *Back to the usage table* puts the line back on
+the table's fabric.
 
 ## Corrections to All Costings
 

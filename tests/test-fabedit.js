@@ -8,14 +8,16 @@ const { chromium } = require('playwright');
  await p.evaluate(()=>{ document.getElementById('woRef').value='S-E1'; document.getElementById('woStart').value='2026-09-21'; document.getElementById('woDue').value='2026-09-30'; document.getElementById('woTA').value='OHAPP0534GD\t10'; saveWO(); });
  // live: the apron is on CO5014DEN by the usage table; the PM puts it on burgundy X133
  const live=await p.evaluate(()=>{ const i=WOs.findIndex(w=>w.ref==='S-E1'); const before=fabricRecordFor(WOs[i].items[0]).code;
-   window.prompt=()=>'pc2x13306'; setFabricCode(i,'OHAPP0534GD'); const r=fabricRecordFor(WOs[i].items[0]); openWOModal(i);
+   setFabricCode(i,'OHAPP0534GD'); const open=document.getElementById('fabPick').classList.contains('open');
+   document.getElementById('fabPickQ').value='burgundy x133'; fabPickRender(); const hits=[...document.querySelectorAll('#fabPickList .fab-pick-row')].map(r=>r.textContent.slice(0,9));
+   document.querySelector('#fabPickList .fab-pick-row').click(); const r=fabricRecordFor(WOs[i].items[0]); openWOModal(i);
+   window.__pick={open, hits, closed:!document.getElementById('fabPick').classList.contains('open')};
    const cell=document.querySelector('#woModalBody tr').children[5].textContent.replace(/\s+/g,' ').trim();
-   return {before, code:r.code, name:r.name, std:r.std, source:r.source, cell}; });
+   return {before, code:r.code, name:r.name, std:r.std, source:r.source, cell, pick:window.__pick}; });
  console.log('live    ->', JSON.stringify(live));
- // an unknown code is refused when the confirm is declined, allowed when accepted; blank goes back to the table
- const unk=await p.evaluate(()=>{ const i=WOs.findIndex(w=>w.ref==='S-E1'); window.prompt=()=>'ZZNOTACLOTH'; window.confirm=()=>false; setFabricCode(i,'OHAPP0534GD'); const a=WOs[i].items[0].fabricCode;
-   window.confirm=()=>true; setFabricCode(i,'OHAPP0534GD'); const b=WOs[i].items[0].fabricCode; window.prompt=()=>''; setFabricCode(i,'OHAPP0534GD'); const c=WOs[i].items[0].fabricCode;
-   window.prompt=()=>'PC2X13306'; setFabricCode(i,'OHAPP0534GD'); return [a,b,c,WOs[i].items[0].fabricCode].join('|'); });
+ // a code off the Sage list cannot be chosen; the back button returns to the usage table
+ const unk=await p.evaluate(()=>{ const i=WOs.findIndex(w=>w.ref==='S-E1'); setFabricCode(i,'OHAPP0534GD'); fabPickChoose('ZZNOTACLOTH'); const a=WOs[i].items[0].fabricCode; const stillOpen=document.getElementById('fabPick').classList.contains('open');
+   fabPickChoose(''); const c=WOs[i].items[0].fabricCode; setFabricCode(i,'OHAPP0534GD'); fabPickChoose('PC2X13306'); return [a,stillOpen,c,WOs[i].items[0].fabricCode].join('|'); });
  console.log('unknown ->', unk);
  // complete: the record carries the hand-set cloth; the ledger shows it with a pencil; undo puts it back on the item
  const done=await p.evaluate(()=>{ completeWholeWO(WOs.findIndex(w=>w.ref==='S-E1')); const c=completedWOs.find(x=>x.ref==='S-E1'); smShowTab('fabric'); fabOpen.mon['2026-09']=true; fabOpen.day['2026-09-21']=true; fabRender();
@@ -23,19 +25,19 @@ const { chromium } = require('playwright');
    return {code:c.fabric.code, edited:c.fabric.edited, std:c.fabric.std, cell}; });
  console.log('booked  ->', JSON.stringify(done));
  // edit on the booked-in line, then the write-off uses it
- const edit=await p.evaluate(async()=>{ const idx=completedWOs.findIndex(x=>x.ref==='S-E1'); window.prompt=()=>'CO5003DEN'; fabSetFabric(idx); const c=completedWOs[idx];
+ const edit=await p.evaluate(async()=>{ const idx=completedWOs.findIndex(x=>x.ref==='S-E1'); fabSetFabric(idx); fabPickChoose('CO5003DEN'); const c=completedWOs[idx];
    let blob=null; URL.createObjectURL=b=>{blob=b; return 'blob:x';}; HTMLAnchorElement.prototype.click=function(){}; fabTickAll(true); exportFabricWriteOff(); const csv=(await blob.text()).split('\r\n').filter(Boolean);
-   window.prompt=()=>'ZZZ'; fabSetFabric(idx);   // exported now: no further edit
-   return {code:c.fabric.code, name:c.fabric.name, line:csv[1], still:completedWOs[idx].fabric.code}; });
+   fabSetFabric(idx); const locked=!document.getElementById('fabPick').classList.contains('open');   // exported now: no picker
+   return {code:c.fabric.code, name:c.fabric.name, line:csv[1], still:completedWOs[idx].fabric.code, locked}; });
  console.log('edit    ->', JSON.stringify(edit));
  const undo=await p.evaluate(()=>{ const idx=completedWOs.findIndex(x=>x.ref==='S-E1'); undoCompleted(idx); const w=WOs.find(w=>w.ref==='S-E1'); return w.items[0].fabricCode; });
  console.log('undo    ->', undo);
  const order=await p.evaluate(()=>[...document.querySelectorAll('#fabBody .sm-bh .ttl')].map(e=>e.textContent.trim().slice(0,14)).join('|'));
  console.log('banners ->', order);
- const pass = live.before==='CO5014DEN' && live.code==='PC2X13306' && /BURGUNDY/.test(live.name) && live.std===6 && /edited$/.test(live.source) && /PC2X13306/.test(live.cell) && /fabric/.test(live.cell)
-   && unk==='PC2X13306|ZZNOTACLOTH||PC2X13306'
+ const pass = live.before==='CO5014DEN' && live.code==='PC2X13306' && /BURGUNDY/.test(live.name) && live.std===6 && /edited$/.test(live.source) && /PC2X13306/.test(live.cell) && /fabric/.test(live.cell) && live.pick.open && live.pick.hits.join()==='PC2X13306' && live.pick.closed
+   && unk==='PC2X13306|true||PC2X13306'
    && done.code==='PC2X13306' && done.edited===true && done.std===6 && /PC2X13306/.test(done.cell) && /edit fabric/.test(done.cell)
-   && edit.code==='CO5003DEN' && /MURRAY BLACK DENIM/.test(edit.name) && edit.line==='CO5003DEN,HOME,,6,Cutting,S-E1,21/09/2026,Manual Reduction' && edit.still==='CO5003DEN'
+   && edit.code==='CO5003DEN' && /MURRAY BLACK DENIM/.test(edit.name) && edit.line==='CO5003DEN,HOME,,6,Cutting,S-E1,21/09/2026,Manual Reduction' && edit.still==='CO5003DEN' && edit.locked
    && undo==='CO5003DEN' && /Booked fab.*\|.*Fabric sto.*\|.*Fabric usag/.test(order);
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();
