@@ -162,6 +162,35 @@ same three states. An automatic poster on a site server would read the open
 lines, post them, and stamp them exported; neither the tab nor the CSV layout
 would change.
 
+## Fabric stock against live works orders
+
+Fabric leaves the shelf at cutting but leaves Sage at completion, so Sage
+overstates what can still be cut from, and a shortage only showed once the
+goods were booked in. The Fabric tab now sets the Sage stock sheet against
+what the app already knows:
+
+| Column | Source |
+|---|---|
+| In Sage | `sage/60-fabric-stock.sql`, pasted (columns A to N) — confirmed stock at HOME, on order on live POs, minimum and reorder levels, preferred supplier and lead time, last price |
+| Cut, not written off | the ledger's open lines, by fabric code |
+| Free to cut | in Sage less cut-not-written-off |
+| Committed | the metres on every live works order — actual where typed, standard otherwise, mesh at standard |
+| After live | free less committed, plus on order |
+
+**Short** is after-live below nil, **below min** is after-live under the
+Sage minimum level, **not on sheet** is a fabric the works orders want that
+the Sage sheet did not return. The order suggestion is the larger of the gap
+to the minimum and Sage's reorder quantity. Fabrics that are fine are hidden
+until *Show fabrics that are fine too* is ticked. Live lines with no usage on
+file are counted and shown, not silently left out of the demand.
+
+The sheet is pasted, so it is as current as the last paste; a direct link is
+the same query run by the site server and nothing on the tab changes. The
+`60-fabric-stock.sql` header explains the first run: step 0 lists the stock
+tables' columns and the product groups holding the known fabric codes, so
+`fabric_groups` can be filled and any column name that differs on this Sage
+version corrected.
+
 ## First run
 
 Complete a works order on this version, tick it on the Fabric tab, press

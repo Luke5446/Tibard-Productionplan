@@ -279,6 +279,10 @@ body.planner-mode .planner-wrap{display:block}
 .sm-tbl td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top}
 .sm-tbl tr:last-child td{border-bottom:0}
 .sm-tbl tr.pipe{background:#f0f9ff}
+.fab-stk{width:100%;border-collapse:collapse;font-size:12.5px}
+.fab-stk th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:#6b7280;padding:8px 10px;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+.fab-stk td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+.fab-stk tr:last-child td{border-bottom:0}
 .sm-ref-s{font-weight:700;color:#7A1F3D;font-size:12px;white-space:nowrap}
 .sm-ref-s.oh{color:#1f6b4a}
 .sm-sub{font-size:10.5px;color:#6b7280;margin-top:1px}
@@ -300,6 +304,10 @@ body.planner-mode .planner-wrap{display:block}
 .fab-st.exported{background:#d1fae5;color:#065f46}
 .fab-st.dismissed{background:#e5e7eb;color:#4b5563}
 .fab-st.nofab{background:#fee2e2;color:#991b1b}
+.fab-st.short{background:#fee2e2;color:#991b1b}
+.fab-st.low{background:#fef3c7;color:#92400e}
+.fab-st.unknown{background:#e5e7eb;color:#4b5563}
+.fab-st.ok{background:#d1fae5;color:#065f46}
 .fab-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 tr.fab-done td{color:#6b7280}
 
@@ -578,6 +586,16 @@ tr.fab-done td{color:#6b7280}
   </div>
 
   <div id="fabView" class="hidden">
+    <div id="fabPastePanel" class="pbox hidden">
+      <h3>&#129525; Paste fabric stock from Sage</h3>
+      <p>In <strong>Fabric Stock.xlsx</strong>: Refresh All &rarr; select columns <strong>A to N</strong>, all rows, <strong>without the header</strong> &rarr; Ctrl+C &rarr; click below &rarr; Ctrl+V.<br>
+      The sheet is one row per fabric: in stock at HOME, on order, the minimum level and the supplier. The app sets that against what the live works orders need.</p>
+      <textarea id="fabTA" placeholder="Click here then Ctrl+V..."></textarea>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-p" onclick="fabLoadStockPaste()">&#10003; Load</button>
+        <button class="btn" onclick="fabTogglePaste()">Cancel</button>
+      </div>
+    </div>
     <div id="fabBody"></div>
     <div id="fabTip" class="kpi-tip" hidden></div>
   </div>
@@ -2159,7 +2177,7 @@ function fetchShared(cb){
       smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{};
       smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{};
       styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
-      bufSnaps=s.bufSnaps||[];
+      bufSnaps=s.bufSnaps||[]; fabStock=s.fabStock||{rows:{},pastedAt:''};
       var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
       var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+sa;
       var wu=document.getElementById('whUpdated'); if(wu) wu.textContent='Data published: '+sa;
@@ -2217,7 +2235,7 @@ function publishData(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
   if(!rows.length){ alert('Load buffer data first.'); return; }
   var state={rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,
     savedAt:new Date().toISOString()};
   var blob=new Blob([JSON.stringify(state)],{type:'application/json'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
@@ -2424,7 +2442,7 @@ function dbSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveState,1200)
 function saveState(){
   try{
     localStorage.setItem('tibard_production',JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,
       savedAt:new Date().toISOString()}));
     var ind=document.getElementById('saveInd'); if(ind){ind.innerHTML='✓ Saved';setTimeout(function(){ind.textContent='';},2000);}
   }catch(e){console.log('Save failed:',e);}
@@ -2437,7 +2455,7 @@ function loadState(){
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
-    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; bufSnaps=s.bufSnaps||[]; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
+    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; bufSnaps=s.bufSnaps||[]; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{}; fabStock=s.fabStock||{rows:{},pastedAt:''};
     // Anything left in the old review list becomes a queue item needing a decision.
     (s.smReview||[]).forEach(function(o){
       if(!smSeen[o.key] && !smPending.some(function(p){return p.key===o.key;})) smPending.push(o);
@@ -2455,7 +2473,7 @@ function clearAll(){ if(!IS_EDITOR) return;
   try{
     localStorage.removeItem('tibard_production');
     rows=[];WOs=[];completedWOs=[];
-    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};
+    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};fabStock={rows:{},pastedAt:''};
     document.getElementById('dataWrap').classList.add('hidden');
     document.getElementById('uzone').classList.remove('hidden');
     document.getElementById('lastUpdated').textContent='';
@@ -3801,13 +3819,111 @@ function kpiWireTips(root, tipEl){
 // three states are meant to carry trims later, and to be what an automatic
 // poster reads once there is a server: it would take the OPEN lines, post
 // them, and stamp them EXPORTED - the tab and the CSV would not change.
-var fabOpen={mon:{}, day:{}, hideDone:false};   // one person's view, local key only
-try{ var _fo=JSON.parse(localStorage.getItem('tibard_fab_sections')||'null'); if(_fo){ fabOpen.mon=_fo.mon||{}; fabOpen.day=_fo.day||{}; fabOpen.hideDone=!!_fo.hideDone; } }catch(e){}
+var fabOpen={mon:{}, day:{}, hideDone:false, showAll:false};   // one person's view, local key only
+try{ var _fo=JSON.parse(localStorage.getItem('tibard_fab_sections')||'null'); if(_fo){ fabOpen.mon=_fo.mon||{}; fabOpen.day=_fo.day||{}; fabOpen.hideDone=!!_fo.hideDone; fabOpen.showAll=!!_fo.showAll; } }catch(e){}
 function fabSavePrefs(){ try{ localStorage.setItem('tibard_fab_sections',JSON.stringify(fabOpen)); }catch(e){} }
 function fabToggle(kind,k){ fabOpen[kind][k]=!fabOpen[kind][k]; fabSavePrefs(); fabRender(); }
 function fabToggleDone(){ fabOpen.hideDone=!fabOpen.hideDone; fabSavePrefs(); fabRender(); }
 
 var fabTicked=[];   // the completed records ticked for export: transient, never saved
+
+// ── Fabric stock: what Sage holds, against what the works orders need ─────
+// Fabric leaves the shelf at cutting but leaves Sage at completion, so Sage's
+// figure overstates what can still be cut from. The Sage sheet (60-fabric-
+// stock.sql) is pasted here and set against two things the app already
+// knows: the ledger's open lines (cut, not yet written off - still counted by
+// Sage) and the standard metres on every live works order (committed). Free
+// to cut = in Sage less cut-not-written-off. After live orders = that less
+// committed, plus on order. Short is when that goes below nil; low when it
+// sits under the minimum level set in Sage. The shortfall appears the day the
+// job is raised, not the day the goods are booked in.
+var fabStock={rows:{}, pastedAt:''};
+function fabTogglePaste(){ var p=document.getElementById('fabPastePanel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')) document.getElementById('fabTA').focus(); }
+// Columns by POSITION, the order 60-fabric-stock.sql emits:
+// 0 FabricCode 1 Description 2 Unit 3 SupplierAccount 4 SupplierName 5 SupplierRef
+// 6 InStock 7 Allocated 8 OnOrder 9 MinLevel 10 ReorderLevel 11 ReorderQty 12 CostPerMetre 13 LeadDays
+function fabParseStock(txt){
+  var out={}, n=0, lines=txt.split('\n');
+  for(var i=0;i<lines.length;i++){
+    var c=lines[i].split('\t'); if(c.length<9) continue;
+    var code=(c[0]||'').trim().toUpperCase(); if(!code || code==='FABRICCODE') continue;
+    out[code]={ code:code, desc:(c[1]||'').trim(), unit:(c[2]||'').trim(), supAcc:(c[3]||'').trim(), supName:(c[4]||'').trim(), supRef:(c[5]||'').trim(),
+      inStock:pn(c[6]), allocated:pn(c[7]), onOrder:pn(c[8]), min:pn(c[9]), reorder:pn(c[10]), reorderQty:pn(c[11]), price:pn(c[12]), lead:pn(c[13]) };
+    n++;
+  }
+  return n ? out : null;
+}
+function fabLoadStockPaste(){
+  if(!IS_EDITOR){ alert('View-only mode.'); return; }
+  var txt=(document.getElementById('fabTA').value||'').trim();
+  if(!txt){ alert('Nothing pasted - click in the box then Ctrl+V.'); return; }
+  var rows=fabParseStock(txt);
+  if(!rows){ alert('No valid rows found.\n\nSelect columns A to N from Fabric Stock.xlsx (without the header row), Ctrl+C, then paste here.'); return; }
+  fabStock={rows:rows, pastedAt:d2s(now())};
+  document.getElementById('fabTA').value=''; document.getElementById('fabPastePanel').classList.add('hidden');
+  saveState(); fabRender();
+  var k=fabStockCompute();
+  alert(Object.keys(rows).length+' fabric(s) loaded from Sage.\n\n'+(k.short.length?k.short.length+' short against live works orders':'Nothing short against live works orders')+(k.low.length?', '+k.low.length+' under the minimum level':'')+'.');
+}
+// Metres of each fabric the LIVE works orders will take: the cutting room's
+// figure where typed, the standard otherwise, secondary fabrics at standard.
+function fabLiveDemand(){
+  var by={}, noUsage=0;
+  function add(code,m,ref){ code=(code||'').toUpperCase(); if(!code||!(m>0)) return; var d=by[code]||(by[code]={metres:0, refs:{}}); d.metres+=m; d.refs[ref]=1; }
+  WOs.forEach(function(wo){ wo.items.forEach(function(it){
+    var f=fabricRecordFor(it); if(!f||!f.code){ if(f===null) noUsage++; return; }
+    add(f.code, (f.actual!=null)?f.actual:f.std, wo.ref);
+    (f.extras||[]).forEach(function(x){ add(x.code, x.std, wo.ref); });
+  }); });
+  return {by:by, noUsage:noUsage};
+}
+function fabStockCompute(){
+  var demand=fabLiveDemand(), cutOpen={};
+  fabLines().forEach(function(l){ if(l.state!=='open') return;
+    if(l.fabCode && l.main>0) cutOpen[l.fabCode]=(cutOpen[l.fabCode]||0)+l.main;
+    l.extras.forEach(function(x){ if(x.code && x.metres>0) cutOpen[x.code]=(cutOpen[x.code]||0)+x.metres; }); });
+  var codes={}; Object.keys(fabStock.rows).forEach(function(c){codes[c]=1;}); Object.keys(demand.by).forEach(function(c){codes[c]=1;}); Object.keys(cutOpen).forEach(function(c){codes[c]=1;});
+  var out=Object.keys(codes).map(function(c){
+    var r=fabStock.rows[c]||null, d=demand.by[c]||{metres:0,refs:{}};
+    var inSage=r?r.inStock:null, cut=cutOpen[c]||0, com=d.metres, oo=r?r.onOrder:0, min=r?r.min:0;
+    var free=(inSage==null)?null:inSage-cut, after=(free==null)?null:free-com+oo;
+    var st = inSage==null ? 'unknown' : after<0 ? 'short' : (min>0 && after<min) ? 'low' : 'ok';
+    return { code:c, row:r, name:r?r.desc:(FABRIC_NAMES[c]||''), inSage:inSage, cut:cut, committed:com, refs:Object.keys(d.refs).length, onOrder:oo, min:min,
+             free:free, after:after, state:st, order:(after!=null && (after<0 || (min>0&&after<min))) ? Math.max(min-after, r&&r.reorderQty>0?r.reorderQty:0) : 0 };
+  });
+  var rank={short:0, low:1, unknown:2, ok:3};
+  out.sort(function(a,b){ return rank[a.state]-rank[b.state] || (b.committed-a.committed) || a.code.localeCompare(b.code); });
+  return { list:out, short:out.filter(function(x){return x.state==='short';}), low:out.filter(function(x){return x.state==='low';}),
+           unknown:out.filter(function(x){return x.state==='unknown';}), noUsage:demand.noUsage, pastedAt:fabStock.pastedAt, n:Object.keys(fabStock.rows).length };
+}
+function fabStockHtml(q){
+  var k=fabStockCompute(), ed=IS_EDITOR;
+  var h='<div class="kpi-sec" style="padding:12px 14px 8px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div><h3>Fabric stock against live works orders</h3>'
+    +'<div class="sub">'+(k.n ? k.n+' fabrics from Sage, pasted '+fmtD(k.pastedAt) : 'No Sage stock pasted yet')+' &middot; free to cut = in Sage less cut-not-written-off &middot; after live = free less committed, plus on order'
+    +(k.noUsage?' &middot; <span style="color:#b45309">'+k.noUsage+' live line(s) with no usage on file are not in the demand</span>':'')+'</div></div>'
+    +(ed?'<button class="btn btn-p edit-only" style="font-size:11px;padding:5px 10px;margin-left:auto" onclick="fabTogglePaste()">&#9998; Paste fabric stock</button>':'')+'</div>';
+  var list=k.list.filter(function(x){ return !q || smNorm(x.code+' '+x.name+' '+(x.row?x.row.supName:'')).indexOf(q)>=0; });
+  if(!fabOpen.showAll) list=list.filter(function(x){ return x.state!=='ok'; });
+  if(!k.list.length) return h+'<div class="sm-empty">Nothing to show - paste the Sage sheet, or raise a works order.</div></div>';
+  h+='<div style="font-size:11px;color:#4b5563;margin:6px 0"><label style="cursor:pointer"><input type="checkbox" onchange="fabOpen.showAll=this.checked;fabSavePrefs();fabRender()"'+(fabOpen.showAll?' checked':'')+'> Show fabrics that are fine too</label>'
+    +' &nbsp; <span class="fab-st short">'+k.short.length+' short</span> <span class="fab-st low">'+k.low.length+' low</span>'+(k.unknown.length?' <span class="fab-st nofab">'+k.unknown.length+' not on the Sage sheet</span>':'')+'</div>';
+  if(!list.length) return h+'<div class="sm-empty" style="padding:14px">'+(q?'Nothing matches.':'Nothing short or low.')+'</div></div>';
+  h+='<div class="sm-tblwrap"><table class="fab-stk"><thead><tr><th>Fabric</th><th>Supplier</th><th style="text-align:right">In Sage</th><th style="text-align:right" title="open lines on the ledger: cut, not yet written off">Cut, not written off</th><th style="text-align:right">Free to cut</th>'
+    +'<th style="text-align:right" title="standard metres on every live works order">Committed</th><th style="text-align:right">On order</th><th style="text-align:right">After live</th><th style="text-align:right">Min</th><th>State</th></tr></thead><tbody>'
+    +list.map(function(x){ var lbl={short:'Short',low:'Below min',unknown:'Not on sheet',ok:'OK'}[x.state];
+      return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
+        +'<td>'+(x.row&&x.row.supName?esc(x.row.supName)+(x.row.lead?'<div class="sm-sub">'+x.row.lead+' day lead</div>':''):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num">'+(x.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.inSage,1))+'</td>'
+        +'<td class="fab-num">'+(x.cut?fabM(x.cut,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num" style="font-weight:700">'+(x.free==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.free,1))+'</td>'
+        +'<td class="fab-num">'+(x.committed?fabM(x.committed,1)+'<div class="sm-sub">'+x.refs+' WO'+(x.refs===1?'':'s')+'</div>':'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num">'+(x.onOrder?fabM(x.onOrder,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num" style="font-weight:700;'+(x.after!=null&&x.after<0?'color:#8a2222':'')+'">'+(x.after==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.after,1))+'</td>'
+        +'<td class="fab-num">'+(x.min?fabM(x.min,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td><span class="fab-st '+x.state+'">'+lbl+'</span>'+(x.order>0?'<div class="sm-sub">order '+fabM(x.order,0)+' m</div>':'')+'</td></tr>'; }).join('')
+    +'</tbody></table></div></div>';
+  return h;
+}
 function fabState(c){ return c.fabricExportedAt ? 'exported' : (c.fabricDismissedAt ? 'dismissed' : 'open'); }
 function fabPriceFor(code){ var c=(code||'').trim().toUpperCase(); return (typeof FABRIC_PRICES!=='undefined' && FABRIC_PRICES[c]>0) ? FABRIC_PRICES[c] : null; }
 function fabGBP(v,d){ return v==null ? '&mdash;' : '&pound;'+Number(v).toLocaleString('en-GB',{minimumFractionDigits:d==null?2:d, maximumFractionDigits:d==null?2:d}); }
@@ -3924,6 +4040,7 @@ function fabRender(){
     +tile('This month <span style="font-weight:400">&middot; '+k.monthLabel+'</span>', fabM(k.month.metres,0)+' <span style="font-size:13px;color:#6b7280">m</span>', costNote(k.month)+' &middot; '+k.month.refs+' works order(s)')
     +tile('Cut vs standard, this month', k.month.nAct ? ((k.month.act>=k.month.std?'+':'')+kpiN(100*(k.month.act-k.month.std)/(k.month.std||1),1)+'%') : '&mdash;', k.month.nAct ? 'on '+k.month.nAct+' line(s) where the cutting room typed a figure' : 'no actuals typed yet')
     +tile('Awaiting export', kpiN(k.open.lines), fabM(k.open.metres,1)+' m &middot; '+fabGBP(k.open.cost,0)+(k.noFab?' &middot; <span style="color:#b45309">'+k.noFab+' with no usage on file</span>':''))
+    +(function(){ var st=fabStockCompute(); return tile('Fabrics short', st.n ? kpiN(st.short.length) : '&mdash;', st.n ? (st.short.length?'<span class="dot" style="background:'+KPI_CRIT+'"></span>':'')+'against live works orders &middot; '+st.low.length+' below min' : 'paste the Sage stock sheet'); })()
     +'</div>';
 
   // ── toolbar ────────────────────────────────────────────────────────────
@@ -3935,6 +4052,9 @@ function fabRender(){
           +'<button class="btn" style="font-size:11px;padding:5px 9px" onclick="fabDismissTicked()" '+(k.ticked?'':'disabled')+' title="Mark the ticked lines complete without writing them off from here">&#10005; Dismiss ticked</button>' : '')
     +'<label style="margin-left:auto;font-size:11px;color:#4b5563;cursor:pointer"><input type="checkbox" onchange="fabToggleDone()"'+(fabOpen.hideDone?' checked':'')+'> Hide exported and dismissed</label>'
     +'</div>';
+
+  // ── stock against live works orders ────────────────────────────────────
+  h+=fabStockHtml(q);
 
   // ── the ledger: month -> day -> lines ──────────────────────────────────
   var lines=fabLines().filter(function(l){ return fabMatches(l,q) && !(fabOpen.hideDone && l.state!=='open'); });
