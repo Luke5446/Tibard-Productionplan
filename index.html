@@ -4003,8 +4003,14 @@ var fabSheetExtra=[];   // rows the app does not know, from the last 'todo' past
 function fabToggleSheet(){ var p=document.getElementById('fabSheetPanel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')) document.getElementById('fabSheetTA').focus(); }
 function fabAddDays(iso,n){ var d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return d2s(d); }
 var FAB_MONTHS={JAN:'01',FEB:'02',MAR:'03',APR:'04',MAY:'05',JUN:'06',JUL:'07',AUG:'08',SEP:'09',SEPT:'09',OCT:'10',NOV:'11',DEC:'12'};
-// The date as Excel copies it: 10/09/2026, 10-Sep-26, 2026-09-10 or a raw serial
-function fabSheetDate(s){ s=(s||'').trim(); var m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/); if(m) return (m[3].length===2?'20'+m[3]:m[3])+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+// The date as Excel or Google Sheets copies it: 10/09/2026, 9/10/2026 in a
+// US locale, 10-Sep-26, 2026-09-10 or a raw serial. Whether the figures run
+// day/month or month/day is read off the whole paste (fabSheetDateOrder): a
+// 27 in the first place settles day/month, in the second place month/day.
+// A date that cannot be read is no date - it never rejects a match.
+function fabSheetDateOrder(texts){ for(var i=0;i<texts.length;i++){ var m=(texts[i]||'').trim().match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/); if(!m) continue; if(+m[1]>12) return 'dmy'; if(+m[2]>12) return 'mdy'; } return 'dmy'; }
+function fabSheetDate(s, order){ s=(s||'').trim(); var m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);
+  if(m){ var d=+m[1], mo=+m[2]; if(order==='mdy'){ d=+m[2]; mo=+m[1]; } if(mo<1||mo>12||d<1||d>31) return ''; return (m[3].length===2?'20'+m[3]:m[3])+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
   m=s.match(/^(\d{1,2})[ \/-]([A-Za-z]{3,4})[ \/-](\d{2,4})/); if(m && FAB_MONTHS[m[2].toUpperCase()]) return (m[3].length===2?'20'+m[3]:m[3])+'-'+FAB_MONTHS[m[2].toUpperCase()]+'-'+m[1].padStart(2,'0');
   if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
   if(/^\d{5}$/.test(s)) return new Date(Date.UTC(1899,11,30)+parseInt(s,10)*86400000).toISOString().slice(0,10);
@@ -4027,13 +4033,14 @@ function fabSheetFindRefs(sheetRef, refs){ var k=fabSheetRefKey(sheetRef); if(!k
 // 5 QTY 6 Supplier 7 Fabric 8 Colour 9 Name 10 Fabric Number 11 Meters), or just
 // three columns: W/O number, fabric code, metres.
 function fabParseSheet(txt){
-  var out=[], lines=txt.split('\n');
+  var out=[], lines=txt.split('\n').map(function(l){ return l.replace(/\r$/,'').split('\t'); });
+  var order=fabSheetDateOrder(lines.filter(function(c){ return c.length>=11; }).map(function(c){ return c[0]; })); out.dateOrder=order;
   for(var i=0;i<lines.length;i++){
-    var c=lines[i].replace(/\r$/,'').split('\t'); if(c.length<3) continue;
+    var c=lines[i]; if(c.length<3) continue;
     var full=c.length>=11, ref=(full?c[2]:c[0]).trim(), code=(full?c[10]:c[1]).trim().toUpperCase(), mtxt=(full?c[11]:c[2]).trim();
     if(/^W\/?O NUMBER$/i.test(ref) || /^FABRIC NUMBER$/i.test(code) || (!ref && !code)) continue;
     var m=parseFloat(mtxt.replace(/,/g,'')), metres=(/^[\d.,\s]+$/.test(mtxt) && !isNaN(m)) ? Math.round(m*100)/100 : null;
-    out.push({row:i+1, ref:fabSheetRef(ref), rawRef:ref, code:code, metres:metres, mtxt:mtxt, date:full?fabSheetDate(c[0]):'', customer:full?c[1].trim():'', style:full?c[4].trim().toUpperCase():'', qty:full?pn(c[5]):0});
+    out.push({row:i+1, ref:fabSheetRef(ref), rawRef:ref, code:code, metres:metres, mtxt:mtxt, date:full?fabSheetDate(c[0],order):'', customer:full?c[1].trim():'', style:full?c[4].trim().toUpperCase():'', qty:full?pn(c[5]):0});
   }
   return out;
 }
@@ -4145,6 +4152,7 @@ function fabLoadSheet(mode){
   fabSheetExtra=(mode==='todo') ? res.unknown.filter(function(g){ return g.metres!=null && g.code; }) : [];
   document.getElementById('fabSheetTA').value='';
   saveState(); fabRender();
+  res.dateOrder=rows.dateOrder;
   document.getElementById('fabSheetResult').innerHTML=fabSheetResultHtml(res, rows.length);
 }
 function fabSheetResultHtml(res, nRows){
@@ -4152,7 +4160,7 @@ function fabSheetResultHtml(res, nRows){
   var gm=function(g){ return mono(g.ref)+' '+mono(g.code||'(no code)')+' '+(g.metres!=null?fabM(g.metres)+' m':'<span style="color:#b45309">'+esc(g.mtxt.join(', ')||'no metres')+'</span>')+(g.date?' <span class="sm-sub" style="display:inline">'+fmtD(g.date)+'</span>':''); };
   var n=function(k,w){ return k+' '+w+(k===1?'':'s'); };
   var h='<div class="sm-result" style="margin-top:10px">';
-  h+='<div><b>'+n(nRows,'row')+' &rarr; '+n(res.groups,'works order / cloth pair')+'.</b> ';
+  h+='<div><b>'+n(nRows,'row')+' &rarr; '+n(res.groups,'works order / cloth pair')+'</b>'+(res.dateOrder?' <span class="sm-sub" style="display:inline">(dates read as '+(res.dateOrder==='mdy'?'month/day/year':'day/month/year')+')</span>':'')+'<b>.</b> ';
   if(res.mode==='done') h+=n(res.done.length,'line')+' marked <span class="fab-st exported">Exported</span> (Sage - cutting sheet)';
   else h+=n(res.ticked.length,'line')+' set to the sheet\'s metres and ticked, '+fabM(res.metres,1)+' m - press <b>Export ticked (CSV)</b> for the file';
   h+=(res.created?'; '+n(res.created,'record')+' built for lines completed before the ledger existed':'')+(res.added?'; a further cloth added to '+n(res.added,'line'):'')+'.</div>';

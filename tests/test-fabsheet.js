@@ -32,6 +32,7 @@ const R=(date,ref,style,qty,code,m)=>T([date,'OH',ref,'B/APRON',style,String(qty
  // helpers on their own: refs, dates, grouping
  const t0=await p.evaluate(()=>[fabSheetRef('W/O 1131'),fabSheetRef('W/O/ 0554'),fabSheetRef('W/O 503'),fabSheetRef('S-OH115764-PT1'),fabSheetDate('10/09/2026'),fabSheetDate('10-Sep-26'),fabSheetDate('46275'),
    fabSheetFindRefs('S-OH115764-PT1',['S-OH115764-Pt1','S-OH115764-Pt2','S115764','WO-1157']).join('+'), fabSheetFindRefs('S869335',['S869335a','S869335 pt1','WO-8693']).join('+'), fabSheetFindRefs(fabSheetRef('W/O 121'),['WO-0121','WO-1210']).join('+'), fabSheetFindRefs('S-OH1160079',['S-OH116079-Pt1','S-OH116007-Pt1']).join('+'),
+   fabParseSheet('7/27/2026\tOH\tW/O 505\tX\tY\t1\tT\tP\tC\tN\tPC14001\t3\n9/10/2026\tOH\tW/O 506\tX\tY\t1\tT\tP\tC\tN\tPC14001\t3').map(r=>r.date).join('+'), fabSheetDate('13/13/2026')||'none', fabSheetDate('27-07-26')||'none',
    fabSheetGroups(fabParseSheet('10/09/2026\tOH\tW/O 505\tX\tY\t1\tT\tP\tC\tN\tPC14001\t3\n11/09/2026\tOH\tW/O 505\tX\tY\t1\tT\tP\tC\tN\tPC14001\t4.5\n11/09/2026\tOH\tW/O 505\tX\tY\t1\tT\tP\tC\tN\tPC14001\tWASTE')).map(g=>g.ref+':'+g.metres+':'+g.date+':'+g.rows.join('/')+':'+g.mtxt.join()).join('|')].join(' '));
  console.log('helpers   ->', t0);
  // 1. green rows: A-A (7 m cut) and the live S-LIVE; S-LATE's row is dated 10 Sep - the June line is not it
@@ -65,10 +66,10 @@ const R=(date,ref,style,qty,code,m)=>T([date,'OH',ref,'B/APRON',style,String(qty
  const r5=await p.evaluate(()=>{ window.__alerts=[]; window.alert=m=>window.__alerts.push(m); loadState(); smShowTab('fabric'); fabLoadSheet('todo'); return (window.__alerts[0]||'')+'|'+document.querySelectorAll('#fabBody .btn').length; });
  console.log('reload    ->', r4, '| viewer:', r5);
 
- const pass = t0==='WO-1131 WO-0554 WO-0503 S-OH115764-PT1 2026-09-10 2026-09-10 2026-09-10 S-OH115764-Pt1 S869335a+S869335 pt1 WO-0121 S-OH116079-Pt1 WO-0505:7.5:2026-09-11:1/2/3:WASTE'
-   && /3 rows → 3 works order \/ cloth pairs\. 1 line marked Exported/.test(r1.res) && /1 line still live/.test(r1.res) && /1 not in the app/.test(r1.res) && /S-LATE.*another time/.test(r1.res)
+ const pass = t0==='WO-1131 WO-0554 WO-0503 S-OH115764-PT1 2026-09-10 2026-09-10 2026-09-10 S-OH115764-Pt1 S869335a+S869335 pt1 WO-0121 S-OH116079-Pt1 2026-07-27+2026-09-10 none 2026-07-27 WO-0505:7.5:2026-09-11:1/2/3:WASTE'
+   && /3 rows → 3 works order \/ cloth pairs.*?\. 1 line marked Exported/.test(r1.res) && /1 line still live/.test(r1.res) && /1 not in the app/.test(r1.res) && /S-LATE.*another time/.test(r1.res)
    && r1.a==='exported:2026-08-20:Sage - cutting sheet:7' && r1.live==='2026-09-10:Sage - cutting sheet' && r1.open===5
-   && /13 rows → 13 works order \/ cloth pairs\. 6 lines set to the sheet's metres and ticked, 28\.0 m/.test(r2.res) && /2 records built for lines completed before/.test(r2.res) && /1 row on another cloth than the works order/.test(r2.res) && /2 rows with no metres/.test(r2.res) && /another row already gives this line its metres/.test(r2.res) && /2 rows for a manual write-off/.test(r2.res)
+   && /13 rows → 13 works order \/ cloth pairs.*?\. 6 lines set to the sheet's metres and ticked, 28\.0 m/.test(r2.res) && /2 records built for lines completed before/.test(r2.res) && /1 row on another cloth than the works order/.test(r2.res) && /2 rows with no metres/.test(r2.res) && /another row already gives this line its metres/.test(r2.res) && /2 rows for a manual write-off/.test(r2.res)
    && /1 already complete in the ledger/.test(r2.res) && /1 not in the app/.test(r2.res) && /WO-9999.*no works order with this number/.test(r2.res)
    && r2.ticked==='A-OLD/OHAPP0534GD,S-B/OHCJMCHESHIRE3201,S-C/OHAPP0534GD,S-C/ZZNOUSAGE,S-SWAP/OHAPP0534GD,S-ZERO/OHAPP0534GD' && r2.n===6 && r2.sz==='0:true:0'
    && r2.sb==='8:1:9' && r2.sc==='OHAPP0534GD:CO5014DEN:10:All Costings|ZZNOUSAGE:PC2001ECO:3:Cutting sheet' && r2.so==='CO5014DEN:4:1.8:All Costings:true' && r2.sw==='CO5014DEN::1.5:All Costings:MESH2290901=0.5' && /further cloth added to 1 line/.test(r2.res) && r2.extra==='WO-9999:12'

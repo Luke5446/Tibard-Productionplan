@@ -233,7 +233,10 @@ How a row finds its line. `W/O 1131`, `WO-1131`, `W/O/ 1131` all mean
 sales order number with a compatible part (`S-OH115764-PT1` finds
 `S-OH115764-Pt1`; `S869335` finds `S869335`, `S869335a` and `S869335 pt1`;
 a seven-figure number is a slipped key, tried with each figure dropped, so
-`S-OH1160079` finds `S-OH116079-Pt1`). The cut date must sit within a
+`S-OH1160079` finds `S-OH116079-Pt1`). The date is read off the whole paste, day/month or
+month/day as the sheet's locale has it (Google Sheets in a US locale pastes
+`7/27/2026`); a date that cannot be read is no date and never rejects a
+match. The cut date must sit within a
 fortnight of the record's life, so a three-figure typo (`W/O 121`) cannot
 land on last quarter's works order of that number. Within the works order
 the row goes to the line whose record carries that cloth (main or mesh);
