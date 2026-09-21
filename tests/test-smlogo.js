@@ -67,7 +67,7 @@ const paste=(logoDesc)=>[
  const viewer=await p.evaluate(()=>{ loadState(); smShowTab('special'); return [...document.querySelectorAll('#smList .sm-note')].length; });
  console.log('reload/viewer->', kept, '|', viewer);
 
- const pass = st==='OHCJSSUFFOLK6001:1 OHCJSSUFFOLK4001:1 OHAPP0534GD:1 CICJ01936003:1 CICJ0193XS03:1 CICJ0193SS01:0 APP300503:1 ZZNOFAMILY4801:0 OHZZBESPOKE01:0'
+ const pass = st==='OHCJSSUFFOLK6001:1 OHCJSSUFFOLK4001:1 OHAPP0534GD:1 CICJ01936003:1 CICJ0193XS03:1 CICJ0193SS01:1 APP300503:1 ZZNOFAMILY4801:0 OHZZBESPOKE01:0'
    && /4 lines ready/.test(r1) && /6 logo\/text lines kept/.test(r1)
    && notes==='OH|0000114816 => logo@OH-1,text@OH-3,note@OH-3 | TIB|0000862833 => note@TIB-2,text@TIB-2 | TIB|0000862900 => logo@TIB-9'
    && /OHCJSSUFFOLK6001 -> \[Logo application: Maldon Salt logo left chest, 60mm, white\]/.test(raised)
