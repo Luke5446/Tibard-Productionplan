@@ -164,9 +164,12 @@ WITH known AS (
     ) AS k(Code)
 ),
 fabric_groups AS (
-    /* product group CODES that are fabric - fill from step 0.2; the placeholder
-       matches nothing */
-    SELECT Code FROM (VALUES ('__FILL_FROM_62__')) AS g(Code)
+    /* product group CODES that are fabric. 62-fabric-product-groups.sql on
+       21 Sep 2026: group 8 "Cloth" holds 729 items, 728 of them known fabric
+       codes - that is the fabric group. Trims, mesh and webbing (group 98) and
+       the ten obsolete-group codes the works orders still use come through
+       the known-code list instead, so nothing is lost. */
+    SELECT Code FROM (VALUES ('8')) AS g(Code)
 ),
 items AS (
     SELECT  si.ItemID, LTRIM(RTRIM(si.Code)) AS Code, si.Name, si.ProductGroupID
