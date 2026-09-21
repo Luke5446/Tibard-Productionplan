@@ -1,40 +1,12 @@
-/* =========================================================================
-   60-fabric-stock.sql  -  FABRIC STOCK for the buffer app's Fabric tab
-   -------------------------------------------------------------------------
-   Server TIB-SQL-002, database S200_LIVE (Tibard holds all the fabric).
-   One row per fabric code: what is in stock at HOME, on order with the
-   supplier, the minimum level set in Sage, the preferred supplier, and the
-   price per metre. The app pastes this next to what its live works orders
-   need and shows what is free to cut and what runs short.
-
-   Paste the WHOLE file into the Excel connection, Refresh All, then copy
-   columns A to N, all rows, without the header, into the Fabric tab.
-
-   Output order is FIXED - the app parses by position:
-     A FabricCode  B Description  C Unit  D SupplierAccount  E SupplierName
-     F SupplierRef  G InStock  H Allocated  I OnOrder  J MinLevel
-     K ReorderLevel  L ReorderQty (the supplier's usual order quantity)
-     M CostPerMetre (last buying price)  N LeadDays (as held on the supplier
-     record - Sage stores a unit with it; check a known one reads as days)
-
-   Column names confirmed against the live schema on 21 Sep 2026 (the grid is
-   in 61-fabric-stock-columns.sql's output): WarehouseItem carries the levels
-   and Sage's own on-order figure; StockItemSupplier carries the preferred
-   flag, lead time, last buying price and usual order quantity.
-
-   WHICH ITEMS ARE FABRIC: two nets. (1) Every fabric code the works orders
-   already use - the All Costings usage table and the Sage fabric price list,
-   753 codes, listed at the bottom. (2) Any product group named in
-   fabric_groups. Run 62-fabric-product-groups.sql once to see which groups
-   hold the known codes, then fill fabric_groups so a new cloth reaches the
-   sheet before its first works order.
-   ========================================================================= */
-
-/* ========================================================================
-   THE SHEET
-   ======================================================================== */
-WITH known AS (
-    SELECT Code FROM (VALUES
+/* 62-fabric-product-groups.sql - run once, in place of 60, to see which
+   product groups hold the fabric codes the works orders already use. Put the
+   group CODES you want on the sheet into fabric_groups in 60-fabric-stock.sql
+   so a new cloth reaches the sheet before its first works order. */
+/* --- 0.2  Which product groups hold the fabric? --------------------------- */
+SELECT  pg.Code, pg.Description, COUNT(*) AS Items, COUNT(k.Code) AS KnownFabricCodes
+FROM    S200_LIVE.dbo.StockItem si
+JOIN    S200_LIVE.dbo.ProductGroup pg ON pg.ProductGroupID = si.ProductGroupID
+LEFT JOIN (SELECT Code FROM (VALUES
 ('BA1001'), ('BACKING01'), ('CLOTHWONDERDRY55'), ('CMP-WEB-PU-25-01'), ('CMP-WEB-PU-25-03'), ('CMP-WEB-PU-25-04'),
 ('CMP-WEB-PU-25-06'), ('CMP-WEB-PU-25-11'), ('CMP-WEB-PU-25-131'), ('CMP-WEB-PU-25-14'), ('CMP-WEB-PU-25-15'), ('CMP-WEB-PU-25-24'),
 ('CMP-WEB-PU-25-286'), ('CMP-WEB-PU-25-82'), ('CMP-WEB-PU-25-83'), ('CMP-WEB-PU-25-921'), ('CO1021153'), ('CO10299'),
@@ -161,68 +133,8 @@ WITH known AS (
 ('PW4055'), ('PWFLEETHAM80'), ('PWL03'), ('PWL128'), ('PWWESTON08405'), ('PWWESTON80555'),
 ('TR90X12P01'), ('WEBBING921'), ('WO1003'), ('WO1030'), ('WO12217181'), ('WO1332531'),
 ('WO13532128'), ('WPL003'), ('WPL015')
-    ) AS k(Code)
-),
-fabric_groups AS (
-    /* product group CODES that are fabric - fill from step 0.2; the placeholder
-       matches nothing */
-    SELECT Code FROM (VALUES ('__FILL_FROM_62__')) AS g(Code)
-),
-items AS (
-    SELECT  si.ItemID, LTRIM(RTRIM(si.Code)) AS Code, si.Name, si.ProductGroupID
-    FROM    S200_LIVE.dbo.StockItem si
-    JOIN    S200_LIVE.dbo.ProductGroup pg ON pg.ProductGroupID = si.ProductGroupID
-    WHERE   si.Code IN (SELECT Code FROM known)
-       OR   pg.Code  IN (SELECT Code FROM fabric_groups)
-),
-home AS (
-    /* the HOME warehouse figures: confirmed stock, Sage's own allocations,
-       what is on purchase order, and the levels set for that warehouse */
-    SELECT  wi.ItemID,
-            wi.ConfirmedQtyInStock                              AS InStock,
-            ISNULL(wi.QuantityAllocatedStock,0)
-              + ISNULL(wi.QuantityAllocatedSOP,0)
-              + ISNULL(wi.QuantityAllocatedBOM,0)               AS Allocated,
-            ISNULL(wi.QuantityOnPOPOrder,0)                     AS OnOrder,
-            wi.MinimumLevel, wi.ReorderLevel
-    FROM    S200_LIVE.dbo.WarehouseItem wi
-    JOIN    S200_LIVE.dbo.Warehouse     w  ON w.WarehouseID = wi.WarehouseID
-    WHERE   w.Name = 'HOME'
-),
-supplier AS (
-    /* the preferred supplier; when none is flagged, the one most recently
-       bought from */
-    SELECT  s.ItemID, s.SupplierAccountNumber, s.SupplierAccountName,
-            s.SupplierStockCode, s.LastBuyingPrice, s.LeadTime, s.UsualOrderQuantity
-    FROM (
-        SELECT  sis.ItemID,
-                pl.SupplierAccountNumber, pl.SupplierAccountName,
-                sis.SupplierStockCode, sis.LastBuyingPrice, sis.LeadTime, sis.UsualOrderQuantity,
-                ROW_NUMBER() OVER (PARTITION BY sis.ItemID
-                                   ORDER BY sis.Preferred DESC,
-                                            sis.DateLastOrder DESC) AS rn
-        FROM    S200_LIVE.dbo.StockItemSupplier sis
-        JOIN    S200_LIVE.dbo.PLSupplierAccount pl ON pl.PLSupplierAccountID = sis.SupplierID
-    ) s
-    WHERE   s.rn = 1
-)
-SELECT
-    i.Code                                                      AS FabricCode,
-    LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(i.Name,''),
-        CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))            AS Description,
-    'Metre'                                                     AS Unit,   -- all fabric is held in metres
-    ISNULL(sp.SupplierAccountNumber,'')                         AS SupplierAccount,
-    ISNULL(sp.SupplierAccountName,'')                           AS SupplierName,
-    ISNULL(sp.SupplierStockCode,'')                             AS SupplierRef,
-    CAST(ISNULL(h.InStock,0)      AS decimal(18,2))             AS InStock,
-    CAST(ISNULL(h.Allocated,0)    AS decimal(18,2))             AS Allocated,
-    CAST(ISNULL(h.OnOrder,0)      AS decimal(18,2))             AS OnOrder,
-    CAST(ISNULL(h.MinimumLevel,0) AS decimal(18,2))             AS MinLevel,
-    CAST(ISNULL(h.ReorderLevel,0) AS decimal(18,2))             AS ReorderLevel,
-    CAST(ISNULL(sp.UsualOrderQuantity,0) AS decimal(18,2))      AS ReorderQty,
-    CAST(ISNULL(sp.LastBuyingPrice,0)    AS decimal(18,4))      AS CostPerMetre,
-    ISNULL(sp.LeadTime,0)                                       AS LeadDays
-FROM        items i
-LEFT JOIN   home            h  ON h.ItemID  = i.ItemID
-LEFT JOIN   supplier        sp ON sp.ItemID = i.ItemID
-ORDER BY    i.Code;
+        ) AS known(Code)) k ON k.Code = si.Code
+GROUP BY pg.Code, pg.Description
+HAVING  COUNT(k.Code) > 0
+ORDER BY KnownFabricCodes DESC;
+
