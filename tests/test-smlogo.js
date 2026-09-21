@@ -54,7 +54,7 @@ const paste=(logoDesc)=>[
    const ok=printWOP(WOs[i].ref,'OHCJSSUFFOLK6001',4,WOs[i].due,WOs[i].sm);
    const emb=(html.match(/<th>Embroidery<\/th><td>(.*?)<\/td><\/tr>(.*?)<tr><th>Customer/s)||['','',''])
    let html2=''; const j=WOs.findIndex(w=>w.sm&&w.items[0].code==='CICJ01936003');
-   const ok2=printWOP(WOs[j].ref,'CICJ01936003',2,WOs[j].due,WOs[j].sm);   // no works order data for a Tibard code
+   const ok2=printWOP(WOs[j].ref,'CICJ01936003',2,WOs[j].due,WOs[j].sm);   // CJ0193 has a template upstream now, so this prints too
    return {live, cards, panel, ok, emb:emb[1].replace(/<[^>]+>/g,''), rows:emb[2].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(), band:/CUSTOMER BRANDING &amp; LOGO/.test(html), ok2}; });
  console.log('shown        ->', JSON.stringify(Object.assign({}, shown, {panel:shown.panel.slice(0,70)})));
  // a later paste with a changed logo reaches the live works order; the state survives a reload; a viewer sees the same
@@ -74,7 +74,7 @@ const paste=(logoDesc)=>[
    && /OHZZBESPOKE01 -> \[\]/.test(raised) && /ZZNOFAMILY4801 -> \[\]/.test(raised)
    && /CICJ01936003 -> \[Note: Rush - needed for opening night \/ Text application: Initials "AB" left sleeve, gold\]/.test(raised)
    && shown.live.length===3 && shown.cards.length===3 && /^Logo application Maldon Salt logo left chest/.test(shown.panel)
-   && shown.ok && /Yes &mdash; from the sales order/.test(shown.emb) && /Logo application &times; 4 Maldon Salt logo left chest, 60mm, white/.test(shown.rows) && !shown.band && !shown.ok2
+   && shown.ok && /Yes &mdash; from the sales order/.test(shown.emb) && /Logo application &times; 4 Maldon Salt logo left chest, 60mm, white/.test(shown.rows) && !shown.band && shown.ok2
    && r2==='Maldon Salt logo CENTRE BACK, 120mm, navy' && kept===r2 && viewer===3;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();
