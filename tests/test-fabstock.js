@@ -48,7 +48,7 @@ const sheet=[
  const t4=await p.evaluate(()=>{ loadState(); smShowTab('fabric'); return {btn:document.querySelectorAll('#fabBody .btn').length, rows:document.querySelectorAll('#fabBody .fab-stk tbody tr').length, short:fabStockCompute().low.map(x=>x.code).join()}; });
  // banners: the stock section collapses on its banner and stays collapsed across a reload; the order table shows In Sage and On order
  const t5=await p.evaluate(()=>{ fabOpen.supplier='TIA001EU'; fabRender(); const heads=[...document.querySelectorAll('#fabBody .fab-stk thead th')].map(t=>t.textContent).slice(0,3).join('|');
-   const before=document.querySelectorAll('#fabBody .fab-stk').length; document.querySelector('#fabBody .sm-bh').click(); const after=document.querySelectorAll('#fabBody .fab-stk').length;
+   const before=document.querySelectorAll('#fabBody .fab-stk').length; [...document.querySelectorAll('#fabBody .sm-bh')].find(b=>/Fabric stock/.test(b.textContent)).click(); const after=document.querySelectorAll('#fabBody .fab-stk').length;
    return heads+' '+before+'>'+after+' '+JSON.parse(localStorage.getItem('tibard_fab_sections')).sec.stock; });
  await p.reload(); await p.waitForTimeout(400);
  const t5b=await p.evaluate(()=>{ smShowTab('fabric'); const n=document.querySelectorAll('#fabBody .fab-stk').length; fabToggleSec('stock'); fabOpen.supplier=''; fabSavePrefs(); fabRender(); return n; });
