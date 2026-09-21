@@ -1797,7 +1797,7 @@ function undoCompleted(idx){ if(!IS_EDITOR) return;
   var existing=WOs.find(function(w){ return w.ref===c.ref; });
   // The line's fabric write-off state travels with it, so completing it again
   // cannot produce a second write-off for cloth already booked out of Sage.
-  var back={code:c.code, qty:c.qty, metresActual:(c.fabric&&c.fabric.actual!=null)?c.fabric.actual:undefined,
+  var back={code:c.code, qty:c.qty, metresActual:(c.fabric&&c.fabric.actual!=null)?c.fabric.actual:undefined, fabricCode:(c.fabric&&c.fabric.edited)?c.fabric.code:undefined,
             fabricExportedAt:c.fabricExportedAt, fabricExportFile:c.fabricExportFile, fabricDismissedAt:c.fabricDismissedAt};
   if(existing){
     var it=existing.items.find(function(x){ return x.code===c.code; });
@@ -3317,12 +3317,36 @@ function fabricUsageFor(code){
 // What a completed line consumed. Standard = usage x quantity; actual = what
 // the cutting room typed on the works order, if anything. Null when neither
 // exists, so a missing figure is visible rather than a silent zero.
+// A fabric name from wherever the app knows it: the usage table, then the
+// Sage stock sheet.
+function fabricNameFor(code){ code=(code||'').toUpperCase(); return FABRIC_NAMES[code] || ((typeof fabStock!=='undefined' && fabStock.rows[code]) ? fabStock.rows[code].desc : '') || ''; }
+// The PM can put a works order line on a different cloth from the usage
+// table - the customer asked for another colour, or the table is wrong. The
+// metres per garment stay; only the cloth written off changes. On a live
+// line it is it.fabricCode; on a booked-in line the record itself is edited.
+function fabricPrompt(current, what){
+  var v=prompt('Fabric code for '+what+' - the Sage stock code the cloth is written off against.\nLeave blank to go back to the usage table.', current||'');
+  if(v===null) return null; v=v.trim().toUpperCase();
+  if(v && !fabricNameFor(v) && !confirm(v+' is not a fabric the app knows (not in the usage table or on the Sage stock sheet).\n\nUse it anyway?')) return null;
+  return v;
+}
+function setFabricCode(i, code){ if(!IS_EDITOR) return; var wo=WOs[i]; if(!wo) return; var it=wo.items.find(function(x){ return x.code===code; }); if(!it) return;
+  var v=fabricPrompt(it.fabricCode||'', code+' on '+wo.ref); if(v===null) return;
+  if(v) it.fabricCode=v; else delete it.fabricCode;
+  saveState(); refreshWOModal(); renderWOCards(); }
+function fabSetFabric(idx){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c || fabState(c)!=='open') return;
+  var v=fabricPrompt(c.fabric&&c.fabric.code||'', c.code+' on '+c.ref); if(v===null) return;
+  if(!v){ var u=fabricUsageFor(c.code); if(!u){ alert('No usage on file for '+c.code+' - type a fabric code instead.'); return; } v=u.code; }
+  if(!c.fabric) c.fabric={code:'', name:'', perGarment:null, std:null, actual:null, source:''};
+  c.fabric.code=v; c.fabric.name=fabricNameFor(v); c.fabric.price=fabPriceFor(v); c.fabric.edited=true; c.fabric.source=(c.fabric.source||'').replace(/ · edited$/,'')+' · edited';
+  saveState(); fabRender(); }
 function fabricRecordFor(it){
   var u=fabricUsageFor(it.code), actual=(it.metresActual!=null) ? it.metresActual : null;
-  if(!u && actual==null) return null;
-  return { code:u?u.code:'', name:u?u.name:'', perGarment:u?u.metres:null,
-           std:u ? Math.round(u.metres*it.qty*100)/100 : null, actual:actual, source:u?u.source:'',
-           price:u ? fabPriceFor(u.code) : null,
+  if(!u && actual==null && !it.fabricCode) return null;
+  var code=it.fabricCode || (u?u.code:''), edited=!!it.fabricCode;
+  return { code:code, name:edited ? fabricNameFor(code) : (u?u.name:''), perGarment:u?u.metres:null,
+           std:u ? Math.round(u.metres*it.qty*100)/100 : null, actual:actual, source:(u?u.source:'')+(edited?' · edited':''), edited:edited||undefined,
+           price:code ? fabPriceFor(code) : null,
            // secondary fabrics - mesh inserts - standard only; the cutting
            // room's actual is for the main cloth
            extras:(u&&u.extras&&u.extras.length) ? u.extras.map(function(x){ return {code:x.code, name:x.name, perGarment:x.metres, std:Math.round(x.metres*it.qty*100)/100, price:fabPriceFor(x.code)}; }) : undefined };
@@ -3332,10 +3356,11 @@ function fabricRecordFor(it){
 // actual and is what gets written off.
 function fabricCellFor(i, it){
   var u=fabricUsageFor(it.code), std=u ? Math.round(u.metres*it.qty*100)/100 : null;
-  var hint=u ? '<div style="font-size:10px;color:#6b7280">std '+std+' m &middot; '+esc(u.code||'?')
+  var editLink=IS_EDITOR ? ' <a href="#" onclick="setFabricCode('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\');return false" title="Put this line on a different cloth">&#9998; fabric</a>' : '';
+  var hint=u ? '<div style="font-size:10px;color:#6b7280">std '+std+' m &middot; '+(it.fabricCode ? '<b title="changed from '+esc(u.code||'?')+'">'+esc(it.fabricCode)+'</b>' : esc(u.code||'?'))
                +(u.extras&&u.extras.length ? u.extras.map(function(x){ return ' + '+Math.round(x.metres*it.qty*100)/100+' m '+esc(x.code||'mesh'); }).join('') : '')
-               +(/^marker/.test(u.source) ? ' <span title="per-size marker from the lay plan sheet">&#9998;</span>' : '')+'</div>'
-             : '<div style="font-size:10px;color:#b45309">no usage on file</div>';
+               +(/^marker/.test(u.source) ? ' <span title="per-size marker from the lay plan sheet">&#9998;</span>' : '')+editLink+'</div>'
+             : '<div style="font-size:10px;color:#b45309">'+(it.fabricCode ? 'no usage on file &middot; cloth <b>'+esc(it.fabricCode)+'</b>' : 'no usage on file')+editLink+'</div>';
   if(!IS_EDITOR) return (it.metresActual!=null ? it.metresActual+' m' : (std!=null ? std+' m' : '&mdash;'))+hint;
   return '<input type="number" step="0.01" min="0" value="'+(it.metresActual!=null?it.metresActual:'')+'" placeholder="'+(std!=null?std:'')+'" '
     +'onchange="setMetresActual('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\',this.value)" '
@@ -4189,9 +4214,6 @@ function fabRender(){
     +'<label style="margin-left:auto;font-size:11px;color:#4b5563;cursor:pointer"><input type="checkbox" onchange="fabToggleDone()"'+(fabOpen.hideDone?' checked':'')+'> Hide exported and dismissed</label>'
     +'</div>';
 
-  // ── stock against live works orders ────────────────────────────────────
-  h+=fabStockHtml(q);
-
   // ── the ledger: month -> day -> lines ──────────────────────────────────
   var lines=fabLines().filter(function(l){ return fabMatches(l,q) && !(fabOpen.hideDone && l.state!=='open'); });
   var byMon={}; lines.forEach(function(l){ var m=l.date.slice(0,7); (byMon[m]=byMon[m]||[]).push(l); });
@@ -4210,9 +4232,10 @@ function fabRender(){
       else if(l.state==='dismissed') act='<button class="btn" style="font-size:10px;padding:2px 7px" onclick="fabUndoDismiss('+l.idx+')">&#8634; Undo</button>';
       else act='<button class="btn" style="font-size:10px;padding:2px 7px;color:#6b7280" onclick="fabUndoExport('+l.idx+')" title="Only if the file never reached the shared folder">&#8634; Undo export</button>';
     }
-    var fab=l.has ? '<span style="font-family:monospace;font-size:11px">'+esc(l.fabCode)+'</span>'+(l.fabName?'<div class="sm-sub" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(l.fabName)+'">'+esc(l.fabName)+'</div>':'')
-                     +l.extras.map(function(x){ return '<div class="sm-sub">+ '+fabM(x.metres)+' m <span style="font-family:monospace">'+esc(x.code||'mesh')+'</span></div>'; }).join('')
-                   : '<span class="fab-st nofab">no usage on file</span><div class="sm-sub">add the code to All Costings, or type the metres on the works order before completing</div>';
+    var fabEdit=(ed && l.state==='open') ? '<div class="sm-sub"><a href="#" onclick="fabSetFabric('+l.idx+');return false" title="Put this line on a different cloth">edit fabric</a></div>' : '';
+    var fab=l.has ? '<span style="font-family:monospace;font-size:11px">'+esc(l.fabCode)+'</span>'+(l.c.fabric&&l.c.fabric.edited?' <span title="changed by hand">&#9998;</span>':'')+(l.fabName?'<div class="sm-sub" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(l.fabName)+'">'+esc(l.fabName)+'</div>':'')
+                     +l.extras.map(function(x){ return '<div class="sm-sub">+ '+fabM(x.metres)+' m <span style="font-family:monospace">'+esc(x.code||'mesh')+'</span></div>'; }).join('')+fabEdit
+                   : '<span class="fab-st nofab">no usage on file</span><div class="sm-sub">add the code to All Costings, or type the metres on the works order before completing</div>'+fabEdit;
     var actual=(ed && l.state==='open' && l.has) ? '<input type="number" step="0.01" min="0" value="'+(l.actual!=null?l.actual:'')+'" placeholder="'+(l.std!=null?l.std:'')+'" onchange="fabSetActual('+l.idx+',this.value)" style="width:70px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px">'
                  : (l.actual!=null ? fabM(l.actual) : '<span style="color:#9ca3af">&mdash;</span>');
     var vr=l.varPct==null ? '<span style="color:#9ca3af">&mdash;</span>' : '<span style="'+(Math.abs(l.varPct)>=10?'color:#8a2222;font-weight:700':'')+'">'+(l.varPct>=0?'+':'')+kpiN(l.varPct,1)+'%</span>';
@@ -4253,6 +4276,9 @@ function fabRender(){
   });
   h+='</div>';
   }
+
+  // ── stock against live works orders ────────────────────────────────────
+  h+=fabStockHtml(q);
 
   // ── usage ──────────────────────────────────────────────────────────────
   h+=fabBanner('usage', '&#128200; Fabric usage <span style="font-weight:400;color:#a7d4bb">&middot; by day, week and month</span>', '');

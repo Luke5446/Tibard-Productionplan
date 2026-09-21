@@ -110,6 +110,17 @@ In the completed history since June, 135 codes and 2,906 units are now on
 per-size figures. To refresh the table after the sheet changes, re-run the
 parse in this session's notes — it is a plain CSV export of the sheet.
 
+## Changing the cloth on a works order
+
+The usage table names the cloth, but a customer can ask for another colour
+and the table can be wrong. On the works order panel *✎ fabric* under the
+Metres cut figure puts a live line on a different Sage stock code; the
+metres per garment stay, the code, name and price change, and the record
+carries the change into the ledger with a pencil mark. On the Fabric tab
+*edit fabric* on an open ledger line does the same to a booked-in line; an
+exported line cannot be changed. A code the app does not know is allowed
+after a confirm. Blank puts the line back on the usage table.
+
 ## Corrections to All Costings
 
 The usage table is All Costings' fabric column, and it has some products on
