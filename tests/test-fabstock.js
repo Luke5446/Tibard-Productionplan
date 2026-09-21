@@ -48,12 +48,14 @@ const sheet=[
    [...document.querySelectorAll('#fabBody .fab-stk thead th')].find(t=>/^In Stock/.test(t.textContent)).click(); const desc=stock();
    document.querySelector('#fabBody .fab-stk thead th.on').click(); const asc=stock();
    document.querySelector('#fabBody .fab-stk thead th.on').click();
-   const need=fabStockCompute().need.map(x=>x.code).sort().join();
+   window.prompt=()=>'0'; fabSetMin('PC14001');   // no minimum, and a big order takes it below nil even with the PO - still flagged
+   document.getElementById('woRef').value='S-BIG'; document.getElementById('woStart').value='2026-09-21'; document.getElementById('woDue').value='2026-09-30'; document.getElementById('woTA').value='OHCJMCHESHIRE3201\t15'; saveWO(); smShowTab('fabric');
+   const need=fabStockCompute().need.map(x=>x.code+':'+(x.monitored?'m':'-')).sort().join();
    const chip=[...document.querySelectorAll('#fabBody .fab-chip')].find(b=>/Needs ordering/.test(b.textContent)).textContent.replace(/\s+/g,' ').trim();
    fabOpen.need=true; fabRender(); const rows=[...document.querySelectorAll('#fabBody .fab-stk tbody tr')].map(tr=>tr.querySelector('span').textContent).sort().join();
    const afterCol=[...document.querySelectorAll('#fabBody .fab-stk tbody tr')].map(tr=>tr.querySelector('span').textContent+'='+tr.children[7].textContent.trim()).sort().join();
    const tile=[...document.querySelectorAll('.kpi-tile')].find(t=>/Needs ordering/.test(t.textContent)).querySelector('.v').textContent;
-   fabOpen.need=false; fabOpen.showAll=false; fabOpen.supplier='TIA001EU'; fabRender();
+   WOs.splice(WOs.findIndex(w=>w.ref==='S-BIG'),1); recalcWOs(); recalcQtys(); saveState(); window.prompt=()=>'25'; fabSetMin('PC14001'); fabOpen.need=false; fabOpen.showAll=false; fabOpen.supplier='TIA001EU'; fabRender();
    const oheads=[...document.querySelectorAll('#fabBody .fab-stk thead th')].map(t=>t.textContent.replace(/[↕▼▲]/g,'')).slice(5,8).join('|');
    fabOpen.supplier=''; fabSavePrefs(); fabRender();
    return {heads:heads.join('|'), desc, asc, sortLeft:!!fabOpen.sort.stock, need, chip, rows, afterCol, tile, oheads}; });
@@ -77,6 +79,6 @@ const sheet=[
    && t1.rows[0]==='PC14001:short:5:0:-2.05:7.05:20:17.95:500:490' && t1.rows[1]==='CO5014DEN:low:20:6:5:9:0:5:10:50' && t1.rows[2]==='MESH2290901:unknown::0::0.51:0:-999:500:0'
    && t1.rows.some(r=>r==='POPLAZA03:ok:30:0:30:0:0:30:0:0')
    && t1.rowsShown===33 && /Tiajo Comercio ?10 working days/.test(t1.sup)
-   && t5==='Fabric|In Stock|On PO 2>0 false' && t5b===0 && t2===33 && t2c==='CO5014DEN=50|50|true|4000|4200|true|50|25:short' && t2b==='12:app:12' && t2d.heads==='Fabric|Supplier|In Stock|Live WO|Not written off|Free Stock|On PO|Free + PO|Min|State' && t2d.desc==='20.0,5.0' && t2d.asc==='5.0,20.0' && !t2d.sortLeft && t2d.need==='CO5014DEN,PC14001' && t2d.chip==='⚑ Needs ordering 2' && t2d.rows==='CO5014DEN,PC14001' && t2d.afterCol==='CO5014DEN=5.0,PC14001=18.0' && t2d.tile==='2' && t2d.oheads==='Free Stock|Free + PO|Min' && t3.n===1 && t3.den===5 && t4.btn===0 && t4.rows===33 && t4.short==='CO5014DEN';
+   && t5==='Fabric|In Stock|On PO 2>0 false' && t5b===0 && t2===33 && t2c==='CO5014DEN=50|50|true|4000|4200|true|50|25:short' && t2b==='12:app:12' && t2d.heads==='Fabric|Supplier|In Stock|Live WO|Not written off|Free Stock|On PO|Free + PO|Min|State' && t2d.desc==='20.0,5.0' && t2d.asc==='5.0,20.0' && !t2d.sortLeft && t2d.need==='CO5014DEN:m,PC14001:-' && t2d.chip==='⚑ Needs ordering 2' && t2d.rows==='CO5014DEN,PC14001' && t2d.afterCol==='CO5014DEN=5.0,PC14001=-3.2' && t2d.tile==='2' && t2d.oheads==='Free Stock|Free + PO|Min' && t3.n===1 && t3.den===5 && t4.btn===0 && t4.rows===33 && t4.short==='CO5014DEN';
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

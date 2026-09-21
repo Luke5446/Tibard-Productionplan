@@ -4324,13 +4324,15 @@ function fabStockHtml(q){
   var chip=function(acc,label,n){ var on=(fabOpen.supplier||'')===acc; return '<button class="fab-chip'+(on?' on':'')+'" onclick="fabOpen.supplier=\''+esc(acc)+'\';fabSavePrefs();fabRender()">'+esc(label)+(n?' <span class="cnt">'+n+'</span>':'')+'</button>'; };
   h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0">'+chip('','All suppliers',0)
     +Object.keys(sups).sort(function(a,b){ return sups[a].localeCompare(sups[b]); }).map(function(acc){ var n=k.monitored.filter(function(x){return x.supAcc===acc && x.state!=='ok';}).length; return chip(acc, sups[acc], n); }).join('')
-    +'<button class="fab-chip'+(fabOpen.need?' on':'')+'" style="margin-left:8px;border-color:#991b1b'+(fabOpen.need?';background:#991b1b':';color:#991b1b')+'" onclick="fabOpen.need=!fabOpen.need;fabSavePrefs();fabRender()" title="fabrics that would still be under their minimum (or below nil) with the PO landed - a suggested order is on each">&#9873; Needs ordering'+(k.need.length?' <span class="cnt">'+k.need.length+'</span>':'')+'</button>'
+    +'<button class="fab-chip'+(fabOpen.need?' on':'')+'" style="margin-left:8px;border-color:#991b1b'+(fabOpen.need?';background:#991b1b':';color:#991b1b')+'" onclick="fabOpen.need=!fabOpen.need;fabSavePrefs();fabRender()" title="every fabric that would still be under its minimum, or below nil, with the PO landed - with or without a minimum level; a suggested order is on each">&#9873; Needs ordering'+(k.need.length?' <span class="cnt">'+k.need.length+'</span>':'')+'</button>'
     +'<label style="margin-left:auto;font-size:11px;color:#4b5563;cursor:pointer"><input type="checkbox" onchange="fabOpen.allFabrics=this.checked;fabSavePrefs();fabRender()"'+(fabOpen.allFabrics?' checked':'')+'> Include fabrics with no minimum level</label>'
     +'<label style="font-size:11px;color:#4b5563;cursor:pointer"><input type="checkbox" onchange="fabOpen.showAll=this.checked;fabSavePrefs();fabRender()"'+(fabOpen.showAll?' checked':'')+'> Show fabrics that are fine too</label>'
     +'</div>';
   if(fabOpen.supplier && sups[fabOpen.supplier]) h+=fabOrderHtml(fabOpen.supplier, sups[fabOpen.supplier]);
   var list=k.list.filter(function(x){ return !q || smNorm(x.code+' '+x.name+' '+x.supName).indexOf(q)>=0; });
-  if(!fabOpen.allFabrics) list=list.filter(function(x){ return x.monitored; });
+  // "needs ordering" is the whole flag, monitored or not - a fabric with no
+  // minimum that is short still needs ordering, and the count must match the list
+  if(!fabOpen.allFabrics && !fabOpen.need) list=list.filter(function(x){ return x.monitored; });
   if(fabOpen.supplier) list=list.filter(function(x){ return x.supAcc===fabOpen.supplier; });
   if(fabOpen.need) list=list.filter(function(x){ return x.order>0; }); else if(!fabOpen.showAll) list=list.filter(function(x){ return x.state!=='ok'; });
   if(!k.list.length) return h+'<div class="sm-empty">Nothing to show - paste the Sage sheet, or raise a works order.</div></div>';
