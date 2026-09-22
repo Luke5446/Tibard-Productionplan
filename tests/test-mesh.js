@@ -73,7 +73,20 @@ const T=(a)=>a.join('\t');
    return {todo, done:it('S-LIVL').fabricExportedAt||'not marked', said:/could not be placed/.test(document.getElementById('fabSheetResult').textContent)}; });
  console.log('live       ->', JSON.stringify(r8));
 
- const pass = r8.todo==='S-LIVL=untouched S-LIVM=untouched' && r8.done==='not marked' && r8.said
+ // 9. the blocker the audit found: a mesh row that is the ONLY row to claim a line must not
+ //    overwrite the garment's own cloth figure - and on a jacket with the M it still reaches the mesh
+ const r9=await p.evaluate(()=>{ const R=(ref,style,qty,code,m)=>['22/09/2026','OH',ref,'C/JKTS',style,String(qty),'T','P','X','N',code,String(m)].join('\t');
+   const mk=(ref,ta)=>{ document.getElementById('woRef').value=ref; document.getElementById('woStart').value='2026-09-22'; document.getElementById('woDue').value='2026-09-30'; document.getElementById('woTA').value=ta; saveWO(); completeWholeWO(WOs.findIndex(w=>w.ref===ref)); };
+   mk('S-ONLY','OHLCJSHAMPSHIRE1601\t6');    // ladies: no mesh, already has a PC14001 record
+   mk('S-MOK','OHCJMCHESHIRE3201\t10');      // has the M: the mesh row must still reach its mesh extra
+   fabToggleSheet(); document.getElementById('fabSheetTA').value=[R('S-ONLY','OHLCJSHAMPSHIRE1601',6,'MESH2290901',2.5),R('S-MOK','OHCJMCHESHIRE3201',10,'MESH2290901',1.5)].join('\n');
+   fabLoadSheet('todo');
+   const g=r=>{ const c=completedWOs.find(x=>x.ref===r); return c.fabric.code+'/'+c.fabric.std+'/'+c.fabric.actual+'/'+((c.fabric.extras||[]).map(x=>x.code+':'+(x.actual!=null?x.actual:x.std)).join('+')||'none'); };
+   return {only:g('S-ONLY'), mok:g('S-MOK'), tick:fabTickedLines().some(l=>l.ref==='S-ONLY'), said:/could not be placed/.test(document.getElementById('fabSheetResult').textContent)}; });
+ console.log('mesh-only  ->', JSON.stringify(r9));
+
+ const pass = r9.only==='PC14001/6.3/null/none' && r9.mok==='PC14001/14.1/null/MESH2290901:1.5' && !r9.tick && r9.said
+   && r8.todo==='S-LIVL=untouched S-LIVM=untouched' && r8.done==='not marked' && r8.said
    && r1==='OHCJMCHESHIRE3201:1 OHCJSMCHESHIRE3201:1 OHCJMDEVON4801:1 OHCJSMSTRATFORD4401:1 OHCJSCUMBRIA4201:0 OHCJCUMBRIA4201:0 OHCJSUFFOLK4401:0 OHCJSSUFFOLK4201:0 OHLCJHAMPSHIRE1201:0 OHLCJSHAMPSHIRE1601:0 OHLCJSDERBYSHIRE1401:0 OHLCJYORK0801:0 OHLCJ40084293:0 OHHTM0160248:1 WAGHTM016024:1 OHAPP0534GD:1 OHTAB82:1'
    && /OHCJMCHESHIRE3201=1\.41\/MESH2290901:0\.1018/.test(r2) && /OHCJSMDEVON5601=1\.26\/MESH2290901:0\.3533/.test(r2)
    && /OHLCJHAMPSHIRE1201=1\.28\/ /.test(r2+' ') && /OHLCJSHAMPSHIRE1601=1\.05\/ /.test(r2+' ') && /OHCJSCUMBRIA4201=1\.18\/ /.test(r2+' ')

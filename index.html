@@ -4136,18 +4136,19 @@ function fabSheetApply(groups, mode){
     if(pr.cands.length){
       picks.forEach(function(p){ var c=p.c, st=fabState(c);
         if((mode==='todo' && st!=='open') || (mode==='done' && st==='exported')){ res.already.push({g:g, c:c, st:st}); return; }
+        // Where a MESH row is allowed to land, checked before anything is
+        // written. As a SECOND cloth only on a garment the rule allows mesh.
+        // As the MAIN figure only when that garment's own cloth IS the mesh -
+        // otherwise a mesh row picked up by style, or by being the only line
+        // on the works order, would overwrite the garment's cloth with the
+        // mesh metres and send that to Sage in its place.
+        if(/^MESH/i.test(g.code)){
+          var asExtra=(p.extra>=0 || p.addExtra), mainCode=((c.fabric&&c.fabric.code)||'').toUpperCase();
+          if(asExtra ? !ohHasMesh(c.code) : mainCode!==g.code){ p.skip=true; res.ambiguous.push({g:g, lines:[c]}); return; }
+        }
         if(p.addExtra){
-          // no mesh on a jacket without the M - and the row must not fall
-          // through onto the main cloth either, or the mesh metres would be
-          // written off as if they were the garment's own fabric
-          if(/^MESH/i.test(g.code) && !ohHasMesh(c.code)){ p.skip=true; return; }
           c.fabric.extras=(c.fabric.extras||[]).slice(); c.fabric.extras.push({code:g.code, name:fabricNameFor(g.code), perGarment:null, std:null, actual:null, price:fabPriceFor(g.code)}); p.extra=c.fabric.extras.length-1; res.added++; }
-        else if(!c.fabric){
-          // no usage on file: the sheet's cloth is all there is - but a mesh
-          // is never a garment's own cloth, so a mesh row for a jacket the
-          // tables do not know is dropped rather than made its main fabric
-          if(/^MESH/i.test(g.code) && ohJacketCode(c.code)){ p.skip=true; return; }
-          c.fabric={code:g.code, name:fabricNameFor(g.code), perGarment:null, std:null, actual:null, source:'Cutting sheet', price:fabPriceFor(g.code)}; res.created++; }
+        else if(!c.fabric){ c.fabric={code:g.code, name:fabricNameFor(g.code), perGarment:null, std:null, actual:null, source:'Cutting sheet', price:fabPriceFor(g.code)}; res.created++; }   // no usage on file: the sheet's cloth is all there is
         else if(!pr.byCode && g.metres!=null && res.kept.every(function(k){ return k.c!==c || k.g!==g; })) res.kept.push({g:g, c:c});
       });
       var setOn=picks.filter(function(p){ return !p.skip && res.already.every(function(a){ return a.c!==p.c; }); });

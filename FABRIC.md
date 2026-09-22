@@ -304,16 +304,22 @@ never adds it, and it looks at chef-jacket codes alone: hats (`OHHTM...`,
 `WAGHTM...`), aprons and straps keep whatever second cloth they carry.
 
 It is enforced everywhere a second cloth can attach. `fabricUsageFor` is the
-main gate, so no new works order picks up mesh it should not have. The cutting
-sheet import has three more, because a guard on the usage table alone does not
-reach it: a mesh row for a jacket that should not have it is dropped rather
-than falling through onto the garment's own cloth; a mesh row can never be made
-the **primary** cloth of a jacket the usage tables do not know; and on a **live**
-works order a mesh row may only touch a line whose usage actually carries that
-mesh. That last one mattered: a single-line works order falls back to "the only
-item", so a mesh row was setting the jacket's own cut figure, and in the
-already-written-off mode was marking that cloth off against Sage on the strength
-of a mesh row. Such a row is now listed as one that could not be placed. `ohMeshConflicts()` warns on the
+main gate, so no new works order picks up mesh it should not have. A guard
+there does not reach the cutting sheet import, which needs its own, stated as
+**where a mesh row is allowed to land**:
+
+- as a **second cloth**, only on a garment the rule allows mesh;
+- as the **main figure**, only when that garment's own cloth is that mesh.
+
+Anything else is listed as a row that could not be placed. Both halves matter.
+The import matches a row to a line by style, or by it being the only line on
+the works order, so without the second half a mesh row overwrote the garment's
+cloth figure with the mesh metres and sent that to Sage in its place — on a
+completed line and on a live one alike, and in the already-written-off mode it
+marked that cloth off on the strength of a mesh row. An audit of every route
+found this after the first guard went in, because that one sat inside the
+branch that adds a *further* cloth and so never ran when the mesh row was the
+first to claim the line. `ohMeshConflicts()` warns on the
 console if the marker table ever carries mesh for a jacket whose code has no M,
 so a disagreement between the data and the rule is said out loud rather than
 quietly suppressed.
