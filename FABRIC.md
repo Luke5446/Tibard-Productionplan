@@ -293,6 +293,101 @@ hide the error rather than fix it. Those are corrected in Sage by hand.
 ## Which garments have mesh
 
 Luke's rule, 22 Sep 2026: **an OH chef jacket carries mesh only when its code
+has the M** — `OHCJM` for the long sleeve, `OHCJSM` for the short sleeve. The M
+stands for mesh. The M sits in the variant position, straight after the `CJ` or
+`CJS`, so `OHCJSUFFOLK` and `OHCJSSUFFOLK` are the Suffolk style and carry none.
+
+Two things sit outside that rule and are kept in `MESH_EXCEPTIONS` and in
+`ohJacketCode`, so the reason is on the page rather than in someone's head:
+
+- **The Hampshire.** `OHLCJHAMPSHIRE` and `OHLCJSHAMPSHIRE` do carry mesh
+  underarm panels although the code has no M. Luke confirmed it after first
+  saying otherwise; the routing card for `OHLCJHAMPSHIRE--01` describes two
+  pairs of panels per garment and rates them at **0.03 m**. Nobody knows why
+  this range does not follow the naming rule. The short sleeve has no card of
+  its own and is set to the same 0.03 m — **worth confirming**.
+- **Everything that is not a chef jacket.** Hats (`OHHTM`, `WAGHTM`,
+  `FENHTM`), aprons and straps are not covered by the rule at all and keep
+  whatever second cloth they are given. Hats do have mesh.
+
+`ohHasMesh(code)` is the test. It only ever takes mesh **away** from a chef
+jacket, never adds it.
+
+### Where a mesh row is allowed to land
+
+`fabricUsageFor` is the main gate, so no new works order picks up mesh it
+should not have. A guard there does not reach the cutting sheet import, which
+needs its own rule:
+
+- as the **main figure**, only when that garment's own cloth is that mesh;
+- otherwise as a **second cloth**, and only where the garment is allowed mesh;
+- anything else is listed as a row that could not be placed.
+
+The order matters. The import matches a row to a line by style, or by it being
+the only line on the works order, so without the first rule a mesh row
+overwrote the garment's cloth figure with the mesh metres and sent that to Sage
+in its place — a 2.5 m mesh row turned a 6.3 m jacket into a 2.5 m write-off.
+Without the second, a hat's mesh row had nowhere to go.
+
+`fabFixMesh()` amends what is already on file. It runs on every load and when a
+dismissed line is put back to open. On a **line still waiting to be written
+off** it strips mesh from a garment that should not have it, and re-rates a
+mesh figure frozen from a rate since corrected — which is what takes the old
+2.5 m Hampshire rate down to 0.03 m. A figure the cutting room typed itself
+always wins. A **written-off** line is left exactly as it is, because that
+figure is what Sage was told and rewriting it would hide the difference rather
+than settle it. It is idempotent, so it also catches work done in another
+browser.
+
+### The mesh that is missing
+
+The rule cuts the other way too. Of the mesh-coded jacket sizes the app can
+see, only 84 carry a mesh figure; the rest write off no mesh at all, because
+their marker row has mesh `null` or there is no marker row. Two whole families,
+`OHCJMPOXFORD` / `OHCJSMPOXFORD` and `OHCJMSTIRLING` / `OHCJSMSTIRLING`, have
+no figure anywhere, and `OHCJMSTRATFORD` has none while its short-sleeve twin
+has three. Where a figure does exist it is near enough constant within a family
+(Cheshire 0.1018, Devon 0.2025 to 0.37, Dorset and Oxford 0.0319 to 0.0333,
+Stratford 0.0815 to 0.0846).
+
+**Hats are in the same position**: `FABRIC_USAGE` gives each of the 63 `HTM`
+codes a single cloth and there is no marker row, so none of them writes off any
+mesh automatically. Nineteen paired rows on the cutting sheet put the real rate
+between 0.021 m and 0.063 m a hat, median 0.037; the large runs, where whole-
+metre rounding matters least, sit near **0.03 m** (378 hats took 14 m, 250 took
+7 m, 200 took 6 m). Until a rate is set, a hat's mesh is only written off when
+its cutting sheet row is pasted. None of these gaps was filled by guesswork.
+
+## Cut figures that do not look right
+
+A row on the cutting sheet is sometimes the whole **lay** — the length the
+cutting room put down that day, covering several works orders — rather than
+the metres for the one job. Read as that job's own figure it writes off far
+too much: 40 m against a single jacket, 23 m against six. So a cut figure is
+held back when it is **half again as much as the standard, or half as much,
+AND at least 5 m adrift**. Both tests must be met, so a mesh insert whose
+0.51 m standard was written as 1 m on the sheet is 96% out and is ignored.
+A figure of exactly nil is the cutting room's own "cut from waste" and is
+left alone.
+
+The cutting sheet import will not apply a figure like that: the line stays
+on its standard and the row is listed in the result box. A figure already on
+a line puts it in the **Cut figures to check** panel at the top of the
+Fabric tab, with its own tile. Until each one is settled the line is not
+ticked and cannot go into a write-off file. Two buttons per line:
+
+- **Standard** drops the cutting room's figure and writes off the standard.
+- **Accept** says the cutting room really did cut that much (`fabric.varOK`).
+
+The panel covers lines that are still open and lines marked off against the
+cutting sheet — those never went to Sage from here, so the figure can still
+be put right. A line exported in one of our own files is left out on
+purpose: that figure **is** what Sage was told, and changing it here would
+hide the error rather than fix it. Those are corrected in Sage by hand.
+
+## Which garments have mesh
+
+Luke's rule, 22 Sep 2026: **an OH chef jacket carries mesh only when its code
 has the M** — `OHCJM` for the long sleeve, `OHCJSM` for the short sleeve. The
 M stands for mesh. Everything else in the `OHCJ` and `OHLCJ` ranges has none,
 the whole ladies range (`OHLCJ`, `OHLCJS`) included.
@@ -345,7 +440,7 @@ It is idempotent, so it also catches work completed in another browser.
 
 ### The Hampshire corrections
 
-Three errors, found from the routing cards and then from the rule:
+Errors found from the routing cards and then from the rule:
 
 - The eight long-sleeve marker keys were spelled `OHLCHAMPSHIRE` with no **J**.
   The real code is `OHLCJHAMPSHIRE`, so they never matched: the long sleeve
@@ -353,10 +448,9 @@ Three errors, found from the routing cards and then from the rule:
   uses its per-size markers, 1.22 m to 1.40 m.
 - The whole family carried **2.5 m of mesh per garment**. Six jackets asked for
   15 m of `MESH2290901`.
-- The `OHLCJHAMPSHIRE--01` routing card does describe mesh underarm panels at
-  0.03 m, so that figure went in first. The rule overrides it: `OHLCJ` is the
-  ladies range, no M, no mesh. **Worth settling with the pattern room** — the
-  card and the code disagree.
+- The mesh was removed outright for a day, on the reading that `OHLCJ` is the
+  ladies range and carries no M. Luke corrected that: the Hampshire does have
+  mesh. It is back at the routing card's 0.03 m and is now a named exception.
 
 ## Fabric stock against live works orders
 
