@@ -45,6 +45,13 @@ const T=(a)=>a.join('\t');
    fabTickAll(true); exportFabricWriteOff(); const csv=(await blob.text()).split('\r\n').filter(Boolean);
    return csv.filter(r=>/^MESH|S-LADY|S-MESH/.test(r)).sort().join(' | '); });
  console.log('write-off  ->', r6);
+ // 6b. a mesh row can never become a jacket's MAIN cloth when the tables know nothing about the code
+ const r6b=await p.evaluate(()=>{ const R=(ref,style,qty,code,m)=>['22/09/2026','OH',ref,'C/JKTS',style,String(qty),'TIAJO','P/C','X','N',code,String(m)].join('\t');
+   completedWOs.push({ref:'S-NOFAB', code:'OHCJSYORK1401', desc:'', qty:4, completed:'2026-09-22'});
+   fabToggleSheet(); document.getElementById('fabSheetTA').value=R('S-NOFAB','OHCJSYORK1401',4,'MESH2290901',3); fabLoadSheet('todo');
+   const c=completedWOs.find(x=>x.ref==='S-NOFAB');
+   return (c.fabric?c.fabric.code+'/'+c.fabric.actual:'no record')+' | conflicts='+(ohMeshConflicts().join()||'none'); });
+ console.log('no-usage   ->', r6b);
  // 7. a cutting sheet mesh row cannot put mesh back on a ladies jacket
  const r7=await p.evaluate(()=>{ const R=(ref,style,qty,code,m)=>['22/09/2026','OH',ref,'C/JKTS',style,String(qty),'TIAJO','P/C','X','N',code,String(m)].join('\t');
    document.getElementById('woRef').value='S-SHEET'; document.getElementById('woStart').value='2026-09-22'; document.getElementById('woDue').value='2026-09-30';
@@ -62,6 +69,7 @@ const T=(a)=>a.join('\t');
    && r5.n.lines===1 && r5.n.metres===15 && r5.after==='S-LADY=none S-GONE=MESH2290901:15 S-KEEP=MESH2290901:1.02' && r5.again==='{"lines":0,"metres":0}'
    && /MESH2290901,HOME,,1\.02,Cutting,S-MESH/.test(r6) && /PC14001,HOME,,6\.3,Cutting,S-LADY/.test(r6)
    && !r6.split(' | ').some(r=>/^MESH/.test(r) && /S-LADY/.test(r))
+   && r6b==='no record | conflicts=none'
    && r7==='PC14001/6/no extras';
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

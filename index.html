@@ -3336,6 +3336,13 @@ function woFabrics(st){
 // cloth they carry.
 function ohJacketCode(code){ return /^OHL?CJ/.test((code||'').toUpperCase()); }
 function ohHasMesh(code){ var c=(code||'').toUpperCase(); return !ohJacketCode(c) || /^OHL?CJS?M/.test(c); }
+// If the marker table ever carries mesh for a jacket the rule says has none,
+// that is a disagreement between the data and the rule and someone should
+// look at it - so it is said out loud once rather than quietly dropped.
+function ohMeshConflicts(){ var out=[]; if(typeof FABRIC_MARKERS==='undefined') return out;
+  Object.keys(FABRIC_MARKERS).forEach(function(k){ if(FABRIC_MARKERS[k][1]>0 && !ohHasMesh(k)) out.push(k); });
+  if(out.length) console.warn('Mesh in the marker table on '+out.length+' jacket(s) whose code has no M: '+out.join(', '));
+  return out; }
 function fabricUsageFor(code){
   var c=(code||'').trim().toUpperCase();
   var u=(typeof FABRIC_USAGE!=='undefined') ? FABRIC_USAGE[c] : null;
@@ -4135,7 +4142,12 @@ function fabSheetApply(groups, mode){
           // written off as if they were the garment's own fabric
           if(/^MESH/i.test(g.code) && !ohHasMesh(c.code)){ p.skip=true; return; }
           c.fabric.extras=(c.fabric.extras||[]).slice(); c.fabric.extras.push({code:g.code, name:fabricNameFor(g.code), perGarment:null, std:null, actual:null, price:fabPriceFor(g.code)}); p.extra=c.fabric.extras.length-1; res.added++; }
-        else if(!c.fabric){ c.fabric={code:g.code, name:fabricNameFor(g.code), perGarment:null, std:null, actual:null, source:'Cutting sheet', price:fabPriceFor(g.code)}; res.created++; }   // no usage on file: the sheet's cloth is all there is
+        else if(!c.fabric){
+          // no usage on file: the sheet's cloth is all there is - but a mesh
+          // is never a garment's own cloth, so a mesh row for a jacket the
+          // tables do not know is dropped rather than made its main fabric
+          if(/^MESH/i.test(g.code) && ohJacketCode(c.code)){ p.skip=true; return; }
+          c.fabric={code:g.code, name:fabricNameFor(g.code), perGarment:null, std:null, actual:null, source:'Cutting sheet', price:fabPriceFor(g.code)}; res.created++; }
         else if(!pr.byCode && g.metres!=null && res.kept.every(function(k){ return k.c!==c || k.g!==g; })) res.kept.push({g:g, c:c});
       });
       var setOn=picks.filter(function(p){ return !p.skip && res.already.every(function(a){ return a.c!==p.c; }); });

@@ -304,9 +304,25 @@ never adds it, and it looks at chef-jacket codes alone: hats (`OHHTM...`,
 `WAGHTM...`), aprons and straps keep whatever second cloth they carry.
 
 It is enforced in two places — `fabricUsageFor`, so no new works order picks up
-mesh it should not have, and the cutting sheet import, so a mesh row on the
-sheet cannot put it back (such a row is dropped outright rather than falling
-through onto the garment's own cloth).
+mesh it should not have, and the cutting sheet import, where a mesh row for a
+jacket that should not have it is dropped outright rather than falling through
+onto the garment's own cloth, and a mesh row can never be made the **primary**
+cloth of a jacket the usage tables do not know. `ohMeshConflicts()` warns on the
+console if the marker table ever carries mesh for a jacket whose code has no M,
+so a disagreement between the data and the rule is said out loud rather than
+quietly suppressed.
+
+### The mesh that is missing
+
+The rule cuts the other way too. Of the 489 mesh-coded jacket sizes the app can
+see, only **84 carry a mesh figure** — 405 write off no mesh at all, because
+their marker row has mesh `null` or there is no marker row. Two whole families,
+`OHCJMPOXFORD` / `OHCJSMPOXFORD` and `OHCJMSTIRLING` / `OHCJSMSTIRLING`, have no
+mesh figure anywhere, and `OHCJMSTRATFORD` has none while its short-sleeve twin
+has three. Where a figure does exist it is near enough constant within a family
+(Cheshire 0.1018, Devon 0.2025 to 0.37, Dorset and Oxford 0.0319 to 0.0333,
+Stratford 0.0815 to 0.0846), so the gaps could be filled from the family — but
+that is a pattern-room decision, not one to guess at.
 
 `fabFixMesh()` amends what is already on file. It runs on every load, strips a
 wrong mesh extra from any **completed line still waiting to be written off**,
