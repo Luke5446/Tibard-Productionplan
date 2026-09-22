@@ -290,19 +290,44 @@ be put right. A line exported in one of our own files is left out on
 purpose: that figure **is** what Sage was told, and changing it here would
 hide the error rather than fix it. Those are corrected in Sage by hand.
 
-## Corrections to the Hampshire markers, 22 Sep 2026
+## Which garments have mesh
 
-Two errors in `FABRIC_MARKERS`, both found from the routing cards:
+Luke's rule, 22 Sep 2026: **an OH chef jacket carries mesh only when its code
+has the M** — `OHCJM` for the long sleeve, `OHCJSM` for the short sleeve. The
+M stands for mesh. Everything else in the `OHCJ` and `OHLCJ` ranges has none,
+the whole ladies range (`OHLCJ`, `OHLCJS`) included.
 
-- The eight long-sleeve keys were spelled `OHLCHAMPSHIRE` with no **J**.
+The M sits in the variant position, straight after the `CJ` or `CJS`, so
+`OHCJSUFFOLK` and `OHCJSSUFFOLK` are the Suffolk style and carry no mesh.
+`ohHasMesh(code)` is the test. It only ever takes mesh **away** from a jacket,
+never adds it, and it looks at chef-jacket codes alone: hats (`OHHTM...`,
+`WAGHTM...`), aprons and straps keep whatever second cloth they carry.
+
+It is enforced in two places — `fabricUsageFor`, so no new works order picks up
+mesh it should not have, and the cutting sheet import, so a mesh row on the
+sheet cannot put it back (such a row is dropped outright rather than falling
+through onto the garment's own cloth).
+
+`fabFixMesh()` amends what is already on file. It runs on every load, strips a
+wrong mesh extra from any **completed line still waiting to be written off**,
+and leaves a written-off line exactly as it is — that figure is what Sage was
+told, and rewriting it here would hide the difference rather than settle it.
+It is idempotent, so it also catches work completed in another browser.
+
+### The Hampshire corrections
+
+Three errors, found from the routing cards and then from the rule:
+
+- The eight long-sleeve marker keys were spelled `OHLCHAMPSHIRE` with no **J**.
   The real code is `OHLCJHAMPSHIRE`, so they never matched: the long sleeve
-  fell back to All Costings at a flat 1.15 m and got no mesh. Renamed, so it
-  now uses its per-size markers (1.22 m to 1.40 m).
-- The mesh was **2.5 m per garment** across the whole family. The routing
-  card for `OHLCJHAMPSHIRE--01` rates the underarm panels at **0.03 m**.
-  The long sleeve is now 0.03 m; the short sleeve `OHLCJSHAMPSHIRE` carries
-  **no mesh at all**, per Luke. Before this, six jackets asked for 15 m of
-  `MESH2290901`.
+  fell back to All Costings at a flat 1.15 m for every size. Renamed, so it now
+  uses its per-size markers, 1.22 m to 1.40 m.
+- The whole family carried **2.5 m of mesh per garment**. Six jackets asked for
+  15 m of `MESH2290901`.
+- The `OHLCJHAMPSHIRE--01` routing card does describe mesh underarm panels at
+  0.03 m, so that figure went in first. The rule overrides it: `OHLCJ` is the
+  ladies range, no M, no mesh. **Worth settling with the pattern room** — the
+  card and the code disagree.
 
 ## Fabric stock against live works orders
 
