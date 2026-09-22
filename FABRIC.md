@@ -263,6 +263,47 @@ data of 21 Sep 2026: 616 green rows placed 496 lines (405 records built);
 149 later rows ticked 53 lines for 649 m, 8 of them at nil, and left 4 rows
 for a file of their own and 6 for a manual write-off.
 
+## Cut figures that do not look right
+
+A row on the cutting sheet is sometimes the whole **lay** — the length the
+cutting room put down that day, covering several works orders — rather than
+the metres for the one job. Read as that job's own figure it writes off far
+too much: 40 m against a single jacket, 23 m against six. So a cut figure is
+held back when it is **half again as much as the standard, or half as much,
+AND at least 5 m adrift**. Both tests must be met, so a mesh insert whose
+0.51 m standard was written as 1 m on the sheet is 96% out and is ignored.
+A figure of exactly nil is the cutting room's own "cut from waste" and is
+left alone.
+
+The cutting sheet import will not apply a figure like that: the line stays
+on its standard and the row is listed in the result box. A figure already on
+a line puts it in the **Cut figures to check** panel at the top of the
+Fabric tab, with its own tile. Until each one is settled the line is not
+ticked and cannot go into a write-off file. Two buttons per line:
+
+- **Standard** drops the cutting room's figure and writes off the standard.
+- **Accept** says the cutting room really did cut that much (`fabric.varOK`).
+
+The panel covers lines that are still open and lines marked off against the
+cutting sheet — those never went to Sage from here, so the figure can still
+be put right. A line exported in one of our own files is left out on
+purpose: that figure **is** what Sage was told, and changing it here would
+hide the error rather than fix it. Those are corrected in Sage by hand.
+
+## Corrections to the Hampshire markers, 22 Sep 2026
+
+Two errors in `FABRIC_MARKERS`, both found from the routing cards:
+
+- The eight long-sleeve keys were spelled `OHLCHAMPSHIRE` with no **J**.
+  The real code is `OHLCJHAMPSHIRE`, so they never matched: the long sleeve
+  fell back to All Costings at a flat 1.15 m and got no mesh. Renamed, so it
+  now uses its per-size markers (1.22 m to 1.40 m).
+- The mesh was **2.5 m per garment** across the whole family. The routing
+  card for `OHLCJHAMPSHIRE--01` rates the underarm panels at **0.03 m**.
+  The long sleeve is now 0.03 m; the short sleeve `OHLCJSHAMPSHIRE` carries
+  **no mesh at all**, per Luke. Before this, six jackets asked for 15 m of
+  `MESH2290901`.
+
 ## Fabric stock against live works orders
 
 Fabric leaves the shelf at cutting but leaves Sage at completion, so Sage
