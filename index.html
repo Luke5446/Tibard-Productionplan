@@ -4175,6 +4175,15 @@ function fabSheetApply(groups, mode){
       if(!its.length) its=wo.items.length===1 ? wo.items.slice() : byStyleOf(wo.items, g.style, function(it){ return it.code; });
       if(!its.length){ res.ambiguous.push({g:g, lines:wo.items.map(function(it){ return {ref:wo.ref, code:it.code, qty:it.qty, live:true}; })}); return; }
       its.forEach(function(it){
+        // A mesh row is never the garment's own cloth. On a single-line works
+        // order the filter above falls back to "the only item", so without
+        // this a mesh row would put its metres on the jacket's cloth figure -
+        // and in 'done' mode mark that cloth written off on the strength of
+        // it. Only a line whose usage actually carries this mesh may be
+        // touched by a mesh row; anything else is listed, not guessed at.
+        if(/^MESH/i.test(g.code)){ var uu=fabricUsageFor(it.code);
+          if(!uu || !(uu.extras||[]).some(function(x){ return (x.code||'').toUpperCase()===g.code; })){
+            res.ambiguous.push({g:g, lines:[{ref:wo.ref, code:it.code, qty:it.qty, live:true}]}); return; } }
         if(mode==='done'){ if(!it.fabricExportedAt){ it.fabricExportedAt=stamp; it.fabricExportFile=stampFile; } }
         else if(its.length===1 && it.metresActual==null){ var u=fabricUsageFor(it.code);
           if(!u || (u.code||'').toUpperCase()===g.code || it.fabricCode || !(u.extras||[]).some(function(x){ return (x.code||'').toUpperCase()===g.code; })){
@@ -4505,7 +4514,7 @@ function fabDismiss(idx){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c 
 function fabDismissTicked(){ if(!IS_EDITOR) return; var t=fabTickedLines(); if(!t.length){ alert('Tick the lines to dismiss first.'); return; }
   if(!confirm('Dismiss '+t.length+' line(s)? They will not be written off from here. This can be undone.')) return;
   var stamp=d2s(now()); t.forEach(function(l){ l.c.fabricDismissedAt=stamp; }); fabTicked=[]; saveState(); fabRender(); }
-function fabUndoDismiss(idx){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c) return; delete c.fabricDismissedAt; saveState(); fabRender(); }
+function fabUndoDismiss(idx){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c) return; delete c.fabricDismissedAt; fabFixMesh(); saveState(); fabRender(); }
 function fabUndoExport(idx){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c) return;
   if(!confirm('⚠ Only undo an export if '+(c.fabricExportFile||'the file')+' was NEVER put in the shared folder.\n\nIf the routine has already read it, undoing and exporting again writes the same fabric off twice in Sage.\n\nUndo the export mark on '+c.code+' ('+c.ref+')?')) return;
   delete c.fabricExportedAt; delete c.fabricExportFile; saveState(); fabRender(); }

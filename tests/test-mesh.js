@@ -61,7 +61,20 @@ const T=(a)=>a.join('\t');
    return c.fabric.code+'/'+c.fabric.actual+'/'+((c.fabric.extras||[]).map(x=>x.code).join('+')||'no extras'); });
  console.log('sheet      ->', r7);
 
- const pass = r1==='OHCJMCHESHIRE3201:1 OHCJSMCHESHIRE3201:1 OHCJMDEVON4801:1 OHCJSMSTRATFORD4401:1 OHCJSCUMBRIA4201:0 OHCJCUMBRIA4201:0 OHCJSUFFOLK4401:0 OHCJSSUFFOLK4201:0 OHLCJHAMPSHIRE1201:0 OHLCJSHAMPSHIRE1601:0 OHLCJSDERBYSHIRE1401:0 OHLCJYORK0801:0 OHLCJ40084293:0 OHHTM0160248:1 WAGHTM016024:1 OHAPP0534GD:1 OHTAB82:1'
+ // 8. a LIVE works order: a mesh sheet row must not become the jacket's own cut figure, nor mark it written off
+ const r8=await p.evaluate(()=>{ const R=(ref,style,qty,code,m)=>['22/09/2026','OH',ref,'C/JKTS',style,String(qty),'TIAJO','P/C','X','N',code,String(m)].join('\t');
+   const mkLive=(ref,ta)=>{ document.getElementById('woRef').value=ref; document.getElementById('woStart').value='2026-09-22'; document.getElementById('woDue').value='2026-09-30'; document.getElementById('woTA').value=ta; saveWO(); };
+   mkLive('S-LIVL','OHLCJSHAMPSHIRE1601\t6');      // ladies, no mesh
+   mkLive('S-LIVM','OHCJMCHESHIRE3201\t10');       // has the M, mesh 0.1018
+   const it=r=>WOs.find(w=>w.ref===r).items[0];
+   fabToggleSheet(); document.getElementById('fabSheetTA').value=[R('S-LIVL','OHLCJSHAMPSHIRE1601',6,'MESH2290901',9), R('S-LIVM','OHCJMCHESHIRE3201',10,'MESH2290901',1)].join('\n');
+   fabLoadSheet('todo'); const todo=['S-LIVL='+(it('S-LIVL').metresActual===undefined?'untouched':it('S-LIVL').metresActual), 'S-LIVM='+(it('S-LIVM').metresActual===undefined?'untouched':it('S-LIVM').metresActual)].join(' ');
+   fabToggleSheet(); document.getElementById('fabSheetTA').value=R('S-LIVL','OHLCJSHAMPSHIRE1601',6,'MESH2290901',9); fabLoadSheet('done');
+   return {todo, done:it('S-LIVL').fabricExportedAt||'not marked', said:/could not be placed/.test(document.getElementById('fabSheetResult').textContent)}; });
+ console.log('live       ->', JSON.stringify(r8));
+
+ const pass = r8.todo==='S-LIVL=untouched S-LIVM=untouched' && r8.done==='not marked' && r8.said
+   && r1==='OHCJMCHESHIRE3201:1 OHCJSMCHESHIRE3201:1 OHCJMDEVON4801:1 OHCJSMSTRATFORD4401:1 OHCJSCUMBRIA4201:0 OHCJCUMBRIA4201:0 OHCJSUFFOLK4401:0 OHCJSSUFFOLK4201:0 OHLCJHAMPSHIRE1201:0 OHLCJSHAMPSHIRE1601:0 OHLCJSDERBYSHIRE1401:0 OHLCJYORK0801:0 OHLCJ40084293:0 OHHTM0160248:1 WAGHTM016024:1 OHAPP0534GD:1 OHTAB82:1'
    && /OHCJMCHESHIRE3201=1\.41\/MESH2290901:0\.1018/.test(r2) && /OHCJSMDEVON5601=1\.26\/MESH2290901:0\.3533/.test(r2)
    && /OHLCJHAMPSHIRE1201=1\.28\/ /.test(r2+' ') && /OHLCJSHAMPSHIRE1601=1\.05\/ /.test(r2+' ') && /OHCJSCUMBRIA4201=1\.18\/ /.test(r2+' ')
    && r3==='none'

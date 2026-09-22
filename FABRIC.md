@@ -303,11 +303,17 @@ The M sits in the variant position, straight after the `CJ` or `CJS`, so
 never adds it, and it looks at chef-jacket codes alone: hats (`OHHTM...`,
 `WAGHTM...`), aprons and straps keep whatever second cloth they carry.
 
-It is enforced in two places — `fabricUsageFor`, so no new works order picks up
-mesh it should not have, and the cutting sheet import, where a mesh row for a
-jacket that should not have it is dropped outright rather than falling through
-onto the garment's own cloth, and a mesh row can never be made the **primary**
-cloth of a jacket the usage tables do not know. `ohMeshConflicts()` warns on the
+It is enforced everywhere a second cloth can attach. `fabricUsageFor` is the
+main gate, so no new works order picks up mesh it should not have. The cutting
+sheet import has three more, because a guard on the usage table alone does not
+reach it: a mesh row for a jacket that should not have it is dropped rather
+than falling through onto the garment's own cloth; a mesh row can never be made
+the **primary** cloth of a jacket the usage tables do not know; and on a **live**
+works order a mesh row may only touch a line whose usage actually carries that
+mesh. That last one mattered: a single-line works order falls back to "the only
+item", so a mesh row was setting the jacket's own cut figure, and in the
+already-written-off mode was marking that cloth off against Sage on the strength
+of a mesh row. Such a row is now listed as one that could not be placed. `ohMeshConflicts()` warns on the
 console if the marker table ever carries mesh for a jacket whose code has no M,
 so a disagreement between the data and the rule is said out loud rather than
 quietly suppressed.
@@ -324,7 +330,8 @@ has three. Where a figure does exist it is near enough constant within a family
 Stratford 0.0815 to 0.0846), so the gaps could be filled from the family — but
 that is a pattern-room decision, not one to guess at.
 
-`fabFixMesh()` amends what is already on file. It runs on every load, strips a
+`fabFixMesh()` amends what is already on file. It runs on every load and when a
+dismissed line is put back to open, strips a
 wrong mesh extra from any **completed line still waiting to be written off**,
 and leaves a written-off line exactly as it is — that figure is what Sage was
 told, and rewriting it here would hide the difference rather than settle it.
