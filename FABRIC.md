@@ -452,7 +452,31 @@ Errors found from the routing cards and then from the rule:
   ladies range and carries no M. Luke corrected that: the Hampshire does have
   mesh. It is back at the routing card's 0.03 m and is now a named exception.
 
-## Fabric stock against live works orders
+## Correcting the cloth for a product
+
+The picker that changes the cloth on a works order line (live or booked in)
+carries a box, ticked by default: **use this cloth for this product on every
+works order from now on**. Ticked, the choice is kept in `fabricOverrides`,
+keyed by product code, saved with the rest of the state and published with it.
+`fabricUsageFor` applies it, so the live demand, the stock view and every new
+works order of that product see it at once; only the cloth changes, the metres
+per garment stay as the usage table has them. A line's own hand-set cloth still
+wins for that one line. Untick the box and only that line changes. The stock
+view lists every correction (**Corrected fabrics**, with what it replaced) and
+each can be removed there.
+
+### Finding the works order that is on the wrong cloth
+
+On the stock view the supplier is a drop-down, All suppliers by default, next
+to a search box for one fabric. The **Live WO** figure drills down: click the
+works order count and the lines behind it open under the fabric — works order,
+product, quantity, metres, due date, where the figure came from — with the
+works order openable and, for the editor, the cloth changeable right there.
+That is where a fabric that "has live works orders it should not have" gets
+sorted out: open the count, find the product that should not be on that cloth,
+change it, and with the box ticked the product is corrected for good.
+
+
 
 Fabric leaves the shelf at cutting but leaves Sage at completion, so Sage
 overstates what can still be cut from, and a shortage only showed once the

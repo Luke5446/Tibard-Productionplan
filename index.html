@@ -322,6 +322,9 @@ body.planner-mode .planner-wrap{display:block}
 .fab-stk th.fab-sort .arr{font-size:9px;margin-left:3px}
 .fab-stk th.fab-sort .arr.dim{color:#c8d0df}
 .fab-stk th.fab-sort.on{color:#7A1F3D}
+.fab-stk tr.fab-drill td{background:#f8fafc;padding:6px 10px 10px 28px;border-bottom:2px solid #e5e7eb}
+.fab-stk tr.fab-drill table th{font-size:10px}
+.fab-stk tr.fab-drill table td{padding:3px 8px;background:#fff}
 .fab-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 tr.fab-done td{color:#6b7280}
 
@@ -720,6 +723,7 @@ tr.fab-done td{color:#6b7280}
       <div id="fabPickWhat" style="font-size:12px;color:#4b5563"></div>
       <input id="fabPickQ" placeholder="Search the Sage fabric list by code, name or supplier..." oninput="fabPickRender()" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
       <div id="fabPickList" style="overflow:auto;max-height:50vh;border:1px solid #e5e7eb;border-radius:6px"></div>
+      <label id="fabPickAllWrap" style="font-size:12px;color:#374151;cursor:pointer;display:flex;gap:6px;align-items:flex-start"><input type="checkbox" id="fabPickAll" checked style="margin-top:2px"><span>Use this cloth for <b id="fabPickProd"></b> on <b>every works order from now on</b> - the usage table is corrected and the change goes out with publish. Untick for this line only.</span></label>
       <div style="display:flex;gap:6px;align-items:center"><button class="btn" onclick="fabPickChoose('')">&#8634; Back to the usage table</button><span id="fabPickNote" style="font-size:11px;color:#6b7280;margin-left:auto"></span></div>
     </div>
   </div>
@@ -2232,7 +2236,7 @@ function fetchShared(cb){
       smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{};
       smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{};
       styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
-      bufSnaps=s.bufSnaps||[]; fabStock=s.fabStock||{rows:{},pastedAt:''};
+      bufSnaps=s.bufSnaps||[]; fabStock=s.fabStock||{rows:{},pastedAt:''}; fabricOverrides=s.fabricOverrides||{};
       fabFixMesh();
       var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
       var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+sa;
@@ -2292,7 +2296,7 @@ function publishData(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
   if(!rows.length){ alert('Load buffer data first.'); return; }
   var state={rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,
     savedAt:new Date().toISOString()};
   var blob=new Blob([JSON.stringify(state)],{type:'application/json'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
@@ -2499,7 +2503,7 @@ function dbSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveState,1200)
 function saveState(){
   try{
     localStorage.setItem('tibard_production',JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,
       savedAt:new Date().toISOString()}));
     var ind=document.getElementById('saveInd'); if(ind){ind.innerHTML='✓ Saved';setTimeout(function(){ind.textContent='';},2000);}
   }catch(e){console.log('Save failed:',e);}
@@ -2512,7 +2516,7 @@ function loadState(){
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
-    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; bufSnaps=s.bufSnaps||[]; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{}; fabStock=s.fabStock||{rows:{},pastedAt:''};
+    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; bufSnaps=s.bufSnaps||[]; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{}; fabStock=s.fabStock||{rows:{},pastedAt:''}; fabricOverrides=s.fabricOverrides||{};
     // Anything left in the old review list becomes a queue item needing a decision.
     (s.smReview||[]).forEach(function(o){
       if(!smSeen[o.key] && !smPending.some(function(p){return p.key===o.key;})) smPending.push(o);
@@ -2531,7 +2535,7 @@ function clearAll(){ if(!IS_EDITOR) return;
   try{
     localStorage.removeItem('tibard_production');
     rows=[];WOs=[];completedWOs=[];
-    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};fabStock={rows:{},pastedAt:''};
+    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};fabStock={rows:{},pastedAt:''};fabricOverrides={};
     document.getElementById('dataWrap').classList.add('hidden');
     document.getElementById('uzone').classList.remove('hidden');
     document.getElementById('lastUpdated').textContent='';
@@ -3351,7 +3355,23 @@ function ohMeshConflicts(){ var out=[]; if(typeof FABRIC_MARKERS==='undefined') 
   Object.keys(FABRIC_MARKERS).forEach(function(k){ if(FABRIC_MARKERS[k][1]>0 && !ohHasMesh(k)) out.push(k); });
   if(out.length) console.warn('Mesh in the marker table on '+out.length+' jacket(s) whose code has no M: '+out.join(', '));
   return out; }
+// ── corrected fabrics ────────────────────────────────────────────────────
+// When the PM puts a works order line on a different cloth, the picker offers
+// to make that the cloth for EVERY works order of that product from now on.
+// The choice lives here, keyed by product code, is saved with the rest of the
+// state and goes out with publish, and is applied inside fabricUsageFor so
+// the live demand, the stock view and every new works order see it at once.
+// Only the cloth changes; the metres per garment stay as the usage table has
+// them. A line's own fabricCode still wins over this for that one line.
+var fabricOverrides={};
+function fabricOverrideSet(product, code){ if(!IS_EDITOR) return; product=(product||'').toUpperCase(); if(!product) return; if(code) fabricOverrides[product]=code.toUpperCase(); else delete fabricOverrides[product]; }
+function fabricOverrideClear(product){ if(!IS_EDITOR) return; delete fabricOverrides[(product||'').toUpperCase()]; saveState(); fabRender(); renderWOCards(); refreshWOModal(); }
 function fabricUsageFor(code){
+  var c=(code||'').trim().toUpperCase(), u=fabricUsageBase(c), o=fabricOverrides[c];
+  if(u && o && o!==(u.code||'').toUpperCase()) u=Object.assign({}, u, {code:o, name:fabricNameFor(o), source:(u.source||'')+' · corrected', corrected:true});
+  return u;
+}
+function fabricUsageBase(code){
   var c=(code||'').trim().toUpperCase();
   var u=(typeof FABRIC_USAGE!=='undefined') ? FABRIC_USAGE[c] : null;
   var mk=(typeof FABRIC_MARKERS!=='undefined') ? FABRIC_MARKERS[c] : null;
@@ -3395,8 +3415,9 @@ function fabricList(){
   return out;
 }
 var fabPickState=null;   // {current, cb}
-function fabricPick(current, what, cb){
-  fabPickState={current:current||'', cb:cb};
+function fabricPick(current, what, cb, product){
+  fabPickState={current:current||'', cb:cb, product:product||''};
+  var wrap=document.getElementById('fabPickAllWrap'); if(wrap){ wrap.style.display=product?'flex':'none'; document.getElementById('fabPickProd').textContent=product||''; document.getElementById('fabPickAll').checked=!!product; }
   document.getElementById('fabPickWhat').innerHTML='Fabric for <b>'+esc(what)+'</b>'+(current?' &middot; now <span style="font-family:monospace">'+esc(current)+'</span>':'')+'. Pick from the Sage list; the metres per garment stay as they are.';
   var q=document.getElementById('fabPickQ'); q.value=''; document.getElementById('fabPick').classList.add('open'); fabPickRender(); q.focus();
 }
@@ -3412,17 +3433,20 @@ function fabPickRender(){
     : '<div class="sm-empty" style="padding:14px">Nothing on the Sage list matches.</div>';
 }
 function fabPickClose(){ document.getElementById('fabPick').classList.remove('open'); fabPickState=null; }
-function fabPickChoose(code){ var st=fabPickState; if(!st) return; code=(code||'').toUpperCase(); if(code && !fabricList()[code]) return; fabPickClose(); st.cb(code); }
+function fabPickChoose(code){ var st=fabPickState; if(!st) return; code=(code||'').toUpperCase(); if(code && !fabricList()[code]) return;
+  var all=!!(st.product && document.getElementById('fabPickAll') && document.getElementById('fabPickAll').checked); fabPickClose(); st.cb(code, all); }
 function setFabricCode(i, code){ if(!IS_EDITOR) return; var wo=WOs[i]; if(!wo) return; var it=wo.items.find(function(x){ return x.code===code; }); if(!it) return;
-  fabricPick(it.fabricCode||'', code+' on '+wo.ref, function(v){
+  fabricPick(it.fabricCode||'', code+' on '+wo.ref, function(v, all){
     if(v) it.fabricCode=v; else delete it.fabricCode;
-    saveState(); refreshWOModal(); renderWOCards(); }); }
+    if(all) fabricOverrideSet(code, v);   // and every works order of this product from now on
+    saveState(); refreshWOModal(); renderWOCards(); if(document.getElementById('fabView') && !document.getElementById('fabView').classList.contains('hidden')) fabRender(); }, code); }
 function fabSetFabric(idx){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c || fabState(c)!=='open') return;
-  fabricPick(c.fabric&&c.fabric.code||'', c.code+' on '+c.ref, function(v){
+  fabricPick(c.fabric&&c.fabric.code||'', c.code+' on '+c.ref, function(v, all){
+    if(all) fabricOverrideSet(c.code, v);   // and every works order of this product from now on
     if(!v){ var u=fabricUsageFor(c.code); if(!u){ alert('No usage on file for '+c.code+' - choose a fabric from the list instead.'); return; } v=u.code; }
     if(!c.fabric) c.fabric={code:'', name:'', perGarment:null, std:null, actual:null, source:''};
     c.fabric.code=v; c.fabric.name=fabricNameFor(v); c.fabric.price=fabPriceFor(v); c.fabric.edited=true; c.fabric.source=(c.fabric.source||'').replace(/ · edited$/,'')+' · edited';
-    saveState(); fabRender(); }); }
+    saveState(); fabRender(); }, c.code); }
 function fabricRecordFor(it){
   var u=fabricUsageFor(it.code), actual=(it.metresActual!=null) ? it.metresActual : null;
   if(!u && actual==null && !it.fabricCode) return null;
@@ -3956,10 +3980,12 @@ function kpiWireTips(root, tipEl){
 // three states are meant to carry trims later, and to be what an automatic
 // poster reads once there is a server: it would take the OPEN lines, post
 // them, and stamp them EXPORTED - the tab and the CSV would not change.
-var fabOpen={mon:{}, day:{}, hideDone:false, showAll:false, allFabrics:false, supplier:'', need:false, sort:{}, sec:{stock:true, ledger:true, usage:true}};   // one person's view, local key only
+var fabOpen={mon:{}, day:{}, hideDone:false, showAll:false, allFabrics:false, supplier:'', need:false, sort:{}, drill:{}, sec:{stock:true, ledger:true, usage:true}};   // one person's view, local key only
 try{ var _fo=JSON.parse(localStorage.getItem('tibard_fab_sections')||'null'); if(_fo){ fabOpen.mon=_fo.mon||{}; fabOpen.day=_fo.day||{}; fabOpen.hideDone=!!_fo.hideDone; fabOpen.showAll=!!_fo.showAll; fabOpen.allFabrics=!!_fo.allFabrics; fabOpen.supplier=_fo.supplier||''; fabOpen.need=!!_fo.need; fabOpen.sort=_fo.sort||{};
   if(_fo.sec){ fabOpen.sec.stock=_fo.sec.stock!==false; fabOpen.sec.ledger=_fo.sec.ledger!==false; fabOpen.sec.usage=_fo.sec.usage!==false; } } }catch(e){}
 function fabToggleSec(k){ fabOpen.sec[k]=!fabOpen.sec[k]; fabSavePrefs(); fabRender(); }
+function fabDrill(code){ fabOpen.drill=fabOpen.drill||{}; fabOpen.drill[code]=!fabOpen.drill[code]; fabRender(); }
+function fabStockQ(){ var el=document.getElementById('fabStockQ'); return el ? smNorm(el.value) : ''; }
 // The same collapsible banner as the Special Makes tab, on this tab's state.
 function fabBanner(k, title, act){
   var open=fabOpen.sec[k];
@@ -4261,11 +4287,12 @@ function exportSheetExtras(){
 // figure where typed, the standard otherwise, secondary fabrics at standard.
 function fabLiveDemand(){
   var by={}, noUsage=0;
-  function add(code,m,ref){ code=(code||'').toUpperCase(); if(!code||!(m>0)) return; var d=by[code]||(by[code]={metres:0, refs:{}}); d.metres+=m; d.refs[ref]=1; }
-  WOs.forEach(function(wo){ wo.items.forEach(function(it){
+  function add(code,m,ref,line){ code=(code||'').toUpperCase(); if(!code||!(m>0)) return; var d=by[code]||(by[code]={metres:0, refs:{}, lines:[]}); d.metres+=m; d.refs[ref]=1; d.lines.push(Object.assign({metres:m}, line)); }
+  WOs.forEach(function(wo,wi){ wo.items.forEach(function(it){
     var f=fabricRecordFor(it); if(!f||!f.code){ if(f===null) noUsage++; return; }
-    add(f.code, (f.actual!=null)?f.actual:f.std, wo.ref);
-    (f.extras||[]).forEach(function(x){ add(x.code, x.std, wo.ref); });
+    var line={ref:wo.ref, woIdx:wi, code:it.code, qty:it.qty, due:wo.due||'', source:f.source||'', edited:!!f.edited};
+    add(f.code, (f.actual!=null)?f.actual:f.std, wo.ref, line);
+    (f.extras||[]).forEach(function(x){ add(x.code, x.std, wo.ref, Object.assign({}, line, {mesh:true})); });
   }); });
   return {by:by, noUsage:noUsage};
 }
@@ -4290,7 +4317,7 @@ function fabStockCompute(){
     l.extras.forEach(function(x){ if(x.code && x.metres>0) cutOpen[x.code]=(cutOpen[x.code]||0)+x.metres; }); });
   var codes={}; Object.keys(fabStock.rows).forEach(function(c){codes[c]=1;}); Object.keys(demand.by).forEach(function(c){codes[c]=1;}); Object.keys(cutOpen).forEach(function(c){codes[c]=1;}); if(fabStock.pastedAt) Object.keys(FAB_MIN_LEVELS).forEach(function(c){codes[c]=1;});   // a monitored fabric missing from a pasted sheet is worth a row; before any paste it is just noise
   var out=Object.keys(codes).map(function(c){
-    var r=fabStock.rows[c]||null, d=demand.by[c]||{metres:0,refs:{}}, mn=fabMinFor(c, r);
+    var r=fabStock.rows[c]||null, d=demand.by[c]||{metres:0,refs:{},lines:[]}, mn=fabMinFor(c, r);
     var inSage=r?r.inStock:null, cut=cutOpen[c]||0, com=d.metres, oo=r?r.onOrder:0, min=mn.m;
     // Free Stock is what is in Sage less the live works orders and the cut
     // lines not yet written off - what could still be cut today. What is on
@@ -4303,7 +4330,7 @@ function fabStockCompute(){
     // rounded up to 10 m, never less than the supplier's usual quantity
     var gap=(after==null) ? 0 : Math.max(0, min-after, -after);
     var order=gap>0 ? Math.max(fabRound(gap,10), r&&r.reorderQty>0?r.reorderQty:0) : 0;
-    return { code:c, row:r, name:r?r.desc:(FABRIC_NAMES[c]||''), supAcc:r?r.supAcc:'', supName:r?r.supName:'', inSage:inSage, cut:cut, committed:com, refs:Object.keys(d.refs).length, onOrder:oo, min:min, minSrc:mn.src, monitored:min>0,
+    return { code:c, row:r, name:r?r.desc:(FABRIC_NAMES[c]||''), supAcc:r?r.supAcc:'', supName:r?r.supName:'', inSage:inSage, cut:cut, committed:com, refs:Object.keys(d.refs).length, lines:d.lines||[], onOrder:oo, min:min, minSrc:mn.src, monitored:min>0,
              free:free, after:after, state:st, covered:covered, order:order };
   });
   var rank={short:0, low:1, unknown:2, ok:3};
@@ -4387,17 +4414,23 @@ function fabStockHtml(q){
   if(!fabOpen.sec.stock) return h;
   h+='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div class="sub">Free Stock = in stock less live works orders less completed-not-written-off &middot; what is on PO is not counted as stock, but the suggested order allows for it'
     +(k.noUsage?' &middot; <span style="color:#b45309">'+k.noUsage+' live line(s) with no usage on file are not in the demand</span>':'')+'</div>';
-  // supplier chips, from the monitored fabrics
+  // the supplier, one drop-down, All suppliers by default; then a search box for one fabric
   var sups={}; k.monitored.forEach(function(x){ if(x.supAcc) sups[x.supAcc]=x.supName||x.supAcc; });
-  var chip=function(acc,label,n){ var on=(fabOpen.supplier||'')===acc; return '<button class="fab-chip'+(on?' on':'')+'" onclick="fabOpen.supplier=\''+esc(acc)+'\';fabSavePrefs();fabRender()">'+esc(label)+(n?' <span class="cnt">'+n+'</span>':'')+'</button>'; };
-  h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0">'+chip('','All suppliers',0)
-    +Object.keys(sups).sort(function(a,b){ return sups[a].localeCompare(sups[b]); }).map(function(acc){ var n=k.monitored.filter(function(x){return x.supAcc===acc && x.state!=='ok';}).length; return chip(acc, sups[acc], n); }).join('')
+  if(fabOpen.supplier && !sups[fabOpen.supplier]) fabOpen.supplier='';
+  var sq=fabStockQ(), sqRaw=document.getElementById('fabStockQ') ? document.getElementById('fabStockQ').value : '';
+  h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0">'
+    +'<select id="fabSupSel" onchange="fabOpen.supplier=this.value;fabSavePrefs();fabRender()" style="font-size:12px;padding:6px 8px;border-radius:5px;border:1px solid #c8d0df;font-family:Arial,sans-serif;max-width:320px"><option value="">All suppliers</option>'
+    +Object.keys(sups).sort(function(a,b){ return sups[a].localeCompare(sups[b]); }).map(function(acc){ var n=k.monitored.filter(function(x){return x.supAcc===acc && x.state!=='ok';}).length; return '<option value="'+esc(acc)+'"'+(fabOpen.supplier===acc?' selected':'')+'>'+esc(sups[acc])+(n?' ('+n+' to look at)':'')+'</option>'; }).join('')+'</select>'
+    +'<input type="text" id="fabStockQ" placeholder="&#128269; find a fabric - code, name or supplier" oninput="fabRender()" value="'+esc(sqRaw)+'" style="font-size:12px;padding:6px 9px;border-radius:5px;border:1px solid #c8d0df;min-width:240px;font-family:Arial,sans-serif">'
     +'<button class="fab-chip'+(fabOpen.need?' on':'')+'" style="margin-left:8px;border-color:#991b1b'+(fabOpen.need?';background:#991b1b':';color:#991b1b')+'" onclick="fabOpen.need=!fabOpen.need;fabSavePrefs();fabRender()" title="every fabric that would still be under its minimum, or below nil, with the PO landed - with or without a minimum level; a suggested order is on each">&#9873; Needs ordering'+(k.need.length?' <span class="cnt">'+k.need.length+'</span>':'')+'</button>'
     +'<label style="margin-left:auto;font-size:11px;color:#4b5563;cursor:pointer"><input type="checkbox" onchange="fabOpen.allFabrics=this.checked;fabSavePrefs();fabRender()"'+(fabOpen.allFabrics?' checked':'')+'> Include fabrics with no minimum level</label>'
     +'<label style="font-size:11px;color:#4b5563;cursor:pointer"><input type="checkbox" onchange="fabOpen.showAll=this.checked;fabSavePrefs();fabRender()"'+(fabOpen.showAll?' checked':'')+'> Show fabrics that are fine too</label>'
     +'</div>';
+  var ov=Object.keys(fabricOverrides||{}).sort();
+  if(ov.length) h+='<div style="font-size:11px;color:#4b5563;margin:2px 0 8px"><b>Corrected fabrics</b> <span style="color:#6b7280">- every works order of the product uses this cloth; goes out with publish</span>: '
+    +ov.map(function(pc){ var u=fabricUsageBase(pc); return '<span style="white-space:nowrap;margin-right:10px"><span style="font-family:monospace">'+esc(pc)+'</span> &rarr; <b style="font-family:monospace">'+esc(fabricOverrides[pc])+'</b>'+(u&&u.code?' <span style="color:#9ca3af">(was '+esc(u.code)+')</span>':'')+(ed?' <a href="#" onclick="fabricOverrideClear(\''+esc(pc)+'\');return false" title="back to the usage table">remove</a>':'')+'</span>'; }).join('')+'</div>';
   if(fabOpen.supplier && sups[fabOpen.supplier]) h+=fabOrderHtml(fabOpen.supplier, sups[fabOpen.supplier]);
-  var list=k.list.filter(function(x){ return !q || smNorm(x.code+' '+x.name+' '+x.supName).indexOf(q)>=0; });
+  var list=k.list.filter(function(x){ return !sq || smMatch(x.code+' '+x.name+' '+x.supName, sq); });
   // "needs ordering" is the whole flag, monitored or not - a fabric with no
   // minimum that is short still needs ordering, and the count must match the list
   if(!fabOpen.allFabrics && !fabOpen.need) list=list.filter(function(x){ return x.monitored; });
@@ -4405,7 +4438,7 @@ function fabStockHtml(q){
   if(fabOpen.need) list=list.filter(function(x){ return x.order>0; }); else if(!fabOpen.showAll) list=list.filter(function(x){ return x.state!=='ok'; });
   if(!k.list.length) return h+'<div class="sm-empty">Nothing to show - paste the Sage sheet, or raise a works order.</div></div>';
   h+='<div style="font-size:11px;color:#4b5563;margin:6px 0"><span class="fab-st short">'+k.short.length+' short</span> <span class="fab-st low">'+k.low.length+' below min</span>'+(k.unknown.length?' <span class="fab-st nofab">'+k.unknown.length+' not on the Sage sheet</span>':'')+' <span style="color:#9ca3af">of the '+k.monitored.length+' monitored</span></div>';
-  if(!list.length) return h+'<div class="sm-empty" style="padding:14px">'+(q?'Nothing matches.':(fabOpen.need?'Nothing needs ordering.':'Nothing short or below minimum.'))+'</div></div>';
+  if(!list.length) return h+'<div class="sm-empty" style="padding:14px">'+(sq?'Nothing matches.':(fabOpen.need?'Nothing needs ordering.':'Nothing short or below minimum.'))+'</div></div>';
   var T='stock', SH=function(key,l,r,t){ return fabSortHead(T,key,l,r,t); };
   list=fabSorted(T, list, {code:function(x){return x.code;}, sup:function(x){return x.supName||'';}, inSage:function(x){return x.inSage;}, committed:function(x){return x.committed;}, cut:function(x){return x.cut;}, free:function(x){return x.free;}, onOrder:function(x){return x.onOrder;}, after:function(x){return x.after;}, min:function(x){return x.min;}, state:function(x){return -FAB_STATE_RANK[x.state];}});
   h+='<div class="sm-tblwrap"><table class="fab-stk"><thead><tr>'+SH('code','Fabric')+SH('sup','Supplier')+SH('inSage','In Stock',1)
@@ -4416,15 +4449,30 @@ function fabStockHtml(q){
         +'<td>'+(x.row&&x.row.supName ? esc(x.row.supName)+(function(){ var ld=fabLeadFor(x.row); return '<div class="sm-sub">'+(ld.days?ld.days+' working day'+(ld.days===1?'':'s')+(ld.src==='app'?' <span title="set here, not in Sage">&#9998;</span>':''):'<span style="color:#b45309">no lead time</span>')
               +(ed?' <a href="#" onclick="fabSetLead(\''+esc(x.row.supAcc)+'\',\''+esc(x.row.supName).replace(/'/g,"\\'")+'\');return false" title="Set the lead time for this supplier">edit</a>':'')+'</div>'; })() : '<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.inSage,1))+'</td>'
-        +'<td class="fab-num">'+(x.committed?fabM(x.committed,1)+'<div class="sm-sub">'+x.refs+' WO'+(x.refs===1?'':'s')+'</div>':'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num">'+(x.committed?fabM(x.committed,1)+'<div class="sm-sub"><a href="#" onclick="fabDrill(\''+esc(x.code)+'\');return false" title="the works orders behind this figure">'+x.refs+' WO'+(x.refs===1?'':'s')+' '+(fabOpen.drill[x.code]?'&#9652;':'&#9662;')+'</a></div>':'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.cut?fabM(x.cut,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num" style="font-weight:700;'+(x.free!=null&&x.free<0?'color:#8a2222':'')+'">'+(x.free==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.free,1))+'</td>'
         +'<td class="fab-num">'+(x.onOrder?fabM(x.onOrder,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num" style="font-weight:700;'+(x.after!=null&&(x.after<0||(x.min>0&&x.after<x.min))?'color:#8a2222':'')+'">'+(x.after==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.after,1))+'</td>'
         +'<td class="fab-num">'+(x.min?fabM(x.min,0)+(x.minSrc!=='Sage'?' <span title="'+(x.minSrc==='app'?'set here':'from the office sheet')+'">&#9998;</span>':''):'<span style="color:#9ca3af">&mdash;</span>')+(ed?'<div class="sm-sub"><a href="#" onclick="fabSetMin(\''+esc(x.code)+'\');return false">edit</a></div>':'')+'</td>'
-        +'<td><span class="fab-st '+x.state+'">'+lbl+'</span>'+(x.covered?'<div class="sm-sub">on PO covers it</div>':'')+(x.order>0?'<div class="sm-sub">order '+fabM(x.order,0)+' m</div>':'')+'</td></tr>'; }).join('')
+        +'<td><span class="fab-st '+x.state+'">'+lbl+'</span>'+(x.covered?'<div class="sm-sub">on PO covers it</div>':'')+(x.order>0?'<div class="sm-sub">order '+fabM(x.order,0)+' m</div>':'')+'</td></tr>'
+        +(fabOpen.drill[x.code] && x.lines.length ? fabDrillHtml(x) : ''); }).join('')
     +'</tbody></table></div></div>';
   return h;
+}
+// The works orders behind one fabric's live figure, one line each, with the
+// way to put a line on another cloth right there - this is where a fabric
+// that "has live works orders it should not have" gets sorted out.
+function fabDrillHtml(x){
+  var ed=IS_EDITOR, lines=x.lines.slice().sort(function(a,b){ return b.metres-a.metres; });
+  return '<tr class="fab-drill"><td colspan="10"><div class="sm-sub" style="margin-bottom:4px">'+x.lines.length+' line'+(x.lines.length===1?'':'s')+' on '+x.refs+' live works order'+(x.refs===1?'':'s')+' take <b>'+esc(x.code)+'</b>'+(ed?' &middot; &#9998; changes the cloth on that line, and can correct the product for every works order from now on':'')+'</div>'
+    +'<table class="fab-stk" style="width:auto;min-width:520px"><thead><tr><th>Works order</th><th>Product</th><th style="text-align:right">Qty</th><th style="text-align:right">Metres</th><th>Due</th><th>From</th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
+    +lines.map(function(l){ return '<tr><td><a href="#" class="sm-ref-s" onclick="openWOModal('+l.woIdx+');return false">'+esc(l.ref)+'</a></td>'
+        +'<td><span style="font-family:monospace;font-size:11px">'+esc(l.code)+'</span>'+(l.mesh?' <span class="sm-sub" style="display:inline">mesh</span>':'')+'</td>'
+        +'<td class="fab-num">'+kpiN(l.qty)+'</td><td class="fab-num">'+fabM(l.metres)+'</td><td>'+(l.due?fmtD(l.due):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="sm-sub">'+esc(l.source)+(l.edited?' &#9998;':'')+'</td>'
+        +(ed && !l.mesh ? '<td><a href="#" onclick="setFabricCode('+l.woIdx+',\''+esc(l.code).replace(/'/g,"\\'")+'\');return false" title="Put this line on a different cloth">&#9998; fabric</a></td>' : (ed?'<td></td>':''))+'</tr>'; }).join('')
+    +'</tbody></table></td></tr>';
 }
 
 // Mesh was on the whole Hampshire range at 2.5 m a garment before the rule
@@ -4747,7 +4795,11 @@ function fabRender(){
     +'A line is <b>Open</b> until it goes into a write-off file (<b>Exported</b>, with the file it went in) or is <b>Dismissed</b>; neither can be exported again.</div></div>';
   }
 
+  // the whole tab is rebuilt on every keystroke in a search box: put the
+  // caret back where it was, or typing stops after one character
+  var ae=document.activeElement, aeId=(ae&&ae.id&&el.contains(ae))?ae.id:'', aePos=aeId&&ae.selectionStart!=null?ae.selectionStart:null;
   el.innerHTML=h;
+  if(aeId){ var back=document.getElementById(aeId); if(back){ back.focus(); if(aePos!=null && back.setSelectionRange) try{ back.setSelectionRange(aePos,aePos); }catch(e){} } }
   kpiWireTips(el, document.getElementById('fabTip'));
 }
 </script>

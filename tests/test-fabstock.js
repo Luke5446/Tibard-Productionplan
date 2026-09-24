@@ -30,6 +30,16 @@ const sheet=[
      shown:[...document.querySelectorAll('#fabBody .fab-stk')][0].textContent.replace(/\s+/g,' ').slice(0,60), rowsShown:document.querySelectorAll('#fabBody .fab-stk tbody tr').length,
      sup:[...document.querySelectorAll('#fabBody .fab-stk tbody tr')].map(tr=>tr.children[1].textContent.replace(/\s+/g,' ').trim()).join('|')}; }, sheet);
  console.log('after paste  ->', JSON.stringify(t1));
+ // the supplier is a drop-down, All suppliers by default; a search box finds one fabric; the Live WO
+ // figure drills down to the works orders behind it, each with a way to change its cloth
+ const t1b=await p.evaluate(()=>{ const sel=document.getElementById('fabSupSel'); const o={def:sel.value, opts:[...sel.options].map(x=>x.textContent.replace(/ \(.*\)$/,'')).join('|')};
+   sel.value='TIA001EU'; sel.dispatchEvent(new Event('change')); o.order=/Order for Tiajo Comercio/.test(document.getElementById('fabBody').textContent); o.kept=document.getElementById('fabSupSel').value;
+   document.getElementById('fabSupSel').value=''; document.getElementById('fabSupSel').dispatchEvent(new Event('change'));
+   const q=document.getElementById('fabStockQ'); q.value='pc14001'; q.focus(); q.dispatchEvent(new Event('input')); o.found=[...document.querySelectorAll('#fabBody .fab-stk tbody tr')].map(tr=>tr.querySelector('span').textContent).join(); o.focus=document.activeElement.id;
+   document.getElementById('fabStockQ').value=''; document.getElementById('fabStockQ').dispatchEvent(new Event('input'));
+   fabDrill('PC14001'); const d=document.querySelector('#fabBody .fab-stk tr.fab-drill'); o.drill=d?d.textContent.replace(/\s+/g,' ').trim():'none'; o.link=!!(d&&d.querySelector('a[onclick^="setFabricCode"]')); o.woLink=!!(d&&d.querySelector('a[onclick^="openWOModal"]'));
+   fabDrill('PC14001'); o.closed=!document.querySelector('#fabBody .fab-stk tr.fab-drill'); return o; });
+ console.log('stock view   ->', JSON.stringify(t1b));
  // show-all reveals the fine ones; a reload keeps the sheet; a viewer sees the same table; write-off of the cut line frees nothing (Sage will fall instead)
  const t2=await p.evaluate(()=>{ fabOpen.showAll=true; fabRender(); return document.querySelectorAll('#fabBody .fab-stk tbody tr').length; });
  // the Tiajo order: one monitored Tiajo fabric, suggested 50; top up spreads the rest; a typed figure sticks; reset returns to the suggestion
@@ -74,7 +84,9 @@ const sheet=[
  console.log('banners   ', t5, '| after reload', t5b);
  console.log('lead edit', t2b);
  console.log('show all', t2, '| reload', JSON.stringify(t3), '| viewer', JSON.stringify(t4));
- const pass = t0.n===0 && /CO5014DEN:unknown:9.00:6/.test(t0.list) && /PC14001:unknown:7.05:0/.test(t0.list) && /MESH2290901:unknown:0.51:0/.test(t0.list) && t0.tile===1
+ const pass = t1b.def==='' && /^All suppliers\|/.test(t1b.opts) && /Tiajo Comercio/.test(t1b.opts) && t1b.order && t1b.kept==='TIA001EU' && t1b.found==='PC14001' && t1b.focus==='fabStockQ'
+   && /1 line on 1 live works order take PC14001/.test(t1b.drill) && /S-LIVE2/.test(t1b.drill) && /OHCJMCHESHIRE3201/.test(t1b.drill) && /7\.05/.test(t1b.drill) && t1b.link && t1b.woLink && t1b.closed
+   && t0.n===0 && /CO5014DEN:unknown:9.00:6/.test(t0.list) && /PC14001:unknown:7.05:0/.test(t0.list) && /MESH2290901:unknown:0.51:0/.test(t0.list) && t0.tile===1
    && /3 fabric\(s\) loaded/.test(t1.alert) && /1 short against live works orders, 1 under the minimum level/.test(t1.alert) && t1.pastedAt==='2026-09-21' && t1.n===3
    && t1.rows[0]==='PC14001:short:5:0:-2.05:7.05:20:17.95:500:490' && t1.rows[1]==='CO5014DEN:low:20:6:5:9:0:5:10:50' && t1.rows[2]==='MESH2290901:unknown::0::0.51:0:-999:500:0'
    && t1.rows.some(r=>r==='POPLAZA03:ok:30:0:30:0:0:30:0:0')

@@ -30,11 +30,32 @@ const { chromium } = require('playwright');
    fabSetFabric(idx); const locked=!document.getElementById('fabPick').classList.contains('open');   // exported now: no picker
    return {code:c.fabric.code, name:c.fabric.name, line:csv[1], still:completedWOs[idx].fabric.code, locked}; });
  console.log('edit    ->', JSON.stringify(edit));
+ // the picker's default corrects the PRODUCT: a new works order of it takes the cloth, the live demand moves, the
+ // correction is listed on the stock view and can be removed; unticked, only that one line changes
+ const corr=await p.evaluate(()=>{ const o={};
+   o.set=fabricOverrides.OHAPP0534GD;                                     // set by the picks above (box ticked by default)
+   document.getElementById('woRef').value='S-E2'; document.getElementById('woStart').value='2026-09-21'; document.getElementById('woDue').value='2026-09-30'; document.getElementById('woTA').value='OHAPP0534GD\t4'; saveWO();
+   const j=WOs.findIndex(w=>w.ref==='S-E2'); const r=fabricRecordFor(WOs[j].items[0]); o.newWO=r.code+'/'+r.std+'/'+r.source;
+   const dem=fabLiveDemand().by; o.demand=Object.keys(dem).filter(c=>/CO5014DEN|CO5003DEN/.test(c)).map(c=>c+'='+dem[c].metres).join();
+   smShowTab('fabric'); fabRender(); const cl=document.getElementById('fabBody').textContent; o.listed=/Corrected fabrics/.test(cl) && /OHAPP0534GD → CO5003DEN/.test(cl.replace(/\s+/g,' '));
+   setFabricCode(j,'OHAPP0534GD'); o.boxDefault=document.getElementById('fabPickAll').checked; o.prod=document.getElementById('fabPickProd').textContent;
+   document.getElementById('fabPickAll').checked=false; fabPickChoose('PC2X13306');                  // this line only
+   o.lineOnly=WOs[j].items[0].fabricCode+'/'+fabricOverrides.OHAPP0534GD;
+   fabricOverrideClear('OHAPP0534GD'); o.cleared=fabricOverrides.OHAPP0534GD===undefined && fabricRecordFor(WOs[j].items[0]).code==='PC2X13306';
+   fabricOverrideSet('OHAPP0534GD','CO5003DEN'); saveState(); return o; });
+ console.log('correct ->', JSON.stringify(corr));
+ await p.reload(); await p.waitForTimeout(400);
+ const persist=await p.evaluate(()=>{ if(!rows.length) rows=[{code:'ZZSEED',desc:'',qty:0}];   // publish refuses an empty buffer
+   URL.createObjectURL=b=>{ b.text().then(t=>window.__pub=t); return 'blob:x'; }; HTMLAnchorElement.prototype.click=function(){}; window.alert=()=>{}; window.confirm=()=>true; publishData();
+   return new Promise(res=>setTimeout(()=>{ rows=rows.filter(r=>r.code!=='ZZSEED'); res({after:fabricOverrides.OHAPP0534GD, published:JSON.parse(window.__pub).fabricOverrides.OHAPP0534GD}); },200)); });
+ console.log('persist ->', JSON.stringify(persist));
  const undo=await p.evaluate(()=>{ const idx=completedWOs.findIndex(x=>x.ref==='S-E1'); undoCompleted(idx); const w=WOs.find(w=>w.ref==='S-E1'); return w.items[0].fabricCode; });
  console.log('undo    ->', undo);
- const order=await p.evaluate(()=>[...document.querySelectorAll('#fabBody .sm-bh .ttl')].map(e=>e.textContent.trim().slice(0,14)).join('|'));
+ const order=await p.evaluate(()=>{ smShowTab('fabric'); fabRender(); return [...document.querySelectorAll('#fabBody .sm-bh .ttl')].map(e=>e.textContent.trim().slice(0,14)).join('|'); });   // the reload above left the tab unshown
  console.log('banners ->', order);
- const pass = live.before==='CO5014DEN' && live.code==='PC2X13306' && /BURGUNDY/.test(live.name) && live.std===6 && /edited$/.test(live.source) && /PC2X13306/.test(live.cell) && /fabric/.test(live.cell) && live.pick.open && live.pick.hits.join()==='PC2X13306' && live.pick.closed
+ const pass = corr.set==='CO5003DEN' && corr.newWO==='CO5003DEN/2.4/All Costings · corrected' && corr.demand==='CO5003DEN=2.4' && corr.listed && corr.boxDefault && corr.prod==='OHAPP0534GD'
+   && corr.lineOnly==='PC2X13306/CO5003DEN' && corr.cleared && persist.after==='CO5003DEN' && persist.published==='CO5003DEN'
+   && live.before==='CO5014DEN' && live.code==='PC2X13306' && /BURGUNDY/.test(live.name) && live.std===6 && /edited$/.test(live.source) && /PC2X13306/.test(live.cell) && /fabric/.test(live.cell) && live.pick.open && live.pick.hits.join()==='PC2X13306' && live.pick.closed
    && unk==='PC2X13306|true||PC2X13306'
    && done.code==='PC2X13306' && done.edited===true && done.std===6 && /PC2X13306/.test(done.cell) && /edit fabric/.test(done.cell)
    && edit.code==='CO5003DEN' && /MURRAY BLACK DENIM/.test(edit.name) && edit.line==='CO5003DEN,HOME,,6,Cutting,S-E1,21/09/2026,Manual Reduction' && edit.still==='CO5003DEN' && edit.locked
