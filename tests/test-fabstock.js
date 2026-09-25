@@ -1,11 +1,11 @@
 // Fabric stock against live works orders. Sage sheet pasted for three fabrics;
 // one live works order committing CO5014DEN (apron, 15 x 0.6 = 9 m) and one
-// committing PC14001 + mesh (Cheshire 32" x 5: 7.05 m + 0.51 m); a completed
+// committing PC14001 + mesh (Cheshire 32" x 5: 7.05 m + 0.55 m); a completed
 // but not-yet-exported apron line (6 m of CO5014DEN cut, still in Sage).
 //   CO5014DEN  in stock 20, min 10, on PO 0 -> free 20-6-9 = 5 -> below min, order the usual qty of 50
 //   PC14001    in stock 5, no Sage min but 500 on the office sheet, on PO 20 -> free -2.05 -> short, the PO covers it, order 490 on top
 //   POPLAZA03  in Sage 30, nothing live, no minimum -> not monitored, hidden until asked for
-//   MESH2290901 not on the sheet, 0.51 committed, 500 on the office sheet -> not on sheet
+//   MESH2290901 not on the sheet, 0.55 committed, 500 on the office sheet -> not on sheet
 const { chromium } = require('playwright');
 const T=(a)=>a.join('\t');
 const sheet=[
@@ -90,9 +90,9 @@ const sheet=[
  console.log('show all', t2, '| reload', JSON.stringify(t3), '| viewer', JSON.stringify(t4));
  const pass = t1b.def==='' && /^All suppliers\|/.test(t1b.opts) && /Tiajo Comercio/.test(t1b.opts) && t1b.order && t1b.kept==='TIA001EU' && t1b.found==='PC14001' && t1b.focus==='fabStockQ'
    && /1 line on 1 live works order take PC14001/.test(t1b.drill) && /S-LIVE2/.test(t1b.drill) && /OHCJMCHESHIRE3201/.test(t1b.drill) && /7\.05/.test(t1b.drill) && t1b.link && t1b.woLink && t1b.closed
-   && t0.n===0 && /CO5014DEN:unknown:9.00:6/.test(t0.list) && /PC14001:unknown:7.05:0/.test(t0.list) && /MESH2290901:unknown:0.51:0/.test(t0.list) && t0.tile===1
+   && t0.n===0 && /CO5014DEN:unknown:9.00:6/.test(t0.list) && /PC14001:unknown:7.05:0/.test(t0.list) && /MESH2290901:unknown:0.55:0/.test(t0.list) && t0.tile===1
    && /3 fabric\(s\) loaded/.test(t1.alert) && /1 short against live works orders, 1 under the minimum level/.test(t1.alert) && t1.pastedAt==='2026-09-21' && t1.n===3
-   && t1.rows[0]==='PC14001:short:5:0:-2.05:7.05:20:17.95:500:490' && t1.rows[1]==='CO5014DEN:low:20:6:5:9:0:5:10:50' && t1.rows[2]==='MESH2290901:unknown::0::0.51:0:-999:500:0'
+   && t1.rows[0]==='PC14001:short:5:0:-2.05:7.05:20:17.95:500:490' && t1.rows[1]==='CO5014DEN:low:20:6:5:9:0:5:10:50' && t1.rows[2]==='MESH2290901:unknown::0::0.55:0:-999:500:0'
    && t1.rows.some(r=>r==='POPLAZA03:ok:30:0:30:0:0:30:0:0')
    && t1.rowsShown===33 && /Tiajo Comercio ?10 working days/.test(t1.sup)
    && t5==='Fabric|In Stock|On PO 2>0 false' && t5b===0 && t2===33 && t2c==='CO5014DEN=50|50|true|4000|4200|true|50|25:short' && t2b==='12:app:12' && t2d.heads==='Fabric|Supplier|In Stock|Live WO|Not written off|Free Stock|On PO|Free + PO|Min|State' && t2d.desc==='20.0,5.0' && t2d.asc==='5.0,20.0' && !t2d.sortLeft && t2d.need==='CO5014DEN:m,PC14001:-' && t2d.chip==='⚑ Needs ordering 2' && t2d.rows==='CO5014DEN,PC14001' && t2d.afterCol==='CO5014DEN=5.0,PC14001=-3.2' && t2d.tile==='2' && t2d.oheads==='Free Stock|Free + PO|Min' && t3.n===1 && t3.den===5 && t4.btn===0 && t4.rows===33 && t4.short==='CO5014DEN';

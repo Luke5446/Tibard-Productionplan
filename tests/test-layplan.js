@@ -12,7 +12,8 @@
 //     and that marker (length / lay) is its usage - the 0597FM variant the
 //     sheet lists without a product code is only known this way
 //   - navy short-sleeve Oxford (OHCJSMOXFORD--15), the Rick Stein apron
-//     (OHRSAPP300503PC), the 0544 aprons' fabric codes, the 0597 denim apron
+//     (OHRSAPP300503PC) and the other Rick Stein records, the Oxford trims by
+//     colour, the 0544 aprons' fabric codes, the 0597 denim apron
 const { chromium } = require('playwright');
 const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
 (async()=>{
@@ -30,7 +31,11 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
      find:[layPlanFor('OHCJMSTRATFORD4001')?'exact':'-', layPlanFor('OHAPP0534241')===LAY_PLAN['OHAPP0534__']?'pattern':'-', layPlanFor('OHAPP059703/153DEN')===LAY_PLAN['OHAPP0597__/__DEN']?'3char':'-', layPlanFor('OHAPP9999')?'-':'none'],
      usage:{apron:u('OHAPP0534241'), denim:u('OHAPP059703/153DEN'), fm:u('OHAPP0597F03/153DEN'), same:u('OHAPP0597224DEN'), fsame:u('OHAPP0597F224DEN'), navy:u('OHCJSMOXFORD4215'), sage:u('OHAPP0544173'), slate:u('OHAPP0544241'), rs:u('OHRSAPP300503PC'), strat:u('OHCJMSTRATFORD4001')},
      styles:['OHCJSMOXFORD3815','OHCJSMOXFORD4215','OHCJSMOXFORD5615','OHCJSMOXFORD4201','OHRSAPP300503PC','OHAPP059703/153DEN'].map(st).join(' '),
-     navy:(()=>{ const s=styleForCode('OHCJSMOXFORD4215').style; return s.name+'|'+s.fabrics.map(f=>f[1]).join('+')+'|'+s.trims.filter(t=>/^(Thread|Buttons)$/.test(t[0])).map(t=>t[1]).join('|'); })(),
+     navy:(()=>{ const s=styleForCode('OHCJSMOXFORD4215').style; return s.name+'|'+s.fabrics.map(f=>f[1]).join('+')+'|'+s.trims.filter(t=>/^(Thread|Buttons)$/.test(t[0])).map(t=>t[3]).join('|'); })(),
+     oxWhite:styleForCode('OHCJSMOXFORD4201').style.trims.map(t=>t[3]).join('|'),
+     oxPrint:(()=>{ cap=''; printWOP('WO-T','OHCJMOXFORD4401L',5,null,null); const m=cap.match(/band">TRIMS[\s\S]*?<\/table>/); return m?m[0].replace(/<[^>]+>/g,'|').replace(/\|+/g,'|'):'none'; })(),
+     rs0601:(()=>{ const s=styleForCode('OHRSAPP060107').style; return [s.customer,s.fabrics[0][1],s.fabrics[0][3],s.brandType].join('|'); })(),
+     indigo:u('OHAPP0597F224DEN'),
      f0544:['OHAPP054401C','OHAPP054403','OHAPP054415','OHAPP0544173','OHAPP0544241','OHAPP054483'].map(c=>{ const f=styleForCode(c).style.fabrics[0]; return f[1]+':'+f[3]; }).join(' '),
      denim:(()=>{ const s=styleForCode('OHAPP059703/153DEN').style; return [s.variant,s.markerMain,s.markerLen,s.layQty,s.markerCon,s.conLen,s.conLay,s.fabrics[0][3],s.fabrics[1][3]].join('/'); })(),
      stratford:lectra('OHCJMSTRATFORD4001',10),
@@ -44,12 +49,15 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  const pass = r.find.join()==='exact,pattern,3char,none'
    && r.usage.apron==='CO5241ECO/0.5475/lay plan AP0534001/'
    && r.usage.denim==='CO5003DEN/0.6425/marker 0597001/CO5153:0.1667'
-   && r.usage.fm==='CO5003DEN/0.635/marker 0597FM002/CO5153:0.1667' && r.usage.same==='CO5224DEN/0.72/marker 0597SAME/' && r.usage.fsame==='/0.72/marker 0597FSAME/'
-   && r.usage.navy==='PC2015ECO/1.31/marker OXFORD042/MESHPW31415:0.0333'
+   && r.usage.fm==='CO5003DEN/0.635/marker 0597FM002/CO5153:0.1667' && r.usage.same==='CO5224DEN/0.72/marker 0597SAME/' && r.usage.fsame==='CO5224DEN/0.72/marker 0597FSAME/'
+   && r.usage.navy==='PC2015ECO/1.31/marker OXFORD042/MESHPW31415:0.04'
    && r.usage.sage==='CO5173ECO/1/All Costings/' && r.usage.slate==='CO5241ECO/1/All Costings/'
    && r.usage.rs==='PC2003ECO/1/All Costings/' && r.usage.strat==='PC14001/1.18/marker OH7006/'
    && r.styles==='OHCJSMOXFORD--15:38 OHCJSMOXFORD--15:42 OHCJSMOXFORD--15:56 OHCJSMOXFORD--01:42 OHRSAPP300503PC:null OHAPP059703/153DEN:null'
-   && /^Oxford chef jacket — short sleeve, navy\|PC2015ECO\+MESHPW31415\|Navy Epic 80's from Coats \(07935\)\|Black squashed detachable/.test(r.navy)
+   && /^Oxford chef jacket — short sleeve, navy\|PC2015ECO\+MESHPW31415\|CMP-THR-EP80-07935-15\|OHDETACHABLEBUTTON03$/.test(r.navy)
+   && r.oxWhite==='|OHDETACHABLEBUTTON01|CMP-OH-PIP-TIB009B-01|TAXTABOH07/01|LABELOH5771|CMP-OH-LBL-WASH-01|CMP-LBL-NYL-25-01|PKG-OH-GPS-500X750-01|PKG-TAPE-MSK-25x50-01|OHSWINGTAG|'
+   && /\|Buttons\|WHITE DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0\.636 per 12\|OHDETACHABLEBUTTON01\|1\|/.test(r.oxPrint) && !/BUTTON — WHITE DETACHABLE/.test(r.oxPrint)
+   && r.rs0601==='Seafood Trading Ltd (Rick Stein)|CO5007|1|Embroidery' && r.indigo==='CO5224DEN/0.72/marker 0597FSAME/'
    && r.f0544==='CO5001ECO:1 CO5003ECO:1 CO5015ECO:1 CO5173ECO:1 CO5241ECO:1 CO5083ECO:1'
    && r.denim==='0597/0597001/2.57/4/0597A/1/6/0.6425/0.1667'
    && /Variant \(cutting room\)\|OH7LSLV\|/.test(r.stratford) && /Marker number \(default\)\|OH7006\| - 2\.36 m, 2 per lay \(1\.18 m per garment\)/.test(r.stratford)

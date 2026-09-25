@@ -22,7 +22,7 @@ What comes out, per code (or pattern):
 FABRIC_MARKERS[code] = [usage, meshUsage|null, defaultMarker] is regenerated
 from it; an entry the sheets do not know is kept as it was.
 """
-import json, re, sys, zipfile, collections
+import json, re, sys, zipfile, collections, math
 from xml.etree import ElementTree as ET
 ROOT=__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__)))
 NS={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
@@ -179,6 +179,9 @@ def finish(plan):
             fm=collections.Counter(round(m['use'],4) for m in fam_mesh[e['fam']]).most_common(1)[0][0]
             src=[m for m in fam_mesh[e['fam']] if round(m['use'],4)==fm][0]
             e['mesh'].append(dict(src,fromFamily=1)); meshuse=fm
+        # Luke, 25 Sep 2026: round the mesh up to the 0.01 m to include wastage -
+        # the Hampshire's 0.0273 writes off as 0.03. The lay plan keeps the exact figure.
+        if meshuse: meshuse=math.ceil(meshuse*100-1e-9)/100
         if d and '_' not in code: markers[code]=[d[0]['use'], meshuse, d[0]['m']]
     return markers
 

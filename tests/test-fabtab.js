@@ -68,12 +68,12 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  console.log('viewer         ->', JSON.stringify(t6));
 
  const pass = t0.price>0 && t0.price===t0.pcPrice && t0.meshPrice>0 && t0.badge==='3' && t0.tabOn && t0.months.length===2 && /Sept.*2026.*3 lines/.test(t0.months[0]) && /Aug.*2026.*1 line /.test(t0.months[1]) && t0.tables===0
-   && t0.k.today===9 && t0.k.todayCost===Math.round(9*t0.k.todayCost/9*100)/100 && Math.abs(t0.k.month-16.56)<0.01 && t0.k.open===3 && t0.k.noFab===1 && t0.k.aug===6
+   && t0.k.today===9 && t0.k.todayCost===Math.round(9*t0.k.todayCost/9*100)/100 && Math.abs(t0.k.month-16.6)<0.01 && t0.k.open===3 && t0.k.noFab===1 && t0.k.aug===6
    && t1.days.length===2 && /08 Sept 2026/.test(t1.days[0]) && t1.tables===1 && t1.rows.length===2 && t1.rows[0][1]==='S-C' && t1.rows[0][8]==='9.00' && /no usage on file/.test(t1.rows[1][4]) && t1.rows[1][10]==='Open'
    && t2.day.join()==='S-C' && t2.all.length===3 && /Export ticked \(CSV\) 1/.test(t2.btn) && t2.pref['2026-09']===true
    && t3.csv.length===2 && t3.csv[1]==='CO5014DEN,HOME,,9,Cutting,S-C,08/09/2026,Manual Reduction' && t3.dl==='Fabric_WriteOff_2026-09-08_1000.csv' && /1 write-off line/.test(t3.a1[0]) && /Tick the lines/.test(t3.a2[0])
    && t3.state==='exported' && t3.file===t3.dl && t3.still===2 && /^Exported.*08 Sept 2026/.test(t3.row[0])
-   && t4.s1==='dismissed' && t4.augAfterDismiss===0 && t4.augDismissed===6 && t4.s2==='open' && t4.actual===8 && Math.abs(t4.metres-8.51)<0.01 && Math.abs(t4.varPct-13.5)<0.1 && t4.cost>0 && Math.abs(t4.monthAfter-17.51)<0.01 && t4.undone==='open' && t4.open===3
+   && t4.s1==='dismissed' && t4.augAfterDismiss===0 && t4.augDismissed===6 && t4.s2==='open' && t4.actual===8 && Math.abs(t4.metres-8.55)<0.01 && Math.abs(t4.varPct-13.5)<0.1 && t4.cost>0 && Math.abs(t4.monthAfter-17.55)<0.01 && t4.undone==='open' && t4.open===3
    && t5.before.state==='exported' && t5.before.file===t3.dl && t5.before.actualB===8 && t5.itemFlag==='2026-09-08' && t5.after==='exported' && t5.file===t3.dl && t5.open===2
    && t6.inputs===0 && /Exported/.test(t6.states) && t6.lines===4;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();

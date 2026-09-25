@@ -104,8 +104,12 @@ writes two tables into `index.html`:
 - **`FABRIC_MARKERS`** — `code -> [metres per garment, mesh per garment, marker]`
   taken from the default main marker (best usage first where the sheet marks
   two) and the default mesh marker; where an M-coded jacket has no mesh row
-  of its own the family's usual mesh figure is used. 431 codes. Entries that
-  were in the old hand-kept table and are not on the sheets are kept.
+  of its own the family's usual mesh figure is used. The mesh figure is
+  rounded **up** to the 0.01 m to include wastage (Luke, 25 Sep 2026): the
+  Hampshire's 0.0273 writes off as 0.03, the Cheshire's 0.1018 as 0.11. The
+  lay plan itself keeps the exact figure, and the print shows that one.
+  431 codes. Entries that were in the old hand-kept table and are not on the
+  sheets are kept.
 
 `layplan/lay-plan.json` is the same data as a file, for reading and diffing.
 `layplan/extras.json` adds what the sheets do not carry yet — the navy
@@ -401,7 +405,8 @@ Errors found from the routing cards and then from the rule:
 - The mesh was removed outright for a day, on the reading that `OHLCJ` is the
   ladies range and carries no M. Luke corrected that: the Hampshire does have
   mesh. It is a named exception, and its figure now comes from the lay plan's
-  mesh marker OH8100A: 0.45 m over 16.5 garments, 0.0273 m each.
+  mesh marker OH8100A: 0.45 m over 16.5 garments, 0.0273 m each, written off
+  as 0.03 m after rounding up for wastage.
 
 ## Correcting the cloth for a product
 

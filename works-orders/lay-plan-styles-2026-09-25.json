@@ -1,61 +1,597 @@
 {
  "source": "works-order-editor",
- "exportedAt": "2026-09-25T15:12:27.083909Z",
+ "exportedAt": "2026-09-25T17:05:31.281147Z",
  "mode": "changes",
- "styleCount": 12,
- "note": "Works order data added or changed in the production planner on 25 Sep 2026 for the costing / works order editor app: navy short-sleeve Oxford template (sizes 38-56 as OHCJSMOXFORD3815 ... 5615), the Rick Stein bib apron, the 0544 aprons' Sage fabric codes at 1 m each, and the 0597 denim aprons' variants and markers: 0597001 (2.57 m, 4 per lay) with contrast 0597A (1.00 m, 6 per lay) on OHAPP059703/153DEN, 0597FM002 (1.27 m, 2 per lay) with the same contrast on the F variant, 0597SAME / 0597FSAME (2.88 m, 4 per lay) on the 224 indigo ones. Per-size markers for every jacket and apron are in layplan/lay-plan.json.",
+ "styleCount": 26,
+ "note": "Works order data added or changed in the production planner on 25 Sep 2026 for the costing / works order editor app: every Oxford template with the full trims by colour (white thread and white buttons on white; matching thread and black buttons on navy and black; ribbon, tax tab, labels, tissue, tape, swing tag as on the navy long-length records) including the navy short-sleeve template OHCJSMOXFORD--15 for sizes 38-56; the four Rick Stein records (OHRSAPP300503PC, OHRSAPP0544222, OHRSAPP0601222, OHRSAPP060107 - the 0601 ones built from the 0544 apron with the mitred centre pocket noted, making detail to confirm); the 0544 aprons' Sage fabric codes at 1 m each; the 0597 denim aprons' variants and markers (0597001 2.57 m/4 with contrast 0597A 1.00 m/6; 0597FM002 1.27 m/2; 0597SAME and 0597FSAME 2.88 m/4 on CO5224DEN, the P&R indigo denim). Per-size markers for every jacket and apron are in layplan/lay-plan.json.",
  "styles": [
   {
-   "code": "OHCJSMOXFORD--15",
-   "name": "Oxford chef jacket — short sleeve, navy",
-   "desc": "Stand collar · Panelled back · Navy · Short sleeved with twin-needle hem · Pen pocket with one centre divide · Detachable button fasten — unisex · Logo'd hem tab",
-   "lectra": "OH5 — Oxford — short sleeved · with mesh fabric curved underarm panels",
-   "chart": "OXFORD-SS-STD",
+   "code": "OHCJMOXFORD--01",
+   "name": "Oxford chef jacket — long sleeve, white",
+   "desc": "Stand collar · Panelled back · Curved French cuff with wide 'V' opening · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "lectra": "OH5 — Oxford — long sleeved · with mesh fabric curved underarm panels",
+   "chart": "OXFORD-LS-STD",
    "fabrics": [
     [
-     "NAVY SUSTAINABLE 65/35 POLY/COTTON (X133 - AM297)",
-     "PC2015ECO",
-     "B4"
+     "White Cooltex 1 poly-cotton 50% / 50%",
+     "PC14001",
+     "A3"
     ],
     [
-     "NAVY 100% POLYESTER MESH 160CM (PW314)",
-     "MESHPW31415",
-     "B5"
+     "Coolmax mesh fabric, qual 22909, white",
+     "MESH2290901",
+     "B8"
     ]
    ],
    "trims": [
     [
      "Thread",
-     "Navy Epic 80's from Coats (07935)"
+     "THREAD — COATS EPIC 80'S WHITE — cost per metre",
+     200,
+     "",
+     null
     ],
     [
      "Buttons",
-     "Black squashed detachable stud buttons (OHDETACHABLEBUTTON03)"
+     "WHITE DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON01",
+     0.053
     ],
     [
-     "Button/holes",
-     "Straight buttonholes"
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB009B-01",
+     0.87
     ],
     [
-     "Labels",
-     "Oliver Harvey woven label, back neck"
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
     ],
     [
-     "Wash label wording",
-     "65° wash · 65% polyester 35% cotton — mesh 100% polyester"
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
     ],
     [
-     "Wash label location",
-     "Right-hand side, inside side seam"
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
     ],
     [
      "Additional label",
-     "Garment name + manufacturing month/year label — behind wash label in side seam"
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
     ],
     [
      "POS swing tag",
-     "Oliver Harvey kraft swing tag 50x75mm — fix through the garment label. Removed by customer.",
-     1
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "12 x button/buttonholes vertical and horizontal — sloping to the top corners",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Higher quality French cuffs — flat sewn",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Pen pocket left hand sleeve as worn — with centre divide",
+    "Red tax tab in pen pocket towards back of sleeve — no red to show through pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Detachable button fasten — unisex, using squashed detachable buttons",
+    "2 bartacks on cuffs",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "OH5LSLV"
+  },
+  {
+   "code": "OHCJMOXFORD--01L",
+   "name": "Oxford chef jacket — long sleeve, white, long length",
+   "desc": "Stand collar · Panelled back · Long length · Curved French cuff with wide 'V' opening · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "lectra": "OH5 — Oxford — long sleeved, variant LNGOH5LSL with pen pocket · with mesh fabric curved underarm panels · cut pen pockets",
+   "chart": "OXFORD-LS-LONG",
+   "fabrics": [
+    [
+     "White Cooltex 1 poly-cotton 50% / 50%",
+     "PC14001",
+     "A3"
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, white",
+     "MESH2290901",
+     "B8"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S WHITE — cost per metre",
+     200,
+     "",
+     null
+    ],
+    [
+     "Buttons",
+     "WHITE DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON01",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB009B-01",
+     0.87
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes, apart from the top two which are slanted into the corner",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Higher quality French cuffs — flat sewn",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Pen pocket left hand sleeve as worn — with centre divide",
+    "Red tax tab in pen pocket towards back of sleeve — no red to show through pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Detachable button fasten — unisex, using squashed detachable buttons",
+    "2 bartacks on cuffs",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "LNGOH5LSL"
+  },
+  {
+   "code": "OHCJMOXFORD--03",
+   "name": "Oxford chef jacket — long sleeve, black",
+   "desc": "Stand collar · Panelled back · Black · Curved French cuff with wide 'V' opening · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "lectra": "OH5 — Oxford — long sleeved · with mesh fabric curved underarm panels",
+   "chart": "OXFORD-LS-STD",
+   "fabrics": [
+    [
+     "Black Cooltex 1 poly-cotton 50% / 50%",
+     "PC14003",
+     ""
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, black",
+     "MESH2290903",
+     ""
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     200,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Buttons",
+     "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON03",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON BLACK (P-TIB0011B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB0011B-03",
+     1.4
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "12 x button/buttonholes vertical and horizontal — sloping to the top corners",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Higher quality French cuffs — flat sewn",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Pen pocket left hand sleeve as worn — with centre divide",
+    "Red tax tab in pen pocket towards back of sleeve — no red to show through pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Detachable button fasten — unisex, using squashed detachable buttons",
+    "2 bartacks on cuffs",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "OH5LSLV"
+  },
+  {
+   "code": "OHCJMOXFORD--03L",
+   "name": "Oxford chef jacket — long sleeve, black, long length",
+   "desc": "Stand collar · Panelled back · Black · Long length · Curved French cuff with wide 'V' opening · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "lectra": "OH5 — Oxford — long sleeved · with mesh fabric curved underarm panels · cut pen pockets",
+   "chart": "OXFORD-LS-LONG",
+   "fabrics": [
+    [
+     "Black Cooltex 1 poly-cotton 50% / 50%",
+     "PC14003",
+     ""
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, black",
+     "MESH2290903",
+     ""
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     200,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Buttons",
+     "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON03",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON BLACK (P-TIB0011B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB0011B-03",
+     1.4
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes, apart from the top two which are slanted into the corner",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Higher quality French cuffs — flat sewn",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Pen pocket left hand sleeve as worn — with centre divide",
+    "Red tax tab in pen pocket towards back of sleeve — no red to show through pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Detachable button fasten — unisex, using squashed detachable buttons",
+    "2 bartacks on cuffs",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "LNGOH5LSL"
+  },
+  {
+   "code": "OHCJSMOXFORD--01",
+   "name": "Oxford chef jacket — short sleeve, white",
+   "desc": "Stand collar · Panelled back · Short sleeved with twin-needle hem · Pen pocket with one centre divide · Detachable button fasten — unisex · Logo'd hem tab",
+   "lectra": "OH5 — Oxford — short sleeved · with mesh fabric curved underarm panels",
+   "chart": "OXFORD-SS-STD",
+   "fabrics": [
+    [
+     "White Cooltex 1 poly-cotton 50% / 50%",
+     "PC14001",
+     "A3"
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, white",
+     "MESH2290901",
+     "B8"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S WHITE — cost per metre",
+     200,
+     "",
+     null
+    ],
+    [
+     "Buttons",
+     "WHITE DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON01",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB009B-01",
+     0.87
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes",
+     "",
+     "",
+     null
     ]
    ],
    "mfg": [
@@ -82,6 +618,880 @@
    "cutBatch": 25,
    "cutMins": 15,
    "variant": "OH5SSLV"
+  },
+  {
+   "code": "OHCJSMOXFORD--01L",
+   "name": "Oxford chef jacket — short sleeve, white, long length",
+   "desc": "Stand collar · Panelled back · Long length · Short sleeved with twin-needle hem · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "lectra": "OH5 LONG — Oxford — short sleeved, long length · with mesh fabric curved underarm panels",
+   "chart": "OXFORD-SS-LONG-EXT",
+   "fabrics": [
+    [
+     "White Cooltex 1 poly-cotton 50% / 50%",
+     "PC14001",
+     "A3"
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, white",
+     "MESH2290901",
+     "B8"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S WHITE — cost per metre",
+     200,
+     "",
+     null
+    ],
+    [
+     "Buttons",
+     "WHITE DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON01",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB009B-01",
+     0.87
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes, top buttonholes slanted into corners",
+     "",
+     "",
+     null
+    ],
+    [
+     "OH tax tab",
+     "Set to bottom of back side of pen pocket",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Short sleeved with twin-needle hem",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Pen pocket left hand sleeve as worn — with centre divide",
+    "Red tax tab in pen pocket towards back of sleeve — no red to show through pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Squashed detachable buttons — unisex fasten",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "LNGOH5SSLV"
+  },
+  {
+   "code": "OHCJSMOXFORD--01S",
+   "name": "Oxford chef jacket — short sleeve, white, no pen pocket",
+   "desc": "Stand collar · Panelled back · Short sleeved with twin-needle hem · No pen pocket · Detachable button fasten — unisex · Logo'd hem tab",
+   "lectra": "OH5 — Oxford — short sleeved — take out pen pocket",
+   "chart": "OXFORD-SS-STD",
+   "fabrics": [
+    [
+     "White Cooltex 1 poly-cotton 50% / 50%",
+     "PC14001",
+     "A3"
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, white",
+     "MESH2290901",
+     "B8"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S WHITE — cost per metre",
+     200,
+     "",
+     null
+    ],
+    [
+     "Buttons",
+     "WHITE DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON01",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB009B-01",
+     0.87
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Short sleeved with twin-needle hem",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Squashed detachable buttons — unisex fasten",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "OH5SSLV"
+  },
+  {
+   "code": "OHCJSMOXFORD--01LS",
+   "name": "Oxford chef jacket — short sleeve, white, long length, no pen pocket",
+   "desc": "Stand collar · Panelled back · Long length · Short sleeved with twin-needle hem · No pen pocket · Detachable button fasten — unisex · Logo'd hem tab",
+   "lectra": "OH5 — variant LNGOH5SSLV — Oxford — short sleeved, long — take out pen pocket",
+   "chart": "OXFORD-SS-LONG",
+   "fabrics": [
+    [
+     "White Cooltex 1 poly-cotton 50% / 50%",
+     "PC14001",
+     "A3"
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, white",
+     "MESH2290901",
+     "B8"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S WHITE — cost per metre",
+     200,
+     "",
+     null
+    ],
+    [
+     "Buttons",
+     "WHITE DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON01",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB009B-01",
+     0.87
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Short sleeved with twin-needle hem",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Squashed detachable buttons — unisex fasten",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "LNGOH5SSLV"
+  },
+  {
+   "code": "OHCJSMOXFORD--03",
+   "name": "Oxford chef jacket — short sleeve, black",
+   "desc": "Stand collar · Panelled back · Black · Short sleeved with twin-needle hem · Pen pocket with one centre divide · Detachable button fasten — unisex · Logo'd hem tab",
+   "lectra": "OH5 — Oxford — short sleeved · with mesh fabric curved underarm panels",
+   "chart": "OXFORD-SS-STD",
+   "fabrics": [
+    [
+     "Black Cooltex 1 poly-cotton 50% / 50%",
+     "PC14003",
+     ""
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, black",
+     "MESH2290903",
+     ""
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     200,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Buttons",
+     "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON03",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON BLACK (P-TIB0011B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB0011B-03",
+     1.4
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Short sleeved with twin-needle hem",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Pen pocket left hand sleeve as worn — with centre divide",
+    "Red tax tab in pen pocket towards back of sleeve — no red to show through pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Squashed detachable buttons — unisex fasten",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "OH5SSLV"
+  },
+  {
+   "code": "OHCJSMOXFORD--15",
+   "name": "Oxford chef jacket — short sleeve, navy",
+   "desc": "Stand collar · Panelled back · Navy · Short sleeved with twin-needle hem · Pen pocket with one centre divide · Detachable button fasten — unisex · Logo'd hem tab",
+   "lectra": "OH5 — Oxford — short sleeved · with mesh fabric curved underarm panels",
+   "chart": "OXFORD-SS-STD",
+   "fabrics": [
+    [
+     "NAVY SUSTAINABLE 65/35 POLY/COTTON (X133 - AM297)",
+     "PC2015ECO",
+     "B4"
+    ],
+    [
+     "NAVY 100% POLYESTER MESH 160CM (PW314)",
+     "MESHPW31415",
+     "B5"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     200,
+     "CMP-THR-EP80-07935-15",
+     0.000714
+    ],
+    [
+     "Buttons",
+     "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON03",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON BLACK (P-TIB0011B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB0011B-03",
+     1.4
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 65% polyester 35% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Short sleeved with twin-needle hem",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Pen pocket left hand sleeve as worn — with centre divide",
+    "Red tax tab in pen pocket towards back of sleeve — no red to show through pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Squashed detachable buttons — unisex fasten",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "OH5SSLV"
+  },
+  {
+   "code": "OHCJSMOXFORD--03L",
+   "name": "Oxford chef jacket — short sleeve, black, long length",
+   "desc": "Stand collar · Panelled back · Black · Long length · Short sleeved with twin-needle hem · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "lectra": "OH5 — Oxford — short sleeved · with mesh fabric curved underarm panels",
+   "chart": "OXFORD-SS-LONG",
+   "fabrics": [
+    [
+     "Black Cooltex 1 poly-cotton 50% / 50%",
+     "PC14003",
+     ""
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, black",
+     "MESH2290903",
+     ""
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     200,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Buttons",
+     "BLACK DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON03",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON BLACK (P-TIB0011B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB0011B-03",
+     1.4
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes, top buttonholes slanted into corners",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Short sleeved with twin-needle hem",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Pen pocket left hand sleeve as worn — with centre divide",
+    "Red tax tab in pen pocket towards back of sleeve — no red to show through pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Squashed detachable buttons — unisex fasten",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "LNGOH5SSLV"
+  },
+  {
+   "code": "OHCJSMOXFORDNLL--01",
+   "name": "Oxford chef jacket — short sleeve, white, long length, with neck loop",
+   "desc": "Stand collar · Panelled back · Long length · Short sleeved with twin-needle hem · Back neck loop, stud fastened · Pen pocket with one centre divide · Detachable button fasten — unisex",
+   "lectra": "OH5 LONG — variant LNGOH5SSLV with pen pocket · plus OH5 model variant OH5NECKLOOP for neck loop and back neck facing (use separate marker) · with mesh fabric curved underarm panels",
+   "chart": "OXFORD-SS-LONG-NL",
+   "fabrics": [
+    [
+     "White Cooltex 1 poly-cotton 50% / 50%",
+     "PC14001",
+     "A3"
+    ],
+    [
+     "Coolmax mesh fabric, qual 22909, white",
+     "MESH2290901",
+     "B8"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S WHITE — cost per metre",
+     200,
+     "",
+     null
+    ],
+    [
+     "Buttons",
+     "WHITE DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0.636 per 12",
+     1,
+     "OHDETACHABLEBUTTON01",
+     0.053
+    ],
+    [
+     "Back-neck ribbon",
+     "OLIVER HARVEY NECK RIBBON WHITE (P-TIB009B) — cost per metre",
+     "0.7",
+     "CMP-OH-PIP-TIB009B-01",
+     0.87
+    ],
+    [
+     "Tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — every OH product, qty 1",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — back neck",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH wash label",
+     "OLIVER HARVEY WASH CARE LABEL — 65° wash · 50% polyester 50% cotton — mesh 100% polyester — right-hand side, inside side seam",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Additional label",
+     "WHITE 25MM NYLON LABEL TAPE FOR TIBARD-PRINTED LABELS — garment name + manufacturing month/year label, behind the wash label in the side seam — cost per metre",
+     "0.2",
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — 1 sheet per OH product",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — masking tape",
+     "WHITE MASKING TAPE (25mmx50mm) — cost per metre (£0.645/50m roll), typical qty 0.9m",
+     "0.9",
+     "PKG-TAPE-MSK-25x50-01",
+     0.0129
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey Kraft Swing Tag 50x75mm — fix through the garment label. Removed by customer.",
+     "1",
+     "OHSWINGTAG",
+     0.0646
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes, top buttonholes slanted into corners — 5/8\" blade",
+     "",
+     "",
+     null
+    ],
+    [
+     "OH tax tab",
+     "Set to left side of pen pocket",
+     "",
+     "",
+     null
+    ],
+    [
+     "Ring stud x 1 set",
+     "1 x female ring stud set to end of neck loop — male part set to centre back of jacket",
+     "",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Make back neck loop — box off one end, fold in raw edges and edge-stitch long edges, set to centre back collar leaf edge",
+    "Overlock to neaten lower edge of back neck facing — set to back neck",
+    "Collar leaf edge stitched",
+    "Short sleeve with twin-needle hem — double turned 1 + 2.7 cm, twin-needle topstitched",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned 1 + 2.7 cm — twin-needle detail hem, top row at 2.5 cm from hem fold",
+    "Pen pocket hem overlocked and turned 2.7 cm, topstitched 2.5 cm — set to left sleeve as worn, with centre divide",
+    "OH tax tab set to bottom of back side of pen pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Semi-circle of mesh under the arm/sleeve",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Set female stud to end of tab — set male stud for neck loop through back and back neck facing",
+    "Attach bag of squashed detachable buttons — unisex fasten"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — set label front, bottom right"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "LNGOH5SSLV + OH5NECKLOOP"
   },
   {
    "code": "OHRSAPP300503PC",
@@ -142,6 +1552,175 @@
    "customer": "Seafood Trading Ltd (Rick Stein)",
    "brandType": "Embroidery",
    "brandPlace": "Rick Stein logo — top right-hand corner of the bib as worn, embroidered in white. Artwork: Rick Stein logo on file with sales (not held in the app yet).",
+   "logoImg": ""
+  },
+  {
+   "code": "OHRSAPP0544222",
+   "name": "Cocoa brown stud halter bib apron, self fabric ties — Rick Stein logo",
+   "desc": "BIB APRON · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap · Concealed pocket in bib · No towel loop · Rick Stein logo embroidered top right-hand corner as worn, in white",
+   "lectra": "APP0544 varient APP0544",
+   "chart": "OHAPP054401-MEAS",
+   "fabrics": [
+    [
+     "Cocoa brown 100% organic cotton 260gsm x149eco-am307 — rating 1.0M",
+     "CO5222ECO",
+     "A3"
+    ]
+   ],
+   "trims": [
+    [
+     "THREAD",
+     "COATS EPIC 80 COL 08975 Brown"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set 4cm down from finished top edge. set to right side seam as worn."
+    ],
+    [
+     "Oliver harvey care label",
+     "100% organic cotton - wash at 40 degree/low tumble dry/2 dot iron/do not bleach/dry clean p set 4cm down from top of right side seam as worn. set underneath OH woven label."
+    ]
+   ],
+   "mfg": [
+    "Make neck strap loop. fold in half lengthways , fold in raw edges to neaten and edgestitch one edge.",
+    "Make neck strap. bag out end. edgestitch all round.",
+    "Make and set small concealed pocket. add stitch line for pen pocket through pocket bag. edgesttich inside of pocket opening.",
+    "4 or 5 thread close pocket bag",
+    "Set bib top to apron",
+    "Double turn armhole and topstitch 6mm. single turn bib top to reduce bulk",
+    "Set loop and neck strap to bib facing. neck strap to be set to right side of bib as worn. studs to underside of strap. loop to be set as high as possible to fold of bib top and inserted into end of left side of bib top. edgestitch end of bib and top edge of bib before stitching loop down. loop to finish width 3cm and to fit neck strap neatly.",
+    "Stitch down bib top.",
+    "Make waist ties. bag out ends. edgestitch all round.",
+    "Insert waist ties. double turn side seam and hem to neaten and topstitch 12mm. insert labels.",
+    "Fold back waist tie onto apron and edgestitch down onto side seam."
+   ],
+   "fin": [
+    "Trim, check, and press. thread neck strap through loop and fold garment.",
+    "Tissue and set product label"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 / ± 2 cm",
+   "oneSize": true,
+   "variant": "APP0544",
+   "customer": "Seafood Trading Ltd (Rick Stein)",
+   "brandType": "Embroidery",
+   "brandPlace": "Rick Stein logo — top right-hand corner of the bib as worn, embroidered in white. Artwork: Rick Stein logo on file with sales (to be added to the app).",
+   "logoImg": ""
+  },
+  {
+   "code": "OHRSAPP0601222",
+   "name": "Cocoa adjustable-neck bib apron, self fabric ties, mitred centre pocket — Rick Stein logo",
+   "desc": "BIB APRON · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap · Concealed pocket in bib · No towel loop · Mitred centre pocket (0601) in place of the 0544 concealed bib pocket · Rick Stein logo embroidered top right-hand corner as worn, in white",
+   "lectra": "APP0601 (making detail copied from APP0544 — pocket to be confirmed with the pattern room)",
+   "chart": "OHAPP054401-MEAS",
+   "fabrics": [
+    [
+     "Cocoa brown 100% organic cotton 260gsm x149eco-am307 — rating 1.0M",
+     "CO5222ECO",
+     "A3"
+    ]
+   ],
+   "trims": [
+    [
+     "THREAD",
+     "COATS EPIC 80 COL 08975 Brown"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set 4cm down from finished top edge. set to right side seam as worn."
+    ],
+    [
+     "Oliver harvey care label",
+     "100% organic cotton - wash at 40 degree/low tumble dry/2 dot iron/do not bleach/dry clean p set 4cm down from top of right side seam as worn. set underneath OH woven label."
+    ]
+   ],
+   "mfg": [
+    "Make neck strap loop. fold in half lengthways , fold in raw edges to neaten and edgestitch one edge.",
+    "Make neck strap. bag out end. edgestitch all round.",
+    "Make and set small concealed pocket. add stitch line for pen pocket through pocket bag. edgesttich inside of pocket opening.",
+    "4 or 5 thread close pocket bag",
+    "Set bib top to apron",
+    "Double turn armhole and topstitch 6mm. single turn bib top to reduce bulk",
+    "Set loop and neck strap to bib facing. neck strap to be set to right side of bib as worn. studs to underside of strap. loop to be set as high as possible to fold of bib top and inserted into end of left side of bib top. edgestitch end of bib and top edge of bib before stitching loop down. loop to finish width 3cm and to fit neck strap neatly.",
+    "Stitch down bib top.",
+    "Make waist ties. bag out ends. edgestitch all round.",
+    "Insert waist ties. double turn side seam and hem to neaten and topstitch 12mm. insert labels.",
+    "Fold back waist tie onto apron and edgestitch down onto side seam."
+   ],
+   "fin": [
+    "Trim, check, and press. thread neck strap through loop and fold garment.",
+    "Tissue and set product label"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 / ± 2 cm",
+   "oneSize": true,
+   "variant": "APP0544",
+   "customer": "Seafood Trading Ltd (Rick Stein)",
+   "brandType": "Embroidery",
+   "brandPlace": "Rick Stein logo — top right-hand corner of the bib as worn, embroidered in white. Artwork: Rick Stein logo on file with sales (to be added to the app).",
+   "logoImg": ""
+  },
+  {
+   "code": "OHRSAPP060107",
+   "name": "Red adjustable-neck bib apron, self fabric ties, mitred centre pocket — Rick Stein logo",
+   "desc": "BIB APRON · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap · Concealed pocket in bib · No towel loop · Mitred centre pocket (0601) in place of the 0544 concealed bib pocket · Rick Stein logo embroidered top right-hand corner as worn, in white",
+   "lectra": "APP0601 (making detail copied from APP0544 — pocket to be confirmed with the pattern room)",
+   "chart": "OHAPP054401-MEAS",
+   "fabrics": [
+    [
+     "Red 3110 100% cotton 255gsm 150cm — rating 1.0M",
+     "CO5007",
+     "",
+     1.0
+    ]
+   ],
+   "trims": [
+    [
+     "THREAD",
+     "Coats epic 80's red — to match"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set 4cm down from finished top edge. set to right side seam as worn."
+    ],
+    [
+     "Oliver harvey care label",
+     "100% cotton - wash at 40 degree/low tumble dry/2 dot iron/do not bleach/dry clean p set 4cm down from top of right side seam as worn. set underneath OH woven label."
+    ]
+   ],
+   "mfg": [
+    "Make neck strap loop. fold in half lengthways , fold in raw edges to neaten and edgestitch one edge.",
+    "Make neck strap. bag out end. edgestitch all round.",
+    "Make and set small concealed pocket. add stitch line for pen pocket through pocket bag. edgesttich inside of pocket opening.",
+    "4 or 5 thread close pocket bag",
+    "Set bib top to apron",
+    "Double turn armhole and topstitch 6mm. single turn bib top to reduce bulk",
+    "Set loop and neck strap to bib facing. neck strap to be set to right side of bib as worn. studs to underside of strap. loop to be set as high as possible to fold of bib top and inserted into end of left side of bib top. edgestitch end of bib and top edge of bib before stitching loop down. loop to finish width 3cm and to fit neck strap neatly.",
+    "Stitch down bib top.",
+    "Make waist ties. bag out ends. edgestitch all round.",
+    "Insert waist ties. double turn side seam and hem to neaten and topstitch 12mm. insert labels.",
+    "Fold back waist tie onto apron and edgestitch down onto side seam."
+   ],
+   "fin": [
+    "Trim, check, and press. thread neck strap through loop and fold garment.",
+    "Tissue and set product label"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 / ± 2 cm",
+   "oneSize": true,
+   "variant": "APP0544",
+   "customer": "Seafood Trading Ltd (Rick Stein)",
+   "brandType": "Embroidery",
+   "brandPlace": "Rick Stein logo — top right-hand corner of the bib as worn, embroidered in white. Artwork: Rick Stein logo on file with sales (to be added to the app).",
    "logoImg": ""
   },
   {
@@ -662,7 +2241,7 @@
    "fabrics": [
     [
      "Indigo denim art murray 315gsm 100% cotton 1.50m width — rating 0.72 m (marker 0597SAME, 2.88 m over 4)",
-     "",
+     "CO5224DEN",
      "A4",
      0.72
     ]
@@ -739,7 +2318,7 @@
    "fabrics": [
     [
      "Indigo denim art murray 315gsm 100% cotton 1.50m width — rating 0.72 m (marker 0597FSAME, 2.88 m over 4)",
-     "",
+     "CO5224DEN",
      "A4",
      0.72
     ]
