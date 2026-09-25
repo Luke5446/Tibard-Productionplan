@@ -1,0 +1,14530 @@
+{
+"APP063103PCS": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "APP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 5.0,
+"len": 2.25,
+"m": "0631WPFT01",
+"n": "",
+"use": 0.45,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 2.0,
+"len": 1.01,
+"m": "0631WPFT02",
+"n": "",
+"use": 0.505,
+"w": "157cm"
+}
+],
+"mesh": [],
+"model": "OHAPP0631",
+"v": "0631WPFT"
+},
+"GAGAAPP065183/180": {
+"alt": [],
+"blk": "",
+"con": [
+{
+"lay": 22.0,
+"len": null,
+"m": "GATHERCON",
+"n": "",
+"use": null
+}
+],
+"fam": "GAGAAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.32,
+"m": "0651GATHER",
+"n": "CREATED 13/8/24\nCONTRAST NK TIES",
+"use": 0.58,
+"w": "157cm"
+}
+],
+"mesh": [],
+"model": "OHAPP0651",
+"v": "0651GATHER"
+},
+"OHAP0533__": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.82,
+"m": "AP0533001",
+"n": "",
+"use": 0.91,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.04,
+"m": "AP0533SAM",
+"n": "",
+"use": 1.04,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "OHAP0533",
+"v": "OHAP0533"
+},
+"OHAP060501": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.75,
+"m": "AP0605001",
+"n": "ADDED 5cm TO LENGTH\nOF NK STRAP 27/2/17",
+"use": 0.875,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "AP0532",
+"v": "0605"
+},
+"OHAP3005": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.61,
+"m": "300501",
+"n": "NO HATS IN LAY",
+"use": 0.805,
+"w": "147cm"
+}
+],
+"mesh": [],
+"model": "AP3005B",
+"v": "3005LRGE/BUTCHERS STYLE"
+},
+"OHAP3005__L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.91,
+"m": "OH3005050",
+"n": "INCLUDING WAIST TIES\nTAKE OUT IF NOT NEEDED",
+"use": 0.955,
+"w": "145cm"
+},
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.91,
+"m": "OH3005052",
+"n": "NO TIES",
+"use": 0.955,
+"w": "145cm"
+},
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.91,
+"m": "OH3005053",
+"n": "ADDED PKTS 9\" x 11\"\nINCLUDING WAIST TIES\nTAKE OUT IF NOT NEEDED",
+"use": 0.955,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.24,
+"m": "OH3005051",
+"n": "NO WAIST TIES\nNARROW BUTCHERS",
+"use": 1.12,
+"w": "100cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.12,
+"m": "OH30056S",
+"n": "",
+"use": 1.12,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "AP3005B",
+"v": "3005LRG6"
+},
+"OHAPP0534__": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.19,
+"m": "AP0534001",
+"n": "FOR BLACK DENIM\nLAY FACE UP ONE WAY",
+"use": 0.5475,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 0.97,
+"m": "AP0534SAM",
+"n": "",
+"use": 0.97,
+"w": "137cm"
+}
+],
+"mesh": [],
+"model": "OHAP0534",
+"v": "05341PKT"
+},
+"OHAPP0534___/___CTS": {
+"alt": [],
+"blk": "",
+"con": [
+{
+"lay": 6.0,
+"len": null,
+"m": "AP0534CON",
+"n": "",
+"use": null
+}
+],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.19,
+"m": "AP0534380",
+"n": "RETAIL BIB APRON\nFACING + 1 MITRED PKT\nCONTRAST WAIST TIES + NK STRAP",
+"use": 0.5475,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.22,
+"m": "AP0534381",
+"n": "*AS ABOVE*",
+"use": 0.61,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "OHAP0534",
+"v": "CNM"
+},
+"OHAPP0535__": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.24,
+"m": "AP0534050",
+"n": "",
+"use": 0.56,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 0.97,
+"m": "AP0534051",
+"n": "",
+"use": 0.97,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "OHAP0534",
+"v": "05342PKT"
+},
+"OHAPP0535__/DS": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.17,
+"m": "0535DS001",
+"n": "*PAIR PKTS WITH CORRECT APRON*\nTHIS IS SAME APRON AS 05342PKT \nBUT WITH SEPERATE NK/WAIST TIE + EYELETS",
+"use": 0.5425,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 0.97,
+"m": "0535DS002",
+"n": "",
+"use": 0.97,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "OHAP0534",
+"v": "0535/DS"
+},
+"OHAPP0596__": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.86,
+"m": "0596003",
+"n": "Grey Denim",
+"use": 0.715,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 4.0,
+"len": 2.61,
+"m": "0596002",
+"n": "",
+"use": 0.6525,
+"w": "152cm"
+},
+{
+"d": 0,
+"lay": 4.0,
+"len": 2.92,
+"m": "0596001",
+"n": "",
+"use": 0.73,
+"w": "141cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.0,
+"m": "0596SAM",
+"n": "",
+"use": 1.0,
+"w": "111cm"
+}
+],
+"mesh": [],
+"model": "FOHDENIM",
+"v": "0596"
+},
+"OHAPP0597__/__DEN": {
+"alt": [],
+"blk": "",
+"con": [
+{
+"lay": 6.0,
+"len": 1.0,
+"m": "0597A",
+"n": "NKTIE + TIES",
+"use": 0.1667
+}
+],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.57,
+"m": "0597001",
+"n": "LAY FACE UP 10/09/26",
+"use": 0.6425,
+"w": "141cm"
+},
+{
+"d": 0,
+"lay": 4.0,
+"len": 2.25,
+"m": "0597004",
+"n": "Black Denim",
+"use": 0.5625,
+"w": "151cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.0,
+"m": "0597SAM",
+"n": "",
+"use": 1.0,
+"w": "141cm"
+}
+],
+"mesh": [],
+"model": "FOHDENIM",
+"v": "0597"
+},
+"OHAPP0598224DEN": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.32,
+"m": "0598001",
+"n": "",
+"use": 0.66,
+"w": "141cm"
+}
+],
+"mesh": [],
+"model": "FOHDENIM",
+"v": "0598"
+},
+"OHAPP061203DEN": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.86,
+"m": "AP0612010",
+"n": "*ALWAYS USE THIS*",
+"use": 0.715,
+"w": "146cm"
+}
+],
+"mesh": [],
+"model": "FOHDENIM",
+"v": "APP0612"
+},
+"OHAPP0617110/222CTS": {
+"alt": [],
+"blk": "",
+"con": [
+{
+"lay": 9.5,
+"len": null,
+"m": "APTIES",
+"n": "",
+"use": null
+}
+],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.65,
+"m": "AP0617080",
+"n": "RETAIL PKT\nCONTRAST TIES",
+"use": 0.4125,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 2.0,
+"len": 0.95,
+"m": "AP0617081",
+"n": "RETAIL PKT\nCONTRAST TIES",
+"use": 0.475,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "APP0617",
+"v": "0617RPCT"
+},
+"OHAPP063015HP1S": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.6,
+"m": "AP0630100",
+"n": "*LEATHER TRIM AS ABOVE*",
+"use": 0.65,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "APP0630",
+"v": "PILOTLGT"
+},
+"OHAPP0630__HP2": {
+"alt": [],
+"blk": "",
+"con": [
+{
+"lay": null,
+"len": null,
+"m": "0630L32 (14x80)\nAPP0630L (14x25)",
+"n": "",
+"use": null
+}
+],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.79,
+"m": "0630HP2",
+"n": "LEATHER BUCKLE STRAP",
+"use": 0.6975,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.0,
+"m": "0630HP2S",
+"n": "*LEATHER BUCKLE STRAP AS ABOVE*",
+"use": 1.0,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "APP0630",
+"v": "0630HP2"
+},
+"OHAPP0630__KP": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 3.36,
+"m": "0630KP001",
+"n": "*LEATHER TRIM AS ABOVE*",
+"use": 0.84,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "APP0630",
+"v": "0630KP"
+},
+"OHAPP0631__DS": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 0.78,
+"m": "AP0631001",
+"n": "CHECK POCKETS PAIR WITH CORRECT APRON\nNOTCH AT TOP OF APRON",
+"use": 0.39,
+"w": "150cm"
+}
+],
+"mesh": [],
+"model": "OHAPP0631",
+"v": "0631"
+},
+"OHAPP0634___": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.6,
+"m": "APP0634001",
+"n": "",
+"use": 0.8,
+"w": "158cm"
+}
+],
+"mesh": [],
+"model": "APP0634",
+"v": "APP0634NOCONTRAST"
+},
+"OHAPP0651__": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.62,
+"m": "APP0651FT",
+"n": "AS ABOVE BUT WITH ADDED\nSELF FABRIC TIES",
+"use": 0.655,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 0.88,
+"m": "0651FTSAM",
+"n": "",
+"use": 0.88,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "OHAPP0651",
+"v": "0651FT"
+},
+"OHAPP0652__": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.07,
+"m": "0652FTPKT",
+"n": "AS ABOVE BUT WITH ADDED\nSELF FABRIC TIES",
+"use": 0.535,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "OHAPP0652",
+"v": "0652FT"
+},
+"OHAPP0786__": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.65,
+"m": "APP0786002",
+"n": "",
+"use": 0.825,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.0,
+"m": "APP0786001",
+"n": "",
+"use": 1.0,
+"w": "157cm"
+}
+],
+"mesh": [],
+"model": "APP0630",
+"v": "APP0786"
+},
+"OHAPP300501CSHTS": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.36,
+"m": "SCHOFIELD",
+"n": "SHORTER LENGTH LARGER BIB APRON\nSTANDARD PKT 11\"x9\"",
+"use": 0.68,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "AP3005B",
+"v": "SCHOFIELD"
+},
+"OHAPP300515SHTS": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.36,
+"m": "SCHOFIELD",
+"n": "SHORTER LENGTH LARGER BIB APRON\nSTANDARD PKT 11\"x9\"",
+"use": 0.68,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "AP3005B",
+"v": "SCHOFIELD"
+},
+"OHAPP352831": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 2.0,
+"len": 1.5,
+"m": "OHAPP352807",
+"n": "*AS ABOVE*\n*HORIZONTAL STRIPES ON PKTS*",
+"use": 0.75,
+"w": "150cm\nFOR WIDE BUTCHERS STRIPE"
+}
+],
+"mesh": [],
+"model": "AP3528",
+"v": "OHAPP3528"
+},
+"OHAPP3528__": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 3.08,
+"m": "OHAPP352801",
+"n": "WAIST APRON CUT 36\"x30\"\nPKT CUT 13\"x9\"",
+"use": 0.5133,
+"w": "150cm"
+},
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.16,
+"m": "OHAPP352806",
+"n": "*AS ABOVE*",
+"use": 0.54,
+"w": "150cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 0.75,
+"m": "OHAPP3528SAM",
+"n": "*AS ABOVE*",
+"use": 0.75,
+"w": "150cm"
+}
+],
+"mesh": [],
+"model": "AP3528",
+"v": "OHAPP3528"
+},
+"OHCJ40073601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJ",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.49,
+"m": "SCOOPNEW05",
+"n": "",
+"use": 1.49,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTNEWLS"
+},
+"OHCJ40073801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJ",
+"inter": [
+{
+"lay": "10",
+"len": 0.39,
+"m": "FM30A",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "SCOOPNEW02",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"use": 1.54,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTNEWLS"
+},
+"OHCJ40074001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJ",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.57,
+"m": "SCOOPNEW04",
+"n": "",
+"use": 1.57,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTNEWLS"
+},
+"OHCJ40074201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJ",
+"inter": [
+{
+"lay": "10",
+"len": 0.5,
+"m": "FM44A",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.59,
+"m": "SCOOPNEW01",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"use": 1.59,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTNEWLS"
+},
+"OHCJ40074401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJ",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.72,
+"m": "SCOOPNEW03",
+"n": "",
+"use": 1.72,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTNEWLS"
+},
+"OHCJCUMBRIA3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OH4009",
+"n": "",
+"use": 1.45,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OH4007",
+"n": "",
+"use": 1.45,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OH4010",
+"n": "",
+"use": 1.45,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.48,
+"m": "OH4002",
+"n": "",
+"use": 1.48,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.48,
+"m": "OH4003",
+"n": "",
+"use": 1.48,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.49,
+"m": "OH4001",
+"n": "",
+"use": 1.49,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.49,
+"m": "OH4004",
+"n": "",
+"use": 1.49,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH4005",
+"n": "",
+"use": 1.5,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.56,
+"m": "OH4006",
+"n": "",
+"use": 1.56,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA4801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.6,
+"m": "OH4200",
+"n": "",
+"use": 1.6,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV2"
+},
+"OHCJCUMBRIA5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH4011",
+"n": "",
+"use": 1.62,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.75,
+"m": "OH4012",
+"n": "",
+"use": 1.75,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.98,
+"m": "OH4008",
+"n": "",
+"use": 1.98,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.06,
+"m": "OH4015",
+"n": "",
+"use": 2.06,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.06,
+"m": "OH4013",
+"n": "",
+"use": 2.06,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.13,
+"m": "OH4014",
+"n": "",
+"use": 2.13,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJCUMBRIA6601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.11,
+"m": "OH4016",
+"n": "",
+"use": 2.11,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH4LSLV"
+},
+"OHCJMCHESHIRE3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.41,
+"m": "OH2001",
+"n": "",
+"use": 1.41,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2010",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2002",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2011",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.43,
+"m": "OH2030",
+"n": "",
+"use": 1.43,
+"w": "150cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2003",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2004",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE4201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.53,
+"m": "OH2400",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.53,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2LS4"
+},
+"OHCJMCHESHIRE4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2005",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.44,
+"m": "OH2031",
+"n": "",
+"use": 1.44,
+"w": "150cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.46,
+"m": "OH2012",
+"n": "",
+"use": 1.46,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.46,
+"m": "OH2006",
+"n": "",
+"use": 1.46,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.48,
+"m": "OH2013",
+"n": "",
+"use": 1.48,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE5001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH2401",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.62,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2LS4"
+},
+"OHCJMCHESHIRE5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH2007",
+"n": "",
+"use": 1.5,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE5201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.64,
+"m": "OH2402",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.64,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2LS4"
+},
+"OHCJMCHESHIRE5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH2014",
+"n": "",
+"use": 1.51,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OH2008",
+"n": "",
+"use": 1.54,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.61,
+"m": "OH2017",
+"n": "",
+"use": 1.61,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE5801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "OH2403",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.68,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2LS4"
+},
+"OHCJMCHESHIRE6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "OH2009",
+"n": "",
+"use": 1.68,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE6201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "OH2015",
+"n": "",
+"use": 1.68,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMCHESHIRE6401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.73,
+"m": "OH2016",
+"n": "",
+"use": 1.73,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2LSLV"
+},
+"OHCJMDEVON3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.32,
+"m": "OH1001",
+"n": "",
+"use": 1.32,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.36,
+"m": "OH1200",
+"n": "",
+"use": 1.36,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 0.81,
+"m": "OH1301",
+"n": "MESH BACKS (32\")",
+"use": 0.2025,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 3.0,
+"len": 0.84,
+"m": "OH1108",
+"n": "MESH BACKS (46\")",
+"use": 0.28,
+"w": "160cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.33,
+"m": "OH1010",
+"n": "",
+"use": 1.33,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OH1201",
+"n": "",
+"use": 1.4,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 0.82,
+"m": "OH1302",
+"n": "MESH BACKS (34\")",
+"use": 0.205,
+"w": "148cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.34,
+"m": "OH1002",
+"n": "",
+"use": 1.34,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.41,
+"m": "OH1202",
+"n": "",
+"use": 1.41,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 0.82,
+"m": "OH1303",
+"n": "MESH BACKS (36\")",
+"use": 0.205,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1109",
+"n": "MESH BACKS (48\")",
+"use": 0.2833,
+"w": "160cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.38,
+"m": "OH1011",
+"n": "",
+"use": 1.38,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1203",
+"n": "",
+"use": 1.42,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.0,
+"m": "OH1304A",
+"n": "MESH BACKS (38\")",
+"use": 0.25,
+"w": "148cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1003",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1204",
+"n": "",
+"use": 1.42,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.01,
+"m": "OH1305A",
+"n": "MESH BACKS (40\")",
+"use": 0.2525,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1110",
+"n": "MESH BACKS (50\")",
+"use": 0.2833,
+"w": "160cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1009",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1205",
+"n": "",
+"use": 1.42,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.02,
+"m": "OH1306A",
+"n": "MESH BACKS (42\")",
+"use": 0.255,
+"w": "148cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1004",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1206",
+"n": "",
+"use": 1.42,
+"w": "149cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.47,
+"m": "OH1401",
+"n": "",
+"use": 1.47,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.84,
+"m": "OH1307A",
+"n": "MESH BACKS (44\")",
+"use": 0.28,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1111",
+"n": "MESH BACKS (52\")",
+"use": 0.2833,
+"w": "160cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1012",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.44,
+"m": "OH1207",
+"n": "",
+"use": 1.44,
+"w": "149cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH1400",
+"n": "",
+"use": 1.51,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.84,
+"m": "OH1308A",
+"n": "MESH BACKS (46\")",
+"use": 0.28,
+"w": "148cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1005",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.47,
+"m": "OH1208",
+"n": "",
+"use": 1.47,
+"w": "149cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.55,
+"m": "OH1402",
+"n": "",
+"use": 1.55,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1309A",
+"n": "MESH BACKS (48\")",
+"use": 0.2833,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1112",
+"n": "MESH BACKS (54\")",
+"use": 0.2833,
+"w": "160cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OH1013",
+"n": "",
+"use": 1.45,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH1209",
+"n": "",
+"use": 1.5,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1310A",
+"n": "MESH BACKS (50\")",
+"use": 0.2833,
+"w": "148cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.46,
+"m": "OH1006",
+"n": "",
+"use": 1.46,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH1210",
+"n": "",
+"use": 1.5,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1311A",
+"n": "MESH BACKS (52\")",
+"use": 0.2833,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 3.0,
+"len": 0.86,
+"m": "OH1113",
+"n": "MESH BACKS (56\")",
+"use": 0.2867,
+"w": "160cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.49,
+"m": "OH1014",
+"n": "",
+"use": 1.49,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.54,
+"m": "OH1211",
+"n": "",
+"use": 1.54,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1312",
+"n": "MESH BACKS (54\")",
+"use": 0.2833,
+"w": "148cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH1007",
+"n": "",
+"use": 1.5,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.56,
+"m": "OH1212",
+"n": "",
+"use": 1.56,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.99,
+"m": "OH1313",
+"n": "MESH BACKS (56\")",
+"use": 0.33,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 3.0,
+"len": 0.86,
+"m": "OH1114",
+"n": "MESH BACKS (58\")",
+"use": 0.2867,
+"w": "160cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH1015",
+"n": "",
+"use": 1.51,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.59,
+"m": "OH1213",
+"n": "",
+"use": 1.59,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 1.06,
+"m": "OH1314",
+"n": "MESH BACKS (58\")",
+"use": 0.3533,
+"w": "148cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDEVON6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.55,
+"m": "OH1008",
+"n": "",
+"use": 1.55,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.65,
+"m": "OH1214",
+"n": "",
+"use": 1.65,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 1.08,
+"m": "OH1315A",
+"n": "MESH BACKS (60\")",
+"use": 0.36,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 3.0,
+"len": 0.86,
+"m": "OH1115",
+"n": "MESH BACKS (60\")",
+"use": 0.2867,
+"w": "160cm"
+}
+],
+"v": "OH1LSLV"
+},
+"OHCJMDORSET3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.4,
+"m": "OH5001",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": 0.51,
+"m": "OXFORD100",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, ALTERNATIVE FABRIC WIDTH)",
+"use": 0.0319,
+"w": "155cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.41,
+"m": "OH5010",
+"n": "Utexbel fabric",
+"use": 1.41,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET3401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.56,
+"m": "OH5110",
+"n": "",
+"use": 1.56,
+"w": "148cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OH5002",
+"n": "",
+"use": 1.45,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET3601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.6,
+"m": "OH5111",
+"n": "",
+"use": 1.6,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5211",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.49,
+"m": "OH5011",
+"n": "Utexbel fabric",
+"use": 1.49,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET3801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.66,
+"m": "OH5100",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 1.66,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH5200",
+"n": "",
+"use": 1.51,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": null,
+"m": "0.51",
+"n": "",
+"use": null,
+"w": "155cm"
+},
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH5003",
+"n": "Utexbel fabric",
+"use": 1.51,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET4001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.67,
+"m": "OH5101",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 1.67,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.56,
+"m": "OH5201",
+"n": "",
+"use": 1.56,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 15.0,
+"len": null,
+"m": "0.5",
+"n": "",
+"use": null,
+"w": "148cm"
+},
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.53,
+"m": "OH5004",
+"n": "Utexbel fabric",
+"use": 1.53,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET4201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.72,
+"m": "OH5102",
+"n": "",
+"use": 1.72,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH5202",
+"n": "",
+"use": 1.62,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.56,
+"m": "OH5005",
+"n": "Utexbel fabric",
+"use": 1.56,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET4401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.73,
+"m": "OH5103",
+"n": "",
+"use": 1.73,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.66,
+"m": "OH5203",
+"n": "",
+"use": 1.66,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.58,
+"m": "OH5012",
+"n": "Utexbel fabric",
+"use": 1.58,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET4601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.74,
+"m": "OH5104",
+"n": "",
+"use": 1.74,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.69,
+"m": "OH5204",
+"n": "",
+"use": 1.69,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.64,
+"m": "OH5006",
+"n": "Utexbel fabric",
+"use": 1.64,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET4801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.81,
+"m": "OH5105",
+"n": "",
+"use": 1.81,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.7,
+"m": "OH5205",
+"n": "",
+"use": 1.7,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.71,
+"m": "OH5013",
+"n": "Utexbel fabric",
+"use": 1.71,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET5001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.89,
+"m": "OH5106",
+"n": "",
+"use": 1.89,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.73,
+"m": "OH5206",
+"n": "",
+"use": 1.73,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.76,
+"m": "OH5007",
+"n": "Utexbel fabric",
+"use": 1.76,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET5201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.93,
+"m": "OH5107",
+"n": "",
+"use": 1.93,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.79,
+"m": "OH5207",
+"n": "",
+"use": 1.79,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.8,
+"m": "OH5014",
+"n": "Utexbel fabric",
+"use": 1.8,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET5401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.96,
+"m": "OH5108",
+"n": "",
+"use": 1.96,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.84,
+"m": "OH5208",
+"n": "",
+"use": 1.84,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.83,
+"m": "OH5008",
+"n": "Utexbel fabric",
+"use": 1.83,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET5601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.06,
+"m": "OH5112",
+"n": "",
+"use": 2.06,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.93,
+"m": "OH5209",
+"n": "",
+"use": 1.93,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET5801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.06,
+"m": "OH5109",
+"n": "",
+"use": 2.06,
+"w": "148cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMDORSET6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.9,
+"m": "OH5009",
+"n": "Utexbel fabric",
+"use": 1.9,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMDORSET6601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.24,
+"m": "OH5210",
+"n": "",
+"use": 2.24,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.45,
+"m": "OXFORD001",
+"n": "",
+"use": 1.45,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": 0.51,
+"m": "OXFORD100",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0319,
+"w": "155cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.51,
+"m": "OXFORD010",
+"n": "",
+"use": 1.51,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD3401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5213",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OXFORD030",
+"n": "",
+"use": 1.51,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.51,
+"m": "OXFORD002",
+"n": "",
+"use": 1.51,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD3601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5211",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OXFORD027",
+"n": "",
+"use": 1.51,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.56,
+"m": "OXFORD011",
+"n": "",
+"use": 1.56,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD3801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH5200",
+"n": "",
+"use": 1.51,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": 0.51,
+"m": "OXFORD100",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0319,
+"w": "155cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.52,
+"m": "OXFORD024",
+"n": "",
+"use": 1.52,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.56,
+"m": "OXFORD003",
+"n": "",
+"use": 1.56,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.93,
+"m": "OXFORD203",
+"n": "NARROW MARKERS",
+"use": 1.93,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD4001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.56,
+"m": "OH5201",
+"n": "",
+"use": 1.56,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.56,
+"m": "OXFORD021",
+"n": "",
+"use": 1.56,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.57,
+"m": "OXFORD004",
+"n": "",
+"use": 1.57,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD4201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH5202",
+"n": "",
+"use": 1.62,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.58,
+"m": "OXFORD020",
+"n": "",
+"use": 1.58,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.65,
+"m": "OXFORD005",
+"n": "",
+"use": 1.65,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 2.02,
+"m": "OXFORD201",
+"n": "NARROW MARKERS",
+"use": 2.02,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": 0.51,
+"m": "OXFORD100",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0319,
+"w": "155cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD4401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.66,
+"m": "OH5203",
+"n": "",
+"use": 1.66,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.6,
+"m": "OXFORD022",
+"n": "",
+"use": 1.6,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.71,
+"m": "OXFORD012",
+"n": "",
+"use": 1.71,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD4601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.69,
+"m": "OH5204",
+"n": "",
+"use": 1.69,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.8,
+"m": "OXFORD080",
+"n": "",
+"use": 1.8,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.64,
+"m": "OXFORD023",
+"n": "",
+"use": 1.64,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.76,
+"m": "OXFORD006",
+"n": "",
+"use": 1.76,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 2.03,
+"m": "OXFORD202",
+"n": "NARROW MARKERS",
+"use": 2.03,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD4801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.7,
+"m": "OH5205",
+"n": "",
+"use": 1.7,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.69,
+"m": "OXFORD025",
+"n": "",
+"use": 1.69,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.78,
+"m": "OXFORD013",
+"n": "",
+"use": 1.78,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD5001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.73,
+"m": "OH5206",
+"n": "",
+"use": 1.73,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.69,
+"m": "OXFORD026",
+"n": "",
+"use": 1.69,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.85,
+"m": "OXFORD007",
+"n": "",
+"use": 1.85,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD5201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.73,
+"m": "OH5207",
+"n": "",
+"use": 1.73,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.79,
+"m": "OXFORD029",
+"n": "",
+"use": 1.79,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.86,
+"m": "OXFORD014",
+"n": "",
+"use": 1.86,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD5401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.75,
+"m": "OH5208",
+"n": "",
+"use": 1.75,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.82,
+"m": "OXFORD028",
+"n": "",
+"use": 1.82,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.93,
+"m": "OXFORD008",
+"n": "",
+"use": 1.93,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD5601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.88,
+"m": "OH5209",
+"n": "",
+"use": 1.88,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.83,
+"m": "OXFORD031",
+"n": "",
+"use": 1.83,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.99,
+"m": "OXFORD015",
+"n": "",
+"use": 1.99,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD5801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.93,
+"m": "OH5214",
+"n": "",
+"use": 1.93,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 2.03,
+"m": "OXFORD009",
+"n": "",
+"use": 2.03,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5LSLV"
+},
+"OHCJMOXFORD6001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.96,
+"m": "OH5212",
+"n": "",
+"use": 1.96,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD6201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.21,
+"m": "OH5215",
+"n": "",
+"use": 2.21,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMOXFORD6601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.24,
+"m": "OH5210",
+"n": "",
+"use": 2.24,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5LSL"
+},
+"OHCJMSTRATFORD3001": {
+"alt": [],
+"blk": "OH730RF, OH730LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.09,
+"m": "OH7001",
+"n": "",
+"use": 1.045,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD3201": {
+"alt": [],
+"blk": "OH732RF, OH732LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.13,
+"m": "OH7002",
+"n": "",
+"use": 1.065,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD3401": {
+"alt": [],
+"blk": "OH734RF, OH734LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.19,
+"m": "OH7003",
+"n": "",
+"use": 1.095,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD3601": {
+"alt": [],
+"blk": "OH736RF, OH736LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.2,
+"m": "OH7004",
+"n": "",
+"use": 1.1,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD3801": {
+"alt": [],
+"blk": "OH738RF, OH738LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.32,
+"m": "OH7005",
+"n": "",
+"use": 1.16,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD4001": {
+"alt": [],
+"blk": "OH740RF, OH740LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.36,
+"m": "OH7006",
+"n": "",
+"use": 1.18,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD4201": {
+"alt": [],
+"blk": "OH742RF, OH742LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.37,
+"m": "OH7007",
+"n": "",
+"use": 1.185,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.44,
+"m": "OH7017",
+"n": "",
+"use": 1.44,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD4401": {
+"alt": [],
+"blk": "OH744RF, OH744LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH7008",
+"n": "",
+"use": 1.51,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD4601": {
+"alt": [],
+"blk": "OH746RF, OH746LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH7009",
+"n": "",
+"use": 1.51,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD4801": {
+"alt": [],
+"blk": "OH748RF, OH748LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.52,
+"m": "OH7010",
+"n": "",
+"use": 1.52,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD5001": {
+"alt": [],
+"blk": "OH750RF, OH750LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.52,
+"m": "OH7011",
+"n": "",
+"use": 1.52,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD5201": {
+"alt": [],
+"blk": "OH752RF, OH752LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.61,
+"m": "OH7012",
+"n": "",
+"use": 1.61,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD5401": {
+"alt": [],
+"blk": "OH754RF, OH754LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.61,
+"m": "OH7013",
+"n": "",
+"use": 1.61,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD5601": {
+"alt": [],
+"blk": "OH756RF, OH756LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.65,
+"m": "OH7014",
+"n": "",
+"use": 1.65,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD5801": {
+"alt": [],
+"blk": "OH758RF, OH758LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "OH7015",
+"n": "",
+"use": 1.68,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJMSTRATFORD6001": {
+"alt": [],
+"blk": "OH760RF, OH760LF",
+"con": [],
+"fam": "OHCJMSTRATFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "OH7016",
+"n": "",
+"use": 1.68,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH7LSLV"
+},
+"OHCJSBEDFORD3001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.57,
+"m": "OH7SJ54",
+"n": "COLLAR INTERLINING (54)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.9,
+"m": "OH7SJKT30",
+"n": "COLLAR INTERLINING (54)",
+"use": 0.9,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.6,
+"m": "OH7SJ58",
+"n": "COLLAR INTERLINING (58)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.97,
+"m": "OH7SJKT32",
+"n": "COLLAR INTERLINING (58)",
+"use": 0.97,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.39,
+"m": "OH7SJ30",
+"n": "COLLAR INTERLINING (30)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.98,
+"m": "OH7SJKT34",
+"n": "COLLAR INTERLINING (30)",
+"use": 0.98,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.41,
+"m": "OH7SJ32",
+"n": "COLLAR INTERLINING (32)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.99,
+"m": "OH7SJKT36",
+"n": "COLLAR INTERLINING (32)",
+"use": 0.99,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.49,
+"m": "OH7SJ42",
+"n": "COLLAR INTERLINING (42)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.02,
+"m": "OH7SJKT38",
+"n": "COLLAR INTERLINING (42)",
+"use": 1.02,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.44,
+"m": "OH7SJ36",
+"n": "COLLAR INTERLINING (36)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.04,
+"m": "OH7SJKT40",
+"n": "COLLAR INTERLINING (36)",
+"use": 1.04,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "8",
+"len": 0.6,
+"m": "OH7SJCOL",
+"n": "COLLAR INTERLINING (1x30,1x34,1x38,1x42,1x46,1x50,1x54,1x58)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.17,
+"m": "OH7SJKT42",
+"n": "COLLAR INTERLINING (1x30,1x34,1x38,1x42,1x46,1x50,1x54,1x58)",
+"use": 1.17,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.47,
+"m": "OH7SJ40",
+"n": "COLLAR INTERLINING (40)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH7SJKT44",
+"n": "COLLAR INTERLINING (40)",
+"use": 1.19,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.45,
+"m": "OH7SJ38",
+"n": "COLLAR INTERLINING (38)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.22,
+"m": "OH7SJKT46",
+"n": "COLLAR INTERLINING (38)",
+"use": 1.22,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.5,
+"m": "OH7SJ44",
+"n": "COLLAR INTERLINING (44)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.23,
+"m": "OH7SJKT48",
+"n": "COLLAR INTERLINING (44)",
+"use": 1.23,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.51,
+"m": "OH7SJ46",
+"n": "COLLAR INTERLINING (46)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.31,
+"m": "OH7SJKT50",
+"n": "COLLAR INTERLINING (46)",
+"use": 1.31,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.52,
+"m": "OH7SJ48",
+"n": "COLLAR INTERLINING (48)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.35,
+"m": "OH7SJKT52",
+"n": "COLLAR INTERLINING (48)",
+"use": 1.35,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.54,
+"m": "OH7SJ50",
+"n": "COLLAR INTERLINING (50)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.44,
+"m": "OH7SJKT54",
+"n": "COLLAR INTERLINING (50)",
+"use": 1.44,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.42,
+"m": "OH7SJ34",
+"n": "COLLAR INTERLINING (34)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OH7SJKT58",
+"n": "COLLAR INTERLINING (34)",
+"use": 1.54,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSBEDFORD6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSBEDFORD",
+"inter": [
+{
+"lay": "9",
+"len": 0.55,
+"m": "OH7SJ52",
+"n": "COLLAR INTERLINING (52)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.57,
+"m": "OH7SJKT60",
+"n": "COLLAR INTERLINING (52)",
+"use": 1.57,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH7SJKT"
+},
+"OHCJSCUMBRIA2801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.11,
+"m": "OH4077",
+"n": "",
+"use": 1.11,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA3001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.12,
+"m": "OH4075",
+"n": "",
+"use": 1.12,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.12,
+"m": "OH4312",
+"n": "Tiajo fabric",
+"use": 1.12,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.13,
+"m": "OH4055",
+"n": "",
+"use": 1.13,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.13,
+"m": "OH4311",
+"n": "Tiajo fabric",
+"use": 1.13,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH4050",
+"n": "",
+"use": 1.19,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 2.0,
+"len": 2.65,
+"m": "OH4066",
+"n": "",
+"use": 1.325,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.14,
+"m": "OH4308",
+"n": "Tiajo fabric",
+"use": 1.14,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.16,
+"m": "OH4056",
+"n": "",
+"use": 1.16,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA3601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.35,
+"m": "OH4103",
+"n": "",
+"use": 1.35,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.23,
+"m": "OH4302",
+"n": "Tiajo fabric",
+"use": 1.115,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 2.0,
+"len": 2.33,
+"m": "OH4073",
+"n": "",
+"use": 1.165,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.31,
+"m": "OH4051",
+"n": "",
+"use": 1.31,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA3801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.39,
+"m": "OH4102",
+"n": "",
+"use": 1.39,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.3,
+"m": "OH4300",
+"n": "Tiajo fabric",
+"use": 1.15,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 2.0,
+"len": 2.5,
+"m": "OH4071",
+"n": "",
+"use": 1.25,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.33,
+"m": "OH4057",
+"n": "",
+"use": 1.33,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA4001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.43,
+"m": "OH4101",
+"n": "",
+"use": 1.43,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.36,
+"m": "OH4301",
+"n": "Tiajo fabric",
+"use": 1.18,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.36,
+"m": "OH4052",
+"n": "",
+"use": 1.36,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA4201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.52,
+"m": "OH4106",
+"n": "",
+"use": 1.52,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.38,
+"m": "OH4303",
+"n": "Tiajo fabric",
+"use": 1.19,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 2.0,
+"len": 2.68,
+"m": "OH4069",
+"n": "",
+"use": 1.34,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.36,
+"m": "OH4058",
+"n": "",
+"use": 1.36,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA4401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.52,
+"m": "OH4107",
+"n": "",
+"use": 1.52,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.55,
+"m": "OH4304",
+"n": "Tiajo fabric",
+"use": 1.275,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 2.0,
+"len": 2.74,
+"m": "OH4074",
+"n": "",
+"use": 1.37,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH4053",
+"n": "",
+"use": 1.42,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.74,
+"m": "OH4305",
+"n": "Tiajo fabric",
+"use": 1.37,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 2.0,
+"len": 2.76,
+"m": "OH4067",
+"n": "",
+"use": 1.38,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH4059",
+"n": "",
+"use": 1.42,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA4801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OH4100",
+"n": "",
+"use": 1.54,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.79,
+"m": "OH4306",
+"n": "Tiajo fabric",
+"use": 1.395,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 2.0,
+"len": 2.85,
+"m": "OH4068",
+"n": "",
+"use": 1.425,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.53,
+"m": "OH4060",
+"n": "",
+"use": 1.53,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.9,
+"m": "OH4307",
+"n": "Tiajo fabric",
+"use": 1.45,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 2.0,
+"len": 3.0,
+"m": "OH4070",
+"n": "",
+"use": 1.5,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.6,
+"m": "OH4061",
+"n": "",
+"use": 1.6,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA5201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.64,
+"m": "OH4104",
+"n": "",
+"use": 1.64,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.47,
+"m": "OH4309",
+"n": "Tiajo fabric",
+"use": 1.47,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.63,
+"m": "OH4054",
+"n": "",
+"use": 1.63,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA5401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.69,
+"m": "OH4105",
+"n": "",
+"use": 1.69,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH4310",
+"n": "Tiajo fabric",
+"use": 1.51,
+"w": "156cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.63,
+"m": "OH4064",
+"n": "",
+"use": 1.63,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OH4313",
+"n": "Tiajo fabric",
+"use": 1.54,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.63,
+"m": "OH4062",
+"n": "",
+"use": 1.63,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.65,
+"m": "OH4063",
+"n": "",
+"use": 1.65,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA6001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.72,
+"m": "OH4108",
+"n": "",
+"use": 1.72,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA6201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.67,
+"m": "OH4065",
+"n": "",
+"use": 1.67,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA6401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.69,
+"m": "OH4076",
+"n": "",
+"use": 1.69,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSCUMBRIA6401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.74,
+"m": "OH4109",
+"n": "",
+"use": 1.74,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV2"
+},
+"OHCJSCUMBRIA6601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSCUMBRIA",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.82,
+"m": "OH4072",
+"n": "",
+"use": 1.82,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH4SSLV"
+},
+"OHCJSMCHESHIRE3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.12,
+"m": "OH2062",
+"n": "",
+"use": 1.12,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.13,
+"m": "OH2057",
+"n": "",
+"use": 1.13,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.14,
+"m": "OH2051",
+"n": "",
+"use": 1.14,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.18,
+"m": "OH236",
+"n": "*FOR USE ON DAMAGED COOLTEX 1 FABRIC ONLY*",
+"use": 1.18,
+"w": "158CM"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.15,
+"m": "OH2050",
+"n": "",
+"use": 1.15,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.18,
+"m": "OH238",
+"n": "*FOR USE ON DAMAGED COOLTEX 1 FABRIC ONLY*",
+"use": 1.18,
+"w": "158CM"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.15,
+"m": "OH2052",
+"n": "",
+"use": 1.15,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.2,
+"m": "OH240",
+"n": "*FOR USE ON DAMAGED COOLTEX 1 FABRIC ONLY*",
+"use": 1.2,
+"w": "158CM"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.16,
+"m": "OH2053",
+"n": "",
+"use": 1.16,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.22,
+"m": "OH2201",
+"n": "",
+"use": 1.22,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.25,
+"m": "OH242",
+"n": "*FOR USE ON DAMAGED COOLTEX 1 FABRIC ONLY*",
+"use": 1.25,
+"w": "158CM"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE4201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.26,
+"m": "OH2306",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.26,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.21,
+"m": "OH2054",
+"n": "",
+"use": 1.21,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.37,
+"m": "OH244",
+"n": "*FOR USE ON DAMAGED COOLTEX 1 FABRIC ONLY*",
+"use": 1.37,
+"w": "158CM"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2200",
+"n": "",
+"use": 1.42,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE4401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.31,
+"m": "OH2300",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.31,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.21,
+"m": "OH2056",
+"n": "",
+"use": 1.21,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE4601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.32,
+"m": "OH2303",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.32,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.26,
+"m": "OH2060",
+"n": "",
+"use": 1.26,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.37,
+"m": "OH248",
+"n": "*FOR USE ON DAMAGED COOLTEX 1 FABRIC ONLY*",
+"use": 1.37,
+"w": "158CM"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE4801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.35,
+"m": "OH2308",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.35,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2055",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.38,
+"m": "OH250",
+"n": "*FOR USE ON DAMAGED COOLTEX 1 FABRIC ONLY*",
+"use": 1.38,
+"w": "158CM"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE5001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OH2305",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.54,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2059",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.41,
+"m": "OH252",
+"n": "*FOR USE ON DAMAGED COOLTEX 1 FABRIC ONLY*",
+"use": 1.41,
+"w": "158CM"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE5201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH2307",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.62,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE5201S": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.73,
+"m": "OH2500",
+"n": "MESH INSERTS (CHESHIRE 6\" LONGER)",
+"use": 1.73,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.72,
+"m": "OH2500A",
+"n": "",
+"use": 0.12,
+"w": "158cm"
+}
+],
+"v": "OH2SS6"
+},
+"OHCJSMCHESHIRE5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2058",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2064",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.52,
+"m": "OH256",
+"n": "*FOR USE ON DAMAGED COOLTEX 1 FABRIC ONLY*",
+"use": 1.52,
+"w": "158CM"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE5601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH2302",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.62,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2065",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE5801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH2309",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.62,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH2061",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE6001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH2304",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.62,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE6201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.48,
+"m": "OH2063",
+"n": "",
+"use": 1.48,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE6601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.65,
+"m": "OH2066",
+"n": "",
+"use": 1.65,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 11.0,
+"len": 1.12,
+"m": "OH2100",
+"n": "MESH INSERTS",
+"use": 0.1018,
+"w": "147cm"
+}
+],
+"v": "OH2SSLV"
+},
+"OHCJSMCHESHIRE6601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.81,
+"m": "OH2301",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.81,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMCHESHIRE7001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMCHESHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.82,
+"m": "OH2310",
+"n": "MESH INSERTS (CHESHIRE 4\" LONGER)",
+"use": 1.82,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 6.0,
+"len": 0.66,
+"m": "OH2350",
+"n": "",
+"use": 0.11,
+"w": "157cm"
+}
+],
+"v": "OH2SS4"
+},
+"OHCJSMDEVON3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.02,
+"m": "OH1062",
+"n": "",
+"use": 1.02,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.99,
+"m": "OH1313",
+"n": "MESH BACKS (56\")",
+"use": 0.33,
+"w": "148cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.06,
+"m": "OH1058",
+"n": "",
+"use": 1.06,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1309A",
+"n": "MESH BACKS (48\")",
+"use": 0.2833,
+"w": "148cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.94,
+"m": "OH1076",
+"n": "",
+"use": 0.97,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.13,
+"m": "OH1051",
+"n": "",
+"use": 1.13,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.13,
+"m": "OH1250",
+"n": "",
+"use": 1.13,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 0.82,
+"m": "OH1302",
+"n": "MESH BACKS (34\")",
+"use": 0.205,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 4.0,
+"len": 0.82,
+"m": "OH1303",
+"n": "MESH BACKS (36\")",
+"use": 0.205,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 4.0,
+"len": 0.81,
+"m": "OH1101",
+"n": "MESH BACKS (32\")",
+"use": 0.2025,
+"w": "160cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.95,
+"m": "OH1077",
+"n": "*CHECK MESH WIDTH*",
+"use": 0.975,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.14,
+"m": "OH1050",
+"n": "",
+"use": 1.14,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.15,
+"m": "OH1251",
+"n": "",
+"use": 1.15,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 0.81,
+"m": "OH1301",
+"n": "MESH BACKS (32\")",
+"use": 0.2025,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.0,
+"m": "OH1304A",
+"n": "MESH BACKS (38\")",
+"use": 0.25,
+"w": "148cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.95,
+"m": "OH1070",
+"n": "",
+"use": 0.975,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.15,
+"m": "OH1052",
+"n": "",
+"use": 1.15,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.15,
+"m": "OH1252",
+"n": "",
+"use": 1.15,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 0.82,
+"m": "OH1303",
+"n": "MESH BACKS (36\")",
+"use": 0.205,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.01,
+"m": "OH1305A",
+"n": "MESH BACKS (40\")",
+"use": 0.2525,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 4.0,
+"len": 0.82,
+"m": "OH1102",
+"n": "MESH BACKS (34\")",
+"use": 0.205,
+"w": "160cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.98,
+"m": "OH1071",
+"n": "",
+"use": 0.99,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.15,
+"m": "OH1053",
+"n": "",
+"use": 1.15,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.16,
+"m": "OH1253",
+"n": "",
+"use": 1.16,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.0,
+"m": "OH1304A",
+"n": "MESH BACKS (38\")",
+"use": 0.25,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.02,
+"m": "OH1306A",
+"n": "MESH BACKS (42\")",
+"use": 0.255,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 4.0,
+"len": 0.82,
+"m": "OH1103",
+"n": "MESH BACKS (36\")",
+"use": 0.205,
+"w": "160cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.98,
+"m": "OH1072",
+"n": "",
+"use": 0.99,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.16,
+"m": "OH1054",
+"n": "",
+"use": 1.16,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.18,
+"m": "OH1254",
+"n": "",
+"use": 1.18,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.01,
+"m": "OH1305A",
+"n": "MESH BACKS (40\")",
+"use": 0.2525,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.84,
+"m": "OH1307A",
+"n": "MESH BACKS (44\")",
+"use": 0.28,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 4.0,
+"len": 0.83,
+"m": "OH1104",
+"n": "MESH BACKS (38\")",
+"use": 0.2075,
+"w": "160cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.09,
+"m": "OH1073",
+"n": "",
+"use": 1.045,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.18,
+"m": "OH1056",
+"n": "",
+"use": 1.18,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.18,
+"m": "OH1255",
+"n": "",
+"use": 1.18,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.84,
+"m": "OH1307A",
+"n": "MESH BACKS (44\")",
+"use": 0.28,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.84,
+"m": "OH1308A",
+"n": "MESH BACKS (46\")",
+"use": 0.28,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 4.0,
+"len": 0.84,
+"m": "OH1105",
+"n": "MESH BACKS (40\")",
+"use": 0.21,
+"w": "160cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.15,
+"m": "OH1074",
+"n": "",
+"use": 1.075,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.18,
+"m": "OH1060",
+"n": "",
+"use": 1.18,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH1256",
+"n": "",
+"use": 1.19,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1311A",
+"n": "MESH BACKS (52\")",
+"use": 0.2833,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1309A",
+"n": "MESH BACKS (48\")",
+"use": 0.2833,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 4.0,
+"len": 0.91,
+"m": "OH1106",
+"n": "MESH BACKS (42\")",
+"use": 0.2275,
+"w": "160cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.2,
+"m": "OH1075",
+"n": "",
+"use": 1.1,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH1055",
+"n": "",
+"use": 1.19,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.23,
+"m": "OH1257",
+"n": "",
+"use": 1.23,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 1.02,
+"m": "OH1306A",
+"n": "MESH BACKS (42\")",
+"use": 0.255,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1310A",
+"n": "MESH BACKS (50\")",
+"use": 0.2833,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 3.0,
+"len": 0.84,
+"m": "OH1107",
+"n": "MESH BACKS (44\")",
+"use": 0.28,
+"w": "160cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.22,
+"m": "OH1057",
+"n": "",
+"use": 1.22,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.24,
+"m": "OH1258",
+"n": "",
+"use": 1.24,
+"w": "149cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.84,
+"m": "OH1308A",
+"n": "MESH BACKS (46\")",
+"use": 0.28,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1311A",
+"n": "MESH BACKS (52\")",
+"use": 0.2833,
+"w": "148cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.25,
+"m": "OH1059",
+"n": "",
+"use": 1.25,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1310A",
+"n": "MESH BACKS (50\")",
+"use": 0.2833,
+"w": "148cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.26,
+"m": "OH1063",
+"n": "",
+"use": 1.26,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 1.06,
+"m": "OH1314",
+"n": "MESH BACKS (58\")",
+"use": 0.3533,
+"w": "148cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.26,
+"m": "OH1064",
+"n": "",
+"use": 1.26,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 1.08,
+"m": "OH1315A",
+"n": "MESH BACKS (60\")",
+"use": 0.36,
+"w": "148cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.34,
+"m": "OH1061",
+"n": "",
+"use": 1.34,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 0.85,
+"m": "OH1312",
+"n": "MESH BACKS (54\")",
+"use": 0.2833,
+"w": "148cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDEVON6401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDEVON",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH1065",
+"n": "",
+"use": 1.42,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 3.0,
+"len": 1.11,
+"m": "OH316",
+"n": "MESH BACKS (64\")",
+"use": 0.37,
+"w": "148cm"
+}
+],
+"v": "OH1SSLV"
+},
+"OHCJSMDORSET3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.12,
+"m": "OH5061",
+"n": "Utexbel fabric",
+"use": 1.12,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.23,
+"m": "OH5060",
+"n": "Utexbel fabric",
+"use": 1.23,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET3401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.36,
+"m": "OH5162",
+"n": "",
+"use": 1.36,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.15,
+"m": "OH5263",
+"n": "",
+"use": 1.15,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.36,
+"m": "OH5070",
+"n": "Utexbel fabric",
+"use": 1.18,
+"w": "147cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.28,
+"m": "OH5059",
+"n": "Utexbel fabric",
+"use": 1.28,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET3601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5163",
+"n": "",
+"use": 1.5,
+"w": "148cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.45,
+"m": "OH5074",
+"n": "Utexbel fabric",
+"use": 1.225,
+"w": "147cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.31,
+"m": "OH5050",
+"n": "",
+"use": 1.31,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": 0.51,
+"m": "OXFORD100",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, ALTERNATIVE FABRIC WIDTH)",
+"use": 0.0319,
+"w": "155cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET3801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5150",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 1.5,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.35,
+"m": "OH5250",
+"n": "",
+"use": 1.35,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": null,
+"m": "0.51",
+"n": "",
+"use": null,
+"w": "155cm"
+},
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.61,
+"m": "OH5075",
+"n": "Utexbel fabric",
+"use": 1.305,
+"w": "147cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.37,
+"m": "OH5051",
+"n": "",
+"use": 1.37,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET4001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5151",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 1.5,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OH5251",
+"n": "",
+"use": 1.4,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 15.0,
+"len": null,
+"m": "0.5",
+"n": "",
+"use": null,
+"w": "148cm"
+},
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.62,
+"m": "OH5071",
+"n": "Utexbel fabric",
+"use": 1.31,
+"w": "147cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.37,
+"m": "OH5052",
+"n": "Utexbel fabric",
+"use": 1.37,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET4201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5152",
+"n": "",
+"use": 1.5,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5252",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.64,
+"m": "OH5072",
+"n": "Utexbel fabric",
+"use": 1.32,
+"w": "147cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.4,
+"m": "OH5053",
+"n": "Utexbel fabric",
+"use": 1.4,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET4401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5153",
+"n": "",
+"use": 1.5,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5253",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.4,
+"m": "OH5054",
+"n": "Utexbel fabric",
+"use": 1.4,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET4601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5154",
+"n": "",
+"use": 1.5,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5254",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.41,
+"m": "OH5055",
+"n": "Utexbel fabric",
+"use": 1.41,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET4801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5155",
+"n": "",
+"use": 1.5,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5255",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.44,
+"m": "OH5056",
+"n": "Utexbel fabric",
+"use": 1.44,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET5001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OH5156",
+"n": "",
+"use": 1.54,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH5256",
+"n": "",
+"use": 1.51,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5057",
+"n": "Utexbel fabric",
+"use": 1.5,
+"w": "147cm"
+},
+{
+"d": 1,
+"lay": 2.0,
+"len": 3.03,
+"m": "OH5073",
+"n": "Utexbel fabric",
+"use": 1.515,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET5201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.61,
+"m": "OH5157",
+"n": "",
+"use": 1.61,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH5257",
+"n": "",
+"use": 1.51,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5058",
+"n": "Utexbel fabric",
+"use": 1.5,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET5401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.66,
+"m": "OH5161",
+"n": "",
+"use": 1.66,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.57,
+"m": "OH5261",
+"n": "",
+"use": 1.57,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.52,
+"m": "OH5062",
+"n": "Utexbel fabric",
+"use": 1.52,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET5601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "OH5158",
+"n": "",
+"use": 1.68,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.61,
+"m": "OH5258",
+"n": "",
+"use": 1.61,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.56,
+"m": "OH5063",
+"n": "Utexbel fabric",
+"use": 1.56,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET5801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.7,
+"m": "OH5159",
+"n": "",
+"use": 1.7,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.63,
+"m": "OH5259",
+"n": "",
+"use": 1.63,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET6001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.77,
+"m": "OH5160",
+"n": "",
+"use": 1.77,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.64,
+"m": "OH5260",
+"n": "",
+"use": 1.64,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMDORSET6401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.82,
+"m": "OH5064",
+"n": "Utexbel fabric",
+"use": 1.82,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMDORSET6601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMDORSET",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.88,
+"m": "OH5262",
+"n": "",
+"use": 1.88,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (FOR ALL DORSET & OXFORD JACKETS, DEFAULT FABRIC WIDTH)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.12,
+"m": "OXFORD032",
+"n": "",
+"use": 1.12,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.19,
+"m": "OXFORD061",
+"n": "",
+"use": 1.19,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.13,
+"m": "OXFORD034",
+"n": "",
+"use": 1.13,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD060",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.45,
+"m": "OXFORD109",
+"n": "NARROW MARKERS",
+"use": 1.45,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD3401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.15,
+"m": "OH5263",
+"n": "",
+"use": 1.15,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.19,
+"m": "OXFORD036",
+"n": "",
+"use": 1.19,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD059",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.49,
+"m": "OXFORD110",
+"n": "NARROW MARKERS",
+"use": 1.49,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": 0.51,
+"m": "OXFORD100",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0319,
+"w": "155cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD3601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.21,
+"m": "OH5264",
+"n": "",
+"use": 1.21,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.26,
+"m": "OXFORD038",
+"n": "",
+"use": 1.26,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD050",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.49,
+"m": "OXFORD111",
+"n": "NARROW MARKERS",
+"use": 1.49,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": 0.51,
+"m": "OXFORD100",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0319,
+"w": "155cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD3801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.35,
+"m": "OH5250",
+"n": "",
+"use": 1.35,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": 0.51,
+"m": "OXFORD100",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0319,
+"w": "155cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD3815": {
+"alt": [],
+"blk": "",
+"con": [],
+"copyOf": "OHCJSMOXFORD3801",
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.26,
+"m": "OXFORD038",
+"n": "",
+"use": 1.26,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD050",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.49,
+"m": "OXFORD111",
+"n": "NARROW MARKERS",
+"use": 1.49,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 16.0,
+"len": 0.51,
+"m": "OXFORD100",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0319,
+"w": "155cm"
+}
+],
+"note": "Navy Oxford, short sleeve: on the white size's markers until the cutting room lists its own (Luke's own OHCJSMOXFORD4815L record uses the white long-length marker OH5255)",
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.29,
+"m": "OXFORD040",
+"n": "",
+"use": 1.29,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD051",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.49,
+"m": "OXFORD102",
+"n": "NARROW MARKERS",
+"use": 1.49,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD4001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.4,
+"m": "OH5251",
+"n": "",
+"use": 1.4,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.31,
+"m": "OXFORD042",
+"n": "",
+"use": 1.31,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD052",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.5,
+"m": "OXFORD103",
+"n": "NARROW MARKERS",
+"use": 1.5,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD4201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5252",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD4215": {
+"alt": [],
+"blk": "",
+"con": [],
+"copyOf": "OHCJSMOXFORD4201",
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.31,
+"m": "OXFORD042",
+"n": "",
+"use": 1.31,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD052",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.5,
+"m": "OXFORD103",
+"n": "NARROW MARKERS",
+"use": 1.5,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"note": "Navy Oxford, short sleeve: on the white size's markers until the cutting room lists its own (Luke's own OHCJSMOXFORD4815L record uses the white long-length marker OH5255)",
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.37,
+"m": "OXFORD044",
+"n": "",
+"use": 1.37,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD053",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.51,
+"m": "OXFORD104",
+"n": "NARROW MARKERS",
+"use": 1.51,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD4401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5253",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD4415": {
+"alt": [],
+"blk": "",
+"con": [],
+"copyOf": "OHCJSMOXFORD4401",
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.37,
+"m": "OXFORD044",
+"n": "",
+"use": 1.37,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD053",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.51,
+"m": "OXFORD104",
+"n": "NARROW MARKERS",
+"use": 1.51,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"note": "Navy Oxford, short sleeve: on the white size's markers until the cutting room lists its own (Luke's own OHCJSMOXFORD4815L record uses the white long-length marker OH5255)",
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.38,
+"m": "OXFORD046",
+"n": "",
+"use": 1.38,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD054",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.53,
+"m": "OXFORD105",
+"n": "NARROW MARKERS",
+"use": 1.53,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD4601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5254",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD4615": {
+"alt": [],
+"blk": "",
+"con": [],
+"copyOf": "OHCJSMOXFORD4601",
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.38,
+"m": "OXFORD046",
+"n": "",
+"use": 1.38,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD054",
+"n": "",
+"use": 1.4,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.53,
+"m": "OXFORD105",
+"n": "NARROW MARKERS",
+"use": 1.53,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"note": "Navy Oxford, short sleeve: on the white size's markers until the cutting room lists its own (Luke's own OHCJSMOXFORD4815L record uses the white long-length marker OH5255)",
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD048",
+"n": "",
+"use": 1.4,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.45,
+"m": "OXFORD055",
+"n": "",
+"use": 1.45,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.53,
+"m": "OXFORD106",
+"n": "NARROW MARKERS",
+"use": 1.53,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD4801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH5255",
+"n": "",
+"use": 1.5,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.4,
+"m": "OXFORD099",
+"n": "",
+"use": 1.4,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.54,
+"m": "OXFORD056",
+"n": "",
+"use": 1.54,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.68,
+"m": "OXFORD107",
+"n": "NARROW MARKERS",
+"use": 1.68,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD5001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.51,
+"m": "OH5256",
+"n": "",
+"use": 1.51,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.69,
+"m": "OXFORD300",
+"n": "NARROW MARKERS",
+"use": 1.69,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.41,
+"m": "OXFORD098",
+"n": "",
+"use": 1.41,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.52,
+"m": "OXFORD057",
+"n": "",
+"use": 1.52,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.67,
+"m": "OXFORD108",
+"n": "NARROW MARKERS",
+"use": 1.67,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD5201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.52,
+"m": "OH5257",
+"n": "",
+"use": 1.52,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD5215": {
+"alt": [],
+"blk": "",
+"con": [],
+"copyOf": "OHCJSMOXFORD5201",
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.41,
+"m": "OXFORD098",
+"n": "",
+"use": 1.41,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.52,
+"m": "OXFORD057",
+"n": "",
+"use": 1.52,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.67,
+"m": "OXFORD108",
+"n": "NARROW MARKERS",
+"use": 1.67,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"note": "Navy Oxford, short sleeve: on the white size's markers until the cutting room lists its own (Luke's own OHCJSMOXFORD4815L record uses the white long-length marker OH5255)",
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OXFORD097",
+"n": "",
+"use": 1.45,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.54,
+"m": "OXFORD058",
+"n": "",
+"use": 1.54,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD5401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.57,
+"m": "OH5261",
+"n": "",
+"use": 1.57,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.66,
+"m": "OH5300",
+"n": "",
+"use": 1.66,
+"w": "148cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OXFORD067",
+"n": "",
+"use": 1.54,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.59,
+"m": "OXFORD062",
+"n": "",
+"use": 1.59,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.87,
+"m": "OXFORD101",
+"n": "NARROW MARKERS",
+"use": 1.87,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD5601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.61,
+"m": "OH5258",
+"n": "",
+"use": 1.61,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD5615": {
+"alt": [],
+"blk": "",
+"con": [],
+"copyOf": "OHCJSMOXFORD5601",
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OXFORD067",
+"n": "",
+"use": 1.54,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.59,
+"m": "OXFORD062",
+"n": "",
+"use": 1.59,
+"w": "147cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.87,
+"m": "OXFORD101",
+"n": "NARROW MARKERS",
+"use": 1.87,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"note": "Navy Oxford, short sleeve: on the white size's markers until the cutting room lists its own (Luke's own OHCJSMOXFORD4815L record uses the white long-length marker OH5255)",
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.65,
+"m": "OXFORD064",
+"n": "",
+"use": 1.65,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD5801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.63,
+"m": "OH5259",
+"n": "",
+"use": 1.63,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.6,
+"m": "OXFORD068",
+"n": "",
+"use": 1.6,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.7,
+"m": "OXFORD065",
+"n": "",
+"use": 1.7,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD6001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.64,
+"m": "OH5260",
+"n": "",
+"use": 1.64,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD6201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.53,
+"m": "OXFORD066",
+"n": "",
+"use": 1.53,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.95,
+"m": "OXFORD112",
+"n": "NARROW MARKERS",
+"use": 1.95,
+"w": "135cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD6201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.67,
+"m": "OH5265",
+"n": "",
+"use": 1.67,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD6401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.83,
+"m": "OXFORD063",
+"n": "",
+"use": 1.83,
+"w": "147cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "OH5SSLV"
+},
+"OHCJSMOXFORD6401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.74,
+"m": "OH5266",
+"n": "",
+"use": 1.74,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMOXFORD6601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSMOXFORD",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.88,
+"m": "OH5262",
+"n": "",
+"use": 1.88,
+"w": "158cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 15.0,
+"len": 0.5,
+"m": "OXFORD100A",
+"n": "MESH INSERTS (ALL SIZES)",
+"use": 0.0333,
+"w": "148cm"
+}
+],
+"v": "LNGOH5SSL"
+},
+"OHCJSMSTRATFORD3001": {
+"alt": [],
+"blk": "OH730RF, OH730LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x30",
+"len": 0.39,
+"m": "OH7A",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.9,
+"m": "OH7050",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 0.9,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD3201": {
+"alt": [],
+"blk": "OH732RF, OH732LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x32",
+"len": 0.41,
+"m": "OH7B",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.9,
+"m": "OH7051",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 0.9,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD3401": {
+"alt": [],
+"blk": "OH734RF, OH734LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x34",
+"len": 0.42,
+"m": "OH7C",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.87,
+"m": "OH7073",
+"n": "",
+"use": 0.935,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.06,
+"m": "OH7052",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.06,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD3601": {
+"alt": [],
+"blk": "OH736RF, OH736LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x36",
+"len": 0.44,
+"m": "OH7D",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.88,
+"m": "OH7072",
+"n": "",
+"use": 0.94,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.08,
+"m": "OH7053",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.08,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 13.5,
+"len": 1.1,
+"m": "OH7100",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0815,
+"w": "150cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD3801": {
+"alt": [],
+"blk": "OH738RF, OH738LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x38",
+"len": 0.45,
+"m": "OH7E",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+},
+{
+"lay": "1x30-60, 2x38-52",
+"len": 0.62,
+"m": "OH7Q",
+"n": "COLLAR INTERLINING (OH7 MULTIPLE SIZES)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.94,
+"m": "OH7070",
+"n": "COLLAR INTERLINING (OH7 MULTIPLE SIZES)",
+"use": 0.97,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.09,
+"m": "OH7054",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.09,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.14,
+"m": "OH738",
+"n": "USE FOR DAMAGED COOLTEX 1 FABRIC 14cm-32cm",
+"use": 1.14,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD4001": {
+"alt": [],
+"blk": "OH740RF, OH740LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x40",
+"len": 0.47,
+"m": "OH7F",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.97,
+"m": "OH7071",
+"n": "",
+"use": 0.985,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.11,
+"m": "OH7055",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.11,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.25,
+"m": "OH740",
+"n": "USE FOR DAMAGED COOLTEX 1 FABRIC 14cm-32cm",
+"use": 1.25,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD4201": {
+"alt": [],
+"blk": "OH742RF, OH742LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x42",
+"len": 0.49,
+"m": "OH7G",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.0,
+"m": "OH7074",
+"n": "",
+"use": 1.0,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.11,
+"m": "OH7056",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.11,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.55,
+"m": "OH742",
+"n": "USE FOR DAMAGED COOLTEX 1 FABRIC 14cm-32cm",
+"use": 1.55,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 0,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH7100A",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "146cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD4401": {
+"alt": [],
+"blk": "OH744RF, OH744LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x44",
+"len": 0.5,
+"m": "OH7H",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.34,
+"m": "OH7077",
+"n": "",
+"use": 1.17,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH7057",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.19,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.67,
+"m": "OH744",
+"n": "USE FOR DAMAGED COOLTEX 1 FABRIC 14cm-32cm",
+"use": 1.67,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD4601": {
+"alt": [],
+"blk": "OH746RF, OH746LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x46",
+"len": 0.51,
+"m": "OH7I",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.36,
+"m": "OH7076",
+"n": "",
+"use": 1.18,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH7058",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.19,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.6,
+"m": "OH7200",
+"n": "NARROW MARKER",
+"use": 1.6,
+"w": "135cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.67,
+"m": "OH746",
+"n": "USE FOR DAMAGED COOLTEX 1 FABRIC 14cm-32cm",
+"use": 1.67,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD4801": {
+"alt": [],
+"blk": "OH748RF, OH748LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x48",
+"len": 0.52,
+"m": "OH7J",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.47,
+"m": "OH7075",
+"n": "",
+"use": 1.235,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH7059",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.42,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.73,
+"m": "OH748",
+"n": "USE FOR DAMAGED COOLTEX 1 FABRIC 14cm-32cm",
+"use": 1.73,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD5001": {
+"alt": [],
+"blk": "OH750RF, OH750LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "26x50",
+"len": 0.53,
+"m": "OH7K",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OH7060",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.45,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD5201": {
+"alt": [],
+"blk": "OH752RF, OH752LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "22x52",
+"len": 0.55,
+"m": "OH7L",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OH7061",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.45,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD5401": {
+"alt": [],
+"blk": "OH754RF, OH754LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "22x54",
+"len": 0.57,
+"m": "OH7M",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.61,
+"m": "OH7062",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.61,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD5601": {
+"alt": [],
+"blk": "OH756RF, OH756LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "22x56",
+"len": 0.58,
+"m": "OH7N",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH7063",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.62,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD5801": {
+"alt": [],
+"blk": "OH758RF, OH758LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "22x58",
+"len": 0.6,
+"m": "OH7O",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.63,
+"m": "OH7064",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.63,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD6001": {
+"alt": [],
+"blk": "OH760RF, OH760LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "22x60",
+"len": 0.61,
+"m": "OH7P",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.63,
+"m": "OH7065",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.63,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSMSTRATFORD6401": {
+"alt": [],
+"blk": "OH764RF, OH764LF",
+"con": [],
+"fam": "OHCJSMSTRATFORD",
+"inter": [
+{
+"lay": "22x64",
+"len": 0.64,
+"m": "OH7R",
+"n": "COLLAR INTERLINING (OH7)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.66,
+"m": "OH7066",
+"n": "COLLAR INTERLINING (OH7)",
+"use": 1.66,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"fromFamily": 1,
+"lay": 13.0,
+"len": 1.1,
+"m": "OH710013",
+"n": "MESH INSERTS (STRATFORD JACKET ALL SIZES)",
+"use": 0.0846,
+"w": "147cm"
+}
+],
+"v": "OH7SSLV"
+},
+"OHCJSSUFFOLK3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.16,
+"m": "OH6055",
+"n": "",
+"use": 1.16,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.1,
+"m": "OH6300",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.1,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH6060",
+"n": "",
+"use": 1.19,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.34,
+"m": "OH6072",
+"n": "",
+"use": 1.17,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.18,
+"m": "OH6301",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.18,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.39,
+"m": "OH6056",
+"n": "",
+"use": 1.39,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.1,
+"m": "OH6302",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.1,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.38,
+"m": "OH6066",
+"n": "",
+"use": 1.19,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.38,
+"m": "OH6050",
+"n": "",
+"use": 1.38,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.1,
+"m": "OH6303",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.1,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.65,
+"m": "OH6068",
+"n": "",
+"use": 1.325,
+"w": "148cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.4,
+"m": "OH6051",
+"n": "",
+"use": 1.4,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.7,
+"m": "OH6067",
+"n": "",
+"use": 1.35,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.56,
+"m": "OH6052",
+"n": "",
+"use": 1.56,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK4201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.66,
+"m": "OH6082",
+"n": "",
+"use": 1.66,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.94,
+"m": "OH6069",
+"n": "",
+"use": 1.47,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.57,
+"m": "OH6053",
+"n": "",
+"use": 1.57,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK4401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.67,
+"m": "OH6087",
+"n": "",
+"use": 1.67,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 3.02,
+"m": "OH6070",
+"n": "",
+"use": 1.51,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.58,
+"m": "OH6054",
+"n": "",
+"use": 1.58,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK4601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "OH6089",
+"n": "",
+"use": 1.68,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 3.07,
+"m": "OH6071",
+"n": "",
+"use": 1.535,
+"w": "148cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.59,
+"m": "OH6058",
+"n": "",
+"use": 1.59,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK4801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.7,
+"m": "OH6090",
+"n": "",
+"use": 1.7,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.6,
+"m": "OH6059",
+"n": "",
+"use": 1.6,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK5001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.7,
+"m": "OH6091",
+"n": "",
+"use": 1.7,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.67,
+"m": "OH6057",
+"n": "",
+"use": 1.67,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK5201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.72,
+"m": "OH6081",
+"n": "",
+"use": 1.72,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "OH6061",
+"n": "",
+"use": 1.68,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK5401L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.73,
+"m": "OH6083",
+"n": "",
+"use": 1.73,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "OH6062",
+"n": "",
+"use": 1.68,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK5601L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.74,
+"m": "OH6084",
+"n": "",
+"use": 1.74,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.71,
+"m": "OH6063",
+"n": "",
+"use": 1.71,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK5801L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.77,
+"m": "OH6080",
+"n": "",
+"use": 1.77,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.75,
+"m": "OH6065",
+"n": "",
+"use": 1.75,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK6001L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.83,
+"m": "OH6085",
+"n": "",
+"use": 1.83,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSSUFFOLK6201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.76,
+"m": "OH6064",
+"n": "",
+"use": 1.76,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLV"
+},
+"OHCJSSUFFOLK6201L": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.86,
+"m": "OH6086",
+"n": "",
+"use": 1.86,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6SSLL"
+},
+"OHCJSUFFOLK3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.4,
+"m": "OH6014",
+"n": "",
+"use": 1.4,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.41,
+"m": "OH6010",
+"n": "",
+"use": 1.41,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK3601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OH6008",
+"n": "",
+"use": 1.45,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK3801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "OH6002",
+"n": "",
+"use": 1.5,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK4001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OH6005",
+"n": "",
+"use": 1.54,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK4201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.56,
+"m": "OH6003",
+"n": "",
+"use": 1.56,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK4401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.57,
+"m": "OH6001",
+"n": "",
+"use": 1.57,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK4601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.76,
+"m": "OH6004",
+"n": "",
+"use": 1.76,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK4801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.93,
+"m": "OH6009",
+"n": "",
+"use": 1.93,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK5001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.05,
+"m": "OH6006",
+"n": "",
+"use": 2.05,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK5201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.09,
+"m": "OH6013",
+"n": "",
+"use": 2.09,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK5401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.12,
+"m": "OH6007",
+"n": "",
+"use": 2.12,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK5601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.15,
+"m": "OH6011",
+"n": "",
+"use": 2.15,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK5801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.2,
+"m": "OH6012",
+"n": "",
+"use": 2.2,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHCJSUFFOLK6001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHCJSUFFOLK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.25,
+"m": "OH6015",
+"n": "",
+"use": 2.25,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH6LSLV"
+},
+"OHHICAPP062703DEN/DS": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHHICAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.62,
+"m": "0627001",
+"n": "MADE FOR HICKORYS 23/01/2017",
+"use": 0.655,
+"w": "147cm"
+}
+],
+"mesh": [],
+"model": "OHAP0534",
+"v": "0627"
+},
+"OHHICAPP062803DEN": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHHICAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 5.0,
+"len": 2.59,
+"m": "0628001",
+"n": "MADE FOR HICKORYS\n24/01/17",
+"use": 0.518,
+"w": "147cm"
+}
+],
+"mesh": [],
+"model": "APP0617",
+"v": "0628"
+},
+"OHKNAPP0630241/222HP2": {
+"alt": [],
+"blk": "",
+"con": [
+{
+"lay": 21.0,
+"len": null,
+"m": "KNOOPSA",
+"n": "",
+"use": null
+}
+],
+"fam": "OHKNAPP",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 4.0,
+"len": 2.81,
+"m": "KNOOPS01",
+"n": "CLOTH LOOP INSTEAD OF LEATHER",
+"use": 0.7025,
+"w": "148cm"
+}
+],
+"mesh": [],
+"model": "APP0630",
+"v": "KNOOPS"
+},
+"OHLCJ40083001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJ",
+"inter": [
+{
+"lay": "10",
+"len": 0.44,
+"m": "FM36A",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.23,
+"m": "FMSCOOP054",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"use": 1.23,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTLSLADIES"
+},
+"OHLCJ40083601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJ",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.38,
+"m": "FMSCOOP050",
+"n": "",
+"use": 1.38,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTLSLADIES"
+},
+"OHLCJ40083801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJ",
+"inter": [
+{
+"lay": "10",
+"len": 0.49,
+"m": "FM42A",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.41,
+"m": "FMSCOOP052",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"use": 1.41,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTLSLADIES"
+},
+"OHLCJ40084001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJ",
+"inter": [
+{
+"lay": "10",
+"len": 0.47,
+"m": "FM40A",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.44,
+"m": "FMSCOOP053",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"use": 1.44,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTLSLADIES"
+},
+"OHLCJ40084201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJ",
+"inter": [
+{
+"lay": "10",
+"len": 0.45,
+"m": "FM38A",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"w": "88cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.47,
+"m": "FMSCOOP051",
+"n": "COLLAR INTERLINING (GENTS & LADIES)",
+"use": 1.47,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "SCOOPJKTLSLADIES"
+},
+"OHLCJDERBYSHIRE0601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.26,
+"m": "OH10100",
+"n": "",
+"use": 1.26,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJDERBYSHIRE0801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.26,
+"m": "OH10200",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.26,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.31,
+"m": "OH10101",
+"n": "",
+"use": 1.31,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJDERBYSHIRE1001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.27,
+"m": "OH10201",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.27,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.34,
+"m": "OH10102",
+"n": "",
+"use": 1.34,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJDERBYSHIRE1201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.32,
+"m": "OH10202",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.32,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.39,
+"m": "OH10103",
+"n": "",
+"use": 1.39,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJDERBYSHIRE1401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.39,
+"m": "OH10203",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.39,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.42,
+"m": "OH10104",
+"n": "",
+"use": 1.42,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJDERBYSHIRE1601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.48,
+"m": "OH10204",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.48,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.58,
+"m": "OH10105",
+"n": "",
+"use": 1.58,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJDERBYSHIRE1801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "OH10205",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.54,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.71,
+"m": "OH10106",
+"n": "",
+"use": 1.71,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJDERBYSHIRE2001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "OH10206",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.62,
+"w": "158cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.73,
+"m": "OH10107",
+"n": "",
+"use": 1.73,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJDERBYSHIRE2201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.86,
+"m": "OH10108",
+"n": "",
+"use": 1.86,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJDERBYSHIRE2401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.87,
+"m": "OH10109",
+"n": "",
+"use": 1.87,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10LSLV"
+},
+"OHLCJHAMPSHIRE0601": {
+"alt": [],
+"blk": "OH8RFRT6, OH8LFRT6",
+"con": [],
+"fam": "OHLCJHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.98,
+"m": "OH8060",
+"n": "",
+"use": 0.99,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.22,
+"m": "OH8050",
+"n": "",
+"use": 1.22,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8LSLV"
+},
+"OHLCJHAMPSHIRE0801": {
+"alt": [],
+"blk": "OH8RFRT8, OH8LFRT8",
+"con": [],
+"fam": "OHLCJHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 1.99,
+"m": "OH8061",
+"n": "",
+"use": 0.995,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.24,
+"m": "OH8051",
+"n": "",
+"use": 1.24,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8LSLV"
+},
+"OHLCJHAMPSHIRE1001": {
+"alt": [],
+"blk": "OH8RFRT10, OH8LFRT10",
+"con": [],
+"fam": "OHLCJHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.13,
+"m": "OH8062",
+"n": "",
+"use": 1.065,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.26,
+"m": "OH8052",
+"n": "",
+"use": 1.26,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8LSLV"
+},
+"OHLCJHAMPSHIRE1201": {
+"alt": [],
+"blk": "OH8RFRT12, OH8LFRT12",
+"con": [],
+"fam": "OHLCJHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.15,
+"m": "OH8063",
+"n": "",
+"use": 1.075,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.28,
+"m": "OH8053",
+"n": "",
+"use": 1.28,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8LSLV"
+},
+"OHLCJHAMPSHIRE1401": {
+"alt": [],
+"blk": "OH8RFRT14, OH8LFRT14",
+"con": [],
+"fam": "OHLCJHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.23,
+"m": "OH8064",
+"n": "",
+"use": 1.115,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.29,
+"m": "OH8054",
+"n": "",
+"use": 1.29,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8LSLV"
+},
+"OHLCJHAMPSHIRE1601": {
+"alt": [],
+"blk": "OH8RFRT16, OH8LFRT16",
+"con": [],
+"fam": "OHLCJHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.38,
+"m": "OH8065",
+"n": "",
+"use": 1.19,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.31,
+"m": "OH8055",
+"n": "",
+"use": 1.31,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8LSLV"
+},
+"OHLCJHAMPSHIRE1801": {
+"alt": [],
+"blk": "OH8RFRT18, OH8LFRT18",
+"con": [],
+"fam": "OHLCJHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.57,
+"m": "OH8066",
+"n": "",
+"use": 1.285,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.39,
+"m": "OH8056",
+"n": "",
+"use": 1.39,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8LSLV"
+},
+"OHLCJHAMPSHIRE2001": {
+"alt": [],
+"blk": "OH8RFRT20, OH8LFRT20",
+"con": [],
+"fam": "OHLCJHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.62,
+"m": "OH8067",
+"n": "",
+"use": 1.31,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.4,
+"m": "OH8057",
+"n": "",
+"use": 1.4,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8LSLV"
+},
+"OHLCJSDERBYSHIRE0601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH10056",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.19,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.23,
+"m": "OH10006",
+"n": "",
+"use": 1.23,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10SSLV"
+},
+"OHLCJSDERBYSHIRE0801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.15,
+"m": "OH10300",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.075,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH10051",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.19,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.26,
+"m": "OH10001",
+"n": "",
+"use": 1.26,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10SSLV"
+},
+"OHLCJSDERBYSHIRE1001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.17,
+"m": "OH10301",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.085,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH10055",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.19,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.27,
+"m": "OH10005",
+"n": "",
+"use": 1.27,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10SSLV"
+},
+"OHLCJSDERBYSHIRE1201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.23,
+"m": "OH10302",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.115,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.19,
+"m": "OH10052",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.19,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.27,
+"m": "OH10002",
+"n": "",
+"use": 1.27,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10SSLV"
+},
+"OHLCJSDERBYSHIRE1401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.38,
+"m": "OH10303",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.19,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.28,
+"m": "OH10057",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.28,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.29,
+"m": "OH10007",
+"n": "",
+"use": 1.29,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10SSLV"
+},
+"OHLCJSDERBYSHIRE1601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 2.0,
+"len": 2.48,
+"m": "OH10304",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.24,
+"w": "157cm"
+},
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.3,
+"m": "OH10053",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.3,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.33,
+"m": "OH10003",
+"n": "",
+"use": 1.33,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10SSLV"
+},
+"OHLCJSDERBYSHIRE1801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.32,
+"m": "OH10058",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.32,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.39,
+"m": "OH10008",
+"n": "",
+"use": 1.39,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10SSLV"
+},
+"OHLCJSDERBYSHIRE2001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.35,
+"m": "OH10054",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.35,
+"w": "157cm"
+},
+{
+"d": 0,
+"lay": 1.0,
+"len": 1.52,
+"m": "OH10004",
+"n": "",
+"use": 1.52,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "OH10SSLV"
+},
+"OHLCJSDERBYSHIRE2201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSDERBYSHIRE",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "OH10059",
+"n": "Wider markers Tiajo Fabric",
+"use": 1.45,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "OH10SSLV"
+},
+"OHLCJSHAMPSHIRE0601": {
+"alt": [],
+"blk": "OH8RFRT6, OH8LFRT6",
+"con": [],
+"fam": "OHLCJSHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.92,
+"m": "OH8008",
+"n": "",
+"use": 0.92,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8SSLV"
+},
+"OHLCJSHAMPSHIRE0801": {
+"alt": [],
+"blk": "OH8RFRT8, OH8LFRT8",
+"con": [],
+"fam": "OHLCJSHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.93,
+"m": "OH8001",
+"n": "",
+"use": 0.93,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8SSLV"
+},
+"OHLCJSHAMPSHIRE1001": {
+"alt": [],
+"blk": "OH8RFRT10, OH8LFRT10",
+"con": [],
+"fam": "OHLCJSHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.94,
+"m": "OH8002",
+"n": "",
+"use": 0.94,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8SSLV"
+},
+"OHLCJSHAMPSHIRE1201": {
+"alt": [],
+"blk": "OH8RFRT12, OH8LFRT12",
+"con": [],
+"fam": "OHLCJSHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.96,
+"m": "OH8003",
+"n": "",
+"use": 0.96,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8SSLV"
+},
+"OHLCJSHAMPSHIRE1401": {
+"alt": [],
+"blk": "OH8RFRT14, OH8LFRT14",
+"con": [],
+"fam": "OHLCJSHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 0.99,
+"m": "OH8004",
+"n": "",
+"use": 0.99,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8SSLV"
+},
+"OHLCJSHAMPSHIRE1601": {
+"alt": [],
+"blk": "OH8RFRT16, OH8LFRT16",
+"con": [],
+"fam": "OHLCJSHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.05,
+"m": "OH8005",
+"n": "",
+"use": 1.05,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8SSLV"
+},
+"OHLCJSHAMPSHIRE1801": {
+"alt": [],
+"blk": "OH8RFRT18, OH8LFRT18",
+"con": [],
+"fam": "OHLCJSHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.06,
+"m": "OH8006",
+"n": "",
+"use": 1.06,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8SSLV"
+},
+"OHLCJSHAMPSHIRE2001": {
+"alt": [],
+"blk": "OH8RFRT20, OH8LFRT20",
+"con": [],
+"fam": "OHLCJSHAMPSHIRE",
+"inter": [
+{
+"lay": "(6/2),(8/2),(10/3),(12/3),(14/2),(16/2),(18/2),(20/2), (22/2),(24/2)",
+"len": 0.47,
+"m": "OH8A",
+"n": "Collar Interlining",
+"w": "89cm"
+}
+],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.16,
+"m": "OH8007",
+"n": "",
+"use": 1.16,
+"w": "157cm"
+}
+],
+"mesh": [
+{
+"d": 1,
+"lay": 16.5,
+"len": 0.45,
+"m": "OH8100A",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.0273,
+"w": "146cm"
+},
+{
+"d": 0,
+"lay": 18.0,
+"len": 0.45,
+"m": "OH8100",
+"n": "MESH INSERTS (FOR ALL HAMPSHIRE JACKETS, DEFAULT MESH WIDTH)",
+"use": 0.025,
+"w": "157cm"
+}
+],
+"v": "OH8SSLV"
+},
+"OHLCJSYORK0601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.34,
+"m": "CJ0192058",
+"n": "",
+"use": 1.34,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK0801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.38,
+"m": "CJ0192050",
+"n": "",
+"use": 1.38,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK1001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.38,
+"m": "CJ0192051",
+"n": "",
+"use": 1.38,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK1201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.4,
+"m": "CJ0192052",
+"n": "",
+"use": 1.4,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK1401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.45,
+"m": "CJ0192053",
+"n": "",
+"use": 1.45,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK1601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.5,
+"m": "CJ0192055",
+"n": "",
+"use": 1.5,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK1801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.52,
+"m": "CJ0192054",
+"n": "",
+"use": 1.52,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK2001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "CJ0192056",
+"n": "",
+"use": 1.54,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK2201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.54,
+"m": "CJ0192057",
+"n": "",
+"use": 1.54,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK2401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.62,
+"m": "CJ0192059",
+"n": "",
+"use": 1.62,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK2601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.68,
+"m": "CJ0192060",
+"n": "",
+"use": 1.68,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK2801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.71,
+"m": "CJ0192061",
+"n": "",
+"use": 1.71,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK3001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.75,
+"m": "CJ0192062",
+"n": "",
+"use": 1.75,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK3201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.84,
+"m": "CJ0192064",
+"n": "",
+"use": 1.84,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJSYORK3401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJSYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.87,
+"m": "CJ0192063",
+"n": "",
+"use": 1.87,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192SSL"
+},
+"OHLCJYORK0601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.42,
+"m": "CJ0192207",
+"n": "",
+"use": 1.42,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK0801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.44,
+"m": "CJ0192201",
+"n": "",
+"use": 1.44,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK1001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.48,
+"m": "CJ0192200",
+"n": "",
+"use": 1.48,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK1201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.49,
+"m": "CJ0192202",
+"n": "",
+"use": 1.49,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK1401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.48,
+"m": "CJ0192203",
+"n": "",
+"use": 1.48,
+"w": "157cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK1601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.67,
+"m": "CJ0192204",
+"n": "",
+"use": 1.67,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK1801": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.75,
+"m": "CJ0192205",
+"n": "",
+"use": 1.75,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK2001": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.75,
+"m": "CJ0192206",
+"n": "",
+"use": 1.75,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK2201": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.88,
+"m": "CJ0192210",
+"n": "",
+"use": 1.88,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK2401": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 1.95,
+"m": "CJ0192208",
+"n": "",
+"use": 1.95,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+},
+"OHLCJYORK2601": {
+"alt": [],
+"blk": "",
+"con": [],
+"fam": "OHLCJYORK",
+"inter": [],
+"main": [
+{
+"d": 1,
+"lay": 1.0,
+"len": 2.06,
+"m": "CJ0192209",
+"n": "",
+"use": 2.06,
+"w": "148cm"
+}
+],
+"mesh": [],
+"v": "CJ0192LSL"
+}
+}

@@ -82,33 +82,77 @@ The largest gaps are `TI00x109` / `BANDANA109` (118 units each) and a handful
 of OH aprons and specials. Adding a code to All Costings, or importing it from
 the costing app, closes each one.
 
-## Per-size markers for the jackets
+## Per-size markers, from the cutting room's lay plans
 
 All Costings holds one usage per code and gives most sizes of a style the same
 figure. For the jackets that is wrong by size: on a 64" Stratford the flat
-figure is 1.15 m against a marker of 1.66 m. So the app carries a second table,
-`FABRIC_MARKERS`, from the Google Sheet *OH Jackets - Lay Plan - Varients*
-(both tabs): **361 codes** across 18 jacket styles, each with metres per
-garment — the marker length divided by the garments in the marker, so a
-two-garment marker is averaged across the two — and, for **100** of them, the
-mesh inserts' marker over its garments as a second fabric.
+figure is 1.15 m against a marker of 1.66 m. So the app carries the cutting
+room's own lay plans, read from the two Google Sheets they keep:
 
-Rules applied when the sheet was read: the default-fabric marker wins where a
-code has several; rows flagged do-not-use, patterns-only or damaged-fabric-only
-are left out. Markers take precedence over All Costings for the codes they
-cover; everything else is unchanged. Against All Costings the markers agree
-within 2% on average and disagree by up to 44% on individual sizes, which is
-the point.
+- *OH Jackets - Lay Plan - Varients* (tabs Products and Special Products)
+- *OH Aprons - Lay Plan - Varients* (one tab per apron pattern)
 
-The marker says how much; the fabric itself still comes from All Costings (or
-the style's works order data), and the mesh's Sage code is whichever of the
-style's fabrics is a mesh — `MESH2290901` for Cheshire and Dorset. Mesh goes on
-the write-off as its own line, standard only; the cutting room's actual is for
-the main cloth.
+`tools/build-lay-plan.py` reads the two workbooks saved under `layplan/` and
+writes two tables into `index.html`:
 
-In the completed history since June, 135 codes and 2,906 units are now on
-per-size figures. To refresh the table after the sheet changes, re-run the
-parse in this session's notes — it is a plain CSV export of the sheet.
+- **`LAY_PLAN`** — per product code (aprons per pattern, `OHAPP0534__`, one
+  plan covering every colour): the Lectra variant, every main-cloth marker
+  with its length, garments per lay and metres per garment (length ÷ lay),
+  which of them the sheet marks *default*, the mesh inserts markers, collar
+  interlining, contrast-cloth markers and the blockout-fronts markers.
+  448 codes and patterns as of 25 Sep 2026.
+- **`FABRIC_MARKERS`** — `code -> [metres per garment, mesh per garment, marker]`
+  taken from the default main marker (best usage first where the sheet marks
+  two) and the default mesh marker; where an M-coded jacket has no mesh row
+  of its own the family's usual mesh figure is used. 431 codes. Entries that
+  were in the old hand-kept table and are not on the sheets are kept.
+
+`layplan/lay-plan.json` is the same data as a file, for reading and diffing.
+`layplan/extras.json` adds what the sheets do not carry yet — the navy
+short-sleeve Oxford sizes, on the white size's markers until the cutting room
+lists their own.
+
+Precedence in `fabricUsageFor`: a per-code marker, then a lay plan matched by
+pattern, then All Costings, then the style's works order data. The marker
+says how much; the fabric itself still comes from All Costings or the style's
+first fabric, the mesh's Sage code is whichever of the style's fabrics is a
+mesh, and a contrast marker's cloth is the style's second non-mesh fabric.
+Mesh and contrast go on the write-off as their own lines, standard only; the
+cutting room's actual is for the main cloth.
+
+Rules applied when the sheets are read (all in the generator's docstring):
+the Notes column labels the mesh block on the same row, so a note starting
+MESH is not a note on the main marker; a marker is the mesh one when its
+notes say MESH and it lays ten or more or its length is in centimetres;
+interlining is anything saying INTERLIN or COLLAR, or under a metre wide, or
+with an `x` in its lay; a Special Products marker is only the default when
+Products has none and it is not for damaged cloth; the first of two columns
+with the same heading wins on the apron tabs.
+
+### On the printed works order
+
+The LECTRA PATTERN band prints the variant, the default marker with its
+length and lay ("OH7006 — 2.36 m, 2 per lay (1.18 m per garment)"), an
+alternative default where the sheet marks one, the lay plan for the quantity
+(plies of the two-up marker plus a single for the remainder), the mesh
+marker, interlining with the sheet's own lay wording, any other markers with
+their notes (NARROW MARKERS, damaged cloth), and the blockout fronts. For the
+Stratford the blockout line carries the cutting room's wording, **Blocks -
+Face Up, left block is bigger than the right**. A works order whose own data
+carries a marker (set in the costing app) keeps it and only gains the extra
+rows.
+
+### Refreshing after the sheets change
+
+Save each sheet as `.xlsx` into `layplan/` under its own name, then:
+
+```
+python3 tools/build-lay-plan.py          # rewrites index.html and layplan/lay-plan.json
+python3 tools/build-lay-plan.py --check  # reports without writing
+```
+
+and run the tests. The generator says how many entries were added, changed
+and kept.
 
 ## Changing the cloth on a works order
 
@@ -293,101 +337,6 @@ hide the error rather than fix it. Those are corrected in Sage by hand.
 ## Which garments have mesh
 
 Luke's rule, 22 Sep 2026: **an OH chef jacket carries mesh only when its code
-has the M** — `OHCJM` for the long sleeve, `OHCJSM` for the short sleeve. The M
-stands for mesh. The M sits in the variant position, straight after the `CJ` or
-`CJS`, so `OHCJSUFFOLK` and `OHCJSSUFFOLK` are the Suffolk style and carry none.
-
-Two things sit outside that rule and are kept in `MESH_EXCEPTIONS` and in
-`ohJacketCode`, so the reason is on the page rather than in someone's head:
-
-- **The Hampshire.** `OHLCJHAMPSHIRE` and `OHLCJSHAMPSHIRE` do carry mesh
-  underarm panels although the code has no M. Luke confirmed it after first
-  saying otherwise; the routing card for `OHLCJHAMPSHIRE--01` describes two
-  pairs of panels per garment and rates them at **0.03 m**. Nobody knows why
-  this range does not follow the naming rule. The short sleeve has no card of
-  its own and is set to the same 0.03 m — **worth confirming**.
-- **Everything that is not a chef jacket.** Hats (`OHHTM`, `WAGHTM`,
-  `FENHTM`), aprons and straps are not covered by the rule at all and keep
-  whatever second cloth they are given. Hats do have mesh.
-
-`ohHasMesh(code)` is the test. It only ever takes mesh **away** from a chef
-jacket, never adds it.
-
-### Where a mesh row is allowed to land
-
-`fabricUsageFor` is the main gate, so no new works order picks up mesh it
-should not have. A guard there does not reach the cutting sheet import, which
-needs its own rule:
-
-- as the **main figure**, only when that garment's own cloth is that mesh;
-- otherwise as a **second cloth**, and only where the garment is allowed mesh;
-- anything else is listed as a row that could not be placed.
-
-The order matters. The import matches a row to a line by style, or by it being
-the only line on the works order, so without the first rule a mesh row
-overwrote the garment's cloth figure with the mesh metres and sent that to Sage
-in its place — a 2.5 m mesh row turned a 6.3 m jacket into a 2.5 m write-off.
-Without the second, a hat's mesh row had nowhere to go.
-
-`fabFixMesh()` amends what is already on file. It runs on every load and when a
-dismissed line is put back to open. On a **line still waiting to be written
-off** it strips mesh from a garment that should not have it, and re-rates a
-mesh figure frozen from a rate since corrected — which is what takes the old
-2.5 m Hampshire rate down to 0.03 m. A figure the cutting room typed itself
-always wins. A **written-off** line is left exactly as it is, because that
-figure is what Sage was told and rewriting it would hide the difference rather
-than settle it. It is idempotent, so it also catches work done in another
-browser.
-
-### The mesh that is missing
-
-The rule cuts the other way too. Of the mesh-coded jacket sizes the app can
-see, only 84 carry a mesh figure; the rest write off no mesh at all, because
-their marker row has mesh `null` or there is no marker row. Two whole families,
-`OHCJMPOXFORD` / `OHCJSMPOXFORD` and `OHCJMSTIRLING` / `OHCJSMSTIRLING`, have
-no figure anywhere, and `OHCJMSTRATFORD` has none while its short-sleeve twin
-has three. Where a figure does exist it is near enough constant within a family
-(Cheshire 0.1018, Devon 0.2025 to 0.37, Dorset and Oxford 0.0319 to 0.0333,
-Stratford 0.0815 to 0.0846).
-
-**Hats are in the same position**: `FABRIC_USAGE` gives each of the 63 `HTM`
-codes a single cloth and there is no marker row, so none of them writes off any
-mesh automatically. Nineteen paired rows on the cutting sheet put the real rate
-between 0.021 m and 0.063 m a hat, median 0.037; the large runs, where whole-
-metre rounding matters least, sit near **0.03 m** (378 hats took 14 m, 250 took
-7 m, 200 took 6 m). Until a rate is set, a hat's mesh is only written off when
-its cutting sheet row is pasted. None of these gaps was filled by guesswork.
-
-## Cut figures that do not look right
-
-A row on the cutting sheet is sometimes the whole **lay** — the length the
-cutting room put down that day, covering several works orders — rather than
-the metres for the one job. Read as that job's own figure it writes off far
-too much: 40 m against a single jacket, 23 m against six. So a cut figure is
-held back when it is **half again as much as the standard, or half as much,
-AND at least 5 m adrift**. Both tests must be met, so a mesh insert whose
-0.51 m standard was written as 1 m on the sheet is 96% out and is ignored.
-A figure of exactly nil is the cutting room's own "cut from waste" and is
-left alone.
-
-The cutting sheet import will not apply a figure like that: the line stays
-on its standard and the row is listed in the result box. A figure already on
-a line puts it in the **Cut figures to check** panel at the top of the
-Fabric tab, with its own tile. Until each one is settled the line is not
-ticked and cannot go into a write-off file. Two buttons per line:
-
-- **Standard** drops the cutting room's figure and writes off the standard.
-- **Accept** says the cutting room really did cut that much (`fabric.varOK`).
-
-The panel covers lines that are still open and lines marked off against the
-cutting sheet — those never went to Sage from here, so the figure can still
-be put right. A line exported in one of our own files is left out on
-purpose: that figure **is** what Sage was told, and changing it here would
-hide the error rather than fix it. Those are corrected in Sage by hand.
-
-## Which garments have mesh
-
-Luke's rule, 22 Sep 2026: **an OH chef jacket carries mesh only when its code
 has the M** — `OHCJM` for the long sleeve, `OHCJSM` for the short sleeve. The
 M stands for mesh. Everything else in the `OHCJ` and `OHLCJ` ranges has none,
 the whole ladies range (`OHLCJ`, `OHLCJS`) included.
@@ -421,15 +370,13 @@ quietly suppressed.
 
 ### The mesh that is missing
 
-The rule cuts the other way too. Of the 489 mesh-coded jacket sizes the app can
-see, only **84 carry a mesh figure** — 405 write off no mesh at all, because
-their marker row has mesh `null` or there is no marker row. Two whole families,
-`OHCJMPOXFORD` / `OHCJSMPOXFORD` and `OHCJMSTIRLING` / `OHCJSMSTIRLING`, have no
-mesh figure anywhere, and `OHCJMSTRATFORD` has none while its short-sleeve twin
-has three. Where a figure does exist it is near enough constant within a family
-(Cheshire 0.1018, Devon 0.2025 to 0.37, Dorset and Oxford 0.0319 to 0.0333,
-Stratford 0.0815 to 0.0846), so the gaps could be filled from the family — but
-that is a pattern-room decision, not one to guess at.
+The rule cuts the other way too. Before the lay plans were read, of the 489
+mesh-coded jacket sizes the app could see only 84 carried a mesh figure. The
+generator now fills a mesh-coded jacket that has no mesh row of its own from
+its family's usual figure (Cheshire 0.1018, Dorset and Oxford about 0.033,
+Stratford about 0.083), so the gaps are largely closed; a family with no mesh
+row anywhere on the sheet still writes off none, and that is for the cutting
+room to add to the sheet rather than for the app to guess.
 
 `fabFixMesh()` amends what is already on file. It runs on every load and when a
 dismissed line is put back to open, strips a
@@ -450,7 +397,8 @@ Errors found from the routing cards and then from the rule:
   15 m of `MESH2290901`.
 - The mesh was removed outright for a day, on the reading that `OHLCJ` is the
   ladies range and carries no M. Luke corrected that: the Hampshire does have
-  mesh. It is back at the routing card's 0.03 m and is now a named exception.
+  mesh. It is a named exception, and its figure now comes from the lay plan's
+  mesh marker OH8100A: 0.45 m over 16.5 garments, 0.0273 m each.
 
 ## Correcting the cloth for a product
 

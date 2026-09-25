@@ -1,0 +1,565 @@
+{
+ "source": "works-order-editor",
+ "exportedAt": "2026-09-25T15:07:19.277974Z",
+ "mode": "changes",
+ "styleCount": 9,
+ "note": "Works order data added or changed in the production planner on 25 Sep 2026 for the costing / works order editor app: navy short-sleeve Oxford template (sizes 38-56 as OHCJSMOXFORD3815 ... 5615), the Rick Stein bib apron, the 0544 aprons' Sage fabric codes at 1 m each, and the 0597 black denim apron's variant, marker 0597001 (2.57 m, 4 per lay) and contrast marker 0597A (1.00 m, 6 per lay). Per-size markers for every jacket and apron are in layplan/lay-plan.json.",
+ "styles": [
+  {
+   "code": "OHCJSMOXFORD--15",
+   "name": "Oxford chef jacket — short sleeve, navy",
+   "desc": "Stand collar · Panelled back · Navy · Short sleeved with twin-needle hem · Pen pocket with one centre divide · Detachable button fasten — unisex · Logo'd hem tab",
+   "lectra": "OH5 — Oxford — short sleeved · with mesh fabric curved underarm panels",
+   "chart": "OXFORD-SS-STD",
+   "fabrics": [
+    [
+     "NAVY SUSTAINABLE 65/35 POLY/COTTON (X133 - AM297)",
+     "PC2015ECO",
+     "B4"
+    ],
+    [
+     "NAVY 100% POLYESTER MESH 160CM (PW314)",
+     "MESHPW31415",
+     "B5"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "Navy Epic 80's from Coats (07935)"
+    ],
+    [
+     "Buttons",
+     "Black squashed detachable stud buttons (OHDETACHABLEBUTTON03)"
+    ],
+    [
+     "Button/holes",
+     "Straight buttonholes"
+    ],
+    [
+     "Labels",
+     "Oliver Harvey woven label, back neck"
+    ],
+    [
+     "Wash label wording",
+     "65° wash · 65% polyester 35% cotton — mesh 100% polyester"
+    ],
+    [
+     "Wash label location",
+     "Right-hand side, inside side seam"
+    ],
+    [
+     "Additional label",
+     "Garment name + manufacturing month/year label — behind wash label in side seam"
+    ],
+    [
+     "POS swing tag",
+     "Oliver Harvey kraft swing tag 50x75mm — fix through the garment label. Removed by customer.",
+     1
+    ]
+   ],
+   "mfg": [
+    "5 cm deep stand collar — edge stitched",
+    "Short sleeved with twin-needle hem",
+    "Panelled back",
+    "All seams to go to the back — right side of overlocking to be visible",
+    "Bottom hem double turned — twin-needle detail hem",
+    "Pen pocket left hand sleeve as worn — with centre divide",
+    "Red tax tab in pen pocket towards back of sleeve — no red to show through pocket",
+    "Front facing edge stitched",
+    "\"Oliver Harvey\" British button woven label centre back neck",
+    "Oliver Harvey wash label in side seam RHSAW",
+    "Buttonholes horizontal on outside edge of button panel, vertical on inside edge — top BH diagonally into the corner",
+    "Squashed detachable buttons — unisex fasten",
+    "Semi-circle of mesh under the arm/sleeve"
+   ],
+   "fin": [
+    "Pressed and trimmed",
+    "Individually wrapped in OH tissue paper — fold in tissue with description label bottom right front"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "variant": "OH5SSLV"
+  },
+  {
+   "code": "OHRSAPP300503PC",
+   "name": "BLACK Bib apron in poly cotton with OH ties and cloth loop — Rick Stein logo",
+   "desc": "BIB APRON · No pocket OH non tangle ties OH towel loop · Rick Stein logo embroidered top right-hand corner as worn, in white",
+   "lectra": "Ap3005 butchers style",
+   "chart": "OHAP300501-MEAS",
+   "fabrics": [
+    [
+     "Black 65%recycled polyester 35%organic cotton 200gsm x133eco-am125 — rating 1.0m",
+     "PC2003ECO",
+     "B11"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread - main",
+     "Coats 80's black"
+    ],
+    [
+     "OH centre fold label",
+     "Oliver harvey woven british button label set into right side seam as worn. 4cm down from top edge."
+    ],
+    [
+     "OH care label",
+     "Oliver harvey wash instructions set under OH woven label right side seam as worn / Wash - 65%recycled polyester/35% organic cotton/60 degree wash / tumble dry/ 2 dot iron/do not bleach / p dry clean"
+    ],
+    [
+     "OH non tangle ties",
+     "OH black non tangle ties"
+    ],
+    [
+     "OH towel loop",
+     "OH black non tangle tape cut at 39cm to make towel loop"
+    ]
+   ],
+   "mfg": [
+    "Make neck strap. Fold in half and enclose raw edges. Edge stitch long edge to close seam.",
+    "Set bib facing and insert neck straps. Edge stitched side of neck strap to be set to outside edge of bib and ensure good side of strap to topside.",
+    "Top of bib 6MM TOPSTITCHED.",
+    "Bib facing - Fold in 10mm to neaten lower edge. Edge stitch lower edge of facing which forms 5.5cm topstitching to front",
+    "Armhole double turned and topstitching to finish 6mm from edge. Cut towel loop at 39cm. Fold loop in half and set towel loop 17cm from cut edge of left side seam as worn. Stitch down towel loop to follow armhole stitching.",
+    "Hem - double turned and topstitching to finish 12mm from edge",
+    "Sides - double turned and topstitching to finish 12mm from edge. Insert waist tie. Insert labels right side as worn. Set 4cm down from top edge. OH woven label on top.",
+    "NOTE- Neaten armholes before side seam neatened",
+    "Fold waist tie back on itself to fall away from garment and edge stitch down to width of strap to secure."
+   ],
+   "fin": [
+    "Check ,trim, press and fold in tissue. set product sticker to bottom right hand corner of tissue."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "variant": "3005 LARGE",
+   "customer": "Seafood Trading Ltd (Rick Stein)",
+   "brandType": "Embroidery",
+   "brandPlace": "Rick Stein logo — top right-hand corner of the bib as worn, embroidered in white. Artwork: Rick Stein logo on file with sales (not held in the app yet).",
+   "logoImg": ""
+  },
+  {
+   "code": "OHAPP054401C",
+   "name": "White Stud halter bib apron 100% cotton and concealed adjustable neck strap",
+   "desc": "BIB APRON · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap · Concealed pocket in bib · No towel loop",
+   "lectra": "APP0544 varient APP0544",
+   "chart": "OHAPP054401-MEAS",
+   "fabrics": [
+    [
+     "White 100% organic cotton 260gsm x149eco am05 — rating 1.0M",
+     "CO5001ECO",
+     "",
+     1.0
+    ]
+   ],
+   "trims": [
+    [
+     "THREAD",
+     "Coats epic 80's white"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set to right side seam as worn. set 4cm down from finished top edge"
+    ],
+    [
+     "Oliver harvey care label",
+     "100% organic cotton - 40 degree wash/ do not bleach/tumble dry low/2 dot iron/ dry clean p set 4cm down from top of right side seam as worn. set underneath OH woven label."
+    ]
+   ],
+   "mfg": [
+    "Make neck strap loop.",
+    "Make neck strap. bag out end. edgestitch all round.",
+    "Make and set small concealed pocket. add stitch line for pen pocket through pocket bag. edgesttich inside of pocket opening.",
+    "Double turn armhole and topstitch 6mm.",
+    "Set bib top to apron",
+    "Set loop and neck strap to bib facing. neck strap to be set to right side of bib as worn. studs to underside of strap. loop to be set as high as possible to fold of bib top and inserted into end of left side of bib top. edgestitch end of bib and top edge of bib before stitching loop down. loop to finish width 3cm and to fit neck strap neatly.",
+    "Stitch down bib top.",
+    "Make waist ties. bag out ends. edgestitch all round.",
+    "Insert waist ties. double turn side seam and hem to neaten and topstitch 12mm. insert labels.",
+    "Fold back waist tie onto apron and edgestitch down onto side seam."
+   ],
+   "fin": [
+    "Trim, check, and press. thread neck strap through loop and fold garment.",
+    "Tissue and set label"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 / ± 2 cm",
+   "oneSize": true,
+   "variant": "APP0544"
+  },
+  {
+   "code": "OHAPP054403",
+   "name": "Black bib apron with concealed adjustable neck strap self fabric ties",
+   "desc": "BIB APRON · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap · Concealed pocket in bib · No towel loop",
+   "lectra": "APP0544 varient APP0544",
+   "chart": "OHAPP054401-MEAS",
+   "fabrics": [
+    [
+     "Black 100% organic cotton 260gsm x149eco-am08 — rating 1.0M",
+     "CO5003ECO",
+     "A3",
+     1.0
+    ]
+   ],
+   "trims": [
+    [
+     "THREAD",
+     "Coats epic 80 col black"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set 4cm down from finished top edge. set to right side seam as worn."
+    ],
+    [
+     "RING STUD",
+     "1 x male stud plus 4 x female stud per garment. set to neck strap pre-make up. (use marker)"
+    ],
+    [
+     "Oliver harvey care label",
+     "100% organic cotton - wash at 40 degree/tumble dry low/2 dot iron/do not bleach/dry clean p set 4cm down from top of right side seam as worn. set underneath OH woven label."
+    ]
+   ],
+   "mfg": [
+    "Make neck strap loop. fold in half lengthways , fold in raw edges to neaten and edgestitch one edge.",
+    "Make neck strap. bag out end. edgestitch all round.",
+    "Make and set small concealed pocket. add stitch line for pen pocket through pocket bag. edgesttich inside of pocket opening.",
+    "4 or 5 thread close pocket bag",
+    "Set bib top to apron",
+    "Double turn armhole and topstitch 6mm. single turn bib top to reduce bulk",
+    "Set loop and neck strap to bib facing. neck strap to be set to right side of bib as worn. studs to underside of strap. loop to be set as high as possible to fold of bib top and inserted into end of left side of bib top. edgestitch end of bib and top edge of bib before stitching loop down. loop to finish width 3cm and to fit neck strap neatly.",
+    "Stitch down bib top.",
+    "Make waist ties. bag out ends. edgestitch all round.",
+    "Insert waist ties. double turn side seam and hem to neaten and topstitch 12mm. insert labels.",
+    "Fold back waist tie onto apron and edgestitch down onto side seam."
+   ],
+   "fin": [
+    "Trim, check, and press. thread neck strap through loop and fold garment.",
+    "Tissue and set product label"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 / ± 2 cm",
+   "oneSize": true,
+   "variant": "APP0544"
+  },
+  {
+   "code": "OHAPP054415",
+   "name": "Navy bib apron with concealed adjustable neck strap self fabric ties",
+   "desc": "BIB APRON · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap · Concealed pocket in bib · No towel loop",
+   "lectra": "APP0544 varient APP0544",
+   "chart": "OHAPP054401-MEAS",
+   "fabrics": [
+    [
+     "Navy 100% organic cotton 260gsm x149eco 303 — rating 1.0M",
+     "CO5015ECO",
+     "A3",
+     1.0
+    ]
+   ],
+   "trims": [
+    [
+     "THREAD",
+     "Coats epic 80 col 07935 navy"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set 4cm down from finished top edge. set to right side seam as worn."
+    ],
+    [
+     "Oliver harvey care label",
+     "100% organic cotton - wash at 40 degree/tumble dry low/2 dot iron/do not bleach/dry clean p set 4cm down from top of right side seam as worn. set underneath OH woven label."
+    ]
+   ],
+   "mfg": [
+    "Make neck strap loop. fold in half lengthways , fold in raw edges to neaten and edgestitch one edge.",
+    "Make neck strap. bag out end. edgestitch all round.",
+    "Make and set small concealed pocket. add stitch line for pen pocket through pocket bag. edgesttich inside of pocket opening.",
+    "4 or 5 thread close pocket bag",
+    "Set bib top to apron",
+    "Double turn armhole and topstitch 6mm. single turn bib top to reduce bulk",
+    "Set loop and neck strap to bib facing. neck strap to be set to right side of bib as worn. studs to underside of strap. loop to be set as high as possible to fold of bib top and inserted into end of left side of bib top. edgestitch end of bib and top edge of bib before stitching loop down. loop to finish width 3cm and to fit neck strap neatly.",
+    "Stitch down bib top.",
+    "Make waist ties. bag out ends. edgestitch all round.",
+    "Insert waist ties. double turn side seam and hem to neaten and topstitch 12mm. insert labels.",
+    "Fold back waist tie onto apron and edgestitch down onto side seam."
+   ],
+   "fin": [
+    "Trim, check, and press. thread neck strap through loop and fold garment.",
+    "Fold and set into tissue. set label"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 / ± 2 cm",
+   "oneSize": true,
+   "variant": "APP0544"
+  },
+  {
+   "code": "OHAPP0544173",
+   "name": "Sage bib apron with concealed adjustable neck strap self fabric ties",
+   "desc": "BIB APRON · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap · Concealed pocket in bib · No towel loop",
+   "lectra": "APP0544 varient APP0544",
+   "chart": "OHAPP054401-MEAS",
+   "fabrics": [
+    [
+     "Sage green 100% organic cotton 260gsm x149eco-am304 — rating 1.0M",
+     "CO5173ECO",
+     "A3",
+     1.0
+    ]
+   ],
+   "trims": [
+    [
+     "THREAD",
+     "Coats epic 80 col 05765 sage"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set 4cm down from finished top edge. set to right side seam as worn."
+    ],
+    [
+     "RING STUD",
+     "1 x male stud plus 4 x female stud per garment. set to neck strap pre-make up. (use marker)"
+    ],
+    [
+     "Oliver harvey care label",
+     "100% organic cotton - wash at 40 degree/ tumble dry low /2 dot iron/do not bleach/dry clean p set 4cm down from top of right side seam as worn. set underneath OH woven label."
+    ]
+   ],
+   "mfg": [
+    "Make neck strap loop. fold in half lengthways , fold in raw edges to neaten and edgestitch one edge.",
+    "Make neck strap. bag out end. edgestitch all round.",
+    "Make and set small concealed pocket. add stitch line for pen pocket through pocket bag. edgesttich inside of pocket opening.",
+    "4 or 5 thread close pocket bag",
+    "Set bib top to apron",
+    "Double turn armhole and topstitch 6mm. single turn bib top to reduce bulk",
+    "Set loop and neck strap to bib facing. neck strap to be set to right side of bib as worn. studs to underside of strap. loop to be set as high as possible to fold of bib top and inserted into end of left side of bib top. edgestitch end of bib and top edge of bib before stitching loop down. loop to finish width 3cm and to fit neck strap neatly.",
+    "Stitch down bib top.",
+    "Make waist ties. bag out ends. edgestitch all round.",
+    "Insert waist ties. double turn side seam and hem to neaten and topstitch 12mm. insert labels.",
+    "Fold back waist tie onto apron and edgestitch down onto side seam."
+   ],
+   "fin": [
+    "Trim, check, and press. thread neck strap through loop and fold garment.",
+    "Tissue and set product label"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 / ± 2 cm",
+   "oneSize": true,
+   "variant": "APP0544"
+  },
+  {
+   "code": "OHAPP0544241",
+   "name": "Slate Grey bib apron with concealed adjustable neck strap self fabric ties",
+   "desc": "BIB APRON · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap · Concealed pocket in bib · No towel loop",
+   "lectra": "APP0544 varient APP0544",
+   "chart": "OHAPP054401-MEAS",
+   "fabrics": [
+    [
+     "Slate grey 260gsm100% organic cotton x149eco-am308 — rating 1.0M",
+     "CO5241ECO",
+     "A3",
+     1.0
+    ]
+   ],
+   "trims": [
+    [
+     "THREAD",
+     "Coats epic 80 col 09975 grey"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set 4cm down from finished top edge. set to right side seam as worn."
+    ],
+    [
+     "Oliver harvey care label",
+     "100% organic cotton - wash at 40 degree/tumble dry low/2 dot iron/do not bleach/dry clean p set 4cm down from top of right side seam as worn. set underneath OH woven label."
+    ]
+   ],
+   "mfg": [
+    "Make neck strap loop. fold in half lengthways , fold in raw edges to neaten and edgestitch one edge.",
+    "Make neck strap. bag out end. edgestitch all round.",
+    "Make and set small concealed pocket. add stitch line for pen pocket through pocket bag. edgesttich inside of pocket opening.",
+    "4 or 5 thread close pocket bag",
+    "Set bib top to apron",
+    "Double turn armhole and topstitch 6mm. single turn bib top to reduce bulk",
+    "Set loop and neck strap to bib facing. neck strap to be set to right side of bib as worn. studs to underside of strap. loop to be set as high as possible to fold of bib top and inserted into end of left side of bib top. edgestitch end of bib and top edge of bib before stitching loop down. loop to finish width 3cm and to fit neck strap neatly.",
+    "Stitch down bib top.",
+    "Make waist ties. bag out ends. edgestitch all round.",
+    "Insert waist ties. double turn side seam and hem to neaten and topstitch 12mm. insert labels.",
+    "Fold back waist tie onto apron and edgestitch down onto side seam."
+   ],
+   "fin": [
+    "Trim, check, and press. thread neck strap through loop and fold garment.",
+    "Tissue , bag and set bag label"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 / ± 2 cm",
+   "oneSize": true,
+   "variant": "APP0544"
+  },
+  {
+   "code": "OHAPP054483",
+   "name": "OLIVE bib apron with concealed adjustable neck strap self fabric ties",
+   "desc": "BIB APRON · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap · Concealed pocket in bib · No towel loop",
+   "lectra": "APP0544 varient APP0544",
+   "chart": "OHAPP054401-MEAS",
+   "fabrics": [
+    [
+     "Olive 100% organic cotton x149eco-am302 — rating 1.0M",
+     "CO5083ECO",
+     "A5",
+     1.0
+    ]
+   ],
+   "trims": [
+    [
+     "THREAD",
+     "Coats epic 80 col 5742 olive"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set 4cm down from finished top edge. set to right side seam as worn."
+    ],
+    [
+     "Oliver harvey care label",
+     "100% organic cotton - wash at 40 degree/low tumble dry/2 dot iron/do not bleach/dry clean p set 4cm down from top of right side seam as worn. set underneath OH woven label."
+    ]
+   ],
+   "mfg": [
+    "Make neck strap loop. fold in half lengthways , fold in raw edges to neaten and edgestitch one edge.",
+    "Make neck strap. bag out end. edgestitch all round.",
+    "Make and set small concealed pocket. add stitch line for pen pocket through pocket bag. edgesttich inside of pocket opening.",
+    "4 or 5 thread close pocket bag",
+    "Set bib top to apron",
+    "Double turn armhole and topstitch 6mm. single turn bib top to reduce bulk",
+    "Set loop and neck strap to bib facing. neck strap to be set to right side of bib as worn. studs to underside of strap. loop to be set as high as possible to fold of bib top and inserted into end of left side of bib top. edgestitch end of bib and top edge of bib before stitching loop down. loop to finish width 3cm and to fit neck strap neatly.",
+    "Stitch down bib top.",
+    "Make waist ties. bag out ends. edgestitch all round.",
+    "Insert waist ties. double turn side seam and hem to neaten and topstitch 12mm. insert labels.",
+    "Fold back waist tie onto apron and edgestitch down onto side seam."
+   ],
+   "fin": [
+    "Trim, check, and press. thread neck strap through loop and fold garment.",
+    "Tissue and set label"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 / ± 2 cm",
+   "oneSize": true,
+   "variant": "APP0544"
+  },
+  {
+   "code": "OHAPP059703/153DEN",
+   "name": "Black denim stud halter bib apron with 2 x hip pocket",
+   "desc": "Denim bib apron. two hip pockets. right hip pocket with stitched pen pocket. contrast fabric waist ties through large eyelets at waist. rivets set to top of all pockets. contrast fabric neck strap stud fastened.",
+   "lectra": "FOHDENIM — variant 0597",
+   "markerMain": "0597001",
+   "markerLen": 2.57,
+   "layQty": 4,
+   "chart": "OHAPP059703-MEAS",
+   "fabrics": [
+    [
+     "Black denim art murray 315gsm 100% cotton 1.50m width (for apron, eyelet re-inforcement pieces and pockets)",
+     "CO5003DEN",
+     "B2",
+     0.6425,
+     6.71
+    ],
+    [
+     "Khaki 3110 100% cotton (for neck and waist ties) — contrast marker 0597A (neck tie + ties)",
+     "CO5153",
+     "A5",
+     0.1667,
+     3.35
+    ]
+   ],
+   "trims": [
+    [
+     "Thread - main",
+     "BLACK 80'S"
+    ],
+    [
+     "Thread - for waist ties and neck strap stitching",
+     "Khaki 08489 epic 80's"
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set label just below base of re-inforcement patch in right side seam as worn. set on top of OH care label."
+    ],
+    [
+     "Oliver harvey care label",
+     "100% COTTON -50 degree wash/do not bleach/ 2 dot iron/P dry clean/do not tumble dry. SET LABEL JUST BELOW BASE OF RE-INFORCEMENT PATCH IN RIGHT SIDE SEAM AS WORN. SET BELOW OH WOVEN LABEL."
+    ],
+    [
+     "Oliver harvey red tax tab",
+     "Set to left side of left hip pocket as worn. set level with top edge."
+    ],
+    [
+     "Antique brass capped studs",
+     "Quality 050b parts a/b/c/d/ 4 x male (a/b) and 2 x female (c/d)"
+    ],
+    [
+     "Antique brass eyelets x 2",
+     "30e/r ab antique brass eyelets 30mm . set to top of side seam. centre of eyelet 3cm down from top and 3cm in from side seam - finished. set to top edge of bib. centre of eyelet set 3cm from side of bib and 3cm from top of bib."
+    ],
+    [
+     "Antique brass rivets x 4",
+     "010B/7P - 011B - Antique brass Invert nipple rivet and post - one at each top corner of pocket"
+    ]
+   ],
+   "mfg": [
+    "Make waist ties. stitch in matching thread. bag out both ends and topstitch one side.",
+    "Make neck strap bag out both ends and edgestitch one side. stitch in matching thread.",
+    "Discard right side as worn stud re-inforcement piece",
+    "Neaten long edge of stud re-inforcement piece turning onto right side of fabric as wrong side of fabric to be uppermost. set to left side as worn so it is included into top of bib turning and armhole turning. note set so wrong side is uppermost on finished garment.",
+    "Fold over bib top 1+3.2cm and topstitch 3cm",
+    "Edgestitch top edge",
+    "Set re-inforcement patch for eyelets. (right side of fabric uppermost)",
+    "Double turn armhole and topstitch 6mm",
+    "Double turn side seams and hem and topstitch 12mm. enclose edges of re-inforcement patch for eyelets. set labels right side seam as worn just below base of reinforcement patch",
+    "Set hip pocket hem. turn 1+2cm and twin needle top stitch. bottom row of stitching to be 2cm from top of pocket.",
+    "Set lower hip pockets to apron. set top of pocket 16cm down from finished armhole and 3.5cm in from finished side seam edge. twin needle 3 sides. insert red tax tab to left pocket as worn.",
+    "Set pen pocket stitch line 3cm wide x 13cm deep to inside edge of right pocket as worn.",
+    "Set neck strap to right side of bib as worn. edgestitching side of strap to be set to inside of neck as worn to reduce bulk. set strap to bib, box stitch strap and stitch x detail. position strap so edgestitching of base of strap end is in line with 3cm topstitching of bib.",
+    "Note apron to come back after eyelets set, to have waist ties set. set tie through eyelet 4cm and stitch down to secure. join to be on the inside as worn. boxstitch to 2 stitch wide to width of strap."
+   ],
+   "fin": [
+    "Set rivets to top corners of all pockets.",
+    "Set eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.",
+    "Set studs to strap. female stud set to strap . set centrally to width and first stud 1.5cm from end then 4cm spacing- total 4 studs. (measurement from centre of stud) male stud set 1.5cm down and 1.5cm in from end of bib. second stud set 4cm spacing and 1.5cm in from edge of bib. vertically down.",
+    "Check , trim, press and fold. wrap in tissue, set product sticker and set into bag."
+   ],
+   "machMins": 15,
+   "finMins": 10,
+   "cutBatch": 24,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 / ± 1.5 cm",
+   "oneSize": true,
+   "variant": "0597",
+   "markerCon": "0597A",
+   "conLen": 1.0,
+   "conLay": 6
+  }
+ ]
+}
