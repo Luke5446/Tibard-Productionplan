@@ -112,8 +112,11 @@ writes two tables into `index.html`:
 short-sleeve Oxford sizes, on the white size's markers until the cutting room
 lists their own.
 
-Precedence in `fabricUsageFor`: a per-code marker, then a lay plan matched by
-pattern, then All Costings, then the style's works order data. The marker
+Precedence in `fabricUsageFor`: a per-code marker from the sheets, then a
+marker on the works order data itself (marker number, length and lay set in
+the costing app or here - the only way a variant the sheet lists without a
+product code, like the 0597FM apron, is known), then a lay plan matched by
+pattern, then All Costings, then the style's fabric rating. The marker
 says how much; the fabric itself still comes from All Costings or the style's
 first fabric, the mesh's Sage code is whichever of the style's fabrics is a
 mesh, and a contrast marker's cloth is the style's second non-mesh fabric.
