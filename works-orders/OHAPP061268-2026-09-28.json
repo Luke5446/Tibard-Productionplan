@@ -3,7 +3,7 @@
  "exportedAt": "2026-09-28T10:38:40.375751Z",
  "mode": "changes",
  "styleCount": 1,
- "note": "OHAPP061268 - biscuit bib apron with leather trim and the Carmel Valley Ranch logo on the pocket, from the works order S-OH116297-Pt1 (JH 21/9/26). Built on OHAPP061203DEN; fabric PC9068 at 0.83 m; trims coded from Trim Master List 8 (the 30 mm bronze D ring is on the list as 32 mm only, the additional printed care label has no code; LEATHERHIDE is the leather's stock code). Logo image is the photo of the embroidered pocket from the works order; placement image is the apron sketch.",
+ "note": "OHAPP061268 - biscuit bib apron with leather trim and the Carmel Valley Ranch logo on the pocket, from the works order S-OH116297-Pt1 (JH 21/9/26). Built on OHAPP061203DEN; fabric PC9068 at 0.83 m; trims coded from Trim Master List 8, thread at the 70 m bib-apron standard (the 30 mm bronze D ring is on the list as 32 mm only, the additional printed care label has no code; LEATHERHIDE is the leather's stock code). Logo image is the photo of the embroidered pocket from the works order; placement image is the apron sketch.",
  "styles": [
   {
    "code": "OHAPP061268",
@@ -24,7 +24,7 @@
     [
      "Thread",
      "THREAD — COATS EPIC 80'S BISCUIT 08569 — cost per metre",
-     "3.57",
+     70,
      "CMP-THR-EP80-08569-68",
      0.000714
     ],
