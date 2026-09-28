@@ -3769,6 +3769,7 @@ function smDoImport(txt){
       hasMesh:!!d.hasMesh, meshLen:d.meshLen||null, meshLay:d.meshLay||null,
       sr:d.sr||'', srVersion:d.srVersion||null, customer:d.customer||'', size:d.size||'',
       brandType:d.brandType||'', brandPlace:d.brandPlace||'', logoImg:d.logoImg||'', logo2Img:d.logo2Img||'', placeImg:d.placeImg||'',
+      threadOwn:!!d.threadOwn,   // the costing app's own thread figure, kept over the standard
       importedAt:d2s(now())
     };
     if(d.chart && d.chartRows && d.chartRows.length){
