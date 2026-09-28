@@ -59,7 +59,7 @@ const path = require('path');
 
  d=await printOf('CJ01935203',6);
  ck('a numeric 52 on the black long sleeve highlights the XXL (50–52") row', d.hit.length===1&&d.hit[0]==='XXL', d.hit);
- ck('black fabric PC2003ECO at B1 and black thread', d.text.includes('PC2003ECO')&&d.text.includes("Coats Epic 80's black"));
+ ck('black fabric PC2003ECO at B1 and the black thread by its Sage code', d.text.includes('PC2003ECO')&&/COATS EPIC 80'S BLACK 09700/.test(d.text)&&d.text.includes('CMP-THR-EP80-09700-03'));
 
  d=await printOf('CICJ01935401',6);
  ck('short sleeve 54 highlights the 3XL row and prints the short sleeve length', d.hit.length===1&&d.hit[0]==='3XL'&&d.text.includes('28.8 cm'), d.hit);
