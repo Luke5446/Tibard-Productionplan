@@ -13,7 +13,8 @@
 //     sheet lists without a product code is only known this way
 //   - navy short-sleeve Oxford (OHCJSMOXFORD--15), the Rick Stein apron
 //     (OHRSAPP300503PC) and the other Rick Stein records, the Oxford trims by
-//     colour, the 0544 aprons' fabric codes, the 0597 denim apron
+//     colour, the 0544 aprons' fabric codes, the 0597 denim apron, the
+//     Carmel Valley Ranch biscuit apron OHAPP061268 with its logo images
 const { chromium } = require('playwright');
 const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
 (async()=>{
@@ -36,6 +37,8 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
      oxPrint:(()=>{ cap=''; printWOP('WO-T','OHCJMOXFORD4401L',5,null,null); const m=cap.match(/band">TRIMS[\s\S]*?<\/table>/); return m?m[0].replace(/<[^>]+>/g,'|').replace(/\|+/g,'|'):'none'; })(),
      rs0601:(()=>{ const s=styleForCode('OHRSAPP060107').style; return [s.customer,s.fabrics[0][1],s.fabrics[0][3],s.brandType].join('|'); })(),
      indigo:u('OHAPP0597F224DEN'),
+     cvr:(()=>{ const s=styleForCode('OHAPP061268').style; cap=''; printWOP('S-OH116297-Pt1','OHAPP061268',24,null,null);
+       return [s.customer, s.fabrics[0][1]+'/'+s.fabrics[0][3], s.brandType, s.trims.map(t=>t[3]).join(','), s.cutBatch, /<img src="data:image\/jpeg;base64,[^"]+" alt="customer artwork"/.test(cap)?'logo':'-', /alt="logo placement photo"/.test(cap)?'sketch':'-', /Carmel Valley Ranch logo set to the left pocket/.test(cap)?'place':'-', (cap.match(/<th>Thread<\/th><td>([^<]*)/)||[])[1]||''].join('|'); })(),
      f0544:['OHAPP054401C','OHAPP054403','OHAPP054415','OHAPP0544173','OHAPP0544241','OHAPP054483'].map(c=>{ const f=styleForCode(c).style.fabrics[0]; return f[1]+':'+f[3]; }).join(' '),
      denim:(()=>{ const s=styleForCode('OHAPP059703/153DEN').style; return [s.variant,s.markerMain,s.markerLen,s.layQty,s.markerCon,s.conLen,s.conLay,s.fabrics[0][3],s.fabrics[1][3]].join('/'); })(),
      stratford:lectra('OHCJMSTRATFORD4001',10),
@@ -58,6 +61,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && r.oxWhite==='|OHDETACHABLEBUTTON01|CMP-OH-PIP-TIB009B-01|TAXTABOH07/01|LABELOH5771|CMP-OH-LBL-WASH-01|CMP-LBL-NYL-25-01|PKG-OH-GPS-500X750-01|PKG-TAPE-MSK-25x50-01|OHSWINGTAG|'
    && /\|Buttons\|WHITE DETACHABLE CHEF JACKET BUTTON — 12 per jacket, £0\.636 per 12\|OHDETACHABLEBUTTON01\|1\|/.test(r.oxPrint) && !/BUTTON — WHITE DETACHABLE/.test(r.oxPrint)
    && r.rs0601==='Seafood Trading Ltd (Rick Stein)|CO5007|1|Embroidery' && r.indigo==='CO5224DEN/0.72/marker 0597FSAME/'
+   && r.cvr==="Carmel Valley Ranch|PC9068/0.83|Embroidery|CMP-THR-EP80-08569-68,LABELOH5771,CMP-OH-LBL-WASH-01,,LEATHERHIDE,CMP-DR32-N254-287,CMP-STD-PST-9B-287,CMP-STD-SOC-9B-287,CMP-30ED-28-931,CMP-30RD-28-931,PKG-OH-GPS-500X750-01|70|logo|sketch|place|THREAD — COATS EPIC 80&#39;S BISCUIT 08569 — cost per metre"
    && r.f0544==='CO5001ECO:1 CO5003ECO:1 CO5015ECO:1 CO5173ECO:1 CO5241ECO:1 CO5083ECO:1'
    && r.denim==='0597/0597001/2.57/4/0597A/1/6/0.6425/0.1667'
    && /Variant \(cutting room\)\|OH7LSLV\|/.test(r.stratford) && /Marker number \(default\)\|OH7006\| - 2\.36 m, 2 per lay \(1\.18 m per garment\)/.test(r.stratford)

@@ -22,3 +22,12 @@ file, it survives a cleared browser, and every version is kept.
 This is for the **document**. Structured works order data — fabrics, trims,
 making detail, times — is not a file: it is entered in the app's works order
 data editor and travels to the team inside `data.json` on the next Publish.
+
+## What is here
+
+| File | What it is |
+|---|---|
+| `S-OH116297-Pt1.xlsx` | Works order for OHAPP061268, the biscuit bib apron with leather trim and the Carmel Valley Ranch logo (JH, 21 Sep 2026). Its structured data is in the app as style OHAPP061268. |
+| `lay-plan-styles-2026-09-25.json` | Works order data added or changed on 25 Sep 2026, in the works-order-editor format for the costing app: Oxford trims by colour, the Rick Stein records, the 0544 and 0597 aprons. |
+| `OHAPP061268-2026-09-28.json` | The OHAPP061268 record in the same format, with the logo and sketch images. |
+
