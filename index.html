@@ -1056,8 +1056,10 @@ function saveWO(){ if(!IS_EDITOR) return;
 }
 
 function delWO(i){ if(!IS_EDITOR) return;
-  if(!confirm('Remove works order "'+WOs[i].ref+'"?')) return;
+  var wo=WOs[i], special=!!(wo.sm && wo.sm.lineKey);
+  if(!confirm('Remove works order "'+wo.ref+'"?'+(special?'\n\nIts sales order line comes back to Special Makes for review on the next paste.':''))) return;
   WOs.splice(i,1);
+  if(special) smRelease(wo);
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); saveState();
 }
 
@@ -2764,7 +2766,7 @@ function smLoadPaste(){
     return;
   }
 
-  var added=0, already=0, dismissedBefore=0, notes=0, inter=0, updated=0;
+  var added=0, already=0, dismissedBefore=0, notes=0, inter=0, updated=0, woUpdated=0, released=0;
   var pendKeys={}; smPending.forEach(function(p){ pendKeys[p.key]=true; });
   var known={}; smPending.concat(smDropped).forEach(function(p){ known[p.key]=p; });
   // A line the app already holds is refreshed from Sage rather than skipped:
@@ -2800,7 +2802,15 @@ function smLoadPaste(){
        line can be matched to the garment it sits under. They are never jobs. */
     if(/^(STOCK HELD|BOUGHT IN)/.test(o.cat)){ if(!seen) smSeen[o.key]={what:'anchor'}; return; }
     // WORKS ORDER and REVIEW lines both need a human decision
-    if(seen && seen.what==='wo'){ already++; return; }
+    if(seen && seen.what==='wo'){
+      var live=null; WOs.forEach(function(w){ if(!live && w.sm && w.sm.lineKey===o.key) live=w; });
+      if(live){ if(smRefreshWO(live, o)) woUpdated++; already++; return; }
+      // no live works order: completed, or deleted before deletion released the line
+      var finished=completedWOs.some(function(c){ return c.ref===seen.ref || (c.sm && c.sm.lineKey===o.key); });
+      if(finished){ already++; return; }
+      delete smSeen[o.key]; smMade.forEach(function(m){ if(m.key===o.key && !m.deletedAt) m.deletedAt=d2s(now()); });
+      released++; seen=null;
+    }
     if(seen && seen.what==='dismissed'){ dismissedBefore++; if(known[o.key]) refresh(known[o.key], o); return; }
     if(pendKeys[o.key]){ if(known[o.key]) refresh(known[o.key], o); return; }   // already waiting: keep it current
     o.seenAt=d2s(now()); smPending.push(o); pendKeys[o.key]=true; added++;
@@ -2821,6 +2831,8 @@ function smLoadPaste(){
   if(already)         bits.push(already+' already raised');
   if(dismissedBefore) bits.push(dismissedBefore+' dismissed previously');
   if(updated)         bits.push('<strong>'+updated+'</strong> known line'+(updated===1?'':'s')+' updated from Sage (quantity or date changed)');
+  if(woUpdated)       bits.push('<strong>'+woUpdated+'</strong> raised works order'+(woUpdated===1?'':'s')+' updated from Sage (date, description or customer order changed - see the card)');
+  if(released)        bits.push('<strong>'+released+'</strong> line'+(released===1?'':'s')+' back for review: the works order raised for it was deleted');
   if(notes)           bits.push('<strong>'+notes+'</strong> logo/text line'+(notes===1?'':'s')+' kept with the sales order (printed on stock-style works orders)');
   if(keptNotes.lost)  bits.push('<span style="color:#b45309">'+keptNotes.lost+' logo/text line'+(keptNotes.lost===1?'':'s')+' sit under a garment the sheet does not show (stock held or bought in) and were not attached</span>');
   if(inter)           bits.push(inter+' inter-company line'+(inter===1?'':'s')+' ignored');
@@ -2865,7 +2877,8 @@ function smCreate(key){
   var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
   WOs.push(stampWO({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
     sm:{ lineKey:o.key, seenAt:o.seenAt||'', company:o.company, so:o.so, seq:o.seq, part:part,
-         customer:o.customer, desc:o.desc, maker:o.maker,
+         customer:o.customer, custOrder:o.custOrder||'',
+         custName:o.custName||o.customer||'', desc:o.desc, maker:o.maker,
          promised:o.promised, dateAssumed:!hasDate, notes:[] } }));
   smSeen[o.key]={what:'wo', ref:ref};
   smLog(o, ref, part);
@@ -2882,6 +2895,39 @@ function smLog(o, ref, part){
                promised:o.promised, seenAt:o.seenAt, raisedAt:d2s(now())});
 }
 
+// A raised works order that is deleted (not completed) gives its sales order
+// line back: the line is no longer "seen", so the next paste offers it again,
+// and its entry in the raised history is marked deleted so the month's count
+// does not carry a works order that never ran.
+function smRelease(wo){
+  if(!wo || !wo.sm || !wo.sm.lineKey) return;
+  var seen=smSeen[wo.sm.lineKey];
+  if(seen && seen.what==='wo' && (!seen.ref || seen.ref===wo.ref)) delete smSeen[wo.sm.lineKey];
+  smMade.forEach(function(m){ if(m.ref===wo.ref && !m.deletedAt) m.deletedAt=d2s(now()); });
+}
+// Sage moved after the works order was raised - sales changed the promised
+// date, the description or the customer's order number. The works order
+// follows: its due date moves with the promised date unless the PM has set a
+// due date of their own, and the change is stamped so it shows on the card.
+// The quantity is the PM's number and stays; what Sage now shows is kept
+// beside it. Logo and text lines are looked up live from the notes, so a
+// changed logo wording prints on the next print without any of this.
+function smRefreshWO(wo, o){
+  var sm=wo.sm, changed=[];
+  if(o.promised && sm.promised!==o.promised){
+    var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
+    var oldDue=/^\d{4}-\d{2}-\d{2}$/.test(sm.promised||'') ? sm.promised : null;
+    if(hasDate && (sm.dateAssumed || !wo.due || wo.due===oldDue)) wo.due=o.promised;
+    if(sm.promisedWas==null) sm.promisedWas=sm.promised||'';
+    sm.promised=o.promised; sm.dateAssumed=!hasDate; changed.push('date');
+  }
+  if(o.desc && sm.desc!==o.desc){ sm.desc=o.desc; changed.push('description'); }
+  if(o.custName && sm.custName!==o.custName){ sm.custName=o.custName; changed.push('customer'); }
+  if(o.custOrder && (sm.custOrder||'')!==o.custOrder){ sm.custOrder=o.custOrder; changed.push('customer order'); }
+  if(o.qty!=null && sm.sageQty!==o.qty){ var had=sm.sageQty!=null; sm.sageQty=o.qty; if(had || o.qty!==(wo.items[0]&&wo.items[0].qty)) changed.push('quantity in Sage now '+o.qty); }
+  if(!changed.length) return false;
+  sm.changedAt=d2s(now()); sm.changed=changed; return true;
+}
 function smDismiss(key){
   if(!IS_EDITOR) return;
   var o=smTake(key); if(!o) return;
@@ -3285,7 +3331,8 @@ function smRenderInner(){
           +'<td style="text-align:right;color:#6d28d9;font-weight:700">'+r.qty+'</td>'
           +'<td style="text-align:right;'+(r.pipe?'color:#0369a1;font-weight:700':'color:#9ca3af')+'">'+(r.pipe||'&mdash;')+'</td>'
           +'<td'+(late?' style="color:#dc2626;font-weight:700"':'')+'>'+(late?'&#9888; ':'')
-          +esc(wo.sm.promised||wo.due)+(wo.sm.dateAssumed?' <em class="sm-sub">assumed</em>':'')+'</td>'
+          +esc(wo.sm.promised||wo.due)+(wo.sm.dateAssumed?' <em class="sm-sub">assumed</em>':'')
+          +(wo.sm.changedAt?'<div class="sm-sub" style="color:#b45309" title="Sage changed after this works order was raised">&#9998; Sage update '+esc(fmtD(wo.sm.changedAt))+': '+esc((wo.sm.changed||[]).join(', '))+(wo.sm.promisedWas&&wo.sm.promisedWas!==wo.sm.promised?' (was '+esc(wo.sm.promisedWas)+')':'')+'</div>':'')+'</td>'
           +'</tr>';
       }).join('')
       +'</tbody></table></div>');
@@ -3303,8 +3350,8 @@ function smRenderInner(){
       +'<a href="#" onclick="smToggleHist();return false" style="color:#7A1F3D">hide</a></div>'
       +(smMade.length?'<div class="sm-hsub">&#128296; Raised ('+smMade.length+')</div>'
         +smMonthBlocks(smMade,'raisedAt',function(o){
-          return '<div class="sm-dism"><span><strong>'+esc(o.ref)+'</strong> &middot; '
-            +esc(o.code)+' &times; '+o.qty+' &middot; '+esc(o.customer||'')+'</span>'
+          return '<div class="sm-dism"'+(o.deletedAt?' style="opacity:.55"':'')+'><span><strong>'+esc(o.ref)+'</strong> &middot; '
+            +esc(o.code)+' &times; '+o.qty+' &middot; '+esc(o.customer||'')+(o.deletedAt?' &middot; <em>deleted '+esc(fmtD(o.deletedAt))+', line back for review</em>':'')+'</span>'
             +'<span>'+esc(fmtD(o.raisedAt))+'</span></div>';
         },'made-'):'')
       +(smDropped.length?'<div class="sm-hsub">&#10005; Dismissed ('+smDropped.length+')</div>'
@@ -3964,7 +4011,7 @@ function kpiCompute(){
       if(j.createdAt) b.leadRaised.push(kpiDays(j.createdAt, j.completed));
     });
   });
-  smMade.forEach(function(m){ var b=by[kpiKey(m.raisedAt)]; if(b){ b.smRaised++; b.smUnits+=(m.qty||0); } });
+  smMade.forEach(function(m){ if(m.deletedAt) return; var b=by[kpiKey(m.raisedAt)]; if(b){ b.smRaised++; b.smUnits+=(m.qty||0); } });
   smDropped.forEach(function(o){ var b=by[kpiKey(o.dismissedAt)]; if(b) b.smDismissed++; });
   bufSnaps.forEach(function(x){ var b=by[kpiKey(x.date)]; if(b) b.snaps.push(x); });
 
