@@ -478,6 +478,22 @@ across the lines in proportion to annual call-off (`FAB_CALL_OFF`, from the
 Tiajo tab) in 50 m steps. Typed quantities are kept in `fabStock.po` and
 published, and are what the purchase order file will be built from.
 
+**The purchase order file.** *Purchase order file (CSV)* on the supplier's
+order panel writes the order as the file the Sage routine imports from the
+**B2B_PO_TIB** folder: one row per fabric with metres typed or suggested
+(nil lines left out), named `B2B_PO_TIB_<account>_<date>_<time>.csv`. The
+layout is the Sage 200 purchase order import - `SupplierAccountNumber,
+DocumentDate, RequestedDeliveryDate, SupplierDocumentNo, LineType, ItemCode,
+ItemDescription, LineQuantity, UnitBuyingPrice, WarehouseName` - and lives
+in one place, `PO_COLS`, to change if the routine's own layout differs.
+Dates are dd/mm/yyyy like the write-off file; the requested delivery date is
+today plus the supplier's lead time in working days; the unit price is
+Sage's cost per metre off the stock sheet; the warehouse is HOME. An order
+under the free-shipping minimum asks first. Every file made is kept with
+its rows (`fabStock.poFiles`, published), listed under the panel with
+*download again*; the typed metres stay as they are, and the metres show
+On PO after the import and the next stock paste.
+
 The sheet is pasted, so it is as current as the last paste; a direct link is
 the same query run by the site server and nothing on the tab changes. The
 `60-fabric-stock.sql` header explains the first run: step 0 lists the stock
