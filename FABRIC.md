@@ -480,7 +480,8 @@ published, and are what the purchase order file will be built from.
 
 **The purchase order file.** *Purchase order file (CSV)* on the supplier's
 order panel writes the order as the file the Sage routine imports from the
-**B2B_PO_TIB** folder: one row per fabric with metres typed or suggested
+**B2B_PO_TIB** folder (proven on 29 Sep 2026: a one-line Tiajo file dropped
+in the test company's POPOrderImport raised the purchase order as expected): one row per fabric with metres typed or suggested
 (nil lines left out), named `B2B_PO_TIB_<account>_<date>_<time>.csv`. The
 layout is the routine's own, taken row for row from the Clockwork container
 127 import of 15 Sep 2026 (39 columns, `PO_COLS`): OrderType 1, the
