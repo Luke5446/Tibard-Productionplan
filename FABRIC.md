@@ -495,7 +495,15 @@ stock sheet; fabric goes to the Home warehouse. A garment supplier listed
 in `PO_BULK_ACCOUNTS` (Clockwork, CLO003) would have its codes prefixed
 BULK and go to the Bulk warehouse, which is what the Excel step did by hand
 on the container files. An order under the free-shipping minimum asks
-first. Every file made is kept with its rows (`fabStock.poFiles`,
+first. **Currency:** Tiajo buy in euros, and the routine takes the unit
+price in the supplier's currency. Sage's last buying price (column M) is
+what the sheet holds today and nothing on it says which currency that is
+in, so the file takes it and asks first; `sage/63-supplier-prices.sql`, run
+once, shows where Sage keeps the supplier's own price and currency, and then
+60-fabric-stock.sql grows two columns the app already reads - O the
+currency, P the price in it - and the file carries the euro price without
+asking. The panel and the file history show the value in the supplier's
+currency either way. Every file made is kept with its rows (`fabStock.poFiles`,
 published), listed under the panel with its reference and *download again*;
 the typed metres stay as they are, and the metres show On PO after the
 import and the next stock paste.

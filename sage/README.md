@@ -685,3 +685,11 @@ actually wrong.
 - **Refresh, then copy.** With background refresh off (2.4) this is safe — but
   it's still worth telling Production: Refresh All, wait for the row count to
   settle, then copy.
+
+### 63-supplier-prices.sql
+
+A one-off probe for the purchase order file: which column of the item-supplier
+record is the supplier's own price and in what currency (Tiajo buy in euros).
+Paste it instead of 60 for one refresh and send the three grids back; then
+60-fabric-stock.sql gets columns O (currency) and P (price in it), which the
+app's Fabric tab already reads.
