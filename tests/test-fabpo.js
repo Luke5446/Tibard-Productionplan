@@ -4,10 +4,13 @@
 // order it is under its 10 m minimum, so Tiajo Comercio (TIA001EU) has it
 // suggested at the usual 50 m.
 //   - the button is on the supplier's order panel for the editor only
-//   - the file is one row per fabric with metres, on the PO_COLS layout: the
-//     account, today's date and today plus the lead time (working days) as
-//     dd/mm/yyyy, Standard line, code, description, metres, Sage's cost per
-//     metre, the HOME warehouse; nil lines are left out
+//   - the file is one row per fabric with metres, on the routine's own
+//     layout (the Clockwork container 127 import): OrderType 1, the account,
+//     today's date and today plus the lead time (working days) as dd/mm/yyyy,
+//     the reference typed as the supplier document number, line type 1, the
+//     code (also as StockItem), the Home warehouse, metres, Sage's cost per
+//     metre, the analysis code names, OrderOriginator Import; nil lines out;
+//     a Clockwork line would go BULK-prefixed to the Bulk warehouse
 //   - it is named B2B_PO_TIB_<account>_<date>_<time>.csv, an order under the
 //     free-shipping minimum asks first, every file is kept with its rows and
 //     can be downloaded again, the typed metres stay, the record survives
@@ -25,7 +28,7 @@ const sheet=[
  await p.addInitScript(()=>{ let v; Object.defineProperty(window,'LAY_PLAN',{configurable:true,get(){ return v; },set(x){ delete x['OHAPP0534__']; v=x; }}); });
  await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit'); await p.waitForTimeout(400);
  // Monday 21 Sep 2026, 10:07; Tiajo Comercio's lead time is the app's 10 working days -> Monday 5 Oct
- await p.evaluate(()=>{ window.now=()=>new Date('2026-09-21T10:07:00'); window.__confirms=[]; window.confirm=m=>{ window.__confirms.push(m); return true; }; window.__alerts=[]; window.alert=m=>window.__alerts.push(m);
+ await p.evaluate(()=>{ window.now=()=>new Date('2026-09-21T10:07:00'); window.__confirms=[]; window.confirm=m=>{ window.__confirms.push(m); return true; }; window.__prompts=[]; window.prompt=(m,d)=>{ window.__prompts.push(d); return 'Tiajo proforma 4471'; }; window.__alerts=[]; window.alert=m=>window.__alerts.push(m);
    window.__dl=[]; URL.createObjectURL=b=>{ window.__blob=b; return 'blob:x'; }; HTMLAnchorElement.prototype.click=function(){ window.__dl.push(this.download); }; });
  const mk=(ref,ta)=>p.evaluate(([ref,ta])=>{ document.getElementById('woRef').value=ref; document.getElementById('woStart').value='2026-09-21'; document.getElementById('woDue').value='2026-09-30'; document.getElementById('woTA').value=ta; saveWO(); }, [ref,ta]);
  await mk('S-LIVE1','OHAPP0534GD\t15');
@@ -36,7 +39,8 @@ const sheet=[
  console.log('panel   ->', JSON.stringify(t1));
  // 50 m suggested is under the 4,000 m minimum: it asks, then makes the file
  const t2=await p.evaluate(async()=>{ exportSupplierPO('TIA001EU','Tiajo Comercio'); const txt=await window.__blob.text();
-   return { asked:window.__confirms.length, ask:(window.__confirms[0]||'').split('\n')[0], file:window.__dl[0], csv:txt.split('\r\n').filter(Boolean), alert:(window.__alerts.pop()||'').split('\n')[0],
+   return { asked:window.__confirms.length, ask:(window.__confirms[0]||'').split('\n')[0], file:window.__dl[0], csv:txt.split('\r\n').filter(Boolean), alert:(window.__alerts.pop()||'').split('\n')[0], promptDefault:window.__prompts[0],
+     bulk:poLine('CLO003','2026-09-21','2026-10-21','Container 128','CJ0193MM01',400,4.16).join(','),
      rec:fabStock.poFiles.map(f=>[f.acc,f.file,f.at,f.atTime,f.lines.length,f.metres,f.value].join('|')).join(';'), kept:fabOrderLines('TIA001EU').map(l=>l.x.code+':'+l.qty).join(','),
      hist:(document.getElementById('fabBody').textContent.replace(/\s+/g,' ').match(/Purchase order files[^\n]{0,90}/)||[''])[0] }; });
  console.log('file    ->', JSON.stringify(t2));
@@ -58,10 +62,11 @@ const sheet=[
  const pass = t1.btn && t1.lines==='CO5014DEN:50,PC2015ECO:0' && t1.lead===10
    && t2.asked===1 && /^50 m is under the 4,000 m free-shipping minimum for Tiajo Comercio/.test(t2.ask)
    && t2.file==='B2B_PO_TIB_TIA001EU_2026-09-21_1007.csv'
-   && t2.csv[0]==='SupplierAccountNumber,DocumentDate,RequestedDeliveryDate,SupplierDocumentNo,LineType,ItemCode,ItemDescription,LineQuantity,UnitBuyingPrice,WarehouseName'
-   && t2.csv[1]==='TIA001EU,21/09/2026,05/10/2026,,Standard,CO5014DEN,MURRAY LT GREY DENIM,50,6.71,HOME' && t2.csv.length===2
+   && t2.csv[0]==='OrderType,OrderNumber,SuppAccRef,OrderDate,OrderRequestedDate,SupplierDocumentNumber,OrderWarehouse,ExchangeRate,LineType,ProductCode,ProductDescription,Warehouse,Quantity,UnitPrice,TaxCode,StockItem,TaxAmount,DiscountPercent,DiscountValue,NominalCode,CostCentre,Department,ShowOnSuppDocs,ProjectCode,ProjectItem,LineRequestedDate,AnalysisCodeName2,AnalysisCodeValue2,AnalysisCodeName3,AnalysisCodeValue3,AnalysisCodeName4,AnalysisCodeValue4,LineAnalysisCode1,LineAnalysisCode2,PartRef,OrderOriginator,OrderTakenBy,LandedCostType,LandedCostValue'
+   && t2.csv[1]==='1,,TIA001EU,21/09/2026,05/10/2026,Tiajo proforma 4471,,,1,CO5014DEN,,Home,50,6.71,,CO5014DEN,,,,,,,,,,,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,' && t2.csv.length===2
+   && t2.promptDefault==='Fabric order 21/09/2026' && t2.bulk==='1,,CLO003,21/09/2026,21/10/2026,Container 128,,,1,BULKCJ0193MM01,,Bulk,400,4.16,,BULKCJ0193MM01,,,,,,,,,,,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,'
    && /^1 line, 50 m, £336 for Tiajo Comercio\./.test(t2.alert) && t2.rec==='TIA001EU|B2B_PO_TIB_TIA001EU_2026-09-21_1007.csv|2026-09-21|10:07|1|50|335.5'
-   && t2.kept==='CO5014DEN:50,PC2015ECO:0' && /Purchase order files · 21 Sept 2026 10:07 · 1 line · 50 m · £336 · download again/.test(t2.hist)
+   && t2.kept==='CO5014DEN:50,PC2015ECO:0' && /Purchase order files · 21 Sept 2026 10:07 · Tiajo proforma 4471 · 1 line · 50 m · £336 · download again/.test(t2.hist)
    && t3.asked===0 && t3.rows===2 && t3.total>=4000 && t3.files===2 && t3.minOK
    && t4.again==='B2B_PO_TIB_TIA001EU_2026-09-21_1007.csv' && t4.sameRows===2 && /^Nothing to order - every line for/.test(t4.nil) && t4.files===2
    && t5.before===2 && t5.after===2 && !t6.btn;

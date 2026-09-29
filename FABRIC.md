@@ -482,17 +482,23 @@ published, and are what the purchase order file will be built from.
 order panel writes the order as the file the Sage routine imports from the
 **B2B_PO_TIB** folder: one row per fabric with metres typed or suggested
 (nil lines left out), named `B2B_PO_TIB_<account>_<date>_<time>.csv`. The
-layout is the Sage 200 purchase order import - `SupplierAccountNumber,
-DocumentDate, RequestedDeliveryDate, SupplierDocumentNo, LineType, ItemCode,
-ItemDescription, LineQuantity, UnitBuyingPrice, WarehouseName` - and lives
-in one place, `PO_COLS`, to change if the routine's own layout differs.
-Dates are dd/mm/yyyy like the write-off file; the requested delivery date is
-today plus the supplier's lead time in working days; the unit price is
-Sage's cost per metre off the stock sheet; the warehouse is HOME. An order
-under the free-shipping minimum asks first. Every file made is kept with
-its rows (`fabStock.poFiles`, published), listed under the panel with
-*download again*; the typed metres stay as they are, and the metres show
-On PO after the import and the next stock paste.
+layout is the routine's own, taken row for row from the Clockwork container
+127 import of 15 Sep 2026 (39 columns, `PO_COLS`): OrderType 1, the
+supplier account, order date and requested date as dd/mm/yyyy, the
+reference typed when the file is made as the supplier document number on
+every line, line type 1, the product code (also as StockItem), the
+warehouse, quantity and unit price, the three analysis code names the
+routine expects with *B2B Export Status* N/A, OrderOriginator *Import*, and
+every other column blank. The requested date is today plus the supplier's
+lead time in working days; the unit price is Sage's cost per metre off the
+stock sheet; fabric goes to the Home warehouse. A garment supplier listed
+in `PO_BULK_ACCOUNTS` (Clockwork, CLO003) would have its codes prefixed
+BULK and go to the Bulk warehouse, which is what the Excel step did by hand
+on the container files. An order under the free-shipping minimum asks
+first. Every file made is kept with its rows (`fabStock.poFiles`,
+published), listed under the panel with its reference and *download again*;
+the typed metres stay as they are, and the metres show On PO after the
+import and the next stock paste.
 
 The sheet is pasted, so it is as current as the last paste; a direct link is
 the same query run by the site server and nothing on the tab changes. The

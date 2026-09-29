@@ -69,7 +69,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && r.usage.fm==='CO5003DEN/0.635/marker 0597FM002/CO5153:0.1667' && r.usage.same==='CO5224DEN/0.72/marker 0597SAME/' && r.usage.fsame==='CO5224DEN/0.72/marker 0597FSAME/'
    && r.usage.navy==='PC2015ECO/1.31/marker OXFORD042/MESHPW31415:0.04'
    && r.usage.sage==='CO5173ECO/1/All Costings/' && r.usage.slate==='CO5241ECO/1/All Costings/'
-   && r.usage.rs==='PC2003ECO/1/All Costings/' && r.usage.strat==='PC14001/1.18/marker OH7006/'
+   && r.usage.rs==='PC2003ECO/0.805/marker 300501/' && r.usage.strat==='PC14001/1.18/marker OH7006/'
    && r.styles==='OHCJSMOXFORD--15:38 OHCJSMOXFORD--15:42 OHCJSMOXFORD--15:56 OHCJSMOXFORD--01:42 OHRSAPP300503PC:null OHAPP059703/153DEN:null'
    && /^Oxford chef jacket — short sleeve, navy\|PC2015ECO\+MESHPW31415\|CMP-THR-EP80-07935-15\|OHDETACHABLEBUTTON03$/.test(r.navy)
    && r.oxWhite==='CMP-THR-PC075-32109-01|OHDETACHABLEBUTTON01|CMP-OH-PIP-TIB009B-01|TAXTABOH07/01|LABELOH5771|CMP-OH-LBL-WASH-01|CMP-LBL-NYL-25-01|PKG-OH-GPS-500X750-01|PKG-TAPE-MSK-25x50-01|OHSWINGTAG|'
