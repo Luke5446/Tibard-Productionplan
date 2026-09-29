@@ -690,6 +690,8 @@ actually wrong.
 
 A one-off probe for the purchase order file: which column of the item-supplier
 record is the supplier's own price and in what currency (Tiajo buy in euros).
-Paste it instead of 60 for one refresh and send the three grids back; then
-60-fabric-stock.sql gets columns O (currency) and P (price in it), which the
-app's Fabric tab already reads.
+In Power Query open the Fabric Stock query, click the gear next to Source and
+paste the whole file - the SQL text, not the file name - into the SQL
+statement box in place of the stock query; refresh, send the one grid back,
+put the stock query back. Then 60-fabric-stock.sql gets columns O (currency)
+and P (price in it), which the app's Fabric tab already reads.
