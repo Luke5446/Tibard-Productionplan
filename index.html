@@ -4253,7 +4253,7 @@ function fabLoadStockPaste(){
   if(!txt){ alert('Nothing pasted - click in the box then Ctrl+V.'); return; }
   var rows=fabParseStock(txt);
   if(!rows){ alert('No valid rows found.\n\nSelect columns A to N from Fabric Stock.xlsx (without the header row), Ctrl+C, then paste here.'); return; }
-  fabStock={rows:rows, pastedAt:d2s(now()), leads:fabStock.leads||{}, mins:fabStock.mins||{}, po:fabStock.po||{}};   // the app's own settings outlive the paste
+  fabStock={rows:rows, pastedAt:d2s(now()), leads:fabStock.leads||{}, mins:fabStock.mins||{}, po:fabStock.po||{}, poFiles:fabStock.poFiles||[]};   // the app's own settings outlive the paste
   document.getElementById('fabTA').value=''; document.getElementById('fabPastePanel').classList.add('hidden');
   saveState(); fabRender();
   var k=fabStockCompute();
@@ -4590,12 +4590,64 @@ function fabOrderTopUp(acc){ if(!IS_EDITOR) return;
   lines.forEach(function(l,i){ var share=fabRound(need*w[i]/tw, 50); m[l.x.code]=(l.qty||0)+share; added+=share; });
   saveState(); fabRender();
 }
+// ── the purchase order file ──────────────────────────────────────────────
+// The order for one supplier, as the file the Sage routine imports from the
+// B2B_PO_TIB folder: one row per fabric with metres typed or suggested, on
+// the Sage 200 purchase order import layout. Dates are dd/mm/yyyy like the
+// write-off file; the requested delivery date is today plus the supplier's
+// lead time in working days; the unit price is Sage's cost per metre off the
+// stock sheet. PO_COLS is the one place the layout lives - change it here if
+// the routine's own layout differs. Every file made is kept (fabStock.poFiles)
+// with its rows, so it can be downloaded again and the office can see what
+// was ordered when, and the typed quantities are left as they are: Sage shows
+// the metres On PO after the import and the next paste.
+var PO_COLS=['SupplierAccountNumber','DocumentDate','RequestedDeliveryDate','SupplierDocumentNo','LineType','ItemCode','ItemDescription','LineQuantity','UnitBuyingPrice','WarehouseName'];
+var PO_WAREHOUSE='HOME';
+function ukDate(ds){ var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(ds||''); return m ? m[3]+'/'+m[2]+'/'+m[1] : ''; }
+function addWorkingDays(d, n){ var x=new Date(d.getTime()), left=Math.max(0, Math.round(n||0)); while(left>0){ x.setDate(x.getDate()+1); if(x.getDay()!==0 && x.getDay()!==6) left--; } return x; }
+function poFileName(acc){ var t=now(); return 'B2B_PO_TIB_'+String(acc||'').replace(/[^A-Za-z0-9]+/g,'')+'_'+d2s(t)+'_'+String(t.getHours()).padStart(2,'0')+String(t.getMinutes()).padStart(2,'0')+'.csv'; }
+function poRows(acc){
+  var t=now(), today=d2s(t);
+  return fabOrderLines(acc).filter(function(l){ return l.qty>0; }).map(function(l){
+    var x=l.x, r=x.row||{}, lead=fabLeadFor(r).days, price=(r.price>0)?r.price:((typeof FABRIC_PRICES!=='undefined'&&FABRIC_PRICES[x.code]>0)?FABRIC_PRICES[x.code]:'');
+    return {code:x.code, name:x.name||'', qty:l.qty, price:price, due:d2s(addWorkingDays(t, lead)), lead:lead,
+            row:[acc, ukDate(today), ukDate(d2s(addWorkingDays(t, lead))), '', 'Standard', x.code, x.name||'', l.qty, price, PO_WAREHOUSE]};
+  });
+}
+function poCsv(rows){ return [PO_COLS].concat(rows).map(function(r){ return r.map(csvCell).join(','); }).join('\r\n')+'\r\n'; }
+function poDownload(text, fname){ var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8;'})); a.download=fname; a.click(); }
+function exportSupplierPO(acc, name){
+  if(!IS_EDITOR){ alert('View-only mode.'); return; }
+  var lines=poRows(acc);
+  if(!lines.length){ alert('Nothing to order - every line for '+(name||acc)+' is at nil metres.'); return; }
+  var minOrder=FAB_SUPPLIER_MIN[acc]||0, metres=lines.reduce(function(s,l){ return s+l.qty; },0);
+  if(minOrder && metres<minOrder && !confirm(fabM(metres,0)+' m is under the '+fabM(minOrder,0)+' m free-shipping minimum for '+(name||acc)+'.\n\nMake the purchase order file anyway?')) return;
+  var fname=poFileName(acc), value=lines.reduce(function(s,l){ return s+(l.price>0?l.price*l.qty:0); },0);
+  var rec={acc:acc, name:name||acc, file:fname, at:d2s(now()), atTime:String(now().getHours()).padStart(2,'0')+':'+String(now().getMinutes()).padStart(2,'0'),
+           metres:Math.round(metres*100)/100, value:Math.round(value*100)/100, lines:lines.map(function(l){ return {code:l.code, name:l.name, qty:l.qty, price:l.price, due:l.due}; }), rows:lines.map(function(l){ return l.row; })};
+  fabStock.poFiles=fabStock.poFiles||[]; fabStock.poFiles.unshift(rec);
+  saveState();
+  poDownload(poCsv(rec.rows), fname);
+  fabRender();
+  alert(lines.length+' line'+(lines.length===1?'':'s')+', '+fabM(metres,0)+' m'+(value?', '+fabGBP(value,0).replace('&pound;','\u00a3'):'')+' for '+(name||acc)+'.\n\nSave '+fname+' into the B2B_PO_TIB folder and the Sage routine imports it as the purchase order. The metres show On PO here after the next stock paste.');
+}
+function poDownloadAgain(i){ var rec=(fabStock.poFiles||[])[i]; if(!rec) return; poDownload(poCsv(rec.rows), rec.file); }
+function poHistoryHtml(acc){
+  var files=(fabStock.poFiles||[]).filter(function(f){ return f.acc===acc; });
+  if(!files.length) return '';
+  return '<div class="kpi-note" style="margin-top:6px"><b>Purchase order files</b> &middot; '+files.slice(0,5).map(function(f){ var i=(fabStock.poFiles||[]).indexOf(f);
+    return esc(fmtD(f.at))+(f.atTime?' '+esc(f.atTime):'')+' &middot; '+f.lines.length+' line'+(f.lines.length===1?'':'s')+' &middot; '+fabM(f.metres,0)+' m'+(f.value?' &middot; '+fabGBP(f.value,0):'')
+      +' &middot; <a href="#" onclick="poDownloadAgain('+i+');return false" title="'+esc(f.file)+'">download again</a>'; }).join('<br>')
+    +(files.length>5?'<br>&hellip; '+(files.length-5)+' earlier':'')+'</div>';
+}
 function fabOrderHtml(acc, name){
   var lines=fabOrderLines(acc), total=fabOrderTotal(acc), minOrder=FAB_SUPPLIER_MIN[acc]||0, ed=IS_EDITOR;
   var h='<div class="kpi-sec" style="padding:12px 14px 8px;border-left:4px solid #7A1F3D"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div><h3>Order for '+esc(name||acc)+'</h3>'
     +'<div class="sub">Suggested metres bring each fabric back to its minimum after the live works orders, allowing for what is already on PO'+(minOrder?' &middot; '+esc(name||acc)+' ship free from '+fabM(minOrder,0)+' m':'')+'</div></div>'
     +(ed?'<span style="margin-left:auto;display:flex;gap:6px">'+(minOrder&&total<minOrder?'<button class="btn btn-p" style="font-size:11px;padding:5px 10px" onclick="fabOrderTopUp(\''+esc(acc)+'\')">&#8679; Top up to '+fabM(minOrder,0)+' m</button>':'')
-      +'<button class="btn" style="font-size:11px;padding:5px 10px" onclick="fabOrderReset(\''+esc(acc)+'\')">&#8634; Back to suggested</button></span>':'')+'</div>';
+      +'<button class="btn" style="font-size:11px;padding:5px 10px" onclick="fabOrderReset(\''+esc(acc)+'\')">&#8634; Back to suggested</button>'
+      +(total>0?'<button class="btn btn-p" style="font-size:11px;padding:5px 10px;background:#7A1F3D" onclick="exportSupplierPO(\''+esc(acc)+'\',\''+esc(name||acc).replace(/'/g,"\\'")+'\')" title="The purchase order as the file the Sage routine imports from the B2B_PO_TIB folder">&#8681; Purchase order file (CSV)</button>':'')
+      +'</span>':'')+'</div>';
   if(!lines.length) return h+'<div class="sm-empty" style="padding:14px">No monitored fabric from this supplier on the Sage sheet.</div></div>';
   var T='order', SH=function(k,l,r,t){ return fabSortHead(T,k,l,r,t); };
   lines=fabSorted(T, lines, {code:function(l){return l.x.code;}, inSage:function(l){return l.x.inSage;}, onOrder:function(l){return l.x.onOrder;}, committed:function(l){return l.x.committed;}, cut:function(l){return l.x.cut;}, free:function(l){return l.x.free;}, after:function(l){return l.x.after;}, min:function(l){return l.x.min;}, order:function(l){return l.x.order;}, qty:function(l){return l.qty;}, cost:function(l){ var p=l.x.row&&l.x.row.price>0?l.x.row.price:0; return p*(l.qty||0); }});
@@ -4616,6 +4668,7 @@ function fabOrderHtml(acc, name){
     +'<td class="fab-num" style="font-weight:700;'+(minOrder&&total<minOrder?'color:#b45309':'')+'">'+fabM(total,0)+(minOrder?' <span style="font-weight:400;color:#6b7280">/ '+fabM(minOrder,0)+'</span>':'')+'</td>'
     +'<td class="fab-num" style="font-weight:700">'+fabGBP(lines.reduce(function(s,l){ var p=l.x.row&&l.x.row.price>0?l.x.row.price:0; return s+p*(l.qty||0); },0),0)+'</td></tr>'
     +'</tbody></table></div>'
+    +poHistoryHtml(acc)
     +(minOrder ? '<div class="kpi-note">'+(total>=minOrder ? '<b>'+fabM(total,0)+' m</b> - at or above the '+fabM(minOrder,0)+' m free-shipping minimum.' : '<b>'+fabM(minOrder-total,0)+' m short</b> of the '+fabM(minOrder,0)+' m free-shipping minimum - type more against the fabrics you want, or top up and the difference is spread by annual call-off.')+' Bold quantities were typed here; the rest are the suggestion.</div>' : '')
     +'</div>';
   return h;
