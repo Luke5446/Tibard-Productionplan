@@ -415,15 +415,24 @@ orders:
   same 31 jackets, and a second block of eleven other garments with lines of
   its own that never reach the jackets. Each works order prints the shared
   logos first, then its own names. A logo whose garment left the sheet
-  between pastes stays that garment's, as before.
+  between pastes stays that garment's, as before. A shared logo prints as
+  *each garment*, never with the batch quantity off the line (30 on the
+  line is thirty jackets, not thirty logos on each). The rule cannot tell
+  which colour a logo is for - on 116105 the white left-chest logo is for
+  the navy jackets and the orange one for the white - so the PM can take a
+  shared logo off one works order (*not this one* on the card or the live
+  list, *put back* to undo); the choice is kept on the works order and
+  published, and the print follows it.
 - A stock style set up through the costing app (a navy long-length Oxford,
   brand type None) counts as a stock style for this: its embroidery is what
   sales put on the order. A record with its own branding keeps its own.
-- The **Embroidery tab** lists every live works order with embroidery (and
-  completed ones from the last 60 days on request), found by works order or
-  sales order number, product code, customer or the words on a logo line,
-  with the lines as plain text and *copy* buttons - one line, or the whole
-  works order - for the embroidery software.
+- The **Embroidery tab** is for the embroidery team: nothing until they
+  search (a works order or sales order number, a product code, a customer,
+  a name or a word on a line), then the works orders that match with the
+  **words to embroider** - names, titles, text lines - as selectable text to
+  highlight and copy into the embroidery software, and the logos in small
+  type underneath for reference. Live works orders only; a completed one
+  drops off, and comes back with *include completed (last 30 days)*.
   A note whose garment has left the sheet (despatched) stays with that garment. `LOGOAPPLICATION` is a customer logo, `TEXTAPPLICATION`
   a name or initials, `LOGOORIGINATION` the origination charge, and free text
   is a note. `HANDLINGCHARGE` and other charges are not branding and are
