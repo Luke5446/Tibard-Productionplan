@@ -6,7 +6,8 @@
 //   - the button is on the supplier's order panel for the editor only
 //   - the file is one row per fabric with metres, on the routine's own
 //     layout (the Clockwork container 127 import): OrderType 1, the account,
-//     today's date and today plus the lead time (working days) as dd/mm/yyyy,
+//     today's date and the requested date, two weeks on the Friday, as
+//     dd/mm/yyyy on the order and on the line,
 //     the reference typed as the supplier document number, line type 1, the
 //     code (also as StockItem), the Home warehouse, metres, Sage's cost per
 //     metre, the analysis code names, OrderOriginator Import; nil lines out;
@@ -36,7 +37,7 @@ const sheet16=[
  const p=await b.newPage(); const errs=[]; p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
  await p.addInitScript(()=>{ let v; Object.defineProperty(window,'LAY_PLAN',{configurable:true,get(){ return v; },set(x){ delete x['OHAPP0534__']; v=x; }}); });
  await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit'); await p.waitForTimeout(400);
- // Monday 21 Sep 2026, 10:07; Tiajo Comercio's lead time is the app's 10 working days -> Monday 5 Oct
+ // Monday 21 Sep 2026, 10:07: two weeks on the Friday -> Friday 9 Oct; the lead time (10 working days) is for days of cover only
  await p.evaluate(()=>{ window.now=()=>new Date('2026-09-21T10:07:00'); window.__confirms=[]; window.confirm=m=>{ window.__confirms.push(m); return true; }; window.__prompts=[]; window.prompt=(m,d)=>{ window.__prompts.push(d); return 'Tiajo proforma 4471'; }; window.__alerts=[]; window.alert=m=>window.__alerts.push(m);
    window.__dl=[]; URL.createObjectURL=b=>{ window.__blob=b; return 'blob:x'; }; HTMLAnchorElement.prototype.click=function(){ window.__dl.push(this.download); }; });
  const mk=(ref,ta)=>p.evaluate(([ref,ta])=>{ document.getElementById('woRef').value=ref; document.getElementById('woStart').value='2026-09-21'; document.getElementById('woDue').value='2026-09-30'; document.getElementById('woTA').value=ta; saveWO(); }, [ref,ta]);
@@ -50,6 +51,8 @@ const sheet16=[
  const t2=await p.evaluate(async()=>{ exportSupplierPO('TIA001EU','Tiajo Comercio'); const txt=await window.__blob.text();
    return { asked:window.__confirms.length, ask:(window.__confirms[0]||'').split('\n')[0], ask2:(window.__confirms[1]||'').split('\n')[0], file:window.__dl[0], csv:txt.split('\r\n').filter(Boolean), alert:(window.__alerts.pop()||'').split('\n')[0], promptDefault:window.__prompts[0],
      bulk:poLine('CLO003','2026-09-21','2026-10-21','Container 128','CJ0193MM01',400,4.16).join(','),
+     // Tue 29 Sep and Fri 2 Oct -> Fri 16 Oct; Sat 3 Oct and Mon 5 Oct -> Fri 23 Oct; Sun 27 Sep -> Fri 16 Oct
+     fridays:['2026-09-29','2026-10-02','2026-10-03','2026-10-05','2026-09-27'].map(s=>d2s(poRequiredDate(new Date(s+'T10:00:00')))).join(','),
      rec:fabStock.poFiles.map(f=>[f.acc,f.file,f.at,f.atTime,f.lines.length,f.metres,f.value].join('|')).join(';'), kept:fabOrderLines('TIA001EU').map(l=>l.x.code+':'+l.qty).join(','),
      hist:(document.getElementById('fabBody').textContent.replace(/\s+/g,' ').match(/Purchase order files[^\n]{0,90}/)||[''])[0] }; });
  console.log('file    ->', JSON.stringify(t2));
@@ -80,8 +83,9 @@ const sheet16=[
    && t2.asked===2 && /^50 m is under the 4,000 m free-shipping minimum for Tiajo Comercio/.test(t2.ask) && /^This paste has no currency column \(A to N only\)/.test(t2.ask2)
    && t2.file==='B2B_PO_TIB_TIA001EU_2026-09-21_1007.csv'
    && t2.csv[0]==='OrderType,OrderNumber,SuppAccRef,OrderDate,OrderRequestedDate,SupplierDocumentNumber,OrderWarehouse,ExchangeRate,LineType,ProductCode,ProductDescription,Warehouse,Quantity,UnitPrice,TaxCode,StockItem,TaxAmount,DiscountPercent,DiscountValue,NominalCode,CostCentre,Department,ShowOnSuppDocs,ProjectCode,ProjectItem,LineRequestedDate,AnalysisCodeName2,AnalysisCodeValue2,AnalysisCodeName3,AnalysisCodeValue3,AnalysisCodeName4,AnalysisCodeValue4,LineAnalysisCode1,LineAnalysisCode2,PartRef,OrderOriginator,OrderTakenBy,LandedCostType,LandedCostValue'
-   && t2.csv[1]==='1,,TIA001EU,21/09/2026,05/10/2026,Tiajo proforma 4471,,,1,CO5014DEN,,Home,50,6.71,,CO5014DEN,,,,,,,,,,,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,' && t2.csv.length===2
-   && t2.promptDefault==='Fabric order 21/09/2026' && t2.bulk==='1,,CLO003,21/09/2026,21/10/2026,Container 128,,,1,BULKCJ0193MM01,,Bulk,400,4.16,,BULKCJ0193MM01,,,,,,,,,,,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,'
+   && t2.csv[1]==='1,,TIA001EU,21/09/2026,09/10/2026,Tiajo proforma 4471,,,1,CO5014DEN,,Home,50,6.71,,CO5014DEN,,,,,,,,,,09/10/2026,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,' && t2.csv.length===2
+   && t2.fridays==='2026-10-16,2026-10-16,2026-10-23,2026-10-23,2026-10-16'
+   && t2.promptDefault==='Fabric order 21/09/2026' && t2.bulk==='1,,CLO003,21/09/2026,21/10/2026,Container 128,,,1,BULKCJ0193MM01,,Bulk,400,4.16,,BULKCJ0193MM01,,,,,,,,,,21/10/2026,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,'
    && /^1 line, 50 m, €336 for Tiajo Comercio\./.test(t2.alert) && t2.rec==='TIA001EU|B2B_PO_TIB_TIA001EU_2026-09-21_1007.csv|2026-09-21|10:07|1|50|335.5'
    && t2.kept==='CO5014DEN:50,PC2015ECO:0' && /Purchase order files · 21 Sept 2026 10:07 · Tiajo proforma 4471 · 1 line · 50 m · €336 · download again/.test(t2.hist)
    && t3.asked===1 && t3.rows===2 && t3.total>=4000 && t3.files===2 && t3.minOK

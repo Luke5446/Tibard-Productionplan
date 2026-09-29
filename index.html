@@ -4607,7 +4607,9 @@ function fabOrderTopUp(acc){ if(!IS_EDITOR) return;
 // StockItem), the warehouse, quantity and unit price, the three analysis
 // code names the routine expects with "B2B Export Status" N/A, and
 // OrderOriginator "Import"; every other column blank. The requested date is
-// today plus the supplier's lead time in working days; the unit price is
+// two weeks on the Friday (poRequiredDate), on the order and on every line
+// - the first live test left the order's requested date to Sage's default
+// (8 Dec for a 29 Sep order), so the line carries it too; the unit price is
 // Sage's cost per metre off the stock sheet. Fabric goes to the Home
 // warehouse; a garment supplier in PO_BULK_ACCOUNTS (Clockwork) has its codes
 // prefixed BULK and goes to the Bulk warehouse, as the Excel step used to do
@@ -4633,15 +4635,22 @@ function fabMoney(v, cur, d){ return v==null ? '&mdash;' : (cur==='EUR'?'&euro;'
 function poPriceFor(x){ var r=x.row||{}; if(r.supPrice>0) return {price:r.supPrice, src:'supplier'}; if(r.price>0) return {price:r.price, src:'last'}; var fp=(typeof FABRIC_PRICES!=='undefined'&&FABRIC_PRICES[x.code]>0)?FABRIC_PRICES[x.code]:null; return fp ? {price:fp, src:'list'} : {price:'', src:''}; }
 function poLine(acc, orderDate, reqDate, docNo, code, qty, price){
   var bulk=!!PO_BULK_ACCOUNTS[acc], pc=(bulk && !/^BULK/.test(code)) ? 'BULK'+code : code;
-  return ['1','',acc,ukDate(orderDate),ukDate(reqDate),docNo||'','','','1',pc,'',bulk?'Bulk':PO_WAREHOUSE,qty,price,'',pc,'','','','','','','','','','','Despatch Number','','B2B Export Status','N/A','Intercompany Despatch Line ID','','','','','Import','','',''];
+  return ['1','',acc,ukDate(orderDate),ukDate(reqDate),docNo||'','','','1',pc,'',bulk?'Bulk':PO_WAREHOUSE,qty,price,'',pc,'','','','','','','','','',ukDate(reqDate),'Despatch Number','','B2B Export Status','N/A','Intercompany Despatch Line ID','','','','','Import','','',''];
 }
 function ukDate(ds){ var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(ds||''); return m ? m[3]+'/'+m[2]+'/'+m[1] : ''; }
 function addWorkingDays(d, n){ var x=new Date(d.getTime()), left=Math.max(0, Math.round(n||0)); while(left>0){ x.setDate(x.getDate()+1); if(x.getDay()!==0 && x.getDay()!==6) left--; } return x; }
+// The requested date on the purchase order: two weeks on the Friday (Luke,
+// 29 Sep 2026) - the Friday of the week the order is made, or the next
+// Friday when it is made at the weekend, plus fourteen days. An order on
+// Tuesday 29 Sep or Friday 2 Oct is wanted on Friday 16 Oct; one on Monday
+// 5 Oct on Friday 23 Oct. The lead time in working days stays what the
+// stock view uses for days of cover; it is not the date on the order.
+function poRequiredDate(d){ var x=new Date(d.getTime()); x.setHours(12,0,0,0); var dow=x.getDay(); var toFri=(5-dow+7)%7; x.setDate(x.getDate()+toFri+14); return x; }
 function poFileName(acc){ var t=now(); return 'B2B_PO_TIB_'+String(acc||'').replace(/[^A-Za-z0-9]+/g,'')+'_'+d2s(t)+'_'+String(t.getHours()).padStart(2,'0')+String(t.getMinutes()).padStart(2,'0')+'.csv'; }
 function poRows(acc, docNo){
   var t=now(), today=d2s(t);
   return fabOrderLines(acc).filter(function(l){ return l.qty>0; }).map(function(l){
-    var x=l.x, r=x.row||{}, lead=fabLeadFor(r).days, pr=poPriceFor(x), due=d2s(addWorkingDays(t, lead));
+    var x=l.x, r=x.row||{}, lead=fabLeadFor(r).days, pr=poPriceFor(x), due=d2s(poRequiredDate(t));
     return {code:x.code, name:x.name||'', qty:l.qty, price:pr.price, priceSrc:pr.src, due:due, lead:lead, row:poLine(acc, today, due, docNo, x.code, l.qty, pr.price)};
   });
 }

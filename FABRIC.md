@@ -490,8 +490,12 @@ reference typed when the file is made as the supplier document number on
 every line, line type 1, the product code (also as StockItem), the
 warehouse, quantity and unit price, the three analysis code names the
 routine expects with *B2B Export Status* N/A, OrderOriginator *Import*, and
-every other column blank. The requested date is today plus the supplier's
-lead time in working days; the unit price is Sage's cost per metre off the
+every other column blank. The requested date is **two weeks on the
+Friday**: the Friday of the week the order is made plus fourteen days, so an
+order on Tuesday 29 Sep or Friday 2 Oct is wanted on Friday 16 Oct (the
+first live test left it to Sage, which put 8 Dec on a 29 Sep order; the date
+now goes on the order and on every line). The supplier's lead time in
+working days stays what the stock view uses for days of cover. The unit price is Sage's cost per metre off the
 stock sheet; fabric goes to the Home warehouse. A garment supplier listed
 in `PO_BULK_ACCOUNTS` (Clockwork, CLO003) would have its codes prefixed
 BULK and go to the Bulk warehouse, which is what the Excel step did by hand
