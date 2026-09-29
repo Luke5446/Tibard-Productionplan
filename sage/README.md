@@ -398,6 +398,32 @@ orders:
   On an older sheet without column N a gap in the line sequence is treated as
   a garment the sheet cannot show, and the note after it is left unattached
   and counted in the paste summary rather than given to the wrong works order.
+- **Shared logo lines** (the EMB manager, 29 Sep 2026). On a big order sales
+  put the names and positions directly under each product line, one line per
+  name with that name's quantity, and the logos every jacket carries once -
+  at the top of the order or at the bottom - with the quantity of the whole
+  batch. By line order such a line sits under one garment (the last one, or
+  a stock-held line the sheet does not show) and would print on that works
+  order alone. So a logo line is treated as **shared** when its quantity is
+  more than the garment it sits under (or more than one, when that garment is
+  not on the sheet), it does not read like a name line (`2 - 42" - Rees
+  Smith`), and its quantity fits, within one or 10%, the garments it would
+  cover: consecutive shared lines form a group, a group with garments above
+  it covers those garments back to the previous group, a group with none
+  above covers the garments below it as far as the next such group. Order
+  116105 has four logos at the top and two at the bottom, both covering the
+  same 31 jackets, and a second block of eleven other garments with lines of
+  its own that never reach the jackets. Each works order prints the shared
+  logos first, then its own names. A logo whose garment left the sheet
+  between pastes stays that garment's, as before.
+- A stock style set up through the costing app (a navy long-length Oxford,
+  brand type None) counts as a stock style for this: its embroidery is what
+  sales put on the order. A record with its own branding keeps its own.
+- The **Embroidery tab** lists every live works order with embroidery (and
+  completed ones from the last 60 days on request), found by works order or
+  sales order number, product code, customer or the words on a logo line,
+  with the lines as plain text and *copy* buttons - one line, or the whole
+  works order - for the embroidery software.
   A note whose garment has left the sheet (despatched) stays with that garment. `LOGOAPPLICATION` is a customer logo, `TEXTAPPLICATION`
   a name or initials, `LOGOORIGINATION` the origination charge, and free text
   is a note. `HANDLINGCHARGE` and other charges are not branding and are

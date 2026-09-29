@@ -285,6 +285,7 @@ body.planner-mode .planner-wrap{display:block}
 .fab-stk .sm-sub{color:#374151}
 .fab-stk .fab-num{font-weight:600}
 .fab-stk tr:last-child td{border-bottom:0}
+.emb-line{display:flex;align-items:flex-start;gap:6px;padding:2px 0;border-bottom:1px dotted #e5e7eb}.emb-line:last-of-type{border-bottom:0}.emb-txt{flex:1;font-size:12.5px;user-select:all}
 .sm-ref-s{font-weight:700;color:#7A1F3D;font-size:12px;white-space:nowrap}
 .sm-ref-s.oh{color:#1f6b4a}
 .sm-sub{font-size:10.5px;color:#6b7280;margin-top:1px}
@@ -393,6 +394,7 @@ tr.fab-done td{color:#6b7280}
   <button id="tabSpecial" onclick="smShowTab('special')">&#9986; Special Makes<span class="cnt" id="smTabCount">0</span></button>
   <button id="tabKpi" onclick="smShowTab('kpi')">&#128202; KPIs</button>
   <button id="tabFabric" onclick="smShowTab('fabric')">&#129525; Fabric<span class="cnt" id="fabTabCount" style="display:none">0</span></button>
+  <button id="tabEmb" onclick="smShowTab('emb')">&#129697; Embroidery<span class="cnt" id="embTabCount" style="display:none">0</span></button>
 </nav>
 
 <div class="viewer-banner">&#128065; Read-only view of the production buffer plan published by the production team. Tap any row for its stock runway. <span id="bannerDate" style="font-weight:700"></span></div>
@@ -600,6 +602,10 @@ tr.fab-done td{color:#6b7280}
   <div id="kpiView" class="hidden">
     <div id="kpiBody"></div>
     <div id="kpiTip" class="kpi-tip" hidden></div>
+  </div>
+
+  <div id="embView" class="hidden">
+    <div id="embBody"></div>
   </div>
 
   <div id="fabView" class="hidden">
@@ -1866,6 +1872,7 @@ function renderCompleted(){
   list.sort(function(a,b){ return (b.completed||'').localeCompare(a.completed||''); });
   document.getElementById('completedCount').textContent=completedWOs.length+' completed line(s)';
   if(typeof fabBadge==='function') fabBadge();
+  if(typeof embBadge==='function') embBadge();
   document.getElementById('completedSub').textContent=completedWOs.length+' completed — searchable production history';
   if(!list.length){
     body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:#6b7280">'+(completedWOs.length?'No matches':'No completed works orders yet')+'</td></tr>';
@@ -2689,7 +2696,10 @@ function smPrefix(c){ return c.indexOf('OLIVER')>=0 ? 'OH' : 'TIB'; }
 function smIsOH(c){ return (c||'').indexOf('OLIVER')>=0; }
 
 function smShowTab(which){
-  var sp = which==='special', kpi = which==='kpi', fab = which==='fabric', buf = !sp && !kpi && !fab;
+  var sp = which==='special', kpi = which==='kpi', fab = which==='fabric', emb = which==='emb', buf = !sp && !kpi && !fab && !emb;
+  var te=document.getElementById('tabEmb'); if(te) te.classList.toggle('on', emb);
+  var ev=document.getElementById('embView'); if(ev) ev.classList.toggle('hidden', !emb);
+  if(emb) embRender();
   document.getElementById('tabBuffer').classList.toggle('on', buf);
   document.getElementById('tabSpecial').classList.toggle('on', sp);
   var tk=document.getElementById('tabKpi'); if(tk) tk.classList.toggle('on', kpi);
@@ -2889,7 +2899,7 @@ function smCreate(key){
 // leaves WOs once completed, so without this the monthly history would only
 // ever show what happens to be live.
 function smLog(o, ref, part){
-  smMade.push({key:o.key, ref:ref, part:part, code:o.code, desc:o.desc,
+  smMade.push({key:o.key, ref:ref, part:part, code:o.code, desc:o.desc, seq:o.seq,
                qty:smTake0(o), ordered:o.qty,
                so:o.so, company:o.company, customer:o.customer,
                promised:o.promised, seenAt:o.seenAt, raisedAt:d2s(now())});
@@ -2975,7 +2985,7 @@ function smCreateAllShown(){
 }
 
 function smAfterChange(){
-  smAttachNotes();
+  smAttachNotes(); embBadge();
   recalcWOs(); recalcQtys(); saveState();
   if(rows.length){ updateStats(); renderTable(); }
   renderWOCards(); refreshWOModal(); smRender();
@@ -3043,12 +3053,73 @@ function smKeepNotes(lines){
     });
     // a note typed above the first garment belongs to that garment
     out.forEach(function(n){ if(n.forKey==null && !n.orphan && first) n.forKey=first.key; });
+    smSharedNotes(ls, out, prev, here);
     if(out.length) smNotes[k]=out; else delete smNotes[k];
     // a note whose garment is one the sheet never shows (stock held, bought
     // in) is kept, but it will never print here - not a loss, not a job
     out.forEach(function(n){ if(n.forKey && (here[n.forKey] || prev[n.key])) kept++; else if(!n.forKey) lost++; });
   });
   return {kept:kept, lost:lost};
+}
+// ── shared logo lines ────────────────────────────────────────────────────
+// How sales enter a big order (the EMB manager, 29 Sep 2026): the names and
+// their positions go directly under each product line, one line per name
+// with that name's quantity; then, when every jacket carries the same logos,
+// ONE logo line per logo at the bottom of the order (or the top), with the
+// quantity of the whole batch - so it sits under the last garment by line
+// order and would print on that one works order alone. Such a line is
+// "shared": it belongs to every garment in its block.
+//   - A note is shared when its quantity is more than the garment it sits
+//     under (or, when that garment is not on the sheet, more than one) and
+//     it does not read like a name line ("2 - 42" - Rees Smith ...").
+//   - Consecutive shared notes form a group. A group with garments above it
+//     since the previous group covers those garments (a bottom group); a
+//     group with none above covers the garments below it as far as the next
+//     bottom group (a top group). Order 116105 has both: four logos at the
+//     top and two at the bottom, both covering the same 31 jackets, and a
+//     second block of eleven other garments with its own three lines.
+// Each shared note carries covers:[fromSeq,toSeq]; smLogoFor gives it to
+// every works order whose line sequence falls inside.
+function smNameLine(desc){ return /^\s*\d+\s*-\s*\d+\s*"?\s*-/.test(desc||''); }
+function smSharedNotes(ls, out, prev, here){
+  var gq={}; ls.forEach(function(o){ if(o.cat.indexOf('NOTE')!==0) gq[o.key]=o.qty||0; });
+  var byKey={}; out.forEach(function(n){ byKey[n.key]=n; });
+  out.forEach(function(n){
+    delete n.shared; delete n.covers;
+    var q=n.qty||0; if(q<=1 || smNameLine(n.desc)) return;
+    if(prev[n.key] && !here[prev[n.key]]) return;            // its garment has left the sheet: it stays that garment's
+    var aq=(n.forKey && gq[n.forKey]!=null) ? gq[n.forKey] : null;
+    if(aq!=null && q<=aq) return;                            // no more than the garment it sits under: that garment's own
+    n.shared=true;
+  });
+  // group consecutive shared notes and give each group its block; a note
+  // whose quantity does not fit the block it would cover (within one, or
+  // 10%) is not shared after all - a stock-held garment's own logo, most
+  // likely - so drop it and group again
+  for(var pass=0; pass<2; pass++){
+    var groups=[], cur=null, prevEnd=0, garmentsSince=0;
+    ls.forEach(function(o){
+      var n=(o.cat.indexOf('NOTE')===0) ? byKey[o.key] : null;
+      if(n && n.shared){
+        if(cur && cur.open){ cur.notes.push(n); cur.last=o.seq; return; }
+        cur={notes:[n], first:o.seq, last:o.seq, open:true, top:garmentsSince===0, from:prevEnd+1}; groups.push(cur); return;
+      }
+      if(cur && cur.open){ cur.open=false; prevEnd=cur.last; garmentsSince=0; }
+      if(!n) garmentsSince++;
+    });
+    if(cur && cur.open){ cur.open=false; }
+    var changed=false;
+    groups.forEach(function(g,i){
+      var covers;
+      if(!g.top) covers=[g.from, g.first-1];
+      else { var next=null; for(var j=i+1;j<groups.length;j++){ if(!groups[j].top){ next=groups[j]; break; } } covers=[g.last+1, next ? next.first-1 : 999999]; }
+      var sum=0; ls.forEach(function(o){ if(o.cat.indexOf('NOTE')!==0 && o.seq>=covers[0] && o.seq<=covers[1]) sum+=o.qty||0; });
+      g.notes.forEach(function(n){ var q=n.qty||0;
+        if(!sum || Math.abs(q-sum)>Math.max(1, 0.1*sum)){ delete n.shared; delete n.covers; changed=true; }
+        else n.covers=covers; });
+    });
+    if(!changed) break;
+  }
 }
 // Is this a stock style, at any size? OH: any style in the works order data
 // (the range, as size templates - a 60" matches the same template as a 40").
@@ -3069,7 +3140,12 @@ function smIsStockStyle(code){
        // an OH length variant with no template of its own (a 64" long black
        // Cumbria) is still the Cumbria: try again without the length letter
        if(!hit){ var lm=c.match(/^(.*\d{2})(LS|L|S)$/); if(lm) hit=styleForCode(lm[1]); }
-       if(hit && STYLE_MASTER.styles.some(function(st){ return (st.code||'').toUpperCase()===(hit.style.code||'').toUpperCase(); })) return true; }catch(e){}
+       if(hit && STYLE_MASTER.styles.some(function(st){ return (st.code||'').toUpperCase()===(hit.style.code||'').toUpperCase(); })) return true;
+       // a record from the costing app with no branding of its own (a navy
+       // long-length Oxford set up there, brand type None) is a stock style
+       // too: its embroidery is whatever sales put on the order. A record
+       // with its own branding (Rick Stein) carries its logo itself.
+       if(hit && (!hit.style.brandType || hit.style.brandType==='None') && !hit.style.logoImg) return true; }catch(e){}
   var f=smStyleFamily(c);
   for(var i=0;i<rows.length;i++){ var rc=(rows[i].code||'').toUpperCase(); if(rc===c) return true; if(f && smStyleFamily(rc)===f) return true; }
   return false;
@@ -3078,14 +3154,80 @@ function smIsStockStyle(code){
 // line, and only when the garment is a stock style.
 function smLogoFor(sm, code){
   if(!sm || !sm.lineKey || !smIsStockStyle(code)) return [];
-  return (smNotes[smSoKey(sm)]||[]).filter(function(n){ return n.forKey===sm.lineKey; });
+  var seq=sm.seq;
+  var all=(smNotes[smSoKey(sm)]||[]);
+  var shared=all.filter(function(n){ return n.shared && n.covers && seq!=null && seq>=n.covers[0] && seq<=n.covers[1]; });
+  var own=all.filter(function(n){ return n.forKey===sm.lineKey && !(n.shared && n.covers); });
+  return shared.concat(own);   // the logos every jacket carries first, then this line's own names
 }
+// The logo and text lines as plain text, one per line, for the embroidery
+// team to paste into their machine software without retyping.
+function smLogoPlain(wo){ return smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code).map(function(n){ return (n.qty?n.qty+' x ':'')+n.desc; }).join('\n'); }
 function smLogoText(wo){ return smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code).map(function(n){ return smNoteLabel(n)+' '+n.desc; }).join(' '); }
 function smLogoHtml(wo, cls){
   return smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code).map(function(n){
     return '<div class="'+(cls||'sm-note')+'">&#129525; <strong>'+esc(smNoteLabel(n))+(n.qty?' &times; '+n.qty:'')+'</strong> '+esc(n.desc)+'</div>'; }).join('');
 }
 function smAttachNotes(){ /* logo lines are looked up live from smNotes - nothing to copy */ }
+
+// ── the Embroidery tab ───────────────────────────────────────────────────
+// Every works order with embroidery on it, in one place, with the logo and
+// text lines as plain text the embroidery team can copy straight into their
+// machine software - one line, or the lot for a works order - instead of
+// opening each works order and retyping (and misspelling) names. Live
+// works orders always; completed ones from the last 60 days on request,
+// found through the raised history. A search box finds an order by its
+// works order or sales order number, product code, customer or the words
+// on a logo line.
+var embQ='', embDone=false;
+function embRows(){
+  var rows=[];
+  WOs.forEach(function(wo){ if(!wo.sm) return; var code=wo.items[0]&&wo.items[0].code, logo=smLogoFor(wo.sm, code); var hit=styleForCode(code); var st=hit&&hit.style;
+    var brand=st && st.brandType && st.brandType!=='None' ? (st.brandType+(st.brandPlace?': '+st.brandPlace:'')) : '';
+    if(!logo.length && !brand) return;
+    rows.push({ref:wo.ref, code:code, qty:wo.items[0]?wo.items[0].qty:0, customer:smCustomerFor(wo.sm, code), so:wo.sm.so, due:wo.due, state:wo.printed?'printed':'live', logo:logo, brand:brand, sm:wo.sm}); });
+  if(embDone){
+    var since=new Date(now().getTime()); since.setDate(since.getDate()-60); var s60=d2s(since);
+    completedWOs.forEach(function(c){ if(!c.sm || !c.completed || c.completed<s60) return;
+      var m=null; smMade.forEach(function(x){ if(x.ref===c.ref && x.code===c.code) m=x; }); if(!m) return;
+      var sm={lineKey:m.key, so:m.so, company:m.company, seq:m.seq, customer:m.customer, custName:c.custName||m.customer};
+      var logo=smLogoFor(sm, c.code); if(!logo.length) return;
+      rows.push({ref:c.ref, code:c.code, qty:c.qty, customer:m.customer||'', so:m.so, due:c.due, state:'completed '+fmtD(c.completed), logo:logo, brand:'', sm:sm}); });
+  }
+  rows.sort(function(a,b){ return (a.due||'')<(b.due||'')?-1:(a.due||'')>(b.due||'')?1:(a.ref<b.ref?-1:1); });
+  return rows;
+}
+function embBadge(){ var el=document.getElementById('embTabCount'); if(!el) return; var n=0; try{ n=embRows().filter(function(r){ return r.state!=='completed'; }).length; }catch(e){} el.textContent=n; el.style.display=n?'':'none'; }
+function embRender(){
+  var el=document.getElementById('embBody'); if(!el) return;
+  var rows=embRows(), q=embQ.trim();
+  if(q) rows=rows.filter(function(r){ return smMatch(r.ref+' '+r.so+' '+r.code+' '+r.customer+' '+(r.logo.map(function(n){ return n.desc; }).join(' '))+' '+r.brand, q); });
+  var h='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    +'<h3 style="margin:0">&#129697; Embroidery on works orders</h3>'
+    +'<input type="text" id="embQ" value="'+esc(embQ)+'" placeholder="&#128269; works order, sales order, product code, customer or logo wording" oninput="embQ=this.value; embRender()" style="flex:1;min-width:260px;font-size:13px;padding:6px 9px;border:1px solid #c8d0df;border-radius:6px">'
+    +'<label style="font-size:12px;color:#374151;display:flex;gap:5px;align-items:center"><input type="checkbox" '+(embDone?'checked':'')+' onchange="embDone=this.checked; embRender()"> include completed (last 60 days)</label></div>'
+    +'<div class="sub">The logo and text lines from the sales order, as printed on the works order. <b>Copy</b> puts one line on the clipboard; <b>Copy all</b> the whole works order, one line each - paste straight into the embroidery software.</div></div>';
+  if(!rows.length){ h+='<div class="sm-empty" style="padding:18px">'+(q?'Nothing with embroidery matches "'+esc(q)+'".':'No live works order carries embroidery.')+'</div>'; el.innerHTML=h; return; }
+  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk emb-tbl"><thead><tr><th>Works order</th><th>Product</th><th>Customer</th><th>Due</th><th>Embroidery</th></tr></thead><tbody>'
+    +rows.map(function(r,i){
+      var text=r.logo.map(function(n){ return (n.qty?n.qty+' x ':'')+n.desc; }).join('\n');
+      return '<tr><td><strong>'+esc(r.ref)+'</strong><div class="sm-sub">SO '+esc((r.so||'').replace(/^0+/,''))+' &middot; '+esc(r.state)+'</div></td>'
+        +'<td><span style="font-family:monospace;font-size:11px">'+esc(r.code)+'</span> &times; '+r.qty+'</td>'
+        +'<td>'+esc(r.customer||'')+'</td><td>'+esc(fmtD(r.due))+'</td>'
+        +'<td>'+(r.brand?'<div class="sm-sub" style="margin-bottom:4px"><b>Record:</b> '+esc(r.brand)+'</div>':'')
+          +r.logo.map(function(n,j){ return '<div class="emb-line"><span class="emb-txt" id="emb-'+i+'-'+j+'">'+(n.qty?'<b>'+n.qty+' &times;</b> ':'')+esc(n.desc)+'</span> <button class="btn emb-copy" style="font-size:10px;padding:1px 7px" onclick="embCopy(this, '+JSON.stringify((n.qty?n.qty+' x ':'')+n.desc).replace(/"/g,'&quot;')+')" title="copy this line">copy</button></div>'; }).join('')
+          +(r.logo.length>1?'<div style="margin-top:4px"><button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="embCopy(this, '+JSON.stringify(text).replace(/"/g,'&quot;')+')">&#128203; Copy all '+r.logo.length+' lines</button></div>':'')
+        +'</td></tr>'; }).join('')
+    +'</tbody></table></div>';
+  el.innerHTML=h;
+  var inp=document.getElementById('embQ'); if(inp && q){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+}
+function embCopy(btn, text){
+  var done=function(){ var was=btn.textContent; btn.textContent='copied'; setTimeout(function(){ btn.textContent=was; }, 1200); };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done, function(){ embCopyFallback(text); done(); }); }
+  else { embCopyFallback(text); done(); }
+}
+function embCopyFallback(text){ var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta); }
 
 // ── review queue helpers: tick + editable quantity, mirroring the buffer ───
 // Each pending line carries `take` (units to make, defaulting to the ordered
