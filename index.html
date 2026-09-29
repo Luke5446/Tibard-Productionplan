@@ -285,7 +285,7 @@ body.planner-mode .planner-wrap{display:block}
 .fab-stk .sm-sub{color:#374151}
 .fab-stk .fab-num{font-weight:600}
 .fab-stk tr:last-child td{border-bottom:0}
-.emb-line{display:flex;align-items:flex-start;gap:6px;padding:2px 0;border-bottom:1px dotted #e5e7eb}.emb-line:last-of-type{border-bottom:0}.emb-txt{flex:1;font-size:12.5px;user-select:all}
+.emb-line{padding:3px 0;border-bottom:1px dotted #e5e7eb}.emb-line:last-of-type{border-bottom:0}.emb-txt{font-size:13.5px;user-select:all;cursor:text}.emb-logos{font-size:10.5px;color:#6b7280;margin-top:5px}
 .sm-ref-s{font-weight:700;color:#7A1F3D;font-size:12px;white-space:nowrap}
 .sm-ref-s.oh{color:#1f6b4a}
 .sm-sub{font-size:10.5px;color:#6b7280;margin-top:1px}
@@ -1625,7 +1625,7 @@ function printWOP(ref, code, qty, due, sm){
     /* A stock style's embroidery is whatever sales put on the order: the logo
        and text lines entered under this garment, printed right here where the
        machinist reads Embroidery: Yes. */
-    +logo.map(function(n){ return '<tr><th>'+e(smNoteLabel(n))+(n.qty?' &times; '+n.qty:'')+'</th><td colspan="3" style="background:#FFF8E1;font-weight:700">'+e(n.desc)+'</td></tr>'; }).join('')
+    +logo.map(function(n){ var q=smNoteQty(n); return '<tr><th>'+e(smNoteLabel(n))+(q?' &middot; '+e(q):'')+'</th><td colspan="3" style="background:#FFF8E1;font-weight:700">'+e(n.desc)+'</td></tr>'; }).join('')
     /* Always shown on a special make, even when Sage has left it blank - an
        empty row asks the question, a missing row hides it. */
     +(sm
@@ -3152,82 +3152,104 @@ function smIsStockStyle(code){
 }
 // The logo lines for one works order: those anchored to its sales order
 // line, and only when the garment is a stock style.
-function smLogoFor(sm, code){
+function smLogoFor(sm, code, withOff){
   if(!sm || !sm.lineKey || !smIsStockStyle(code)) return [];
-  var seq=sm.seq;
+  var seq=sm.seq, off=sm.logoOff||[];
   var all=(smNotes[smSoKey(sm)]||[]);
   var shared=all.filter(function(n){ return n.shared && n.covers && seq!=null && seq>=n.covers[0] && seq<=n.covers[1]; });
   var own=all.filter(function(n){ return n.forKey===sm.lineKey && !(n.shared && n.covers); });
-  return shared.concat(own);   // the logos every jacket carries first, then this line's own names
+  var list=shared.concat(own);   // the logos every jacket carries first, then this line's own names
+  return withOff ? list : list.filter(function(n){ return off.indexOf(n.key)<0; });
 }
+// A shared logo is printed once per garment, never with the batch quantity
+// the sales line carries (30 on a line is the order's thirty jackets, not
+// thirty logos on each): its quantity reads "each garment". A line of the
+// garment's own keeps its quantity - "2 x" against a name is two jackets
+// with that name.
+function smNoteQty(n){ return n.shared ? 'each garment' : (n.qty ? n.qty+' \u00d7' : ''); }
+// The PM can take a shared logo off one works order - the left-chest logo
+// meant for the white jackets does not go on the navy ones - from the card
+// or the live list; the choice is kept on the works order and published.
+function smLogoToggle(ref, key){
+  if(!IS_EDITOR) return;
+  var wo=WOs.filter(function(w){ return w.ref===ref; })[0]; if(!wo || !wo.sm) return;
+  var off=wo.sm.logoOff||[], i=off.indexOf(key);
+  if(i>=0) off.splice(i,1); else off.push(key);
+  wo.sm.logoOff=off; saveState(); renderWOCards(); refreshWOModal(); smRender();
+}
+// Which lines are words to be embroidered (a name, a title, a text line)
+// and which are logos: the embroidery team copies the words, the logos
+// they already hold as artwork.
+function smNoteIsText(n){ return n.kind==='text' || smNameLine(n.desc) || /\btext\b|\bname/i.test(n.desc||''); }
 // The logo and text lines as plain text, one per line, for the embroidery
 // team to paste into their machine software without retyping.
 function smLogoPlain(wo){ return smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code).map(function(n){ return (n.qty?n.qty+' x ':'')+n.desc; }).join('\n'); }
 function smLogoText(wo){ return smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code).map(function(n){ return smNoteLabel(n)+' '+n.desc; }).join(' '); }
 function smLogoHtml(wo, cls){
-  return smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code).map(function(n){
-    return '<div class="'+(cls||'sm-note')+'">&#129525; <strong>'+esc(smNoteLabel(n))+(n.qty?' &times; '+n.qty:'')+'</strong> '+esc(n.desc)+'</div>'; }).join('');
+  var off=(wo.sm&&wo.sm.logoOff)||[], ed=IS_EDITOR;
+  return smLogoFor(wo.sm, wo.items[0]&&wo.items[0].code, true).map(function(n){
+    var isOff=off.indexOf(n.key)>=0, q=smNoteQty(n);
+    return '<div class="'+(cls||'sm-note')+'"'+(isOff?' style="opacity:.5;text-decoration:line-through"':'')+'>&#129525; <strong>'+esc(smNoteLabel(n))+(q?' &middot; '+esc(q):'')+'</strong> '+esc(n.desc)
+      +(ed && n.shared ? ' <a href="#" onclick="smLogoToggle(\''+esc(wo.ref)+'\',\''+esc(n.key)+'\');return false" style="text-decoration:none;font-size:10px;margin-left:4px" title="'+(isOff?'this logo is off this works order - put it back':'a shared logo the order lists for every garment - take it off this works order')+'">'+(isOff?'&#8634; put back':'&#10005; not this one')+'</a>':'')
+      +'</div>'; }).join('');
 }
 function smAttachNotes(){ /* logo lines are looked up live from smNotes - nothing to copy */ }
 
 // ── the Embroidery tab ───────────────────────────────────────────────────
-// Every works order with embroidery on it, in one place, with the logo and
-// text lines as plain text the embroidery team can copy straight into their
-// machine software - one line, or the lot for a works order - instead of
-// opening each works order and retyping (and misspelling) names. Live
-// works orders always; completed ones from the last 60 days on request,
-// found through the raised history. A search box finds an order by its
-// works order or sales order number, product code, customer or the words
-// on a logo line.
+// For the embroidery team: the WORDS they have to embroider - names, titles,
+// text lines - from every works order with embroidery, as selectable text
+// they highlight and copy into their machine software, so nothing is retyped
+// or misspelt. Logos are listed underneath in small type for context only;
+// the team hold those as artwork. Nothing is shown until something is
+// searched for (a works order or sales order number, a product code, a
+// customer, a name or a word on a line); live works orders only, with
+// completed ones from the last 30 days on request.
 var embQ='', embDone=false;
 function embRows(){
   var rows=[];
+  var push=function(ref, code, qty, customer, so, due, state, logo, brand, sm){
+    rows.push({ref:ref, code:code, qty:qty, customer:customer, so:so, due:due, state:state, logo:logo, brand:brand, sm:sm,
+      words:logo.filter(smNoteIsText), logos:logo.filter(function(n){ return !smNoteIsText(n); })}); };
   WOs.forEach(function(wo){ if(!wo.sm) return; var code=wo.items[0]&&wo.items[0].code, logo=smLogoFor(wo.sm, code); var hit=styleForCode(code); var st=hit&&hit.style;
     var brand=st && st.brandType && st.brandType!=='None' ? (st.brandType+(st.brandPlace?': '+st.brandPlace:'')) : '';
     if(!logo.length && !brand) return;
-    rows.push({ref:wo.ref, code:code, qty:wo.items[0]?wo.items[0].qty:0, customer:smCustomerFor(wo.sm, code), so:wo.sm.so, due:wo.due, state:wo.printed?'printed':'live', logo:logo, brand:brand, sm:wo.sm}); });
+    push(wo.ref, code, wo.items[0]?wo.items[0].qty:0, smCustomerFor(wo.sm, code), wo.sm.so, wo.due, wo.printed?'printed':'live', logo, brand, wo.sm); });
   if(embDone){
-    var since=new Date(now().getTime()); since.setDate(since.getDate()-60); var s60=d2s(since);
-    completedWOs.forEach(function(c){ if(!c.sm || !c.completed || c.completed<s60) return;
+    var since=new Date(now().getTime()); since.setDate(since.getDate()-30); var s30=d2s(since);
+    completedWOs.forEach(function(c){ if(!c.sm || !c.completed || c.completed<s30) return;
       var m=null; smMade.forEach(function(x){ if(x.ref===c.ref && x.code===c.code) m=x; }); if(!m) return;
-      var sm={lineKey:m.key, so:m.so, company:m.company, seq:m.seq, customer:m.customer, custName:c.custName||m.customer};
+      var sm={lineKey:m.key, so:m.so, company:m.company, seq:m.seq, customer:m.customer, custName:m.customer};
       var logo=smLogoFor(sm, c.code); if(!logo.length) return;
-      rows.push({ref:c.ref, code:c.code, qty:c.qty, customer:m.customer||'', so:m.so, due:c.due, state:'completed '+fmtD(c.completed), logo:logo, brand:'', sm:sm}); });
+      push(c.ref, c.code, c.qty, m.customer||'', m.so, c.due, 'completed '+fmtD(c.completed), logo, '', sm); });
   }
   rows.sort(function(a,b){ return (a.due||'')<(b.due||'')?-1:(a.due||'')>(b.due||'')?1:(a.ref<b.ref?-1:1); });
   return rows;
 }
-function embBadge(){ var el=document.getElementById('embTabCount'); if(!el) return; var n=0; try{ n=embRows().filter(function(r){ return r.state!=='completed'; }).length; }catch(e){} el.textContent=n; el.style.display=n?'':'none'; }
+function embBadge(){ var el=document.getElementById('embTabCount'); if(!el) return; var n=0; try{ n=embRows().length; }catch(e){} el.textContent=n; el.style.display=n?'':'none'; }
 function embRender(){
   var el=document.getElementById('embBody'); if(!el) return;
-  var rows=embRows(), q=embQ.trim();
-  if(q) rows=rows.filter(function(r){ return smMatch(r.ref+' '+r.so+' '+r.code+' '+r.customer+' '+(r.logo.map(function(n){ return n.desc; }).join(' '))+' '+r.brand, q); });
+  var q=embQ.trim();
   var h='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
-    +'<h3 style="margin:0">&#129697; Embroidery on works orders</h3>'
-    +'<input type="text" id="embQ" value="'+esc(embQ)+'" placeholder="&#128269; works order, sales order, product code, customer or logo wording" oninput="embQ=this.value; embRender()" style="flex:1;min-width:260px;font-size:13px;padding:6px 9px;border:1px solid #c8d0df;border-radius:6px">'
-    +'<label style="font-size:12px;color:#374151;display:flex;gap:5px;align-items:center"><input type="checkbox" '+(embDone?'checked':'')+' onchange="embDone=this.checked; embRender()"> include completed (last 60 days)</label></div>'
-    +'<div class="sub">The logo and text lines from the sales order, as printed on the works order. <b>Copy</b> puts one line on the clipboard; <b>Copy all</b> the whole works order, one line each - paste straight into the embroidery software.</div></div>';
-  if(!rows.length){ h+='<div class="sm-empty" style="padding:18px">'+(q?'Nothing with embroidery matches "'+esc(q)+'".':'No live works order carries embroidery.')+'</div>'; el.innerHTML=h; return; }
-  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk emb-tbl"><thead><tr><th>Works order</th><th>Product</th><th>Customer</th><th>Due</th><th>Embroidery</th></tr></thead><tbody>'
-    +rows.map(function(r,i){
-      var text=r.logo.map(function(n){ return (n.qty?n.qty+' x ':'')+n.desc; }).join('\n');
+    +'<h3 style="margin:0">&#129697; Embroidery</h3>'
+    +'<input type="text" id="embQ" value="'+esc(embQ)+'" placeholder="&#128269; works order, sales order, product code, customer, name or a word on a line" oninput="embQ=this.value; embRender()" style="flex:1;min-width:280px;font-size:13px;padding:6px 9px;border:1px solid #c8d0df;border-radius:6px">'
+    +'<label style="font-size:12px;color:#374151;display:flex;gap:5px;align-items:center"><input type="checkbox" '+(embDone?'checked':'')+' onchange="embDone=this.checked; embRender()"> include completed (last 30 days)</label></div>'
+    +'<div class="sub">The words to embroider on each works order - names, titles, text lines - as the sales order has them. Highlight and copy them into the embroidery software; the logos are listed underneath for reference.</div></div>';
+  if(!q){ h+='<div class="sm-empty" style="padding:18px">Search for a works order, a sales order number, a product code, a customer or a name to see its embroidery.</div>'; el.innerHTML=h; return; }
+  var rows=embRows().filter(function(r){ return smMatch(r.ref+' '+r.so+' '+r.code+' '+r.customer+' '+(r.logo.map(function(n){ return n.desc; }).join(' '))+' '+r.brand, q); });
+  if(!rows.length){ h+='<div class="sm-empty" style="padding:18px">Nothing with embroidery matches "'+esc(q)+'".</div>'; el.innerHTML=h; return; }
+  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk emb-tbl"><thead><tr><th>Works order</th><th>Product</th><th>Customer</th><th>Due</th><th>Words to embroider</th></tr></thead><tbody>'
+    +rows.map(function(r){
       return '<tr><td><strong>'+esc(r.ref)+'</strong><div class="sm-sub">SO '+esc((r.so||'').replace(/^0+/,''))+' &middot; '+esc(r.state)+'</div></td>'
         +'<td><span style="font-family:monospace;font-size:11px">'+esc(r.code)+'</span> &times; '+r.qty+'</td>'
         +'<td>'+esc(r.customer||'')+'</td><td>'+esc(fmtD(r.due))+'</td>'
-        +'<td>'+(r.brand?'<div class="sm-sub" style="margin-bottom:4px"><b>Record:</b> '+esc(r.brand)+'</div>':'')
-          +r.logo.map(function(n,j){ return '<div class="emb-line"><span class="emb-txt" id="emb-'+i+'-'+j+'">'+(n.qty?'<b>'+n.qty+' &times;</b> ':'')+esc(n.desc)+'</span> <button class="btn emb-copy" style="font-size:10px;padding:1px 7px" onclick="embCopy(this, '+JSON.stringify((n.qty?n.qty+' x ':'')+n.desc).replace(/"/g,'&quot;')+')" title="copy this line">copy</button></div>'; }).join('')
-          +(r.logo.length>1?'<div style="margin-top:4px"><button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="embCopy(this, '+JSON.stringify(text).replace(/"/g,'&quot;')+')">&#128203; Copy all '+r.logo.length+' lines</button></div>':'')
+        +'<td>'+(r.words.length ? r.words.map(function(n){ return '<div class="emb-line"><span class="emb-txt">'+(n.qty&&!n.shared?'<b>'+n.qty+' &times;</b> ':'')+esc(n.desc)+'</span></div>'; }).join('') : '<div class="sm-sub" style="color:#9ca3af">no text lines - logos only</div>')
+          +(r.brand?'<div class="sm-sub" style="margin-top:4px"><b>Record:</b> '+esc(r.brand)+'</div>':'')
+          +(r.logos.length?'<div class="emb-logos">Logos: '+r.logos.map(function(n){ return esc(n.desc); }).join(' &middot; ')+'</div>':'')
         +'</td></tr>'; }).join('')
     +'</tbody></table></div>';
   el.innerHTML=h;
-  var inp=document.getElementById('embQ'); if(inp && q){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+  var inp=document.getElementById('embQ'); if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
 }
-function embCopy(btn, text){
-  var done=function(){ var was=btn.textContent; btn.textContent='copied'; setTimeout(function(){ btn.textContent=was; }, 1200); };
-  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done, function(){ embCopyFallback(text); done(); }); }
-  else { embCopyFallback(text); done(); }
-}
-function embCopyFallback(text){ var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta); }
 
 // ── review queue helpers: tick + editable quantity, mirroring the buffer ───
 // Each pending line carries `take` (units to make, defaulting to the ordered
