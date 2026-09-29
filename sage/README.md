@@ -688,10 +688,9 @@ actually wrong.
 
 ### 63-supplier-prices.sql
 
-A one-off probe for the purchase order file: which column of the item-supplier
-record is the supplier's own price and in what currency (Tiajo buy in euros).
-In Power Query open the Fabric Stock query, click the gear next to Source and
-paste the whole file - the SQL text, not the file name - into the SQL
-statement box in place of the stock query; refresh, send the one grid back,
-put the stock query back. Then 60-fabric-stock.sql gets columns O (currency)
-and P (price in it), which the app's Fabric tab already reads.
+The one-off probe that settled the purchase order file's currency (run 29 Sep
+2026): Sage keeps the item-supplier last buying price in the supplier's
+currency, TIA001EU is on the Euro, and the supplier's list price sits beside
+it. 60-fabric-stock.sql carries the answer as columns O, P and Q. Kept for the
+next question of the kind - it serialises whole records as one grid, which is
+what the Excel connection can show.

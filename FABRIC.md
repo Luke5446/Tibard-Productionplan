@@ -496,13 +496,18 @@ in `PO_BULK_ACCOUNTS` (Clockwork, CLO003) would have its codes prefixed
 BULK and go to the Bulk warehouse, which is what the Excel step did by hand
 on the container files. An order under the free-shipping minimum asks
 first. **Currency:** Tiajo buy in euros, and the routine takes the unit
-price in the supplier's currency. Sage's last buying price (column M) is
-what the sheet holds today and nothing on it says which currency that is
-in, so the file takes it and asks first; `sage/63-supplier-prices.sql`, run
-once, shows where Sage keeps the supplier's own price and currency, and then
-60-fabric-stock.sql grows two columns the app already reads - O the
-currency, P the price in it - and the file carries the euro price without
-asking. The panel and the file history show the value in the supplier's
+price in the supplier's currency. `sage/63-supplier-prices.sql` (29 Sep
+2026) settled where Sage keeps it: the item-supplier record's last buying
+price is in the supplier's currency (its base-currency twin is held at 0,
+and the year's order value over quantity matches it), TIA001EU's account is
+on the Euro currency, and the list price sits beside it in the same
+currency. So column M was the euro figure all along; 60-fabric-stock.sql
+now says so with columns O (currency), P (the same last buying price) and
+Q (the supplier's list price), all read by the app - paste A to Q. The
+file carries the last buying price; the order panel shows it per metre with
+the list price beside it where the two differ. A paste of A to N still
+works, and the file then asks once before taking column M.
+The panel and the file history show the value in the supplier's
 currency either way. Every file made is kept with its rows (`fabStock.poFiles`,
 published), listed under the panel with its reference and *download again*;
 the typed metres stay as they are, and the metres show On PO after the

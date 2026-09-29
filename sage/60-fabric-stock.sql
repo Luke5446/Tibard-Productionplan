@@ -16,6 +16,15 @@
      K ReorderLevel  L ReorderQty (the supplier's usual order quantity)
      M CostPerMetre (last buying price)  N LeadDays (as held on the supplier
      record - Sage stores a unit with it; check a known one reads as days)
+     O SupplierCurrency (EUR, GBP, USD - the supplier account's currency)
+     P SupplierPrice (the last buying price, which Sage keeps in the
+       supplier's currency: 63-supplier-prices.sql on 29 Sep 2026 showed
+       LastBaseBuyingPrice held at 0 and OrderValueYTD / OrderQuantityYTD
+       matching LastBuyingPrice, so M and P are the same euro figure for
+       Tiajo - P is there so the purchase order file knows the currency)
+     Q ListPrice (the supplier's list price, same currency, for reference)
+
+   Copy columns A to Q now; an older A to N paste still works.
 
    Column names confirmed against the live schema on 21 Sep 2026 (the grid is
    in 61-fabric-stock-columns.sql's output): WarehouseItem carries the levels
@@ -196,16 +205,25 @@ supplier AS (
     /* the preferred supplier; when none is flagged, the one most recently
        bought from */
     SELECT  s.ItemID, s.SupplierAccountNumber, s.SupplierAccountName,
-            s.SupplierStockCode, s.LastBuyingPrice, s.LeadTime, s.UsualOrderQuantity
+            s.SupplierStockCode, s.LastBuyingPrice, s.LeadTime, s.UsualOrderQuantity,
+            s.Currency, s.ListPrice
     FROM (
         SELECT  sis.ItemID,
                 pl.SupplierAccountNumber, pl.SupplierAccountName,
                 sis.SupplierStockCode, sis.LastBuyingPrice, sis.LeadTime, sis.UsualOrderQuantity,
+                sis.ListPrice,
+                /* the account's currency as a three-letter code: Sage's own
+                   Symbol is a pound sign for sterling, so name the base and
+                   euro currencies outright and use the symbol for the rest */
+                CASE WHEN cu.ThisIsBaseCurrency = 1 THEN 'GBP'
+                     WHEN cu.ThisIsEuroCurrency = 1 THEN 'EUR'
+                     ELSE ISNULL(cu.Symbol,'') END                   AS Currency,
                 ROW_NUMBER() OVER (PARTITION BY sis.ItemID
                                    ORDER BY sis.Preferred DESC,
                                             sis.DateLastOrder DESC) AS rn
         FROM    S200_LIVE.dbo.StockItemSupplier sis
         JOIN    S200_LIVE.dbo.PLSupplierAccount pl ON pl.PLSupplierAccountID = sis.SupplierID
+        LEFT JOIN S200_LIVE.dbo.SYSCurrency      cu ON cu.SYSCurrencyID = pl.SYSCurrencyID
     ) s
     WHERE   s.rn = 1
 )
@@ -224,7 +242,10 @@ SELECT
     CAST(ISNULL(h.ReorderLevel,0) AS decimal(18,2))             AS ReorderLevel,
     CAST(ISNULL(sp.UsualOrderQuantity,0) AS decimal(18,2))      AS ReorderQty,
     CAST(ISNULL(sp.LastBuyingPrice,0)    AS decimal(18,4))      AS CostPerMetre,
-    ISNULL(sp.LeadTime,0)                                       AS LeadDays
+    ISNULL(sp.LeadTime,0)                                       AS LeadDays,
+    ISNULL(sp.Currency,'')                                      AS SupplierCurrency,
+    CAST(ISNULL(sp.LastBuyingPrice,0)    AS decimal(18,4))      AS SupplierPrice,
+    CAST(ISNULL(sp.ListPrice,0)          AS decimal(18,4))      AS ListPrice
 FROM        items i
 LEFT JOIN   home            h  ON h.ItemID  = i.ItemID
 LEFT JOIN   supplier        sp ON sp.ItemID = i.ItemID

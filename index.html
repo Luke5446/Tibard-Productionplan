@@ -4236,10 +4236,12 @@ function fabTogglePaste(){ var p=document.getElementById('fabPastePanel'); p.cla
 // Columns by POSITION, the order 60-fabric-stock.sql emits:
 // 0 FabricCode 1 Description 2 Unit 3 SupplierAccount 4 SupplierName 5 SupplierRef
 // 6 InStock 7 Allocated 8 OnOrder 9 MinLevel 10 ReorderLevel 11 ReorderQty 12 CostPerMetre 13 LeadDays
-// and, once 63-supplier-prices.sql has said where Sage keeps them, two more:
-// 14 SupplierCurrency (EUR, GBP) 15 SupplierPrice - the price in the
-// supplier's own currency, which is what the purchase order file must carry.
-// A 14-column paste still works; the file then falls back to column M.
+// and since 29 Sep 2026 three more: 14 SupplierCurrency (EUR, GBP, USD)
+// 15 SupplierPrice - the last buying price, which Sage keeps in the
+// supplier's currency (63-supplier-prices.sql showed it), so the same figure
+// as M but with its currency known - and 16 ListPrice, the supplier's list
+// price for reference. A 14-column paste still works; the file then falls
+// back to column M and says so.
 function fabParseStock(txt){
   var out={}, n=0, lines=txt.split('\n');
   for(var i=0;i<lines.length;i++){
@@ -4247,7 +4249,7 @@ function fabParseStock(txt){
     var code=(c[0]||'').trim().toUpperCase(); if(!code || code==='FABRICCODE') continue;
     out[code]={ code:code, desc:(c[1]||'').trim(), unit:(c[2]||'').trim(), supAcc:(c[3]||'').trim(), supName:(c[4]||'').trim(), supRef:(c[5]||'').trim(),
       inStock:pn(c[6]), allocated:pn(c[7]), onOrder:pn(c[8]), min:pn(c[9]), reorder:pn(c[10]), reorderQty:pn(c[11]), price:pn(c[12]), lead:pn(c[13]),
-      cur:(c[14]||'').trim().toUpperCase(), supPrice:pn(c[15]) };
+      cur:(c[14]||'').trim().toUpperCase(), supPrice:pn(c[15]), listPrice:pn(c[16]) };
     n++;
   }
   return n ? out : null;
@@ -4658,7 +4660,7 @@ function exportSupplierPO(acc, name){
   if(minOrder && metres<minOrder && !confirm(fabM(metres,0)+' m is under the '+fabM(minOrder,0)+' m free-shipping minimum for '+(name||acc)+'.\n\nMake the purchase order file anyway?')) return;
   var fname=poFileName(acc), value=lines.reduce(function(s,l){ return s+(l.price>0?l.price*l.qty:0); },0), cur=poCurrency(acc);
   var fromSheet=lines.every(function(l){ return l.priceSrc==='supplier'; });
-  if(cur!=='GBP' && !fromSheet && !confirm('The Sage sheet does not yet carry '+(name||acc)+'\'s prices in '+cur+' (columns O and P from 60-fabric-stock.sql), so the file takes Sage\'s last buying price as it stands.\n\nCheck the unit prices in Sage after the import. Make the file?')) return;
+  if(cur!=='GBP' && !fromSheet && !confirm('This paste has no currency column (A to N only), so the file takes Sage\'s last buying price as it stands - Sage keeps it in '+(name||acc)+'\'s currency, '+cur+', so it should be right.\n\nPaste columns A to Q of the current 60-fabric-stock.sql next time and this question goes away. Make the file?')) return;
   var rec={acc:acc, name:name||acc, file:fname, docNo:docNo, cur:cur, priced:fromSheet?'supplier':'last', at:d2s(now()), atTime:String(now().getHours()).padStart(2,'0')+':'+String(now().getMinutes()).padStart(2,'0'),
            metres:Math.round(metres*100)/100, value:Math.round(value*100)/100, lines:lines.map(function(l){ return {code:l.code, name:l.name, qty:l.qty, price:l.price, due:l.due}; }), rows:lines.map(function(l){ return l.row; })};
   fabStock.poFiles=fabStock.poFiles||[]; fabStock.poFiles.unshift(rec);
@@ -4690,7 +4692,8 @@ function fabOrderHtml(acc, name){
   lines=fabSorted(T, lines, {code:function(l){return l.x.code;}, inSage:function(l){return l.x.inSage;}, onOrder:function(l){return l.x.onOrder;}, committed:function(l){return l.x.committed;}, cut:function(l){return l.x.cut;}, free:function(l){return l.x.free;}, after:function(l){return l.x.after;}, min:function(l){return l.x.min;}, order:function(l){return l.x.order;}, qty:function(l){return l.qty;}, cost:function(l){ var p=l.x.row&&l.x.row.price>0?l.x.row.price:0; return p*(l.qty||0); }});
   h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr>'+SH('code','Fabric')+SH('inSage','In Stock',1)+SH('onOrder','On PO',1)+SH('committed','Live WO',1,'metres on live works orders not yet completed')+SH('cut','Not written off',1,'completed, not yet written off')+SH('free','Free Stock',1,'in stock less live WO less not written off')+SH('after','Free + PO',1,'Free Stock plus what is on PO - the figure the suggestion works from')+SH('min','Min',1)+SH('order','Suggested',1,'brings Free + PO back to the minimum')+SH('qty','Order m',1)+SH('cost','&pound;',1)+'</tr></thead><tbody>'
     +lines.map(function(l){ var x=l.x, price=poPriceFor(x).price||null;
-      return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
+      return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div>'
+        +(price?'<div class="sm-sub">'+fabMoney(price,cur,2)+' / m'+(x.row&&x.row.listPrice>0&&Math.abs(x.row.listPrice-price)>0.004?' <span title="the supplier\'s list price in Sage">(list '+fabMoney(x.row.listPrice,cur,2)+')</span>':'')+'</div>':'')+'</td>'
         +'<td class="fab-num">'+(x.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.inSage,1))+'</td>'
         +'<td class="fab-num">'+(x.onOrder?fabM(x.onOrder,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.committed?fabM(x.committed,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
@@ -4705,7 +4708,7 @@ function fabOrderHtml(acc, name){
     +'<td class="fab-num" style="font-weight:700;'+(minOrder&&total<minOrder?'color:#b45309':'')+'">'+fabM(total,0)+(minOrder?' <span style="font-weight:400;color:#6b7280">/ '+fabM(minOrder,0)+'</span>':'')+'</td>'
     +'<td class="fab-num" style="font-weight:700">'+fabMoney(lines.reduce(function(s,l){ var p=poPriceFor(l.x).price; return s+(p>0?p:0)*(l.qty||0); },0),cur,0)+'</td></tr>'
     +'</tbody></table></div>'
-    +(cur!=='GBP' ? '<div class="kpi-note">'+(fromSheet ? 'Prices in '+esc(cur)+', the supplier\'s own from the Sage sheet.' : 'Prices are Sage\'s <b>last buying price</b> as the sheet holds it; '+esc(name||acc)+' buy in <b>'+esc(cur)+'</b> and the sheet does not yet say which currency that figure is in - run <code>sage/63-supplier-prices.sql</code> once, then columns O and P of 60-fabric-stock.sql carry the '+esc(cur)+' price.')+'</div>' : '')
+    +(cur!=='GBP' ? '<div class="kpi-note">'+(fromSheet ? 'Prices in '+esc(cur)+', the supplier\'s own from the Sage sheet.' : 'Prices are Sage\'s <b>last buying price</b> as the sheet holds it; '+esc(name||acc)+' buy in <b>'+esc(cur)+'</b>. Sage keeps that price in the supplier\'s currency, so it is the right figure - paste columns A to Q of the current 60-fabric-stock.sql and the sheet says so itself.')+'</div>' : '')
     +poHistoryHtml(acc)
     +(minOrder ? '<div class="kpi-note">'+(total>=minOrder ? '<b>'+fabM(total,0)+' m</b> - at or above the '+fabM(minOrder,0)+' m free-shipping minimum.' : '<b>'+fabM(minOrder-total,0)+' m short</b> of the '+fabM(minOrder,0)+' m free-shipping minimum - type more against the fabrics you want, or top up and the difference is spread by annual call-off.')+' Bold quantities were typed here; the rest are the suggestion.</div>' : '')
     +'</div>';

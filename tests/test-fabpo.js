@@ -11,10 +11,10 @@
 //     code (also as StockItem), the Home warehouse, metres, Sage's cost per
 //     metre, the analysis code names, OrderOriginator Import; nil lines out;
 //     a Clockwork line would go BULK-prefixed to the Bulk warehouse
-//   - Tiajo buy in euros: until the sheet carries columns O and P (currency
-//     and the supplier's own price) the file takes Sage's last buying price
-//     and asks first; with them it takes the euro price without asking, and
-//     the panel and history show euros
+//   - Tiajo buy in euros: a paste of A to N (no currency column) takes
+//     Sage's last buying price and asks first; a paste of A to Q takes the
+//     euro price without asking, shows it per metre with the list price
+//     beside it where they differ, and the panel and history show euros
 //   - it is named B2B_PO_TIB_<account>_<date>_<time>.csv, an order under the
 //     free-shipping minimum asks first, every file is kept with its rows and
 //     can be downloaded again, the typed metres stay, the record survives
@@ -27,9 +27,9 @@ const sheet=[
  T(['PC14001','WHITE COOLTEX 1','Metre','TIAJO','Tiajo Textiles','TJ-CT-1','5','0','20','0','0','0','3.09','14']),
 ].join('\n');
 const sheet16=[
- T(['CO5014DEN','MURRAY LT GREY DENIM','Metre','TIA001EU','Tiajo Comercio','TJ-DEN-14','12','0','0','10','12','50','6.71','0','EUR','7.85']),
- T(['PC2015ECO','NAVY SUSTAINABLE 65/35','Metre','TIA001EU','Tiajo Comercio','TJ-PC-15','400','0','0','0','0','0','2.32','0','EUR','2.05']),
- T(['PC14001','WHITE COOLTEX 1','Metre','TIAJO','Tiajo Textiles','TJ-CT-1','5','0','20','0','0','0','3.09','14','','']),
+ T(['CO5014DEN','MURRAY LT GREY DENIM','Metre','TIA001EU','Tiajo Comercio','TJ-DEN-14','12','0','0','10','12','50','6.71','0','EUR','7.85','8.20']),
+ T(['PC2015ECO','NAVY SUSTAINABLE 65/35','Metre','TIA001EU','Tiajo Comercio','TJ-PC-15','400','0','0','0','0','0','2.32','0','EUR','2.05','2.05']),
+ T(['PC14001','WHITE COOLTEX 1','Metre','TIAJO','Tiajo Textiles','TJ-CT-1','5','0','20','0','0','0','3.09','14','','','']),
 ].join('\n');
 (async()=>{
  const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
@@ -62,7 +62,7 @@ const sheet16=[
    const sel=document.getElementById('fabSupSel'); sel.value='TIA001EU'; sel.dispatchEvent(new Event('change'));
    const body=document.getElementById('fabBody').textContent.replace(/\s+/g,' ');
    exportSupplierPO('TIA001EU','Tiajo Comercio'); const txt=await window.__blob.text(); const rows=txt.split('\r\n').filter(Boolean);
-   return { asked:window.__confirms.length, prices:rows.slice(1).map(r=>r.split(',').slice(9,14).join('|')).join(';'), note:/Prices in EUR, the supplier/.test(body), euro:/€/.test(body),
+   return { asked:window.__confirms.length, prices:rows.slice(1).map(r=>r.split(',').slice(9,14).join('|')).join(';'), note:/Prices in EUR, the supplier/.test(body), euro:/€/.test(body), perM:/€7\.85 \/ m \(list €8\.20\)/.test(body) && /€2\.05 \/ m(?! \(list)/.test(body),
      alert:(window.__alerts.pop()||'').split('\n')[0], rec:[fabStock.poFiles[0].cur,fabStock.poFiles[0].priced].join('|'), kept:fabOrderLines('TIA001EU').map(l=>l.x.code+':'+l.qty).join(',') }; }, sheet16);
  console.log('euro    ->', JSON.stringify(t3b));
  // download again gives the same file; a nil order refuses; the viewer has no button
@@ -77,7 +77,7 @@ const sheet16=[
  const t6=await p.evaluate(()=>{ smShowTab('fabric'); const sel=document.getElementById('fabSupSel'); if(sel){ sel.value='TIA001EU'; sel.dispatchEvent(new Event('change')); } return {btn:!!document.querySelector('#fabBody button[onclick^="exportSupplierPO"]'), hist:/Purchase order files/.test(document.getElementById('fabBody').textContent)}; });
  console.log('reload  ->', JSON.stringify(t5), 'viewer ->', JSON.stringify(t6));
  const pass = t1.btn && t1.lines==='CO5014DEN:50,PC2015ECO:0' && t1.lead===10 && t1.cur==='EUR' && t1.note
-   && t2.asked===2 && /^50 m is under the 4,000 m free-shipping minimum for Tiajo Comercio/.test(t2.ask) && /^The Sage sheet does not yet carry Tiajo Comercio's prices in EUR/.test(t2.ask2)
+   && t2.asked===2 && /^50 m is under the 4,000 m free-shipping minimum for Tiajo Comercio/.test(t2.ask) && /^This paste has no currency column \(A to N only\)/.test(t2.ask2)
    && t2.file==='B2B_PO_TIB_TIA001EU_2026-09-21_1007.csv'
    && t2.csv[0]==='OrderType,OrderNumber,SuppAccRef,OrderDate,OrderRequestedDate,SupplierDocumentNumber,OrderWarehouse,ExchangeRate,LineType,ProductCode,ProductDescription,Warehouse,Quantity,UnitPrice,TaxCode,StockItem,TaxAmount,DiscountPercent,DiscountValue,NominalCode,CostCentre,Department,ShowOnSuppDocs,ProjectCode,ProjectItem,LineRequestedDate,AnalysisCodeName2,AnalysisCodeValue2,AnalysisCodeName3,AnalysisCodeValue3,AnalysisCodeName4,AnalysisCodeValue4,LineAnalysisCode1,LineAnalysisCode2,PartRef,OrderOriginator,OrderTakenBy,LandedCostType,LandedCostValue'
    && t2.csv[1]==='1,,TIA001EU,21/09/2026,05/10/2026,Tiajo proforma 4471,,,1,CO5014DEN,,Home,50,6.71,,CO5014DEN,,,,,,,,,,,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,' && t2.csv.length===2
@@ -85,7 +85,7 @@ const sheet16=[
    && /^1 line, 50 m, €336 for Tiajo Comercio\./.test(t2.alert) && t2.rec==='TIA001EU|B2B_PO_TIB_TIA001EU_2026-09-21_1007.csv|2026-09-21|10:07|1|50|335.5'
    && t2.kept==='CO5014DEN:50,PC2015ECO:0' && /Purchase order files · 21 Sept 2026 10:07 · Tiajo proforma 4471 · 1 line · 50 m · €336 · download again/.test(t2.hist)
    && t3.asked===1 && t3.rows===2 && t3.total>=4000 && t3.files===2 && t3.minOK
-   && t3b.asked===0 && t3b.prices==='CO5014DEN||Home|50|7.85;PC2015ECO||Home|3970|2.05' && t3b.note && t3b.euro && /^2 lines, 4,020 m, €8,531 for Tiajo Comercio\./.test(t3b.alert) && t3b.rec==='EUR|supplier' && t3b.kept==='CO5014DEN:50,PC2015ECO:3970'
+   && t3b.asked===0 && t3b.prices==='CO5014DEN||Home|50|7.85;PC2015ECO||Home|3970|2.05' && t3b.note && t3b.euro && t3b.perM && /^2 lines, 4,020 m, €8,531 for Tiajo Comercio\./.test(t3b.alert) && t3b.rec==='EUR|supplier' && t3b.kept==='CO5014DEN:50,PC2015ECO:3970'
    && t4.again==='B2B_PO_TIB_TIA001EU_2026-09-21_1007.csv' && t4.sameRows===2 && t4.files===3 && /^Nothing to order - every line for/.test(t4.nil)
    && t5.before===3 && t5.after===3 && !t6.btn;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
