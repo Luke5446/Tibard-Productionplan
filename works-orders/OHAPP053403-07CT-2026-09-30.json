@@ -1,0 +1,142 @@
+{
+ "source": "works-order-editor",
+ "exportedAt": "2026-09-30T15:37:46.106846Z",
+ "mode": "changes",
+ "styleCount": 1,
+ "note": "OHAPP053403/07CT - black retail bib apron with red contrast ties and neck strap for CNM, from the works order of 30 Sep 2026 (JH 2015, amended 2017 and 2019). Main cloth CO5003ECO at 0.50 m (the works order names the older P&R 3110 CO5003), contrast CO5007 at 0.15 m; marker AP0534380 from the lay plan; the red thread has no Sage code; CNM logo embroidered top centre of the bib in red as the record's own branding.",
+ "styles": [
+  {
+   "code": "OHAPP053403/07CT",
+   "name": "Black retail bib apron with red contrast ties and neck strap — CNM (College of Naturopathic Medicine)",
+   "desc": "Retail bib apron · Oliver Harvey towel loop · Centre front pocket · Adjustable neck strap in contrast fabric with buckle · Contrast fabric waist ties · CNM Natural Chef logo embroidered top centre of the bib in red thread",
+   "lectra": "APP0534 — variant CNM: main fabric retail apron, mitred pocket, bib facing; contrast fabric waist ties x 2 and neck strap",
+   "variant": "CNM",
+   "chart": "OHAPP053403-MEAS",
+   "fabrics": [
+    [
+     "Black 100% cotton 255gsm — bib apron, pocket, bib facing (the 2015 works order names P&R 3110 CO5003; All Costings has the Tiajo X149ECO) — rating 0.50M",
+     "CO5003ECO",
+     "A6",
+     0.5,
+     2.81
+    ],
+    [
+     "Red 100% cotton 255gsm 3110 (P&R) — contrast neck strap and waist ties — rating 0.15M",
+     "CO5007",
+     "A8",
+     0.15,
+     3.25
+    ]
+   ],
+   "trims": [
+    [
+     "Thread — main",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     70,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Thread — contrast",
+     "THREAD — COATS EPIC 80'S RED 03860 — for the contrast ties and neck strap",
+     "",
+     "",
+     null
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — set 4 cm down from the right side seam as worn",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH care label",
+     "OLIVER HARVEY WASH CARE LABEL — 100% cotton · 50° wash · no bleach · 2 dot iron · no tumble dry · dry clean — set underneath the OH woven label",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "OH tax tab",
+     "Oliver Harvey Side Seam Tax Tab Red/White (23x29mm) — LHSAW, top corner of the centre front pocket, level with the top of the pocket",
+     "1",
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "Towel loop",
+     "BLACK OH NON TANGLE TAPE TIE 25MM — Oliver Harvey to read from top to bottom, cut at 38 cm, set to the left armhole as worn",
+     "1",
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Buckle",
+     "ANTIQUE BRASS 40MM DUNGAREE CLIP FLAP — brass effect buckle DCF40FLAP",
+     "1",
+     "CMP-DCF-DCW40-40-931",
+     0.181906
+    ],
+    [
+     "Button",
+     "OLIVER HARVEY BRASS 4 HOLE BUTTON — brass effect, OH logo",
+     "1",
+     "OHBRASSBUTTON",
+     0.036
+    ],
+    [
+     "Packaging — tissue wrap",
+     "OH GREASEPROOF TISSUE 500x750 — description label bottom right-hand corner",
+     "1",
+     "PKG-OH-GPS-500X750-01",
+     0.07544
+    ],
+    [
+     "Packaging — bag",
+     "CLEAR RECYCLED POLYTHENE BAG (12x18in) — put in a plastic bag, NOT in a tin",
+     "1",
+     "PKG-BAG-LRPB-12x18-934",
+     0.03385
+    ]
+   ],
+   "mfg": [
+    "Make waist ties: fold in half, enclose raw edges, bag out and edgestitch the long edge",
+    "Make neck strap: bag out one end",
+    "Set neck strap to the right-hand side as worn of the bib. Set bib facing",
+    "Stitch down bib facing to form 5 cm topstitch of the front bib",
+    "6 mm topstitch top of bib",
+    "Fold towel loop in half. Set towel loop 7.5 cm from the cut edge side seam. Double turn armholes and topstitch 6 mm. Stitch down towel loop",
+    "Set ties to finish to the top of the side seam",
+    "Double turn side seams and hem and topstitch 12 mm",
+    "Double stitch waist tie to secure at the side seam",
+    "Set pocket hem: double turn and topstitch 2 cm",
+    "Set pocket to the front centrally within the width of the front and 29.5 cm up from the finished hem",
+    "Edgestitch pocket in position. Triangle tack at the top of the pocket mouth to secure",
+    "Set button to the left side of the bib as worn, 2 cm from the armhole edge of the bib and centrally within the depth of the bib facing stitching. Thread to match the button"
+   ],
+   "fin": [
+    "Set buckle. Check, trim, press and fold",
+    "Tissue in Oliver Harvey tissue, description label bottom right-hand corner, put in a plastic bag (NOT in a tin)"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "oneSize": true,
+   "tol": "Tolerance ± 1 cm (± 0.5 cm across the bib) · centre pocket 31 cm wide x 22.5 cm deep",
+   "markerMain": "AP0534380",
+   "markerLen": 2.19,
+   "layQty": 4,
+   "markerCon": "AP0534CON",
+   "conLay": 6,
+   "customer": "College of Naturopathic Medicine (CNM)",
+   "brandType": "Embroidery",
+   "brandPlace": "CNM Natural Chef logo, larger 20 cm, set to the top centre of the bib, red thread",
+   "logoImg": "",
+   "logo2Img": "",
+   "placeImg": "",
+   "note": "Works order OHAPP053403/07CT CNM (JH, created 24/9/15; length to 93 cm JH 21/11/17; red thread shade 03855 to 03860 YL 7/1/19). Marker AP0534380 (2.19 m over 4) from the aprons lay plan. Document: works-orders/S-OH116383-Pt1.xls"
+  }
+ ]
+}
