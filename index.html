@@ -2599,19 +2599,69 @@ function whExportRows(list, name, withBooked){
 // ── Storage ────────────────────────────────────────────────────────────────
 var saveTimer=null;
 function dbSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveState,1200); }
-function saveState(){
+// ── where the editor's data lives ────────────────────────────────────────
+// localStorage was the only store, and it is capped at about 5 MB for the
+// whole luke5446.github.io origin - which the costing app shares. Once the
+// two apps' data together passed that, every save here threw
+// QuotaExceededError, the catch below logged it to the console and nothing
+// else, and works orders printed or deleted came back on the next open
+// (Luke, 30 Sep 2026). So the state now goes to IndexedDB as well, which
+// has no such cap: both are written on every save, the newer of the two is
+// taken on load, and a save that reaches neither is said out loud.
+var IDB_NAME='tibard_production', IDB_STORE='state';
+function idbOpen(cb){
   try{
-    localStorage.setItem('tibard_production',JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,
-      savedAt:new Date().toISOString()}));
-    var ind=document.getElementById('saveInd'); if(ind){ind.innerHTML='✓ Saved';setTimeout(function(){ind.textContent='';},2000);}
-  }catch(e){console.log('Save failed:',e);}
+    if(!window.indexedDB){ cb(null); return; }
+    var req=indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded=function(){ req.result.createObjectStore(IDB_STORE); };
+    req.onsuccess=function(){ cb(req.result); };
+    req.onerror=function(){ cb(null); }; req.onblocked=function(){ cb(null); };
+  }catch(e){ cb(null); }
 }
+function idbSet(json, cb){
+  idbOpen(function(db){ if(!db){ cb(false); return; }
+    try{ var tx=db.transaction(IDB_STORE,'readwrite'); tx.objectStore(IDB_STORE).put(json,'state');
+         tx.oncomplete=function(){ cb(true); }; tx.onerror=function(){ cb(false); }; tx.onabort=function(){ cb(false); }; }
+    catch(e){ cb(false); } });
+}
+function idbGet(cb){
+  idbOpen(function(db){ if(!db){ cb(null); return; }
+    try{ var req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get('state');
+         req.onsuccess=function(){ cb(req.result||null); }; req.onerror=function(){ cb(null); }; }
+    catch(e){ cb(null); } });
+}
+var saveFailedTold=false;
+function saveFailed(where){
+  var ind=document.getElementById('saveInd'); if(ind){ ind.innerHTML='<span style="color:#dc2626;font-weight:700">&#9888; NOT SAVED</span>'; }
+  if(!saveFailedTold){ saveFailedTold=true;
+    alert('This change could not be saved in the browser ('+where+').\n\nThe browser\'s storage for this site is full or blocked, so what you do here will be lost when the tab closes. Publish now to keep it, then tell Luke.'); }
+}
+function saveState(){
+  var json='';
+  try{
+    json=JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,
+      savedAt:new Date().toISOString()});
+  }catch(e){ console.log('Save failed:',e); saveFailed('could not serialise'); return; }
+  var localOK=false;
+  try{ localStorage.setItem('tibard_production',json); localOK=true; }catch(e){ console.log('localStorage save failed:',e); }
+  idbSet(json, function(ok){
+    if(ok || localOK){ var ind=document.getElementById('saveInd'); if(ind){ ind.innerHTML='\u2713 Saved'+(localOK?'':' (browser storage nearly full)'); setTimeout(function(){ ind.textContent=''; },2000); } }
+    else saveFailed('localStorage and IndexedDB both refused');
+  });
+}
+function stateSavedAt(){ try{ var raw=localStorage.getItem('tibard_production'); if(!raw) return ''; var m=/"savedAt":"([^"]*)"\s*\}\s*$/.exec(raw); return m?m[1]:''; }catch(e){ return ''; } }
 function loadState(){
   try{
     var raw=localStorage.getItem('tibard_production');
     if(!raw) return false;
-    var s=JSON.parse(raw);
+    return applyState(JSON.parse(raw));
+  }catch(e){console.log('Load failed:',e);return false;}
+}
+var stateLoadedAt='';
+function applyState(s){
+  try{
+    stateLoadedAt=s.savedAt||'';
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
@@ -2620,7 +2670,7 @@ function loadState(){
     (s.smReview||[]).forEach(function(o){
       if(!smSeen[o.key] && !smPending.some(function(p){return p.key===o.key;})) smPending.push(o);
     });
-    if(!s.rows||!s.rows.length){ WOs=s.WOs||[]; completedWOs=s.completedWOs||[]; fabFixMesh(); threadApplyStdAll(); smRender(); return false; }
+    if(!s.rows||!s.rows.length){ WOs=s.WOs||[]; completedWOs=s.completedWOs||[]; fabFixMesh(); threadApplyStdAll(); smRender(); renderWOCards(); return false; }
     rows=s.rows; WOs=s.WOs||[]; completedWOs=s.completedWOs||[];
     fabFixMesh(); threadApplyStdAll();
     var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
@@ -2629,10 +2679,33 @@ function loadState(){
     return true;
   }catch(e){console.log('Load failed:',e);return false;}
 }
+// The editor's start: localStorage first (it is synchronous), then IndexedDB;
+// whichever was saved later wins, because a save that localStorage refused
+// still reached IndexedDB. Nothing in either: the published file.
+function loadEditor(){
+  var hadLocal=false; try{ hadLocal=!!localStorage.getItem('tibard_production'); }catch(e){}
+  var haveRows=loadState(), localAt=stateLoadedAt;
+  idbGet(function(json){
+    var s=null; try{ s=json?JSON.parse(json):null; }catch(e){ s=null; }
+    // IndexedDB only wins over a localStorage copy when it was saved later:
+    // a page closed a moment after a save can leave IndexedDB one save
+    // behind (its write is asynchronous), and that older copy must not undo
+    // what localStorage kept. "Nothing in localStorage" is the raw item, not
+    // whether the state held buffer rows - a planner with works orders but
+    // no buffer sheet is still a saved state.
+    var newer=!!(s && (!hadLocal || (s.savedAt||'')>(localAt||'')));
+    if(newer){
+      haveRows=applyState(s);
+      try{ localStorage.setItem('tibard_production', json); }catch(e){}
+    }
+    if(haveRows) mergePublishedSnapshots(); else fetchShared();
+  });
+}
 function clearAll(){ if(!IS_EDITOR) return;
   if(!confirm('Clear all saved data?')) return;
   try{
     localStorage.removeItem('tibard_production');
+    try{ idbOpen(function(db){ if(!db) return; try{ db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).delete('state'); }catch(e){} }); }catch(e){}
     rows=[];WOs=[];completedWOs=[];
     smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};fabStock={rows:{},pastedAt:''};fabricOverrides={};
     document.getElementById('dataWrap').classList.add('hidden');
@@ -2647,8 +2720,7 @@ document.addEventListener('DOMContentLoaded',function(){
   if(IS_WAREHOUSE){
     fetchShared();          // warehouse reads the published data
   } else if(IS_EDITOR){
-    if(!loadState()) fetchShared();
-    else mergePublishedSnapshots();
+    loadEditor();
   } else {
     fetchShared();
   }
