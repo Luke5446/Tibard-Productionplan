@@ -1,0 +1,88 @@
+{
+ "source": "works-order-editor",
+ "exportedAt": "2026-09-30T15:06:46.631893Z",
+ "mode": "changes",
+ "styleCount": 1,
+ "note": "OHAPP0596GD (grey denim stud halter bib apron): fabric code CO5014DEN added and the rating corrected to 0.72 m (Luke, 30 Sep 2026); marker 0596003, 2.86 m over 4, from the aprons lay plan.",
+ "styles": [
+  {
+   "code": "OHAPP0596GD",
+   "name": "Grey denim stud halter bib apron with retail pocket- Special",
+   "desc": "Denim bib apron · Retail pocket with 2 stitch line pen pockets right side of pocket as worn. reverse fabric waist ties through large eyelets at waist. reverse fabic neck strap fastened with studs. rivets set to pocket.",
+   "lectra": "FOHDENIM — variant 0596",
+   "chart": "OHAPP0596GD-MEAS",
+   "fabrics": [
+    [
+     "Grey denim art murray 315gsm 100% cotton 1.50m width — rating 0.72M",
+     "CO5014DEN",
+     "B2",
+     0.72
+    ]
+   ],
+   "trims": [
+    [
+     "Thread - main",
+     "Grey epic 80's 9971",
+     70
+    ],
+    [
+     "Oliver harvey woven label",
+     "Set label just below base of re-inforcement patch in right side seam as worn. set on top of OH care label."
+    ],
+    [
+     "Oliver harvey care label",
+     "100% COTTON -50 degree wash/do not bleach/ 2 dot iron/P dry clean/do not tumble dry. SET LABEL JUST BELOW BASE OF RE-INFORCEMENT PATCH IN RIGHT SIDE SEAM AS WORN. SET BELOW OH WOVEN LABEL."
+    ],
+    [
+     "Oliver harvey red tax tab",
+     "Set to left side of pocket as worn. set level with top edge."
+    ],
+    [
+     "Antique brass eyelets x 2",
+     "30e/r ab antique brass eyelets 30mm . set to top of side seam. centre of eyelet 3cm down from top and 3cm in from side seam - finished. set to top edge of bib. centre of eyelet set 3cm from side of bib and 3cm from top of bib."
+    ],
+    [
+     "Antique brass capped studs",
+     "Quality 050b parts a/b/c/d/ 4 x male (a/b) and 2 x female (c/d)"
+    ],
+    [
+     "Antique brass rivets x 2",
+     "010B/7P - 011B - Antique brass Invert nipple rivet and post - one at each top corner of pocket"
+    ]
+   ],
+   "mfg": [
+    "Make waist ties. reverse cloth so wrong side is uppermost. stitch in grey thread. bag out both ends and topstitch one side.",
+    "Make neck strap use reverse side of cloth. bag out both ends and edgestitch one side.",
+    "Discard right side as worn stud re-inforcement piece",
+    "Neaten long edge of stud re-inforcement piece turning onto right side of fabric as wrong side of fabric to be uppermost. set to left side as worn so it is included into top of bib turning and armhole turning. note set so wrong side is uppermost on finished garment.",
+    "Fold over bib top 1+3.2cm and topstitch 3cm .",
+    "Edgestitch top edge",
+    "Set re-inforcement patches . right side of fabric uppermost. set 6mm down from cut edge and 12mm in from side seam to reduce bulk. edgestitch long edge into position.",
+    "Double turn armhole and topstitch 6mm",
+    "Double turn hem onto right side and topstitch 12mm.",
+    "Double turn side seams and topstitch 12mm. set labels right side seam as worn just below base of reinforcement patch",
+    "Set neck strap to right side of bib as worn. edgestitching side of strap to be set to inside of neck as worn to reduce bulk. set strap to bib, box stitch strap and stitch x detail. position strap so edgestitching of base of strap end is in line with 3cm topstitching of bib.",
+    "Set pocket hem. turn under 1cm and turn 2cm and twin needle topstitch. bottom row of stitching to be at 2cm from top of pocket.",
+    "Set lower mitred pocket to apron. set base of finished pocket 29.5cm up from finished hem and set centrally within width of apron. twin needle 3 sides",
+    "Set pen pocket stitch lines right side of pocket as worn. stitch first row 3cm from inside row of twin needle stitching and 13cm deep. stitch second row 3cm from the first. 13cm deep.",
+    "Note apron to come back after eyelets set, to have waist ties set. set tie through eyelet 4cm and stitch down to secure. join to be on the inside as worn. boxstitch to 2 stitch wide to width of strap."
+   ],
+   "fin": [
+    "Set rivets to top corners of all pockets.",
+    "Set eyelets. set centre of eyelet 3cm in from side seam and 3cm down from side seam.",
+    "Set studs to strap. female capped stud set to strap . set centrally to width and first stud 1.5cm from end then 4cm spacing- total 4 studs. (measurment from centre of stud) male stud set 1.5cm down and 1.5cm in from end of bib. second stud set 4cm spacing and 1.5cm in from edge of bib. vertically down. ensure it is set onto the re-inforcement patch.",
+    "Check , trim, press and fold. wrap in tissue, set product sticker and set into bag."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "variant": "0596",
+   "markerMain": "0596003",
+   "markerLen": 2.86,
+   "layQty": 4
+  }
+ ]
+}
