@@ -577,6 +577,7 @@ tr.fab-done td{color:#6b7280}
           <th onclick="sBy('code')" style="width:120px">Code &#8597;</th>
           <th onclick="sBy('desc')" style="width:200px">Description &#8597;</th>
           <th onclick="sBy('inStock')" style="width:55px;text-align:right">In stock &#8597;</th>
+          <th onclick="sBy('freeStock')" style="width:55px;text-align:right" title="In stock less On SOP, plus pipeline; in blue when it also counts units on a live works order">Free stock &#8597;</th>
           <th onclick="sBy('onSOP')" style="width:50px;text-align:right">On SOP &#8597;</th>
           <th onclick="sBy('onPOP')" style="width:50px;text-align:right">On POP &#8597;</th>
           <th onclick="sBy('s3m')" style="width:55px;text-align:right">3m sales &#8597;</th>
@@ -594,7 +595,7 @@ tr.fab-done td{color:#6b7280}
     </div></div>
     <p class="foot">
       &#128296; <strong style="color:#7A1F3D">WOP REC</strong> = recommended make qty for 28 days (4 wks) cover, based on 6-month sales, less stock/On POP/On WOP/Pipeline.
-      <strong style="color:#0369a1">Pipeline</strong> = units completed but not yet in Sage (counts towards stock until 7am the next day). <strong>ACT WOP</strong> = your adjusted make qty. Days stock = (In stock − On SOP + Pipeline) ÷ daily usage. Click a row for the stock runway.
+      <strong style="color:#0369a1">Pipeline</strong> = units completed but not yet in Sage (counts towards stock until 7am the next day). <strong>ACT WOP</strong> = your adjusted make qty. <strong>Free stock</strong> = In stock − On SOP + Pipeline, plus On WOP where a works order is live - shown in <strong style="color:#1e40af">blue</strong> when it counts a works order, red when short. Days stock = (In stock − On SOP + Pipeline) ÷ daily usage. Click a row for the stock runway.
     </p>
 
   </div>
@@ -865,6 +866,7 @@ function recalcPipeline(){
     // Effective available = (in stock - SOP) + pipeline (completed, awaiting Sage)
     var effAvail = (r.inStock - r.onSOP) + r.pipeline;
     r.available = effAvail;
+    r.freeStock = effAvail + (r.onWOP||0);   // what is free once the live works orders land (blue when they count)
     r.daysOfStock = r.dailyUsage>0 ? (effAvail/r.dailyUsage) : 999;
     // No-sales items: flag Critical if effective free stock is negative (oversold), else Healthy.
     if(r.dailyUsage===0){ r.status = effAvail<0 ? 'critical' : 'healthy'; }
@@ -905,6 +907,7 @@ function recalcWOs(){
       if(r){ r.onWOP+=it.qty; if(isLate) r.onLateWOP=true; }
     });
   });
+  rows.forEach(function(r){ r.freeStock=(r.available!=null?r.available:(r.inStock-r.onSOP))+(r.onWOP||0); });
 }
 
 // Every WO reference that has ever existed - active tracker AND completed history.
@@ -2168,7 +2171,7 @@ function renderTable(){
   var tickedCount=rows.filter(function(r){return r.included;}).length;
   document.getElementById('rc').innerHTML=data.length.toLocaleString()+' items shown'+(tickedCount>0?' &nbsp;|&nbsp; <strong style="color:#7A1F3D">'+tickedCount+' ticked to make</strong>':'');
   var tb=document.getElementById('tBody');
-  if(!data.length){ tb.innerHTML='<tr><td colspan="15" style="text-align:center;padding:1.5rem;color:#6b7280">No items match</td></tr>'; return; }
+  if(!data.length){ tb.innerHTML='<tr><td colspan="16" style="text-align:center;padding:1.5rem;color:#6b7280">No items match</td></tr>'; return; }
   tb.innerHTML=data.map(rowHTML).join('');
 }
 
@@ -2194,6 +2197,11 @@ function rowHTML(r){
     +'<button class="inc-btn" title="+1" onclick="event.stopPropagation();adjWop(\''+esc(r.code)+'\',1)">+</button>'
     +'</div>';
   var sopH=r.onSOP>0?'<span style="font-weight:600">'+r.onSOP.toLocaleString()+'</span>':dash();
+  // Free stock: in stock less on SOP, plus the pipeline, plus what is on a
+  // live works order - in blue when a works order is counted, so a healthy
+  // figure that leans on work not yet made is visible as such; red when short
+  var free=(r.freeStock!=null)?r.freeStock:((r.inStock-r.onSOP)+(r.pipeline||0)+(r.onWOP||0));
+  var freeH='<span style="font-weight:700;color:'+(free<0?'#b91c1c':(r.onWOP>0?'#1e40af':'#111827'))+'"'+(r.onWOP>0?' title="includes '+Math.round(r.onWOP).toLocaleString()+' on live works orders'+(r.pipeline>0?' and '+Math.round(r.pipeline).toLocaleString()+' in the pipeline':'')+'"':(r.pipeline>0?' title="includes '+Math.round(r.pipeline).toLocaleString()+' in the pipeline"':''))+'>'+Math.round(free).toLocaleString()+'</span>';
   var popH=r.onPOP>0?'<span style="font-weight:600;color:#1e40af">'+r.onPOP.toLocaleString()+'</span>':dash();
   var rowCls='clickable'+(r.included?' row-ticked':'');
   var cbH='<input type="checkbox" class="inc-cb"'+(r.included?' checked':'')+' onclick="event.stopPropagation()" onchange="toggleIncl(\''+esc(r.code)+'\',this.checked)">';
@@ -2202,6 +2210,7 @@ function rowHTML(r){
     +'<td>'+esc(r.code)+'</td>'
     +'<td title="'+esc(r.desc)+'" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.desc)+'</td>'
     +'<td style="text-align:right">'+r.inStock.toLocaleString()+'</td>'
+    +'<td style="text-align:right">'+freeH+'</td>'
     +'<td style="text-align:right">'+sopH+'</td>'
     +'<td style="text-align:right">'+popH+'</td>'
     +'<td style="text-align:right">'+r.s3m.toLocaleString()+'</td>'
