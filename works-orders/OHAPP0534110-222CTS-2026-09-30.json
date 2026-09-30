@@ -1,0 +1,134 @@
+{
+ "source": "works-order-editor",
+ "exportedAt": "2026-09-30T09:51:39.343880Z",
+ "mode": "changes",
+ "styleCount": 1,
+ "note": "OHAPP0534110/222CTS - putty retail bib apron with cocoa contrast ties and neck strap, no tax tab, for Galloping Gourmet (Venue Catering & Events), from the works order of 30 Sep 2026. Fabrics CO5364ECO 0.62 m and CO5222ECO 0.17 m; marker AP0534380 2.19 m over 4 from the lay plan; putty and cocoa threads and the plain black towel loop tape have no Sage code yet; the bag is unnamed on the works order. The sketch in the works order is a Windows metafile the app cannot carry.",
+ "charts": {
+  "OHAPP0534110/222CTS-MEAS": [
+   [
+    "63cm",
+    "28cm",
+    "93cm",
+    "62cm",
+    "76cm x 4cm"
+   ]
+  ]
+ },
+ "styles": [
+  {
+   "code": "OHAPP0534110/222CTS",
+   "name": "Putty retail bib apron with cocoa contrast ties and neck strap, no tax tab — Galloping Gourmet",
+   "desc": "Retail bib apron · Adjustable neck strap with buckle · Contrast fabric ties · Contrast neck strap · Plain black towel loop · Centre front pocket with pen pocket stitch divide · NO TAX TAB",
+   "lectra": "APP0534 — variant CNM: retail apron, mitred pocket, bib facing, contrast fabric ties 100 cm x 7.5 cm x 2, contrast neck strap 77 cm x 10 cm x 1",
+   "variant": "CNM",
+   "chart": "OHAPP0534110/222CTS-MEAS",
+   "fabrics": [
+    [
+     "Putty 100% organic cotton 260gsm X149ECO-AM305 (Tiajo) — rating 0.62M",
+     "CO5364ECO",
+     "A3",
+     0.62,
+     4.4
+    ],
+    [
+     "Cocoa 100% organic cotton 260gsm X149ECO-AM307 (Tiajo) — contrast for neck strap and waist ties — rating 0.17M",
+     "CO5222ECO",
+     "A5",
+     0.17,
+     4.4
+    ]
+   ],
+   "trims": [
+    [
+     "Thread — main",
+     "THREAD — COATS EPIC 80'S PUTTY 08561 — cost per metre",
+     70,
+     "",
+     null
+    ],
+    [
+     "Thread — contrast",
+     "THREAD — COATS EPIC 80'S COCOA 08975 — for the contrast ties and neck strap",
+     "",
+     "",
+     null
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey 'Button' Woven Centrefold Label (32x80mm) — set 4 cm down from the right side seam as worn",
+     "1",
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH care label",
+     "OLIVER HARVEY WASH CARE LABEL — 100% organic cotton · 40° wash · no bleach · 2 dot iron · tumble dry low · P dry clean — under the woven label",
+     "1",
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Towel loop",
+     "Black PLAIN non-tangle tape cut at 15\" (no OH logo)",
+     "1",
+     "",
+     null
+    ],
+    [
+     "Buckle",
+     "ANTIQUE BRASS 40MM DUNGAREE CLIP FLAP — brass effect buckle DCF40FLAP",
+     "1",
+     "CMP-DCF-DCW40-40-931",
+     0.181906
+    ],
+    [
+     "Button",
+     "OLIVER HARVEY BRASS 4 HOLE BUTTON — brass effect, OH logo at the top, sewn in black thread",
+     "1",
+     "OHBRASSBUTTON",
+     0.036
+    ],
+    [
+     "Packaging — bag",
+     "Set into a bag, NO tissue; product sticker bottom right-hand corner of the bag; seal the bag",
+     "1",
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Make waist ties: fold in half, enclose raw edges, bag out the end and edgestitch one side down",
+    "Make neck strap: bag out one end, fold in raw edges and edgestitch the long edge",
+    "Neck strap inserted into the bib / bib facing on the RHSAW. Set bib facing",
+    "0.6 cm stitch across the top of the bib",
+    "Stitch down bib facing lower edge to form 5.5 cm topstitching",
+    "0.6 cm double turn hem at the \"underarm\" curved hems",
+    "Towel loop positioned to the curve, left side as worn, set 7.5 cm in from the left side seam cut edge (5 cm in from the FINISHED side seam)",
+    "Towel loop: fold the tie in half, stitch into the curved hem, fold to the front of the apron and stitch down following the 6 mm stitching of the armhole",
+    "1.2 cm double hem at side seams and bottom hem",
+    "Double turn 1 + 2 cm hem on the top of the pocket and topstitch 1.9 cm; triangle stitch on the top corners of the pocket",
+    "Pocket position: 29.5 cm up from the FINISHED hem and central to the width of the apron; edgestitch in position",
+    "Set stitch pen pocket x 2 to the RIGHT side of the pocket as worn, 3 cm wide x 13 cm deep",
+    "Oliver Harvey button on the front of the bib LHSAW, with the OH logo at the top of the button, sewn in black thread",
+    "Button position: 2 cm in from the finished side seam LHSAW and 2.5 cm down from the top edge of the bib; make sure the neck strap lies in line with the side of the bib when the buckle is fastened"
+   ],
+   "fin": [
+    "Check, trim, press, fold and set into a bag. NO TISSUE. Product sticker to the bottom right-hand corner of the bag. Seal the bag"
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "oneSize": true,
+   "tol": "Tolerance ± 1 cm (± 0.5 cm across the bib) · centre pocket 31.5 cm wide x 21.5 cm deep",
+   "markerMain": "AP0534380",
+   "markerLen": 2.19,
+   "layQty": 4,
+   "markerCon": "AP0534CON",
+   "conLay": 6,
+   "customer": "Galloping Gourmet — Venue Catering & Events Ltd",
+   "note": "Works order OHAPP0534110/222CTS BIB - No tax tab (JH, created for sample SR584 19/6/17 and bulk 10/7/17; towel loop YL 20/2/18; fabric to Tiajo X149ECO and care label JH 25/3/25). Marker AP0534380 (2.19 m over 4) from the aprons lay plan; AP0534381 (1.22 m over 2) is the other default. Document: works-orders/S-OH116448-Pt1.xlsx"
+  }
+ ]
+}
