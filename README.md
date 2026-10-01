@@ -45,6 +45,9 @@ repo's history is the audit trail.
 5. Print a works order: it appears on the Cutting tab. Works orders printed
    before the token was set come across with **Push to the cutting room**.
 
+A works order due before 29 September 2026, when the log began, is never
+pushed: it was cut before there was a list.
+
 The file is created by the first push, so nothing needs adding to the repo by
 hand. When the token expires, GitHub emails a week ahead: make a new one and
 paste it on both PCs.

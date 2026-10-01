@@ -3385,6 +3385,10 @@ var CUTLOG_REPO='Luke5446/Tibard-Cutlog', CUTLOG_FILE='cutlog.json';
 var CUTLOG_PAGES='https://luke5446.github.io/Tibard-Cutlog/'+CUTLOG_FILE;
 var CUTLOG_API='https://api.github.com/repos/'+CUTLOG_REPO+'/contents/'+CUTLOG_FILE;
 var CUT_LATE_DAYS=5;                     // printed this long ago and not cut: flagged
+// The log began on 29 September 2026: a works order due before that was
+// printed and cut before there was a list, and never belongs on it (Luke).
+var CUTLOG_FROM='2026-09-29';
+function cutInScope(wo){ return !!wo.printed && (!wo.due || wo.due>=CUTLOG_FROM); }
 var cutLog={entries:[], savedAt:'', sha:null, loadedAt:null, error:'', source:''};
 var cutBusy=false, cutQ='', cutSec='todo', cutAsAt='', cutFrom='', cutTo='', cutDayOpen={};
 function cutToken(){ try{ return localStorage.getItem('tibard_cutlog_token')||''; }catch(e){ return ''; } }
@@ -3460,7 +3464,7 @@ function cutEntriesFor(wo){
 // Push the printed works orders that are not in the log yet (the print does
 // this as it happens; this catches up after a failure or a PC set up later).
 function cutPushPrinted(list, cb){
-  var wos=(list||WOs).filter(function(w){ return w.printed; });
+  var wos=(list||WOs).filter(cutInScope);
   if(!cutCanWrite()){ if(cb) cb(false,'no token'); return; }
   cutSave('Printed: '+wos.map(function(w){ return w.ref; }).join(', '), function(d){
     var have={}; d.entries.forEach(function(e){ have[e.k]=1; });
@@ -3470,7 +3474,7 @@ function cutPushPrinted(list, cb){
 }
 function cutNotPushed(){
   var have={}; cutLog.entries.forEach(function(e){ have[e.k]=1; });
-  return WOs.filter(function(w){ return w.printed && cutEntriesFor(w).some(function(e){ return !have[e.k]; }); });
+  return WOs.filter(function(w){ return cutInScope(w) && cutEntriesFor(w).some(function(e){ return !have[e.k]; }); });
 }
 // A printed works order deleted in the planner: its uncut lines are
 // withdrawn from the cutting room's list rather than left asking to be cut.

@@ -30,9 +30,10 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  await p.evaluate(t=>{ document.getElementById('pasteTA').value=t; loadPaste();
    const mk=(ref,ta)=>{ document.getElementById('woRef').value=ref; document.getElementById('woStart').value='2026-09-30'; document.getElementById('woDue').value='2026-10-10'; document.getElementById('woTA').value=ta; saveWO(); };
    mk('S-T1','CICJM0193XXS01\t7'); mk('S-T2','APP300503\t10');
+   document.getElementById('woRef').value='S-OLD'; document.getElementById('woStart').value='2026-09-01'; document.getElementById('woDue').value='2026-09-20'; document.getElementById('woTA').value='APP300503\t4'; saveWO();
    window.open=()=>({document:{open(){},write(){},close(){}}});
    printWOPTracked(WOs.findIndex(w=>w.ref==='S-T1'),'CICJM0193XXS01',7);
-   markWOPrinted(WOs.findIndex(w=>w.ref==='S-T2')); }, buf);
+   markWOPrinted(WOs.findIndex(w=>w.ref==='S-T2')); markWOPrinted(WOs.findIndex(w=>w.ref==='S-OLD')); }, buf);
  await p.waitForTimeout(600);
  const s1=entries().map(e=>e.ref+':'+e.code+':'+e.fabric+':'+e.std+':'+(e.printedAt||'')+(e.extra?':extra':'')).sort();
  await p.evaluate(()=>{ delWO(WOs.findIndex(w=>w.ref==='S-T2')); }); await p.waitForTimeout(500);
@@ -67,7 +68,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  console.log('cutting   ->', JSON.stringify(s2)); console.log('marked    ->', JSON.stringify(s3), JSON.stringify(s4));
  console.log('figures   ->', JSON.stringify(s5)); console.log('conflict  ->', JSON.stringify(s6)); console.log('viewer    ->', JSON.stringify(s7)); console.log('completed ->', JSON.stringify(s8));
  const pass = s1.join('|')==='S-T1:CICJM0193XXS01:MESH2290901:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
-   && s1b.join()==='2026-10-01' && s1c.notPushed===0 && s1c.rows===2 && /mark cuts/.test(s1c.tag)
+   && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===2 && /mark cuts/.test(s1c.tag)
    && s2.src==='api' && s2.rows.length===2 && s2.cutAll && s2.todo==='2'
    && s3.join()==='2026-10-01:1.75,2026-10-01:7.35' && s4.join('|')==='MESH2290901:1.75:|PC2001ECO:8:roll end, 0.65 m short'
    && /Cut today=9.8 m/.test(s5.tiles.join()) && /WIP: cut, not completed=£19.19/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[6].startsWith('8.00')&&r[7]==='roll end, 0.65 m short'&&r[8]==='in WIP')
