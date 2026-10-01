@@ -729,3 +729,7 @@ currency, TIA001EU is on the Euro, and the supplier's list price sits beside
 it. 60-fabric-stock.sql carries the answer as columns O, P and Q. Kept for the
 next question of the kind - it serialises whole records as one grid, which is
 what the Excel connection can show.
+
+## BULK codes
+
+A code starting `BULK` is a garment's container stock (BULKTWAP052031P, the Booker waterproof apron, 1,224 in the Bulk warehouse): made or bought in bulk, never cut here. Its Stock Held analysis code is not always set and its Manufacturer field often says Tibard, so the live query reads the prefix first and files the line as STOCK HELD; the app does the same with a line that still says WORKS ORDER from an older copy of the query (1 Oct 2026).

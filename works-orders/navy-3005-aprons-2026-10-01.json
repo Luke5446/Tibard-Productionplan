@@ -1,0 +1,320 @@
+{
+ "source": "works-order-editor",
+ "exportedAt": "2026-10-01T14:06:28.229103Z",
+ "mode": "changes",
+ "styleCount": 4,
+ "note": "The navy OHAP3005 aprons rebuilt with coded trims: OHAP300515 (OH ties), OHAP300515S (plain ties), OHAP300515TN (tie neck, self fabric ties) and OHAPP300515 (with pocket).",
+ "styles": [
+  {
+   "code": "OHAP300515",
+   "name": "Navy bib apron in poly cotton — OH ties and towel loop",
+   "desc": "Bib apron · No pocket · OH black non tangle tape ties · Towel loop in OH black non tangle tape, left side as worn",
+   "lectra": "AP3005 — butchers style, variant 3005 large",
+   "chart": "OHAP300501-MEAS",
+   "fabrics": [
+    [
+     "Navy 65% recycled polyester / 35% organic cotton 200 gsm X133ECO-AM297 (Tiajo) — rating 1.00 m",
+     "PC2015ECO",
+     "B4",
+     1.0,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread — main",
+     "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     70,
+     "CMP-THR-EP80-07935-15",
+     0.000714
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey British button woven label, set into the right side seam as worn, 4 cm down from the top edge.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH care label",
+     "Oliver Harvey wash instructions set under the OH woven label in the right side seam as worn: 65% recycled polyester / 35% organic cotton · 60° wash · tumble dry · 2 dot iron · do not bleach · P dry clean.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "OH waist ties — black",
+     "Oliver Harvey black non tangle tape, cut 100 cm each.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Towel loop",
+     "Oliver Harvey black non tangle tape, cut 39 cm from the roll.",
+     0.39,
+     "",
+     0.25171
+    ]
+   ],
+   "mfg": [
+    "Make neck strap. Fold in half and enclose raw edges. Edge stitch long edge to close seam.",
+    "Set bib facing and insert neck strap. Edge of neck strap to finish in line with side of bib (no step). Edge stitched side of neck strap to be set to outside edge of bib and ensure good side of strap to topside.",
+    "Top of bib 6 mm topstitched.",
+    "Bib facing: fold in 10 mm to neaten lower edge. Edge stitch lower edge of facing, which forms 5.5 cm topstitching to front.",
+    "Armhole double turned and topstitching to finish 6 mm from edge. Insert towel loop 17 cm from the left side cut edge as worn, fold loop down and topstitch following the armhole stitching. Neaten armholes before the side seam is neatened.",
+    "Hem double turned and topstitching to finish 12 mm from edge.",
+    "Sides double turned and topstitching to finish 12 mm from edge. Insert waist ties. Insert labels right side as worn, 4 cm down from the top edge, OH woven label on top.",
+    "Fold waist tie back on itself to fall away from garment and edge stitch down to width of strap to secure."
+   ],
+   "fin": [
+    "Check, trim, press and fold. OH tissue, product label to the bottom right-hand corner."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "variant": "3005 LARGE",
+   "markerMain": "300501",
+   "markerLen": 1.61,
+   "layQty": 2,
+   "note": "Rebuilt from the works order text the app held (OHAP3005 variant 3005 large, navy). Marker 300501 from the OHAP3005 lay plan, as the black OHAP300503PC. Trims coded from the trims list, 1 Oct 2026."
+  },
+  {
+   "code": "OHAP300515S",
+   "name": "Navy bib apron in poly cotton — plain ties and towel loop",
+   "desc": "Bib apron · No pocket · Plain black non tangle tape ties · Plain black towel loop, left side as worn",
+   "lectra": "AP3005 — butchers style, variant 3005 large",
+   "chart": "OHAP300501-MEAS",
+   "fabrics": [
+    [
+     "Navy 65% recycled polyester / 35% organic cotton 200 gsm X133ECO-AM297 (Tiajo) — rating 1.00 m",
+     "PC2015ECO",
+     "B4",
+     1.0,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread — main",
+     "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     70,
+     "CMP-THR-EP80-07935-15",
+     0.000714
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey British button woven label, set into the right side seam as worn, 4 cm down from the top edge.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH care label",
+     "Oliver Harvey wash instructions set under the OH woven label in the right side seam as worn: 65% recycled polyester / 35% organic cotton · 60° wash · tumble dry · 2 dot iron · do not bleach · P dry clean.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Waist ties — plain black",
+     "Plain black non tangle tape (no Oliver Harvey wording), cut 100 cm each.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Towel loop",
+     "Plain black non tangle tape, cut 39 cm.",
+     0.39,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Make neck strap. Fold in half and enclose raw edges. Edge stitch long edge to close seam.",
+    "Set bib facing and insert neck strap. Edge of neck strap to finish in line with side of bib (no step). Edge stitched side of neck strap to be set to outside edge of bib and ensure good side of strap to topside.",
+    "Top of bib 6 mm topstitched.",
+    "Bib facing: fold in 10 mm to neaten lower edge. Edge stitch lower edge of facing, which forms 5.5 cm topstitching to front.",
+    "Armhole double turned and topstitching to finish 6 mm from edge. Insert towel loop 17 cm from the left side cut edge as worn, fold loop down and topstitch following the armhole stitching. Neaten armholes before the side seam is neatened.",
+    "Hem double turned and topstitching to finish 12 mm from edge.",
+    "Sides double turned and topstitching to finish 12 mm from edge. Insert waist ties. Insert labels right side as worn, 4 cm down from the top edge, OH woven label on top.",
+    "Fold waist tie back on itself to fall away from garment and edge stitch down to width of strap to secure."
+   ],
+   "fin": [
+    "Check, trim, press and fold. OH tissue, product label to the bottom right-hand corner."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "variant": "3005 LARGE",
+   "markerMain": "300501",
+   "markerLen": 1.61,
+   "layQty": 2,
+   "note": "Rebuilt from the works order text the app held: the OHAP300515 with plain black tape in place of the Oliver Harvey tape. The plain black tape (Nottingham Narrow Fabrics 690213) has no Sage code on the trims list. 1 Oct 2026."
+  },
+  {
+   "code": "OHAP300515TN",
+   "name": "Navy bib apron with adjustable tie-neck strap and self fabric ties",
+   "desc": "Bib apron · No pocket · Self fabric waist ties · Adjustable neck tie fastened through a loop · OH tax tab at the left waist tie",
+   "lectra": "Model AP3005B — variant OH3005TN",
+   "chart": "OHAP300501-MEAS",
+   "fabrics": [
+    [
+     "Navy 65% recycled polyester / 35% organic cotton 200 gsm X133ECO-AM297 (Tiajo) — rating 1.10 m (self fabric ties, neck tie and loop)",
+     "PC2015ECO",
+     "B4",
+     1.1,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread — main",
+     "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     70,
+     "CMP-THR-EP80-07935-15",
+     0.000714
+    ],
+    [
+     "OH tax tab",
+     "Set at the left side as worn, inserted before the waist tie is stitched down to the width of the strap.",
+     1,
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey British button woven label, set into the right side seam as worn, 4 cm down from the top edge.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH care label",
+     "Oliver Harvey wash instructions set under the OH woven label in the right side seam as worn: 65% recycled polyester / 35% organic cotton · 60° wash · tumble dry · 2 dot iron · do not bleach · P dry clean.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ]
+   ],
+   "mfg": [
+    "Make neck strap. Bag out one end. Fold in half and enclose raw edges. Edge stitch long edge to close seam.",
+    "Make loop. Fold in half and enclose raw edges. Edgestitch long edge. Loop height to finish 5.5 cm.",
+    "Make waist ties. Bag out one end, fold in half and enclose raw edges. Edge stitch long edge to close seam.",
+    "Set bib facing and insert neck strap right side as worn. Fold short strap in half and set to left side of bib as worn. Edge of neck strap / loop to finish in line with side of bib (no step). Edge stitched side of neck strap to be set to outside edge of bib and ensure good side of strap to topside.",
+    "Bib facing: fold in 10 mm to neaten lower edge. Edge stitch lower edge of facing, which forms 5.5 cm topstitching to front.",
+    "Top of bib 6 mm topstitched.",
+    "Armhole double turned and topstitching to finish 6 mm from edge.",
+    "Hem double turned and topstitching to finish 12 mm from edge.",
+    "Sides double turned and topstitching to finish 12 mm from edge. Insert waist ties to finish level with top of side seam. Insert labels.",
+    "Fold waist tie back on itself to fall away from garment and edge stitch down to width of strap to secure. At the left side as worn insert the OH tax tab before stitching down to the width of the strap."
+   ],
+   "fin": [
+    "Pressed, trimmed and folded sides in and bib up for display.",
+    "Tissue, set label and bag."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Width ± 1.5 cm · Across bib ± 1 cm · Length ± 1.5 cm",
+   "oneSize": true,
+   "variant": "OH3005TN",
+   "note": "Rebuilt from the works order text the app held (model AP3005B variant OH3005TN, navy, rating 1.10 m). No marker on the lay plan for the tie-neck variant. 1 Oct 2026."
+  },
+  {
+   "code": "OHAPP300515",
+   "name": "Navy bib apron in poly cotton with pocket — OH ties and towel loop",
+   "desc": "BIB APRON · Bib apron with centre pocket oliver harvey black non tangle waist ties towel loop in black oliver harvey non tangle tape",
+   "lectra": "Ap3005 butchers style with pocket / Standard pocket - cut 9\" x 11\" marker oh3005003",
+   "chart": "OHAPP300503-MEAS",
+   "fabrics": [
+    [
+     "Navy 65% recycled polyester / 35% organic cotton 200 gsm X133ECO-AM297 (Tiajo) — rating 1.00 m from All Costings",
+     "PC2015ECO",
+     "B4",
+     1.0,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread — main",
+     "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     70,
+     "CMP-THR-EP80-07935-15",
+     0.000714
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey British button woven label, set into the right side seam as worn, 4 cm down from the top edge.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH tax tab",
+     "Set level with the top edge of the left side of the pocket as worn.",
+     1,
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH care label",
+     "Oliver Harvey wash instructions set under the OH woven label in the right side seam as worn: 65% recycled polyester / 35% organic cotton · 60° wash · tumble dry · 2 dot iron · do not bleach · P dry clean.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "OH waist ties — black",
+     "Oliver Harvey black non tangle tape, cut 39\" for the waist band; \"Oliver Harvey\" to read from left to right on both sides of the apron.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey non tangle tape, cut 15\" from the roll, to read from top to bottom.",
+     0.38,
+     "",
+     0.25171
+    ]
+   ],
+   "mfg": [
+    "Make neck strap. Fold in half and enclose raw edges. Edge stitch long edge to close seam.",
+    "Set bib facing and insert neck strap. Edge of neck strap to finish in line with side of bib (no step)",
+    "Edge stitched side of neck strap to be set to outside edge of bib and ensure good side of strap to topside.",
+    "Bib facing - Fold in 10mm to neaten lower edge. Edge stitch lower edge of facing which forms 5.5cm topstitching to front",
+    "Top of bib 6mm topstitched.",
+    "Armhole double turned and topstitching to finish 6mm from edge. CUT TOWEL LOOP 15\" - OLIVER HARVEY TO READ FROM TOP TO BOTTOM . TOWEL LOOP POSITIONED 17CM FROM THE LEFT HAND SIDE OF SIDE SEAM . TOWEL LOOP TO BE FOLDED IN HALF INSERTED INSIDE BACK WAISTBAND - STITCHED DOWN ON THE FRONT FOLLOWING ARMHOLE STITCHING.",
+    "Hem - double turned and topstitching to finish 12mm from edge",
+    "Sides - double turned and topstitching to finish 12mm from edge",
+    "NOTE- Neaten armholes before side seam neatened",
+    "Insert waist tie neatly into top of side seam turning. Do NOT roll the tie above apron seam . CUT OLIVER HARVEY NON TANGLE TAPE FOR WAIST BAND AT 39\" \"OLIVER HARVEY\" TO READ FROM LEFT TO RIGHT ON BOTH SIDES OF THE APRON",
+    "Fold waist tie back on itself to fall away from garment and edge stitch down to width of strap to secure.",
+    "Pocket hem double turned and topstitched 1cm.",
+    "Edgestitch pocket to front. pocket set centrally within apron and bottom of pocket set 33cm (13\") up from finished hem .",
+    "2 stitch triangle to top of pocket to secure."
+   ],
+   "fin": [
+    "Check ,trim, press and fold. tissue, set product label to bottom right hand corner and then bag."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "variant": "3005 LARGE",
+   "note": "Trims coded from the trims list and the cloth rated, 1 Oct 2026; the making notes are the record's own (marker OH3005003)."
+  }
+ ]
+}

@@ -99,6 +99,11 @@ SELECT
         WHEN cust.CustomerAccountNumber = 'OLIVER'   THEN 'INTERCOMPANY - no works order'
         WHEN sorl.LineTypeID = 1                     THEN 'NOTE - free text'
         WHEN pg.Code = '54'                          THEN 'NOTE - charge or logo line'
+        /* A BULK code is the container stock of a garment (BULKTWAP052031P:
+           1,224 in the Bulk warehouse), made or bought in bulk and never cut
+           here, whatever its Manufacturer field says. Its Stock Held code is
+           not always set, so the prefix is read first (Luke, 1 Oct 2026). */
+        WHEN sorl.ItemCode LIKE 'BULK%'              THEN 'STOCK HELD'
         /* AnalysisCode3 is Tibard's "Stock Held" analysis code. */
         WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'     THEN 'STOCK HELD'
         WHEN sorl.ItemCode = 'FREETEXT'              THEN 'REVIEW - FREETEXT placeholder'
@@ -202,6 +207,7 @@ SELECT
         WHEN cust.CustomerAccountNumber = 'TIB003'   THEN 'INTERCOMPANY - no works order'
         WHEN sorl.LineTypeID = 1                     THEN 'NOTE - free text'
         WHEN pg.Code = '54'                          THEN 'NOTE - charge or logo line'
+        WHEN sorl.ItemCode LIKE 'BULK%'              THEN 'STOCK HELD'   -- container stock, as above
         /* TWO fields, and this is the important difference from Tibard.
            AnalysisCode3 is "Stock Held" and AnalysisCode7 is "Website".
            Oliver Harvey barely use Stock Held - 23 products out of 8,280 - and
