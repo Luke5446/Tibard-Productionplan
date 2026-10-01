@@ -2058,7 +2058,10 @@ function updateStats(){
     {key:'special',  label:'Special works orders', color:'#7A1F3D', n:smLiveCount(),
                      sub:smLiveUnits().toLocaleString()+' units'+(smPending.length?' &middot; '+smPending.length+' to review':'')},
     {key:'needswo',  label:'Needs making',       color:'#7A1F3D', n:rows.filter(function(r){return r.wopRec>0;}).length},
-    {key:'onwop',    label:'On a works order',   color:'#6d28d9', n:rows.filter(function(r){return r.onWOP>0;}).length},
+    // the works orders themselves, with their lines; the click still filters
+    // the buffer table to the products on one (Luke, 1 Oct 2026)
+    {key:'onwop',    label:'Live works orders',  color:'#6d28d9', n:WOs.length,
+                     sub:WOs.reduce(function(a,w){ return a+(w.items||[]).length; },0).toLocaleString()+' lines &middot; '+rows.filter(function(r){return r.onWOP>0;}).length+' buffer products'},
     {key:'latewop',  label:'Late WOPs',          color:'#b91c1c', n:nLateWOP},
   ];
   document.getElementById('statsBar').innerHTML=tiles.map(function(t){
