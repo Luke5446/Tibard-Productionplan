@@ -3510,16 +3510,31 @@ function cutCompletedOn(e){
 }
 function cutMetres(e){ return (e.metres!=null) ? e.metres : (e.std!=null ? e.std : 0); }
 function cutPrice(e){ var p=fabPriceFor(e.fabric); return p!=null ? p : null; }
-// WIP as at a date: cut on or before it, not completed by it.
+// WIP as at a date: fabric cut and not completed by then. Two sources: a line
+// the cutting room marked cut on or before the day, and a live works order
+// line the log never had (printed before the log began, or withdrawn as cut
+// before there was a list) which is taken as cut at its standard metres. A
+// line waiting on the log is still on the roll and is not WIP. Luke, 1 Oct 2026.
 function cutWip(asAt){
-  var d=asAt||d2s(now()), by={}, tot={metres:0, value:0, lines:0, unpriced:0};
-  cutLog.entries.forEach(function(e){
-    if(!e.cutAt || e.cancelledAt || e.cutAt>d) return;
-    var done=cutCompletedOn(e); if(done && done<=d) return;
-    var m=cutMetres(e), p=cutPrice(e), f=e.fabric||'(no fabric)';
-    if(!by[f]) by[f]={fabric:f, name:e.fabName||fabricNameFor(e.fabric), metres:0, value:0, lines:0, unpriced:false};
+  var d=asAt||d2s(now()), by={}, tot={metres:0, value:0, lines:0, logged:0, assumed:0, waiting:0, unpriced:0};
+  var add=function(fab, name, m, p, assumed){
+    var f=fab||'(no fabric)';
+    if(!by[f]) by[f]={fabric:f, name:name||fabricNameFor(fab), metres:0, value:0, lines:0, logged:0, assumed:0, loggedM:0, assumedM:0, unpriced:false};
     by[f].metres+=m; by[f].lines++; tot.metres+=m; tot.lines++;
+    if(assumed){ by[f].assumed++; by[f].assumedM+=m; tot.assumed++; } else { by[f].logged++; by[f].loggedM+=m; tot.logged++; }
     if(p!=null){ by[f].value+=m*p; tot.value+=m*p; } else { by[f].unpriced=true; tot.unpriced++; }
+  };
+  var live={}; cutLog.entries.forEach(function(e){ if(!e.cancelledAt) live[e.k]=e; });
+  cutLog.entries.forEach(function(e){
+    if(e.cancelledAt) return;
+    if(!e.cutAt){ tot.waiting++; return; }
+    if(e.cutAt>d) return;
+    var done=cutCompletedOn(e); if(done && done<=d) return;
+    add(e.fabric, e.fabName, cutMetres(e), cutPrice(e), false);
+  });
+  WOs.forEach(function(w){
+    var since=w.printedAt||w.createdAt||''; if(since && since>d) return;
+    cutEntriesFor(w).forEach(function(e){ if(live[e.k]) return; if(e.std==null) return; add(e.fabric, e.fabName, e.std, cutPrice(e), true); });
   });
   return {by:Object.keys(by).map(function(k){ return by[k]; }).sort(function(a,b){ return b.value-a.value; }), total:tot, asAt:d};
 }
@@ -3540,7 +3555,7 @@ function cutRender(){
   var todo=live.filter(function(e){ return !e.cutAt; }), cut=live.filter(function(e){ return !!e.cutAt; });
   var todayM=0, weekM=0, wk=new Date(now()); wk.setDate(wk.getDate()-6); var wkS=d2s(wk);
   cut.forEach(function(e){ var m=cutMetres(e); if(e.cutAt===today) todayM+=m; if(e.cutAt>=wkS) weekM+=m; });
-  var wip=cutWip(cutAsAt||today);
+  var wip=cutWip(today);
   var todoM=0; todo.forEach(function(e){ todoM+=e.std||0; });
   var late=todo.filter(function(e){ return e.printedAt && (new Date(today)-new Date(e.printedAt))/864e5>=CUT_LATE_DAYS; });
   var notPushed=IS_EDITOR ? cutNotPushed() : [];
@@ -3552,17 +3567,17 @@ function cutRender(){
     +(can?'<span class="sm-tag ok">this PC can mark cuts</span> ':'<span class="sm-tag">view only</span> ')
     +'<button class="btn" style="font-size:11px;padding:3px 9px" onclick="cutSetup()" title="The cutting room PC (and the editor, for the push on print) hold the GitHub token for the cutting log">'+(can?'&#9881; Token':'&#9881; Set up this PC')+'</button>'
     +'</div>'
-    +'<div class="sub">Printed works orders arrive here for the cutting room. Mark each one cut on the day; adjust the metres with a comment if the roll gave more or less. Completion in the planner still drives the Sage write-off; what is cut and not completed is work in progress.</div>'
+    +'<div class="sub">Printed works orders arrive here for the cutting room. Mark each one cut on the day; adjust the metres with a comment if the roll gave more or less. Completion in the planner still drives the Sage write-off; the fabric in work in progress is on the KPIs tab.</div>'
     +(IS_EDITOR && notPushed.length ? '<div class="sm-note">'+notPushed.length+' printed works order'+(notPushed.length===1?' is':'s are')+' not in the cutting log yet'+(can?': <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutPushPrinted(null, cutAfter)">&#8679; Push to the cutting room</button>':'. Set up this PC with the token and they go across on the next print.')+'</div>':'')
     +'</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0">'
     +'<div class="kpi-tile"><div class="l">To cut</div><div class="v">'+todo.length+'</div><div class="s">'+todoM.toFixed(1)+' m standard'+(late.length?' &middot; <b style="color:#b45309">'+late.length+' waiting '+CUT_LATE_DAYS+'+ days</b>':'')+'</div></div>'
     +'<div class="kpi-tile"><div class="l">Cut today</div><div class="v">'+todayM.toFixed(1)+' m</div><div class="s">'+cut.filter(function(e){ return e.cutAt===today; }).length+' lines</div></div>'
     +'<div class="kpi-tile"><div class="l">Cut, last 7 days</div><div class="v">'+weekM.toFixed(1)+' m</div><div class="s">from '+esc(fmtD(wkS))+'</div></div>'
-    +'<div class="kpi-tile"><div class="l">WIP: cut, not completed</div><div class="v">'+(wip.total.unpriced?'&ge; ':'')+'&pound;'+wip.total.value.toFixed(2)+'</div><div class="s">'+wip.total.metres.toFixed(1)+' m on '+wip.total.lines+' lines'+(wip.total.unpriced?' &middot; '+wip.total.unpriced+' unpriced':'')+'</div></div>'
+    +'<div class="kpi-tile"><div class="l">Live, not on the log</div><div class="v">'+wip.total.assumed+'</div><div class="s">lines taken as cut at standard &middot; WIP is on the KPIs tab</div></div>'
     +'</div>';
   var chip=function(k,l,n){ return '<button class="fab-chip'+(cutSec===k?' on':'')+'" onclick="cutSec=\''+k+'\'; cutRender()">'+l+(n!=null?'<span class="cnt">'+n+'</span>':'')+'</button>'; };
-  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',todo.length)+chip('log','Cut log',cut.length)+chip('days','Metres per day')+chip('wip','WIP by fabric')
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',todo.length)+chip('log','Cut log',cut.length)+chip('days','Metres per day')
     +'<input type="text" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutRender()" style="margin-left:auto;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:220px"></div>';
   var match=function(e){ if(!cutQ.trim()) return true; return smMatch([e.ref,e.code,e.desc,e.fabric,e.fabName,e.customer||''].join(' '), cutQ); };
   if(cutSec==='todo'){
@@ -3604,14 +3619,6 @@ function cutRender(){
     else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Day</th><th style="text-align:right">Lines</th><th style="text-align:right">Metres</th><th>By fabric</th></tr></thead><tbody>'
       +days.map(function(d){ var fabs=Object.keys(d.fabrics).sort(function(a,b){ return d.fabrics[b]-d.fabrics[a]; });
         return '<tr><td><strong>'+esc(fmtD(d.day))+'</strong></td><td style="text-align:right">'+d.lines+'</td><td style="text-align:right" class="fab-num">'+d.metres.toFixed(2)+'</td><td class="sm-sub">'+fabs.map(function(f){ return '<span style="font-family:monospace;font-size:11px">'+esc(f)+'</span> '+d.fabrics[f].toFixed(2)+' m'; }).join(' &middot; ')+'</td></tr>'; }).join('')
-      +'</tbody></table></div>';
-  }
-  if(cutSec==='wip'){
-    h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:12px">Work in progress as at <input type="date" value="'+esc(wip.asAt)+'" onchange="cutAsAt=this.value; cutRender()">'+(cutAsAt?' <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutAsAt=\'\'; cutRender()">today</button>':'')+'<span class="sm-sub" style="margin-left:auto">cut on or before that day and not completed by it &middot; valued at the fabric price the planner holds</span></div>';
-    if(!wip.by.length) h+='<div class="sm-empty">Nothing in work in progress as at '+esc(fmtD(wip.asAt))+'.</div>';
-    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Fabric</th><th style="text-align:right">Lines</th><th style="text-align:right">Metres</th><th style="text-align:right">&pound;/m</th><th style="text-align:right">Value</th></tr></thead><tbody>'
-      +wip.by.map(function(b){ var p=fabPriceFor(b.fabric); return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(b.fabric)+'</span><div class="sm-sub">'+esc(b.name||'')+'</div></td><td style="text-align:right">'+b.lines+'</td><td style="text-align:right" class="fab-num">'+b.metres.toFixed(2)+'</td><td style="text-align:right">'+(p!=null?p.toFixed(4):'<span class="sm-tag warn">no price</span>')+'</td><td style="text-align:right" class="fab-num">'+(p!=null?'&pound;'+b.value.toFixed(2):'&mdash;')+'</td></tr>'; }).join('')
-      +'<tr><td><strong>Total</strong></td><td style="text-align:right"><strong>'+wip.total.lines+'</strong></td><td style="text-align:right"><strong>'+wip.total.metres.toFixed(2)+'</strong></td><td></td><td style="text-align:right"><strong>'+(wip.total.unpriced?'&ge; ':'')+'&pound;'+wip.total.value.toFixed(2)+'</strong></td></tr>'
       +'</tbody></table></div>';
   }
   el.innerHTML=h;
@@ -4703,8 +4710,31 @@ function kpiRender(){
     +'<b>In stock</b> columns come from one snapshot per buffer paste'+(k.firstSnap?', starting '+fmtD(k.firstSnap):'')+'; nothing before that can be reconstructed.'
     +'</div></div>';
 
+  h+=kpiWipHtml();
   el.innerHTML=h;
   kpiWireTips(el);
+}
+// ── fabric in work in progress, for month end ─────────────────────────────
+var kpiWipAsAt='';
+function kpiWipHtml(){
+  if(!cutLog.loadedAt && !cutLog.error){ if(!cutBusy) cutLoad(function(){ var tk=document.getElementById('tabKpi'); if(tk && tk.classList.contains('on')) kpiRender(); }); return '<div class="kpi-sec" id="kpiWip"><h3>Fabric in work in progress</h3><div class="sub">Reading the cutting log&hellip;</div></div>'; }
+  var w=cutWip(kpiWipAsAt||d2s(now()));
+  var h='<div class="kpi-sec" id="kpiWip"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">Fabric in work in progress</h3>'
+    +'<span style="font-size:12px">as at <input type="date" value="'+esc(w.asAt)+'" onchange="kpiWipAsAt=this.value; kpiRender()">'+(kpiWipAsAt?' <button class="btn" style="font-size:11px;padding:2px 8px" onclick="kpiWipAsAt=\'\'; kpiRender()">today</button>':'')+'</span>'
+    +(cutLog.error?'<span style="color:#b91c1c;font-size:11px;font-weight:700">&#9888; cutting log: '+esc(cutLog.error)+'</span>':'')+'</div>'
+    +'<div class="sub">Cloth cut and not completed by that day, valued at the fabric price the planner holds. A line the cutting room marked cut counts at its cut metres; a live works order line the cutting log never had (printed before the log began) is taken as cut at standard; a line waiting on the log is still on the roll.</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0">'
+    +'<div class="kpi-tile"><div class="l">WIP value</div><div class="v">'+(w.total.unpriced?'&ge; ':'')+'&pound;'+w.total.value.toFixed(2)+'</div><div class="s">'+w.total.metres.toFixed(1)+' m'+(w.total.unpriced?' &middot; '+w.total.unpriced+' unpriced':'')+'</div></div>'
+    +'<div class="kpi-tile"><div class="l">Lines marked cut</div><div class="v">'+w.total.logged+'</div><div class="s">from the cutting log</div></div>'
+    +'<div class="kpi-tile"><div class="l">Lines taken as cut</div><div class="v">'+w.total.assumed+'</div><div class="s">live, not on the log, at standard</div></div>'
+    +'<div class="kpi-tile"><div class="l">Waiting to be cut</div><div class="v">'+w.total.waiting+'</div><div class="s">on the log, still on the roll &middot; not WIP</div></div>'
+    +'</div>';
+  if(!w.by.length) h+='<div class="sm-empty" style="padding:14px">Nothing in work in progress as at '+esc(fmtD(w.asAt))+'.</div>';
+  else h+='<div class="sm-tblwrap"><table class="fab-stk"><thead><tr><th>Fabric</th><th style="text-align:right">Lines</th><th style="text-align:right">Metres</th><th>Of which</th><th style="text-align:right">&pound;/m</th><th style="text-align:right">Value</th></tr></thead><tbody>'
+    +w.by.map(function(b){ var p=fabPriceFor(b.fabric); return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(b.fabric)+'</span><div class="sm-sub">'+esc(b.name||'')+'</div></td><td style="text-align:right">'+b.lines+'</td><td style="text-align:right" class="fab-num">'+b.metres.toFixed(2)+'</td><td class="sm-sub">'+(b.logged?b.loggedM.toFixed(2)+' m marked cut':'')+(b.logged&&b.assumed?' &middot; ':'')+(b.assumed?b.assumedM.toFixed(2)+' m taken as cut':'')+'</td><td style="text-align:right">'+(p!=null?p.toFixed(4):'<span class="sm-tag warn">no price</span>')+'</td><td style="text-align:right" class="fab-num">'+(p!=null?'&pound;'+b.value.toFixed(2):'&mdash;')+'</td></tr>'; }).join('')
+    +'<tr><td><strong>Total</strong></td><td style="text-align:right"><strong>'+w.total.lines+'</strong></td><td style="text-align:right"><strong>'+w.total.metres.toFixed(2)+'</strong></td><td></td><td></td><td style="text-align:right"><strong>'+(w.total.unpriced?'&ge; ':'')+'&pound;'+w.total.value.toFixed(2)+'</strong></td></tr>'
+    +'</tbody></table></div>';
+  return h+'</div>';
 }
 
 // One tooltip for every mark: the mark carries its own text in data-tip.

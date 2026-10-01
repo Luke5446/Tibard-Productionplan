@@ -14,9 +14,13 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 - **Cut log**: what was cut and when, searchable by works order, product or
   fabric, with the completion date or "in WIP".
 - **Metres per day**, by fabric.
-- **WIP by fabric**: cut and not completed, as at any date, valued at the
-  fabric price the planner holds. Month end and year end come from here.
-  The Sage fabric write-off stays on completion.
+
+The fabric in work in progress is on the **KPIs** tab: cloth cut and not
+completed as at any date, valued at the fabric price the planner holds, for
+month end and year end. A line the cutting room marked cut counts at its cut
+metres; a live works order line the log never had (printed before the log
+began) is taken as cut at standard; a line waiting on the log is still on the
+roll and is not WIP. The Sage fabric write-off stays on completion.
 
 Anyone who opens the planner sees the tab (read from GitHub Pages, up to a
 minute behind). Writing needs a GitHub token on the PC that writes: the
