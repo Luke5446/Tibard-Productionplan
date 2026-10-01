@@ -34,6 +34,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `OHAPP0596GD-2026-09-30.json` | OHAPP0596GD with its fabric code CO5014DEN and the rating corrected to 0.72 m, for the costing app. |
 | `S-OH116383-Pt1.xls` | Works order for OHAPP053403/07CT, the black retail bib apron with red contrast ties for CNM (JH). In the app as style OHAPP053403/07CT. |
 | `OHAPP053403-07CT-2026-09-30.json` | That record for the costing app. |
+| `CICJM0193-01-Stock.xlsx` | Stock works order for CICJM0193_ _ 01, the Tibard mandarin collar chef jacket, short sleeve with a mesh back (JH 2017, YL 2018/19). In the app as styles CICJM0193--01 and CICJM0193--03 (the black one derived from it). |
+| `CICJM0193-2026-10-01.json` | Those two records for the costing app. |
 | `OHAPP061268-2026-09-28.json` | The OHAPP061268 record in the same format, with the logo and sketch images. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
@@ -47,4 +49,3 @@ tabs have none). A second thread row, a contrast colour, keeps its own figure.
 A record imported from the costing app is brought to the standard as it comes
 in and again on every load, unless it carries `threadOwn: true`. The costing
 app should apply the same rule when a record is created there.
-

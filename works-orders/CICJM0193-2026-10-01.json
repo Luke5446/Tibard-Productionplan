@@ -1,0 +1,187 @@
+{
+ "source": "works-order-editor",
+ "exportedAt": "2026-10-01T07:59:54.043944Z",
+ "mode": "changes",
+ "styleCount": 2,
+ "note": "CICJM0193--01 and --03 - the Tibard mandarin collar chef jacket, short sleeve with a mesh back panel, from the stock works order CICJM0193_ _ 01 (JH 2017, YL 2018 and 2019). Main cloth PC2001ECO / PC2003ECO at 1.05 m, mesh 22909 at 0.25 m; chart CJ0193-SS; trims and making as the short-sleeve CICJ0193 records. The black record is the white one in black: no black works order has been seen.",
+ "styles": [
+  {
+   "code": "CICJM0193--01",
+   "name": "Tibard chef jacket, mandarin collar — short sleeve, mesh back, white",
+   "desc": "Chef jacket with mandarin collar · Short sleeve · Mesh back panel · Concealed stud fastening · Panelled back · Pen pocket on left sleeve as worn",
+   "lectra": "0193NEW — variant 0193SSMESH (cut standard pen pocket from waste)",
+   "chart": "CJ0193-SS",
+   "fabrics": [
+    [
+     "White 65% polyester / 35% cotton 195 gsm (P and R)",
+     "PC2001ECO",
+     "B2",
+     1.05,
+     2.14
+    ],
+    [
+     "Mesh quality 22909 white (Simplex) — back panel",
+     "MESH2290901",
+     "B5",
+     0.25,
+     1.1854
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     220,
+     "CMP-THR-PC075-32109-01",
+     0.0005055
+    ],
+    [
+     "Studs",
+     "10 x nickel plated ring press studs. Concealed female studs set to left front as worn, set before make-up. After make-up set male studs: align fronts and mark for male studs.",
+     10,
+     "",
+     null
+    ],
+    [
+     "Tibard tax tab",
+     "Set to left side seam as worn, 10 cm up from cut hem, to finish 8 cm from finished hem.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Tibard woven label",
+     "Set centrally to back panel, 4 cm down from finished neck seam. Edgestitch in position in same colour as garment.",
+     1,
+     "LABELTIB1900",
+     0.02542
+    ],
+    [
+     "Tibard centre fold label",
+     "Set to centre back neck into neck seam, on top of care label.",
+     1,
+     "LABELTIB4565",
+     0.02737
+    ],
+    [
+     "Care label",
+     "Tibard pre-printed care label / size: 65% polyester 35% cotton · 60° wash · tumble dry · do not bleach · 2 dot iron · P dry clean. Set underneath the Tibard centre fold label at centre back neck.",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Cutting: cut the standard pen pocket from waste. Set the female studs (x 10) pre-make-up — concealed, left front as worn.",
+    "Make collar and edgestitch.",
+    "Set pen pocket hem. Double turn and topstitch 1.5 cm.",
+    "Edgestitch pen pocket to left sleeve as worn. Set top of pocket 10 cm down from cut edge of sleeve. Back side of pocket to be in line with centre of sleeve.",
+    "Set Tibard label to back of jacket.",
+    "Join up on 5 thread. Neaten front facing edge. Join back panels, join shoulders, set collar, set sleeves, join underarm / side seam. Insert labels. Neaten body hem.",
+    "Set front facing. Stitch at width 13 cm from hem up and run up to neck, 6 mm topstitch back neck and then back down front. Ensure fronts lie flat.",
+    "Set body hem. Turn up 1.7 cm. Topstitch 1.5 cm.",
+    "Set short sleeve hem: double turn (1 cm + 1.6 cm) and topstitch 1.5 cm."
+   ],
+   "fin": [
+    "Mark and set male studs.",
+    "Check, trim and fold."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Chest ± 2 cm · Sleeve length ± 1 cm · Back length ± 1.5 cm",
+   "variant": "0193SSMESH",
+   "note": "Works order CICJM0193_ _ 01 stock (JH, created 9/11/17; set to short sleeve white mesh YL 5/1/18; mesh image added 9/1/18; wash temp 40 to 60 degrees YL 13/6/19; protection amended 2/11/21). Main cloth PC2001 at 1.05 m, mesh 22909 white at 0.25 m. Document: works-orders/CICJM0193-01-Stock.xlsx."
+  },
+  {
+   "code": "CICJM0193--03",
+   "name": "Tibard chef jacket, mandarin collar — short sleeve, mesh back, black",
+   "desc": "Chef jacket with mandarin collar · Short sleeve · Mesh back panel · Concealed stud fastening · Panelled back · Pen pocket on left sleeve as worn · Black",
+   "lectra": "0193NEW — variant 0193SSMESH (cut standard pen pocket from waste)",
+   "chart": "CJ0193-SS",
+   "fabrics": [
+    [
+     "Black 65% polyester / 35% cotton 195 gsm (P and R)",
+     "PC2003ECO",
+     "B1",
+     1.05,
+     2.32
+    ],
+    [
+     "Mesh quality 22909 black (Simplex) — back panel",
+     "MESH2290903",
+     "A1",
+     0.25,
+     1.3385
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     220,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Studs",
+     "10 x nickel plated ring press studs. Concealed female studs set to left front as worn, set before make-up. After make-up set male studs: align fronts and mark for male studs.",
+     10,
+     "",
+     null
+    ],
+    [
+     "Tibard tax tab",
+     "Set to left side seam as worn, 10 cm up from cut hem, to finish 8 cm from finished hem.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Tibard woven label",
+     "Set centrally to back panel, 4 cm down from finished neck seam. Edgestitch in position in same colour as garment.",
+     1,
+     "LABELTIB1900",
+     0.02542
+    ],
+    [
+     "Tibard centre fold label",
+     "Set to centre back neck into neck seam, on top of care label.",
+     1,
+     "LABELTIB4565",
+     0.02737
+    ],
+    [
+     "Care label",
+     "Tibard pre-printed care label / size: 65% polyester 35% cotton · 60° wash · tumble dry · do not bleach · 2 dot iron · P dry clean. Set underneath the Tibard centre fold label at centre back neck.",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Cutting: cut the standard pen pocket from waste. Set the female studs (x 10) pre-make-up — concealed, left front as worn.",
+    "Make collar and edgestitch.",
+    "Set pen pocket hem. Double turn and topstitch 1.5 cm.",
+    "Edgestitch pen pocket to left sleeve as worn. Set top of pocket 10 cm down from cut edge of sleeve. Back side of pocket to be in line with centre of sleeve.",
+    "Set Tibard label to back of jacket.",
+    "Join up on 5 thread. Neaten front facing edge. Join back panels, join shoulders, set collar, set sleeves, join underarm / side seam. Insert labels. Neaten body hem.",
+    "Set front facing. Stitch at width 13 cm from hem up and run up to neck, 6 mm topstitch back neck and then back down front. Ensure fronts lie flat.",
+    "Set body hem. Turn up 1.7 cm. Topstitch 1.5 cm.",
+    "Set short sleeve hem: double turn (1 cm + 1.6 cm) and topstitch 1.5 cm."
+   ],
+   "fin": [
+    "Mark and set male studs.",
+    "Check, trim and fold."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Chest ± 2 cm · Sleeve length ± 1 cm · Back length ± 1.5 cm",
+   "variant": "0193SSMESH",
+   "note": "Black colourway taken from the white works order CICJM0193_ _ 01 (the mesh in black, 22909/03): no black works order has been seen. Main cloth PC2003 at 1.05 m, mesh at 0.25 m."
+  }
+ ]
+}
