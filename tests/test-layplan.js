@@ -48,6 +48,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
      ap:(()=>{ const h=styleForCode('AP352801'); cap=''; printWOP('WO-1403','AP352801',30,null,null); return [h.style.code, h.size, u('AP352801'), /Finished width/.test(cap)?'chart':'-', smPrintable('AP352801')?'printable':'-'].join('|'); })(),
      wag:(()=>{ const h=styleForCode('WAGCJM0193XS01'), h2=styleForCode('WAGCJM01935201S'); cap=''; printWOP('WO-1419','WAGCJM0193XS01',12,null,null);
        return [h.style.code, h.size, h2.style.code+'/'+h2.size, h.style.fabrics.map(f=>f[1]+'/'+f[3]).join('+'), u('WAGCJM0193XS01'), /Wagamama logo on left breast/.test(cap)?'brand':'-', /89.5 cm/.test(cap)?'chart':'-', smIsStockStyle('WAGCJM0193XS01')?'stock':'own', /Set pen pocket|Edgestitch pen pocket/.test(h.style.mfg.join(' '))?'pocket':'no pocket'].join('|'); })(),
+     brown:(()=>{ const s=styleForCode('OHAPP300582').style; cap=''; printWOP('S-TIB871626-Pt1','OHAPP300582',55,null,null); return [s.fabrics[0][1], u('OHAPP300582'), s.trims.length, /BROWN 08975/.test(cap)?'thread':'-', /25cm wide by 20.5cm deep/.test(cap)?'chart':'-'].join('|'); })(),
      gd:(()=>{ const s=styleForCode('OHAPP0596GD').style; return [s.fabrics[0][1], s.fabrics[0][3], u('OHAPP0596GD')].join('|'); })(),
      gg:(()=>{ const s=styleForCode('OHAPP0534110/222CTS').style; cap=''; printWOP('S-OH116448-Pt1','OHAPP0534110/222CTS',12,null,null);
        return [s.variant, s.fabrics.map(f=>f[1]+'/'+f[3]).join('+'), s.trims.map(t=>t[3]).join(','), u('OHAPP0534110/222CTS'), (cap.match(/<th>Width \(skirt\)<\/th>/)?'chart':'-'), (cap.match(/Contrast marker<\/th><td[^>]*>AP0534CON/)?'con':'-'), /NO TAX TAB/.test(cap)?'notab':'-'].join('|'); })(),
@@ -91,7 +92,8 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && r.cnm==='CNM|CO5003ECO/0.5+CO5007/0.15|CO5003ECO/0.5475/marker AP0534380/CO5007:0.15|brand|chart|own'
    && r.olive==='6|CMP-THR-EP80-05742-83+LABELOH5771+TAXTABOH07/01+CMP-OH-LBL-WASH-01+CMP-OH-NTT-25-03|12|PC2083ECO/1/All Costings/|PC2083ECO'
    && r.ap==='AP352801||CO5001ECO/0.5/All Costings/|chart|printable'
-   && r.wag==='WAGCJM0193--01|XS|WAGCJM0193--01/52|PC2001ECO/1.35+MESH2290901/0.35|PC2001ECO/1.25/All Costings/MESH2290901:0.35|brand|chart|own|no pocket'
+   && r.wag==='WAGCJM0193--01|XS|WAGCJM0193--01/52|PC2001ECO/1.35+MESH2290901/0.35|PC2001ECO/1.35/All Costings/MESH2290901:0.35|brand|chart|own|no pocket'
+   && r.brown==='PC2082ECO|PC2082ECO/1/All Costings/|6|thread|chart'
    && r.cjm==='CICJM0193--01|XXS|0193SSMESH|PC2001ECO/1.05+MESH2290901/0.25|PC2001ECO/1.05/All Costings/MESH2290901:0.25|CICJM0193--03|PC2003ECO+MESH2290903|lectra|chart|printable'
    && r.gd==='CO5014DEN|0.72|CO5014DEN/0.715/marker 0596003/'
    && r.cvr==="Carmel Valley Ranch|PC9068/0.83|Embroidery|CMP-THR-EP80-08569-68,LABELOH5771,CMP-OH-LBL-WASH-01,,LEATHERHIDE,CMP-DR32-N254-287,CMP-STD-PST-9B-287,CMP-STD-SOC-9B-287,CMP-30ED-28-931,CMP-30RD-28-931,PKG-OH-GPS-500X750-01|70|logo|sketch|place|THREAD — COATS EPIC 80&#39;S BISCUIT 08569 — cost per metre"
