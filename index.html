@@ -3020,6 +3020,9 @@ function smRefreshWO(wo, o){
   if(o.custName && sm.custName!==o.custName){ sm.custName=o.custName; changed.push('customer'); }
   if(o.custOrder && (sm.custOrder||'')!==o.custOrder){ sm.custOrder=o.custOrder; changed.push('customer order'); }
   if(o.qty!=null && sm.sageQty!==o.qty){ var had=sm.sageQty!=null; sm.sageQty=o.qty; if(had || o.qty!==(wo.items[0]&&wo.items[0].qty)) changed.push('quantity in Sage now '+o.qty); }
+  // the line's number on the sheet moves when Sage renumbers (a line above
+  // it deleted): follow it without calling that a change to the order
+  if(o.seq!=null && sm.seq!==o.seq) sm.seq=o.seq;
   if(!changed.length) return false;
   sm.changedAt=d2s(now()); sm.changed=changed; return true;
 }
@@ -3170,7 +3173,7 @@ function smSharedNotes(ls, out, prev, here){
   var gq={}; ls.forEach(function(o){ if(o.cat.indexOf('NOTE')!==0) gq[o.key]=o.qty||0; });
   var byKey={}; out.forEach(function(n){ byKey[n.key]=n; });
   out.forEach(function(n){
-    delete n.shared; delete n.covers;
+    delete n.shared; delete n.covers; delete n.coverKeys;
     var q=n.qty||0; if(q<=1 || smNameLine(n.desc)) return;
     if(prev[n.key] && !here[prev[n.key]]) return;            // its garment has left the sheet: it stays that garment's
     var aq=(n.forKey && gq[n.forKey]!=null) ? gq[n.forKey] : null;
@@ -3199,9 +3202,14 @@ function smSharedNotes(ls, out, prev, here){
       if(!g.top) covers=[g.from, g.first-1];
       else { var next=null; for(var j=i+1;j<groups.length;j++){ if(!groups[j].top){ next=groups[j]; break; } } covers=[g.last+1, next ? next.first-1 : 999999]; }
       var sum=0; ls.forEach(function(o){ if(o.cat.indexOf('NOTE')!==0 && o.seq>=covers[0] && o.seq<=covers[1]) sum+=o.qty||0; });
+      // the block is kept by line key as well as line number: Sage renumbers
+      // the lines when one is deleted (a placeholder line taken out moved
+      // two jackets from lines 9 and 10 to 3 and 4), and a works order raised
+      // under the old numbering must still find its logo
+      var keys=[]; ls.forEach(function(o){ if(o.cat.indexOf('NOTE')!==0 && o.seq>=covers[0] && o.seq<=covers[1]) keys.push(o.key); });
       g.notes.forEach(function(n){ var q=n.qty||0;
-        if(!sum || Math.abs(q-sum)>Math.max(1, 0.1*sum)){ delete n.shared; delete n.covers; changed=true; }
-        else n.covers=covers; });
+        if(!sum || Math.abs(q-sum)>Math.max(1, 0.1*sum)){ delete n.shared; delete n.covers; delete n.coverKeys; changed=true; }
+        else { n.covers=covers; n.coverKeys=keys; } });
     });
     if(!changed) break;
   }
@@ -3245,7 +3253,9 @@ function smLogoFor(sm, code, withOff){
   if(!sm || !sm.lineKey || !smIsStockStyle(code)) return [];
   var seq=sm.seq, off=sm.logoOff||[];
   var all=(smNotes[smSoKey(sm)]||[]);
-  var shared=all.filter(function(n){ return n.shared && n.covers && seq!=null && seq>=n.covers[0] && seq<=n.covers[1]; });
+  var shared=all.filter(function(n){ if(!n.shared || !n.covers) return false;
+    if(n.coverKeys) return n.coverKeys.indexOf(sm.lineKey)>=0;                 // by line key: survives Sage renumbering the lines
+    return seq!=null && seq>=n.covers[0] && seq<=n.covers[1]; });            // notes kept before the keys were recorded
   var own=all.filter(function(n){ return n.forKey===sm.lineKey && !(n.shared && n.covers); });
   var list=shared.concat(own);   // the logos every jacket carries first, then this line's own names
   return withOff ? list : list.filter(function(n){ return off.indexOf(n.key)<0; });
