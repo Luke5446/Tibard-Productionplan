@@ -1340,6 +1340,7 @@ function renderWOCards(){
       var pdays=(u.days>=999?'':' &middot; '+u.days.toFixed(0)+'d stock');
       prioH='<div style="font-size:10px;font-weight:700;color:#fff;background:'+pcol+';border-radius:4px;padding:2px 7px;margin-bottom:4px;display:inline-block">#'+(pos+1)+' '+plbl+pdays+'</div><br>';
     }
+    var noTpl=wo.items.filter(function(it){ return !smPrintable(it.code); }).length;
     return '<div class="woc" onclick="openWOModal('+i+')" style="cursor:pointer">'+prioH
       +'<button class="woc-del" onclick="event.stopPropagation();delWO('+i+')" title="Remove WO (without completing)">&#10005;</button>'
       +'<button class="woc-edit" onclick="event.stopPropagation();editWODate('+i+')" title="Edit dates &amp; quantities">&#9998;</button>'
@@ -1353,8 +1354,11 @@ function renderWOCards(){
       +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
       +'<div style="font-size:10.5px;color:#1F3245;font-weight:700;margin-top:2px">'+esc(wo.items.slice(0,3).map(function(it){ return it.code; }).join(', ')+(wo.items.length>3?' +'+(wo.items.length-3)+' more':''))+'</div>'
       +(wo.sm?'<div style="font-size:10px;color:#6b7280;margin-top:2px">'+esc(smCustomerFor(wo.sm, wo.items[0]&&wo.items[0].code))
-        +(smPrintable(wo.items[0].code)?'':' &middot; <span style="color:#b45309;font-weight:700">no print template</span>')+'</div>'
-        +smLogoHtml(wo,'woc-logo'):'')
+        +(noTpl?' &middot; <span style="color:#b45309;font-weight:700">no print template</span>':'')+'</div>'
+        +smLogoHtml(wo,'woc-logo')
+        // a stock works order says so too: before, only a special make's card
+        // carried the warning and a stock one found out at the print button
+        :(noTpl?'<div style="font-size:10px;color:#b45309;font-weight:700;margin-top:2px">no print template'+(wo.items.length>1?' for '+noTpl+' of '+wo.items.length:'')+'</div>':''))
       +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
       +'<button class="btn" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button>'
       +'</div>';

@@ -34,7 +34,7 @@ const path = require('path');
  ck('template is in the style master, flagged, with trim costs', r.tplInMaster&&r.tplCosts);
  ck('no-branding (U) and extra-length (L) codes stay unmatched', r.unbranded===null&&r.long10===null, [r.unbranded,r.long10]);
  ck('CJ0193MM01 is a stock style; a special of the family still shows "no works order data"', r.stock&&r.specialFamily&&!r.specialPrints, r);
- ck('273 styles in the master', r.count===273, r.count);
+ ck('277 styles in the master', r.count===277, r.count);
 
  // ── printed works order: Tibard long sleeve, medium ──
  async function printOf(code, qty){
@@ -86,6 +86,19 @@ const path = require('path');
    return {t, listed:[...document.querySelectorAll('#tcStyles option')].some(o=>o.value==='OHCJ4007--93')}; });
  ck('trim costs for CJ0193LL01 show the Tibard labels with prices', tc.t.includes('CJ0193--01')&&tc.t.includes('LABELTIB4565')&&tc.t.includes('0.02737'), tc.t.slice(0,200));
  ck('new OH style listed in the helper', tc.listed);
+
+ // ── the works order card says "no print template" for a stock works order too, not only a special make ──
+ const cards=await p.evaluate(()=>{
+   WOs.push({ref:'WO-T1',start:'2026-09-30',due:'2026-10-14',items:[{code:'AP352801',qty:30}]});
+   WOs.push({ref:'WO-T2',start:'2026-09-30',due:'2026-10-13',items:[{code:'CICJM0193XXS01',qty:7}]});
+   WOs.push({ref:'WO-T3',start:'2026-09-30',due:'2026-10-13',items:[{code:'CJ0193MM01',qty:2},{code:'WAGCJM0193XS01',qty:12},{code:'AP352803',qty:1}]});
+   renderWOCards();
+   const t=ref=>{ const c=[...document.querySelectorAll('#woCards .woc')].find(e=>e.textContent.indexOf(ref)>=0); return c?c.textContent.replace(/\s+/g,' '):'no card'; };
+   const out={t1:/no print template/.test(t('WO-T1')), t2:/no print template/.test(t('WO-T2')), t3:(t('WO-T3').match(/no print template for 2 of 3/)||[''])[0]};
+   WOs.splice(WOs.findIndex(w=>w.ref==='WO-T1'),3); renderWOCards(); return out; });
+ ck('stock card without a record warns', cards.t1===true, cards);
+ ck('stock card with a record (CICJM0193XXS01) does not', cards.t2===false, cards);
+ ck('a card counts the lines without a template', cards.t3==='no print template for 2 of 3', cards);
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
