@@ -3403,7 +3403,9 @@ function cutSetup(){
 }
 function cutB64Enc(s){ return btoa(unescape(encodeURIComponent(s))); }
 function cutB64Dec(b){ return decodeURIComponent(escape(atob((b||'').replace(/\s/g,'')))); }
-function cutParse(txt){ var d=null; try{ d=JSON.parse(txt); }catch(e){ d=null; } if(!d || !Array.isArray(d.entries)) d={entries:[], savedAt:''}; return d; }
+function cutParse(txt){ var d=null; try{ d=JSON.parse(txt); }catch(e){ d=null; } if(!d || !Array.isArray(d.entries)) d={entries:[], savedAt:''};
+  // a line that reached the file twice (two PCs pushing at once) is one line
+  var seen={}, out=[]; d.entries.forEach(function(e){ if(!e || !e.k) return; if(seen[e.k]){ if(e.cutAt && !seen[e.k].cutAt) out[out.indexOf(seen[e.k])]=seen[e.k]=e; return; } seen[e.k]=e; out.push(e); }); d.entries=out; return d; }
 // Read the log: through the API when this PC has a token (fresh, and it
 // returns the sha a write needs), else the copy GitHub Pages serves.
 function cutLoad(cb){
@@ -3581,9 +3583,9 @@ function cutRender(){
     var list=cut.filter(match).filter(function(e){ return (!from||e.cutAt>=from) && (!to||e.cutAt<=to); }).sort(function(a,b){ return (b.cutAt+(b.at||'')).localeCompare(a.cutAt+(a.at||'')); });
     h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:12px">From <input type="date" value="'+esc(from)+'" onchange="cutFrom=this.value; cutRender()"> to <input type="date" value="'+esc(to)+'" onchange="cutTo=this.value; cutRender()">'+(cutFrom||cutTo?' <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutFrom=\'\'; cutTo=\'\'; cutRender()">last 30 days</button>':'')+'<span class="sm-sub" style="margin-left:auto">'+list.length+' lines &middot; '+list.reduce(function(s,e){ return s+cutMetres(e); },0).toFixed(1)+' m</span></div>';
     if(!list.length) h+='<div class="sm-empty">Nothing cut in that range'+(cutQ?' that matches':'')+'.</div>';
-    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Cut</th><th>Works order</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th style="text-align:right">Cut m</th><th>Comment</th><th>Completed</th><th></th></tr></thead><tbody>'
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Printed</th><th>Cut</th><th>Works order</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th style="text-align:right">Cut m</th><th>Comment</th><th>Completed</th><th></th></tr></thead><tbody>'
       +list.map(function(e){ var done=cutCompletedOn(e), adj=(e.metres!=null && e.std!=null && Math.abs(e.metres-e.std)>0.005);
-        return '<tr><td>'+esc(fmtD(e.cutAt))+'</td><td><strong>'+esc(e.ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+'</td>'
+        return '<tr><td>'+esc(fmtD(e.printedAt))+'</td><td>'+esc(fmtD(e.cutAt))+'</td><td><strong>'+esc(e.ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+'</td>'
           +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td><td style="text-align:right">'+esc(String(e.qty))+'</td>'
           +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'')+'</span></td><td style="text-align:right">'+(e.std!=null?e.std.toFixed(2):'&mdash;')+'</td>'
           +'<td style="text-align:right" class="fab-num"'+(adj?' style="text-align:right;color:#b45309"':'')+'>'+cutMetres(e).toFixed(2)+(adj?' <span class="sm-tag warn">'+(e.metres>e.std?'+':'')+(e.metres-e.std).toFixed(2)+'</span>':'')+'</td>'
