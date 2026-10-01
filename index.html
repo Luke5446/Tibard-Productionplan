@@ -285,6 +285,7 @@ body.planner-mode .planner-wrap{display:block}
 .fab-stk .sm-sub{color:#374151}
 .fab-stk .fab-num{font-weight:600}
 .fab-stk tr:last-child td{border-bottom:0}
+.cut-tbl tr.cut-first td{border-top:2px solid #e5e7eb}
 .emb-line{padding:3px 0;border-bottom:1px dotted #e5e7eb}.emb-line:last-of-type{border-bottom:0}.emb-txt{font-size:13.5px;user-select:all;cursor:text}.emb-logos{font-size:10.5px;color:#6b7280;margin-top:5px}
 .sm-ref-s{font-weight:700;color:#7A1F3D;font-size:12px;white-space:nowrap}
 .sm-ref-s.oh{color:#1f6b4a}
@@ -395,6 +396,7 @@ tr.fab-done td{color:#6b7280}
   <button id="tabKpi" onclick="smShowTab('kpi')">&#128202; KPIs</button>
   <button id="tabFabric" onclick="smShowTab('fabric')">&#129525; Fabric<span class="cnt" id="fabTabCount" style="display:none">0</span></button>
   <button id="tabEmb" onclick="smShowTab('emb')">&#129697; Embroidery<span class="cnt" id="embTabCount" style="display:none">0</span></button>
+  <button id="tabCut" onclick="smShowTab('cut')">&#9986; Cutting<span class="cnt" id="cutTabCount" style="display:none">0</span></button>
 </nav>
 
 <div class="viewer-banner">&#128065; Read-only view of the production buffer plan published by the production team. Tap any row for its stock runway. <span id="bannerDate" style="font-weight:700"></span></div>
@@ -607,6 +609,10 @@ tr.fab-done td{color:#6b7280}
 
   <div id="embView" class="hidden">
     <div id="embBody"></div>
+  </div>
+
+  <div id="cutView" class="hidden">
+    <div id="cutBody"></div>
   </div>
 
   <div id="fabView" class="hidden">
@@ -1069,6 +1075,7 @@ function delWO(i){ if(!IS_EDITOR) return;
   if(!confirm('Remove works order "'+wo.ref+'"?'+(special?'\n\nIts sales order line comes back to Special Makes for review on the next paste.':''))) return;
   WOs.splice(i,1);
   if(special) smRelease(wo);
+  cutCancel(wo);   // withdrawn from the cutting room's list
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); saveState();
 }
 
@@ -1760,14 +1767,18 @@ function markWOPrinted(i){ if(!IS_EDITOR) return;
   var wo=WOs[i]; if(!wo) return;
   wo.printed=true; wo.printedAt=d2s(now());
   saveState(); renderWOCards(); openWOModal(i);
+  if(cutCanWrite()) cutPushPrinted([wo], cutPushDone);   // to the cutting room
 }
+// After the push on print: a failure is said once, the card stays printed.
+function cutPushDone(ok, err){ if(!ok && err && err!=='no token') alert('The works order is printed, but the cutting log could not be updated: '+err+'\n\nUse "Push to the cutting room" on the Cutting tab when GitHub is back.'); var tc=document.getElementById('tabCut'); if(tc && tc.classList.contains('on')) cutRender(); }
 
 function printWOPTracked(i, code, qty){
   var wo=WOs[i]; if(!wo) return;
   var ok=printWOP(wo.ref, code, qty, wo.due||'', wo.sm||null);
   if(ok!==false){
-    wo.printed=true; wo.printedAt=d2s(now());
+    wo.printed=true; wo.printedAt=wo.printedAt||d2s(now());
     saveState(); renderWOCards(); openWOModal(i);   // refresh badge + tile visibility
+    if(cutCanWrite()) cutPushPrinted([wo], cutPushDone);   // to the cutting room
   }
 }
 
@@ -2781,10 +2792,13 @@ function smPrefix(c){ return c.indexOf('OLIVER')>=0 ? 'OH' : 'TIB'; }
 function smIsOH(c){ return (c||'').indexOf('OLIVER')>=0; }
 
 function smShowTab(which){
-  var sp = which==='special', kpi = which==='kpi', fab = which==='fabric', emb = which==='emb', buf = !sp && !kpi && !fab && !emb;
+  var sp = which==='special', kpi = which==='kpi', fab = which==='fabric', emb = which==='emb', cut = which==='cut', buf = !sp && !kpi && !fab && !emb && !cut;
   var te=document.getElementById('tabEmb'); if(te) te.classList.toggle('on', emb);
   var ev=document.getElementById('embView'); if(ev) ev.classList.toggle('hidden', !emb);
   if(emb) embRender();
+  var tc=document.getElementById('tabCut'); if(tc) tc.classList.toggle('on', cut);
+  var cv=document.getElementById('cutView'); if(cv) cv.classList.toggle('hidden', !cut);
+  if(cut) cutRender();
   document.getElementById('tabBuffer').classList.toggle('on', buf);
   document.getElementById('tabSpecial').classList.toggle('on', sp);
   var tk=document.getElementById('tabKpi'); if(tk) tk.classList.toggle('on', kpi);
@@ -3352,6 +3366,246 @@ function embRender(){
     +'</tbody></table></div>';
   el.innerHTML=h;
   var inp=document.getElementById('embQ'); if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CUTTING ROOM LOG
+// Printing a works order pushes its fabric lines to a small shared file, the
+// cutting log, that lives in its own GitHub repo (CUTLOG_REPO). The cutting
+// room PC marks each line cut, dated, and can adjust the metres with a
+// comment; everyone who opens the planner reads the log from GitHub Pages.
+// Writing goes through the GitHub contents API with a fine-grained token
+// that can reach that one repo and nothing else, kept in the browser of the
+// PC that writes (the cutting room's, and the editor's for the push on
+// print). Every save is a commit, so the log carries its own history.
+// The fabric write-off to Sage stays on completion (the cloth is still work
+// in progress until then); what has been cut and not completed is the WIP
+// figure for month end. Luke, 1 Oct 2026.
+var CUTLOG_REPO='Luke5446/Tibard-Cutlog', CUTLOG_FILE='cutlog.json';
+var CUTLOG_PAGES='https://luke5446.github.io/Tibard-Cutlog/'+CUTLOG_FILE;
+var CUTLOG_API='https://api.github.com/repos/'+CUTLOG_REPO+'/contents/'+CUTLOG_FILE;
+var CUT_LATE_DAYS=5;                     // printed this long ago and not cut: flagged
+var cutLog={entries:[], savedAt:'', sha:null, loadedAt:null, error:'', source:''};
+var cutBusy=false, cutQ='', cutSec='todo', cutAsAt='', cutFrom='', cutTo='', cutDayOpen={};
+function cutToken(){ try{ return localStorage.getItem('tibard_cutlog_token')||''; }catch(e){ return ''; } }
+function cutCanWrite(){ return !!cutToken(); }
+function cutSetup(){
+  var cur=cutToken();
+  var t=prompt((cur?'This PC can mark cuts. Paste a new token to replace it, or clear the box to stop this PC writing to the cutting log.':'Paste the GitHub token for the cutting log (a fine-grained token that can write the '+CUTLOG_REPO+' repo and nothing else).'), cur?'(kept)':'');
+  if(t===null) return;
+  t=t.trim();
+  try{ if(!t) localStorage.removeItem('tibard_cutlog_token'); else if(t!=='(kept)') localStorage.setItem('tibard_cutlog_token', t); }catch(e){ alert('Could not keep the token in this browser.'); }
+  cutLoad(function(){ cutRender(); });
+}
+function cutB64Enc(s){ return btoa(unescape(encodeURIComponent(s))); }
+function cutB64Dec(b){ return decodeURIComponent(escape(atob((b||'').replace(/\s/g,'')))); }
+function cutParse(txt){ var d=null; try{ d=JSON.parse(txt); }catch(e){ d=null; } if(!d || !Array.isArray(d.entries)) d={entries:[], savedAt:''}; return d; }
+// Read the log: through the API when this PC has a token (fresh, and it
+// returns the sha a write needs), else the copy GitHub Pages serves.
+function cutLoad(cb){
+  cutBusy=true; cutLog.error='';
+  var tok=cutToken();
+  var done=function(d, sha, src){ cutLog.entries=d.entries||[]; cutLog.savedAt=d.savedAt||''; cutLog.sha=sha||null; cutLog.loadedAt=new Date(); cutLog.source=src; cutBusy=false; if(cb) cb(true); };
+  var fail=function(msg){ cutLog.error=msg; cutBusy=false; if(cb) cb(false); };
+  if(tok){
+    fetch(CUTLOG_API+'?t='+Date.now(), {headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'}, cache:'no-store'})
+      .then(function(r){ if(r.status===404) return {empty:true}; if(!r.ok) throw new Error('GitHub said '+r.status+(r.status===401?' (token refused)':'')); return r.json(); })
+      .then(function(j){ if(j.empty){ done({entries:[]}, null, 'api'); return; } done(cutParse(cutB64Dec(j.content)), j.sha, 'api'); })
+      .catch(function(e){ fail(String(e.message||e)); });
+  } else {
+    fetch(CUTLOG_PAGES+'?t='+Date.now(), {cache:'no-store'})
+      .then(function(r){ if(r.status===404) return null; if(!r.ok) throw new Error('could not read the log ('+r.status+')'); return r.text(); })
+      .then(function(t){ done(t==null?{entries:[]}:cutParse(t), null, 'pages'); })
+      .catch(function(e){ fail(String(e.message||e)); });
+  }
+}
+// Write: read the latest copy, apply the change, put it back with its sha.
+// Another PC saving in between makes GitHub refuse the sha; then read again
+// and apply the change once more, so nothing of theirs is lost.
+function cutSave(message, mutate, cb, attempt){
+  var tok=cutToken(); if(!tok){ if(cb) cb(false,'no token'); return; }
+  attempt=attempt||1; cutBusy=true;
+  fetch(CUTLOG_API+'?t='+Date.now(), {headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'}, cache:'no-store'})
+    .then(function(r){ if(r.status===404) return {empty:true}; if(!r.ok) throw new Error('GitHub said '+r.status+(r.status===401?' (token refused)':'')); return r.json(); })
+    .then(function(j){
+      var d=j.empty ? {entries:[]} : cutParse(cutB64Dec(j.content)), sha=j.empty?null:j.sha;
+      if(mutate(d)===false){ cutLog.entries=d.entries; cutLog.sha=sha; cutBusy=false; if(cb) cb(true,'nothing to do'); return null; }
+      d.savedAt=new Date().toISOString();
+      var body={message:message, content:cutB64Enc(JSON.stringify(d,null,1))}; if(sha) body.sha=sha;
+      return fetch(CUTLOG_API, {method:'PUT', headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json','Content-Type':'application/json'}, body:JSON.stringify(body)})
+        .then(function(r){
+          if((r.status===409 || r.status===422) && attempt<3){ cutBusy=false; cutSave(message, mutate, cb, attempt+1); return null; }
+          if(!r.ok) throw new Error('GitHub refused the save ('+r.status+')');
+          return r.json().then(function(res){ cutLog.entries=d.entries; cutLog.savedAt=d.savedAt; cutLog.sha=(res&&res.content&&res.content.sha)||null; cutLog.loadedAt=new Date(); cutLog.error=''; cutBusy=false; if(cb) cb(true); });
+        });
+    })
+    .catch(function(e){ cutLog.error=String(e.message||e); cutBusy=false; if(cb) cb(false, cutLog.error); });
+}
+// The fabric lines of a works order: the main cloth and any extra (a mesh
+// back) each as a line, with the standard metres for the quantity.
+function cutKey(ref, code, fab){ return ref+'|'+code+'|'+(fab||''); }
+function cutEntriesFor(wo){
+  var out=[];
+  (wo.items||[]).forEach(function(it){
+    var rec=null; try{ rec=fabricRecordFor(it); }catch(e){ rec=null; }
+    var r=rows.filter(function(x){ return x.code===it.code; })[0];
+    var desc=r ? r.desc : (wo.sm ? wo.sm.desc : '');
+    var base={ref:wo.ref, code:it.code, desc:desc||'', qty:it.qty, due:wo.due||'', printedAt:wo.printedAt||d2s(now()), customer:wo.sm?(wo.sm.custName||wo.sm.customer||''):''};
+    var main=Object.assign({}, base, {k:cutKey(wo.ref,it.code,rec?rec.code:''), fabric:rec?rec.code:'', fabName:rec?(rec.name||''):'', std:rec?rec.std:null});
+    out.push(main);
+    ((rec&&rec.extras)||[]).forEach(function(x){ if(x.code) out.push(Object.assign({}, base, {k:cutKey(wo.ref,it.code,x.code), fabric:x.code, fabName:x.name||'', std:x.std, extra:true})); });
+  });
+  return out;
+}
+// Push the printed works orders that are not in the log yet (the print does
+// this as it happens; this catches up after a failure or a PC set up later).
+function cutPushPrinted(list, cb){
+  var wos=(list||WOs).filter(function(w){ return w.printed; });
+  if(!cutCanWrite()){ if(cb) cb(false,'no token'); return; }
+  cutSave('Printed: '+wos.map(function(w){ return w.ref; }).join(', '), function(d){
+    var have={}; d.entries.forEach(function(e){ have[e.k]=1; });
+    var n=0; wos.forEach(function(w){ cutEntriesFor(w).forEach(function(e){ if(!have[e.k]){ d.entries.push(e); have[e.k]=1; n++; } }); });
+    return n>0;
+  }, cb);
+}
+function cutNotPushed(){
+  var have={}; cutLog.entries.forEach(function(e){ have[e.k]=1; });
+  return WOs.filter(function(w){ return w.printed && cutEntriesFor(w).some(function(e){ return !have[e.k]; }); });
+}
+// A printed works order deleted in the planner: its uncut lines are
+// withdrawn from the cutting room's list rather than left asking to be cut.
+function cutCancel(wo){
+  if(!cutCanWrite() || !wo.printed) return;
+  cutSave('Withdrawn: '+wo.ref, function(d){ var n=0; d.entries.forEach(function(e){ if(e.ref===wo.ref && !e.cutAt && !e.cancelledAt){ e.cancelledAt=d2s(now()); n++; } }); return n>0; }, function(){ var tc=document.getElementById('tabCut'); if(tc && tc.classList.contains('on')) cutRender(); });
+}
+function cutAfter(ok, err){ if(!ok && err && err!=='no token') alert('The cutting log could not be saved: '+err+'\n\nNothing was lost - try again in a moment.'); cutRender(); }
+function cutMark(key){ if(!cutCanWrite()) return;
+  cutSave('Cut: '+key.split('|')[0], function(d){ var e=d.entries.filter(function(x){ return x.k===key; })[0]; if(!e || e.cutAt) return false; e.cutAt=d2s(now()); e.at=new Date().toISOString(); e.metres=e.std; return true; }, cutAfter); }
+function cutMarkWO(ref){ if(!cutCanWrite()) return;
+  cutSave('Cut: '+ref, function(d){ var n=0; d.entries.forEach(function(e){ if(e.ref===ref && !e.cutAt && !e.cancelledAt){ e.cutAt=d2s(now()); e.at=new Date().toISOString(); e.metres=e.std; n++; } }); return n>0; }, cutAfter); }
+function cutUnmark(key){ if(!cutCanWrite()) return; if(!confirm('Take the cut mark off this line?')) return;
+  cutSave('Cut mark removed: '+key.split('|')[0], function(d){ var e=d.entries.filter(function(x){ return x.k===key; })[0]; if(!e || !e.cutAt) return false; delete e.cutAt; delete e.at; delete e.metres; delete e.note; return true; }, cutAfter); }
+// The metres cut, when the roll gave more or less than the standard: a
+// figure and a comment saying why, kept on the line.
+function cutAdjust(key){ if(!cutCanWrite()) return;
+  var e=cutLog.entries.filter(function(x){ return x.k===key; })[0]; if(!e || !e.cutAt) return;
+  var m=prompt('Metres actually cut for '+e.ref+' '+e.code+' ('+e.fabric+')\nStandard '+(e.std!=null?e.std+' m':'unknown')+':', e.metres!=null?String(e.metres):'');
+  if(m===null) return; var n=parseFloat(m); if(isNaN(n)||n<0){ alert('Metres must be a number.'); return; }
+  var note=e.note||'';
+  if(e.std==null || Math.abs(n-e.std)>0.005){ note=prompt('Why is it '+(e.std!=null?(n>e.std?'more':'less')+' than the standard':'this figure')+'? (a comment is kept with the line)', note||''); if(note===null) return; if(!note.trim()){ alert('A comment is needed when the metres differ from the standard.'); return; } }
+  else note='';
+  cutSave('Metres adjusted: '+e.ref, function(d){ var x=d.entries.filter(function(y){ return y.k===key; })[0]; if(!x) return false; x.metres=Math.round(n*100)/100; x.note=note.trim(); x.adjustedAt=new Date().toISOString(); return true; }, cutAfter); }
+function cutCompletedOn(e){
+  var c=completedWOs.filter(function(x){ return x.ref===e.ref && x.code===e.code; })[0];
+  return c ? (c.completed||'') : '';
+}
+function cutMetres(e){ return (e.metres!=null) ? e.metres : (e.std!=null ? e.std : 0); }
+function cutPrice(e){ var p=fabPriceFor(e.fabric); return p!=null ? p : null; }
+// WIP as at a date: cut on or before it, not completed by it.
+function cutWip(asAt){
+  var d=asAt||d2s(now()), by={}, tot={metres:0, value:0, lines:0, unpriced:0};
+  cutLog.entries.forEach(function(e){
+    if(!e.cutAt || e.cancelledAt || e.cutAt>d) return;
+    var done=cutCompletedOn(e); if(done && done<=d) return;
+    var m=cutMetres(e), p=cutPrice(e), f=e.fabric||'(no fabric)';
+    if(!by[f]) by[f]={fabric:f, name:e.fabName||fabricNameFor(e.fabric), metres:0, value:0, lines:0, unpriced:false};
+    by[f].metres+=m; by[f].lines++; tot.metres+=m; tot.lines++;
+    if(p!=null){ by[f].value+=m*p; tot.value+=m*p; } else { by[f].unpriced=true; tot.unpriced++; }
+  });
+  return {by:Object.keys(by).map(function(k){ return by[k]; }).sort(function(a,b){ return b.value-a.value; }), total:tot, asAt:d};
+}
+function cutDays(from, to){
+  var by={};
+  cutLog.entries.forEach(function(e){ if(!e.cutAt || e.cancelledAt) return; if(from && e.cutAt<from) return; if(to && e.cutAt>to) return;
+    if(!by[e.cutAt]) by[e.cutAt]={day:e.cutAt, metres:0, lines:0, fabrics:{}};
+    var m=cutMetres(e); by[e.cutAt].metres+=m; by[e.cutAt].lines++;
+    var f=e.fabric||'(no fabric)'; by[e.cutAt].fabrics[f]=(by[e.cutAt].fabrics[f]||0)+m; });
+  return Object.keys(by).sort().reverse().map(function(k){ return by[k]; });
+}
+function cutRefresh(){ cutLoad(function(){ cutRender(); }); }
+function cutRender(){
+  var el=document.getElementById('cutBody'); if(!el) return;
+  var today=d2s(now()), can=cutCanWrite();
+  if(!cutLog.loadedAt && !cutLog.error && !cutBusy){ cutLoad(function(){ cutRender(); }); el.innerHTML='<div class="sm-empty">Reading the cutting log&hellip;</div>'; return; }
+  var live=cutLog.entries.filter(function(e){ return !e.cancelledAt; });
+  var todo=live.filter(function(e){ return !e.cutAt; }), cut=live.filter(function(e){ return !!e.cutAt; });
+  var todayM=0, weekM=0, wk=new Date(now()); wk.setDate(wk.getDate()-6); var wkS=d2s(wk);
+  cut.forEach(function(e){ var m=cutMetres(e); if(e.cutAt===today) todayM+=m; if(e.cutAt>=wkS) weekM+=m; });
+  var wip=cutWip(cutAsAt||today);
+  var todoM=0; todo.forEach(function(e){ todoM+=e.std||0; });
+  var late=todo.filter(function(e){ return e.printedAt && (new Date(today)-new Date(e.printedAt))/864e5>=CUT_LATE_DAYS; });
+  var notPushed=IS_EDITOR ? cutNotPushed() : [];
+  var h='<div class="kpi-sec" style="margin-top:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    +'<h3 style="margin:0">&#9986; Cutting room</h3>'
+    +'<span class="sm-sub" style="font-size:11px">'+(cutLog.error?'<span style="color:#b91c1c;font-weight:700">&#9888; '+esc(cutLog.error)+'</span>':(cutLog.loadedAt?'Log read '+cutLog.loadedAt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+(cutLog.savedAt?' &middot; last change '+esc(new Date(cutLog.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})):' &middot; nothing in it yet'):''))+'</span>'
+    +'<button class="btn" style="font-size:11px;padding:3px 9px" onclick="cutRefresh()">&#8635; Refresh</button>'
+    +'<span style="flex:1"></span>'
+    +(can?'<span class="sm-tag ok">this PC can mark cuts</span> ':'<span class="sm-tag">view only</span> ')
+    +'<button class="btn" style="font-size:11px;padding:3px 9px" onclick="cutSetup()" title="The cutting room PC (and the editor, for the push on print) hold the GitHub token for the cutting log">'+(can?'&#9881; Token':'&#9881; Set up this PC')+'</button>'
+    +'</div>'
+    +'<div class="sub">Printed works orders arrive here for the cutting room. Mark each one cut on the day; adjust the metres with a comment if the roll gave more or less. Completion in the planner still drives the Sage write-off; what is cut and not completed is work in progress.</div>'
+    +(IS_EDITOR && notPushed.length ? '<div class="sm-note">'+notPushed.length+' printed works order'+(notPushed.length===1?' is':'s are')+' not in the cutting log yet'+(can?': <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutPushPrinted(null, cutAfter)">&#8679; Push to the cutting room</button>':'. Set up this PC with the token and they go across on the next print.')+'</div>':'')
+    +'</div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0">'
+    +'<div class="kpi-tile"><div class="l">To cut</div><div class="v">'+todo.length+'</div><div class="s">'+todoM.toFixed(1)+' m standard'+(late.length?' &middot; <b style="color:#b45309">'+late.length+' waiting '+CUT_LATE_DAYS+'+ days</b>':'')+'</div></div>'
+    +'<div class="kpi-tile"><div class="l">Cut today</div><div class="v">'+todayM.toFixed(1)+' m</div><div class="s">'+cut.filter(function(e){ return e.cutAt===today; }).length+' lines</div></div>'
+    +'<div class="kpi-tile"><div class="l">Cut, last 7 days</div><div class="v">'+weekM.toFixed(1)+' m</div><div class="s">from '+esc(fmtD(wkS))+'</div></div>'
+    +'<div class="kpi-tile"><div class="l">WIP: cut, not completed</div><div class="v">'+(wip.total.unpriced?'&ge; ':'')+'&pound;'+wip.total.value.toFixed(2)+'</div><div class="s">'+wip.total.metres.toFixed(1)+' m on '+wip.total.lines+' lines'+(wip.total.unpriced?' &middot; '+wip.total.unpriced+' unpriced':'')+'</div></div>'
+    +'</div>';
+  var chip=function(k,l,n){ return '<button class="fab-chip'+(cutSec===k?' on':'')+'" onclick="cutSec=\''+k+'\'; cutRender()">'+l+(n!=null?'<span class="cnt">'+n+'</span>':'')+'</button>'; };
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',todo.length)+chip('log','Cut log',cut.length)+chip('days','Metres per day')+chip('wip','WIP by fabric')
+    +'<input type="text" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutRender()" style="margin-left:auto;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:220px"></div>';
+  var match=function(e){ if(!cutQ.trim()) return true; return smMatch([e.ref,e.code,e.desc,e.fabric,e.fabName,e.customer||''].join(' '), cutQ); };
+  if(cutSec==='todo'){
+    var byRef={}, order=[];
+    todo.filter(match).forEach(function(e){ if(!byRef[e.ref]){ byRef[e.ref]=[]; order.push(e.ref); } byRef[e.ref].push(e); });
+    order.sort(function(a,b){ return (byRef[a][0].due||'').localeCompare(byRef[b][0].due||'') || a.localeCompare(b); });
+    if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut'+(cutQ?' that matches':'')+'.</div>'; }
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th>Printed</th><th>Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th></th></tr></thead><tbody>'
+      +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
+        return es.map(function(e,i){
+          return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
+            +'<td>'+(i===0?esc(fmtD(first.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':''):'')+'</td><td>'+(i===0?esc(fmtD(first.due)):'')+'</td>'
+            +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
+            +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
+            +'<td style="text-align:right" class="fab-num">'+(e.std!=null?e.std.toFixed(2):'&mdash;')+'</td>'
+            +'<td>'+(can?'<button class="btn btn-p" style="font-size:11px;padding:2px 9px" onclick="cutMark(\''+esc(e.k)+'\')">&#10003; Cut</button>':'')+'</td></tr>'; }).join(''); }).join('')
+      +'</tbody></table></div>';
+  }
+  if(cutSec==='log'){
+    var from=cutFrom, to=cutTo; if(!from && !to){ var d30=new Date(now()); d30.setDate(d30.getDate()-30); from=d2s(d30); }
+    var list=cut.filter(match).filter(function(e){ return (!from||e.cutAt>=from) && (!to||e.cutAt<=to); }).sort(function(a,b){ return (b.cutAt+(b.at||'')).localeCompare(a.cutAt+(a.at||'')); });
+    h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:12px">From <input type="date" value="'+esc(from)+'" onchange="cutFrom=this.value; cutRender()"> to <input type="date" value="'+esc(to)+'" onchange="cutTo=this.value; cutRender()">'+(cutFrom||cutTo?' <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutFrom=\'\'; cutTo=\'\'; cutRender()">last 30 days</button>':'')+'<span class="sm-sub" style="margin-left:auto">'+list.length+' lines &middot; '+list.reduce(function(s,e){ return s+cutMetres(e); },0).toFixed(1)+' m</span></div>';
+    if(!list.length) h+='<div class="sm-empty">Nothing cut in that range'+(cutQ?' that matches':'')+'.</div>';
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Cut</th><th>Works order</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th style="text-align:right">Cut m</th><th>Comment</th><th>Completed</th><th></th></tr></thead><tbody>'
+      +list.map(function(e){ var done=cutCompletedOn(e), adj=(e.metres!=null && e.std!=null && Math.abs(e.metres-e.std)>0.005);
+        return '<tr><td>'+esc(fmtD(e.cutAt))+'</td><td><strong>'+esc(e.ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+'</td>'
+          +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td><td style="text-align:right">'+esc(String(e.qty))+'</td>'
+          +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'')+'</span></td><td style="text-align:right">'+(e.std!=null?e.std.toFixed(2):'&mdash;')+'</td>'
+          +'<td style="text-align:right" class="fab-num"'+(adj?' style="text-align:right;color:#b45309"':'')+'>'+cutMetres(e).toFixed(2)+(adj?' <span class="sm-tag warn">'+(e.metres>e.std?'+':'')+(e.metres-e.std).toFixed(2)+'</span>':'')+'</td>'
+          +'<td>'+esc(e.note||'')+'</td><td>'+(done?esc(fmtD(done)):'<span class="sm-tag">in WIP</span>')+'</td>'
+          +'<td style="white-space:nowrap">'+(can?'<button class="btn" style="font-size:10px;padding:1px 7px" onclick="cutAdjust(\''+esc(e.k)+'\')">&#9998; metres</button> <button class="btn" style="font-size:10px;padding:1px 7px" onclick="cutUnmark(\''+esc(e.k)+'\')" title="Take the cut mark off">&#10005;</button>':'')+'</td></tr>'; }).join('')
+      +'</tbody></table></div>';
+  }
+  if(cutSec==='days'){
+    var dfrom=cutFrom, dto=cutTo; if(!dfrom && !dto){ var d30b=new Date(now()); d30b.setDate(d30b.getDate()-30); dfrom=d2s(d30b); }
+    var days=cutDays(dfrom, dto);
+    h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:12px">From <input type="date" value="'+esc(dfrom)+'" onchange="cutFrom=this.value; cutRender()"> to <input type="date" value="'+esc(dto)+'" onchange="cutTo=this.value; cutRender()"><span class="sm-sub" style="margin-left:auto">'+days.reduce(function(s,d){ return s+d.metres; },0).toFixed(1)+' m over '+days.length+' day'+(days.length===1?'':'s')+'</span></div>';
+    if(!days.length) h+='<div class="sm-empty">Nothing cut in that range.</div>';
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Day</th><th style="text-align:right">Lines</th><th style="text-align:right">Metres</th><th>By fabric</th></tr></thead><tbody>'
+      +days.map(function(d){ var fabs=Object.keys(d.fabrics).sort(function(a,b){ return d.fabrics[b]-d.fabrics[a]; });
+        return '<tr><td><strong>'+esc(fmtD(d.day))+'</strong></td><td style="text-align:right">'+d.lines+'</td><td style="text-align:right" class="fab-num">'+d.metres.toFixed(2)+'</td><td class="sm-sub">'+fabs.map(function(f){ return '<span style="font-family:monospace;font-size:11px">'+esc(f)+'</span> '+d.fabrics[f].toFixed(2)+' m'; }).join(' &middot; ')+'</td></tr>'; }).join('')
+      +'</tbody></table></div>';
+  }
+  if(cutSec==='wip'){
+    h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:12px">Work in progress as at <input type="date" value="'+esc(wip.asAt)+'" onchange="cutAsAt=this.value; cutRender()">'+(cutAsAt?' <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutAsAt=\'\'; cutRender()">today</button>':'')+'<span class="sm-sub" style="margin-left:auto">cut on or before that day and not completed by it &middot; valued at the fabric price the planner holds</span></div>';
+    if(!wip.by.length) h+='<div class="sm-empty">Nothing in work in progress as at '+esc(fmtD(wip.asAt))+'.</div>';
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Fabric</th><th style="text-align:right">Lines</th><th style="text-align:right">Metres</th><th style="text-align:right">&pound;/m</th><th style="text-align:right">Value</th></tr></thead><tbody>'
+      +wip.by.map(function(b){ var p=fabPriceFor(b.fabric); return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(b.fabric)+'</span><div class="sm-sub">'+esc(b.name||'')+'</div></td><td style="text-align:right">'+b.lines+'</td><td style="text-align:right" class="fab-num">'+b.metres.toFixed(2)+'</td><td style="text-align:right">'+(p!=null?p.toFixed(4):'<span class="sm-tag warn">no price</span>')+'</td><td style="text-align:right" class="fab-num">'+(p!=null?'&pound;'+b.value.toFixed(2):'&mdash;')+'</td></tr>'; }).join('')
+      +'<tr><td><strong>Total</strong></td><td style="text-align:right"><strong>'+wip.total.lines+'</strong></td><td style="text-align:right"><strong>'+wip.total.metres.toFixed(2)+'</strong></td><td></td><td style="text-align:right"><strong>'+(wip.total.unpriced?'&ge; ':'')+'&pound;'+wip.total.value.toFixed(2)+'</strong></td></tr>'
+      +'</tbody></table></div>';
+  }
+  el.innerHTML=h;
 }
 
 // ── review queue helpers: tick + editable quantity, mirroring the buffer ───
