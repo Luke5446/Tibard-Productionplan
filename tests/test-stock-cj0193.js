@@ -34,7 +34,7 @@ const path = require('path');
  ck('template is in the style master, flagged, with trim costs', r.tplInMaster&&r.tplCosts);
  ck('no-branding (U) and extra-length (L) codes stay unmatched', r.unbranded===null&&r.long10===null, [r.unbranded,r.long10]);
  ck('CJ0193MM01 is a stock style; a special of the family still shows "no works order data"', r.stock&&r.specialFamily&&!r.specialPrints, r);
- ck('277 styles in the master', r.count===277, r.count);
+ ck('279 styles in the master', r.count===279, r.count);
 
  // ── printed works order: Tibard long sleeve, medium ──
  async function printOf(code, qty){
@@ -89,9 +89,9 @@ const path = require('path');
 
  // ── the works order card says "no print template" for a stock works order too, not only a special make ──
  const cards=await p.evaluate(()=>{
-   WOs.push({ref:'WO-T1',start:'2026-09-30',due:'2026-10-14',items:[{code:'AP352801',qty:30}]});
+   WOs.push({ref:'WO-T1',start:'2026-09-30',due:'2026-10-14',items:[{code:'ZZNOTPL01',qty:30}]});
    WOs.push({ref:'WO-T2',start:'2026-09-30',due:'2026-10-13',items:[{code:'CICJM0193XXS01',qty:7}]});
-   WOs.push({ref:'WO-T3',start:'2026-09-30',due:'2026-10-13',items:[{code:'CJ0193MM01',qty:2},{code:'WAGCJM0193XS01',qty:12},{code:'AP352803',qty:1}]});
+   WOs.push({ref:'WO-T3',start:'2026-09-30',due:'2026-10-13',items:[{code:'CJ0193MM01',qty:2},{code:'ZZNOTPL02',qty:12},{code:'AP352803',qty:1}]});
    renderWOCards();
    const t=ref=>{ const c=[...document.querySelectorAll('#woCards .woc')].find(e=>e.textContent.indexOf(ref)>=0); return c?c.textContent.replace(/\s+/g,' '):'no card'; };
    const out={t1:/no print template/.test(t('WO-T1')), t2:/no print template/.test(t('WO-T2')), t3:(t('WO-T3').match(/no print template for 2 of 3/)||[''])[0]};

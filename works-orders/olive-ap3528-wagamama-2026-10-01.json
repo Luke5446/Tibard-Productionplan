@@ -1,0 +1,258 @@
+{
+ "source": "works-order-editor",
+ "exportedAt": "2026-10-01T08:24:11.115307Z",
+ "mode": "changes",
+ "styleCount": 3,
+ "note": "OHAPP300583 (the olive green OH bib apron with pocket, rebuilt from its works order with coded trims), AP352801 (the Tibard white 100% cotton waist apron) and WAGCJM0193--01 (the Wagamama long sleeve mesh back jacket, 6\" longer, no pen pocket, with the logo on the left breast as the record's own branding), from the works orders of 1 Oct 2026.",
+ "styles": [
+  {
+   "code": "OHAPP300583",
+   "name": "Olive green bib apron with pocket — OH ties and towel loop",
+   "desc": "Bib apron · Patch pocket · OH black non tangle tape ties · Towel loop in OH black non tangle tape, left side as worn",
+   "lectra": "AP3005 — butchers width plus pocket: variant 3005 large with standard pocket (cut pocket 9\" x 11\") · marker OH3005003",
+   "chart": "OHAPP300583-MEAS",
+   "fabrics": [
+    [
+     "Olive green 200 gsm 65% recycled polyester / 35% organic cotton X133ECO-AM298 (Tiajo) — rating 1.00 m from All Costings, the works order leaves it blank",
+     "PC2083ECO",
+     "B4",
+     1.0,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread — main",
+     "THREAD — COATS EPIC 80'S OLIVE 05742 — cost per metre",
+     70,
+     "CMP-THR-EP80-05742-83",
+     0.000714
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey British button woven label, set 4 cm down from the right side seam as worn.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH tax tab",
+     "Red OH tax tab set to the top left side of the pocket as worn.",
+     1,
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "OH care label",
+     "Oliver Harvey wash instructions set under the OH woven label in the right side seam as worn: 65% recycled polyester / 35% organic cotton · 60° wash · tumble dry low · 2 dot iron · P dry clean · do not bleach.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "OH waist ties — black",
+     "OH black non tangle tape, cut 100 cm.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Towel loop",
+     "OH black non tangle tape, cut 39 cm from the roll.",
+     0.39,
+     "",
+     0.25171
+    ]
+   ],
+   "mfg": [
+    "Make neck strap. Fold in half and enclose raw edges. Edge stitch long edge to close seam.",
+    "Set bib facing and insert neck strap. Edge of neck strap to finish in line with side of bib (no step).",
+    "Edge stitched side of neck strap to be set to outside edge of bib and ensure good side of strap to topside.",
+    "Top of bib 6 mm topstitched.",
+    "Bib facing: fold in 10 mm to neaten lower edge. Edge stitch lower edge of facing, which forms 5.5 cm topstitching to front.",
+    "Armhole double turned and topstitching to finish 6 mm from edge. Insert towel loop: cut at 39 cm, fold in half and set 17 cm from cut edge of left side seam as worn. Stitch down towel loop to follow armhole stitching.",
+    "Hem double turned and topstitching to finish 12 mm from edge.",
+    "Sides double turned and topstitching to finish 12 mm from edge. Insert waist ties to finish level with top of side seam. Insert labels.",
+    "Set pocket hem: 1 cm double turned.",
+    "Set pocket centrally to front, 33 cm up from finished hem and centrally within width. Edge stitch in position. Insert red OH tax tab. Triangle stitch top of pocket mouth to secure.",
+    "Fold waist tie back on itself to fall away from garment and edge stitch down to width of strap to secure.",
+    "Double turn ends of waist tie to neaten."
+   ],
+   "fin": [
+    "Pressed, trimmed and folded sides in and bib up for display.",
+    "Tissue and label."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Width ± 1.5 cm · Across bib ± 1 cm · Neck strap ± 1 cm · Length ± 1.5 cm",
+   "oneSize": true,
+   "variant": "3005 LARGE",
+   "note": "Works order OHAPP300583 stock (JH 26/3/14; added to stock routing cards RCR190 JH 8/7/19; marker details amended YL 10/9/19; cloth to 195 gsm YL 30/7/20; to Tiajo X133ECO and care label JH 17/2/25). Document: works-orders/OHAPP300583-Stock.xlsx."
+  },
+  {
+   "code": "AP352801",
+   "name": "Tibard waist apron, white 100% cotton",
+   "desc": "Waist apron · Double hemmed all round · White non tangle tape ties",
+   "lectra": "AP3528 — waist apron, cut 36\" x 30\"",
+   "chart": "AP3528-MEAS",
+   "fabrics": [
+    [
+     "White 100% cotton 255 gsm — rating 0.50 m from All Costings, the works order says \"please advise\" (the 2017 works order names P&R 3110 CO5001; All Costings has the sustainable CO5001ECO)",
+     "CO5001ECO",
+     "A3",
+     0.5,
+     2.58
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     30,
+     "CMP-THR-PC075-32109-01",
+     0.0005055
+    ],
+    [
+     "Care label",
+     "Tibard pre-printed care instructions, set to the right side seam as worn 4 cm down from the top edge: 50° wash · 2 dot iron · do not tumble dry · P dry clean · do not bleach.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Ties",
+     "White non tangle tape ties, two rows of stitching to reinforce.",
+     2,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Double hem all round the apron.",
+    "Set the white non tangle tape ties with two rows of stitching to reinforce them."
+   ],
+   "fin": [
+    "Check, trim and fold."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Finished size ± 1.5 cm",
+   "oneSize": true,
+   "note": "Works order AP3528--01 stock (Yvonne 25/9/17; measurements amended YL 24/6/19; cloth from CO2001 3113 to CO5001 3110 JH 13/6/24). Document: works-orders/AP3528-01-Stock.xlsx. Sage also carries AP352803 (black poly cotton) and AP352815 (navy): no works orders seen for those."
+  },
+  {
+   "code": "WAGCJM0193--01",
+   "name": "Wagamama chef jacket, mandarin collar — long sleeve, mesh back, 6\" longer body, no pen pocket, white",
+   "desc": "Chef jacket with mandarin collar · Long sleeve · Body 6\" (15 cm) longer than the standard CJ0193 · Concealed stud fastening · Panelled back with mesh centre panel · No pen pocket · Wagamama logo on left breast as worn",
+   "lectra": "0193NEW — variant long sleeve, 6\" longer body with mesh back, no pen pocket",
+   "chart": "CJ0193-LS6",
+   "fabrics": [
+    [
+     "White 65% polyester / 35% cotton 195 gsm (P and R)",
+     "PC2001ECO",
+     "B2",
+     1.35,
+     2.14
+    ],
+    [
+     "Mesh quality 22909 white (Clarkson Knitting) — back centre panel",
+     "MESH2290901",
+     "B5",
+     0.35,
+     1.1854
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     220,
+     "CMP-THR-PC075-32109-01",
+     0.0005055
+    ],
+    [
+     "Studs",
+     "12 x nickel plated ring press studs — mark the extra studs from the marker. Concealed female studs set to left front as worn, set before make-up. After make-up set male studs: align fronts and mark for male studs.",
+     12,
+     "",
+     null
+    ],
+    [
+     "Tibard tax tab",
+     "Set to left side seam as worn, 10 cm up from cut hem, to finish 8 cm from finished hem.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Tibard woven label",
+     "Set centrally to back panel, 4 cm down from finished neck seam. Edgestitch in position in same colour as garment.",
+     1,
+     "LABELTIB1900",
+     0.02542
+    ],
+    [
+     "Tibard centre fold label",
+     "Set to centre back neck into neck seam, on top of care label.",
+     1,
+     "LABELTIB4565",
+     0.02737
+    ],
+    [
+     "Care label",
+     "Tibard pre-printed care label / size: 65% polyester 35% cotton · 60° wash · tumble dry · do not bleach · 2 dot iron · P dry clean. Set underneath the Tibard centre fold label at centre back neck.",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Cutting: set the female studs (x 12, the extra set marked from the marker) pre-make-up — concealed, left front as worn. No pen pocket.",
+    "Make collar and edgestitch.",
+    "Set Tibard label to back of jacket.",
+    "Join up on 5 thread. Neaten front facing edge. Join back panels, join shoulders, set collar, set sleeves, join underarm / side seam. Insert labels. Neaten body hem.",
+    "Set front facing. Stitch at width 13 cm from hem up and run up to neck, 6 mm topstitch back neck and then back down front. Ensure fronts lie flat.",
+    "Set body hem. Turn up 1.7 cm. Topstitch 1.5 cm.",
+    "Set long sleeve hem: double turn (1 cm + 1.6 cm) and topstitch 1.5 cm."
+   ],
+   "fin": [
+    "Mark and set male studs.",
+    "Check, trim and fold."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Chest ± 2 cm · Sleeve length ± 1 cm · Back length ± 1.5 cm",
+   "variant": "",
+   "alias": [
+    "WAGCJM0193--01S"
+   ],
+   "customer": "Wagamama",
+   "brandType": "Embroidery",
+   "brandPlace": "Wagamama logo on left breast as worn",
+   "logoImg": "",
+   "logo2Img": "",
+   "placeImg": "",
+   "note": "Works order WAGCJM0193_ _ 01S (JH 26/10/17; 6\" longer version RCR458 JH 23/4/26). Sage carries the codes without the S (WAGCJM0193XS01 to WAGCJM01935401), so both spellings match. Main cloth PC2001 at 1.35 m (All Costings has 1.25), mesh 22909 white at 0.35 m. The logo artwork is not in the works order file (its two drawings are the jacket sketch). Document: works-orders/WAGCJM0193-01S-Wagamama.xlsx."
+  }
+ ],
+ "charts": {
+  "AP3528-MEAS": [
+   [
+    "87 cm",
+    "70 cm"
+   ]
+  ]
+ },
+ "chartCols": {
+  "AP3528-MEAS": [
+   "Finished width",
+   "Finished length"
+  ]
+ }
+}
