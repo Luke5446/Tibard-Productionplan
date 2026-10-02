@@ -2801,7 +2801,7 @@ function smShowTab(which){
   if(emb) embRender();
   var tc=document.getElementById('tabCut'); if(tc) tc.classList.toggle('on', cut);
   var cv=document.getElementById('cutView'); if(cv) cv.classList.toggle('hidden', !cut);
-  if(cut) cutRender();
+  if(cut){ cutRender(); cutPollStart(); } else cutPollStop();
   document.getElementById('tabBuffer').classList.toggle('on', buf);
   document.getElementById('tabSpecial').classList.toggle('on', sp);
   var tk=document.getElementById('tabKpi'); if(tk) tk.classList.toggle('on', kpi);
@@ -3578,7 +3578,7 @@ function cutRender(){
     +'</div>';
   var chip=function(k,l,n){ return '<button class="fab-chip'+(cutSec===k?' on':'')+'" onclick="cutSec=\''+k+'\'; cutRender()">'+l+(n!=null?'<span class="cnt">'+n+'</span>':'')+'</button>'; };
   h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',todo.length)+chip('log','Cut log',cut.length)+chip('days','Metres per day')
-    +'<input type="text" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutRender()" style="margin-left:auto;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:220px"></div>';
+    +'<input type="text" id="cutQ" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutTyping=true; cutRender()" style="margin-left:auto;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:220px"></div>';
   var match=function(e){ if(!cutQ.trim()) return true; return smMatch([e.ref,e.code,e.desc,e.fabric,e.fabName,e.customer||''].join(' '), cutQ); };
   if(cutSec==='todo'){
     var byRef={}, order=[];
@@ -3622,7 +3622,15 @@ function cutRender(){
       +'</tbody></table></div>';
   }
   el.innerHTML=h;
+  if(cutTyping){ cutTyping=false; var inp=document.getElementById('cutQ'); if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }
 }
+// Two cutting room PCs: each reads the log again every minute while the tab
+// is open, so a mark made on the other shows up without a click. A save
+// re-reads first anyway, so marks never collide (GitHub refuses a stale sha).
+var cutTyping=false, cutPoll=null;
+function cutPollStart(){ cutPollStop(); cutPoll=setInterval(function(){ var tc=document.getElementById('tabCut'); if(!tc || !tc.classList.contains('on') || cutBusy) return;
+  var was=cutLog.savedAt; cutLoad(function(ok){ if(ok && cutLog.savedAt!==was && document.activeElement!==document.getElementById('cutQ')) cutRender(); }); }, 60000); }
+function cutPollStop(){ if(cutPoll){ clearInterval(cutPoll); cutPoll=null; } }
 
 // ── review queue helpers: tick + editable quantity, mirroring the buffer ───
 // Each pending line carries `take` (units to make, defaulting to the ordered

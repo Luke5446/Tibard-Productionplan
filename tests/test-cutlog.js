@@ -43,6 +43,10 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  // 2. the cutting room PC (a viewer with the token): the two lines wait; cut all; adjust the main cloth with a comment
  await open(false,'tok-cutting');
  const s2=await p.evaluate(()=>{ smShowTab('cut'); return new Promise(r=>setTimeout(()=>r({src:cutLog.source, rows:[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim().slice(0,60)), cutAll:!!document.querySelector('#cutBody button[onclick^="cutMarkWO"]'), todo:(document.querySelector('#cutBody .kpi-tile .v')||{}).textContent}),600)); });
+ // typing in the search box: the tab redraws on each key and the box keeps its focus and text
+ await p.click('#cutQ'); await p.keyboard.type('S-T1'); await p.waitForTimeout(200);
+ const sq=await p.evaluate(()=>({q:cutQ, val:document.getElementById('cutQ').value, focused:document.activeElement===document.getElementById('cutQ'), rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, polling:!!cutPoll}));
+ await p.evaluate(()=>{ cutQ=''; cutRender(); });
  await p.evaluate(()=>cutMarkWO('S-T1')); await p.waitForTimeout(600);
  const s3=entries().filter(e=>e.ref==='S-T1').map(e=>e.cutAt+':'+e.metres).sort();
  await p.evaluate(()=>{ const q=['8','roll end, 0.65 m short']; window.prompt=()=>q.shift(); cutAdjust('S-T1|CICJM0193XXS01|PC2001ECO'); }); await p.waitForTimeout(600);
@@ -70,11 +74,11 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
      kpiWipAsAt=''; kpiRender(); const kpiNow=(document.querySelector('#kpiWip .kpi-tile .v')||{}).textContent; const assumedNow=[...document.querySelectorAll('#kpiWip table tbody tr')].map(tr=>tr.children[3].textContent.trim());
      r({wipNow:cutWip('2026-10-02').total, wipBefore:cutWip('2026-10-01').total, done, kpiBefore, rowsBefore, kpiNow, assumedNow}); },600)); });
  console.log('printed   ->', JSON.stringify(s1), JSON.stringify(s1b), JSON.stringify(s1c));
- console.log('cutting   ->', JSON.stringify(s2)); console.log('marked    ->', JSON.stringify(s3), JSON.stringify(s4));
+ console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('marked    ->', JSON.stringify(s3), JSON.stringify(s4));
  console.log('figures   ->', JSON.stringify(s5)); console.log('conflict  ->', JSON.stringify(s6)); console.log('viewer    ->', JSON.stringify(s7)); console.log('completed ->', JSON.stringify(s8));
  const pass = s1.join('|')==='S-T1:CICJM0193XXS01:MESH2290901:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
    && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===2 && /mark cuts/.test(s1c.tag)
-   && s2.src==='api' && s2.rows.length===2 && s2.cutAll && s2.todo==='2'
+   && s2.src==='api' && s2.rows.length===2 && s2.cutAll && s2.todo==='2' && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.polling
    && s3.join()==='2026-10-01:1.75,2026-10-01:7.35' && s4.join('|')==='MESH2290901:1.75:|PC2001ECO:8:roll end, 0.65 m short'
    && /Cut today=9.8 m/.test(s5.tiles.join()) && /Live, not on the log=0/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP')
    && s5.day.length===1 && s5.day[0][2]==='9.75' && s5.wip.length===3 && s5.wip[0][0].startsWith('PC2001ECO') && s5.wip[0][5]==='£17.12' && s5.wip[2][5]==='£19.19' && Math.abs(s5.wipCalc.total.value-19.19)<0.01
