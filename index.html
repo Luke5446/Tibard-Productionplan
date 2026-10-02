@@ -396,6 +396,7 @@ tr.fab-done td{color:#6b7280}
   <button id="tabKpi" onclick="smShowTab('kpi')">&#128202; KPIs</button>
   <button id="tabFabric" onclick="smShowTab('fabric')">&#129525; Fabric<span class="cnt" id="fabTabCount" style="display:none">0</span></button>
   <button id="tabEmb" onclick="smShowTab('emb')">&#129697; Embroidery<span class="cnt" id="embTabCount" style="display:none">0</span></button>
+  <button id="tabCutRev" onclick="smShowTab('cutrev')" title="Printed works orders the cutting room cannot have yet: no fabric or no metres on file">&#128269; Cutting review<span class="cnt" id="cutRevCount" style="display:none">0</span></button>
   <button id="tabCut" onclick="smShowTab('cut')">&#9986; Cutting<span class="cnt" id="cutTabCount" style="display:none">0</span></button>
 </nav>
 
@@ -611,6 +612,9 @@ tr.fab-done td{color:#6b7280}
     <div id="embBody"></div>
   </div>
 
+  <div id="cutRevView" class="hidden">
+    <div id="cutRevBody"></div>
+  </div>
   <div id="cutView" class="hidden">
     <div id="cutBody"></div>
   </div>
@@ -1755,10 +1759,10 @@ function markWOPrinted(i){ if(!IS_EDITOR) return;
   var wo=WOs[i]; if(!wo) return;
   wo.printed=true; wo.printedAt=d2s(now());
   saveState(); renderWOCards(); openWOModal(i);
-  if(cutCanWrite()) cutPushPrinted([wo], cutPushDone);   // to the cutting room
+  if(cutCanWrite()) cutSync([wo], cutPushDone, 'Printed: '+wo.ref);   // to the cutting room
 }
 // After the push on print: a failure is said once, the card stays printed.
-function cutPushDone(ok, err){ if(!ok && err && err!=='no token') alert('The works order is printed, but the cutting log could not be updated: '+err+'\n\nUse "Push to the cutting room" on the Cutting tab when GitHub is back.'); var tc=document.getElementById('tabCut'); if(tc && tc.classList.contains('on')) cutRender(); }
+function cutPushDone(ok, err){ if(!ok && err && err!=='no token') alert('The works order is printed, but the cutting log could not be updated: '+err+'\n\nUse "Push to the cutting room" on the Cutting tab when GitHub is back.'); var tc=document.getElementById('tabCut'); if(tc && tc.classList.contains('on')) cutRender(); cutRevBadge(); }
 
 function printWOPTracked(i, code, qty){
   var wo=WOs[i]; if(!wo) return;
@@ -1766,7 +1770,7 @@ function printWOPTracked(i, code, qty){
   if(ok!==false){
     wo.printed=true; wo.printedAt=wo.printedAt||d2s(now());
     saveState(); renderWOCards(); openWOModal(i);   // refresh badge + tile visibility
-    if(cutCanWrite()) cutPushPrinted([wo], cutPushDone);   // to the cutting room
+    if(cutCanWrite()) cutSync([wo], cutPushDone, 'Printed: '+wo.ref);   // to the cutting room
   }
 }
 
@@ -2718,6 +2722,10 @@ function saveState(){
     if(ok || localOK){ var ind=document.getElementById('saveInd'); if(ind){ ind.innerHTML='\u2713 Saved'+(localOK?'':' (browser storage nearly full)'); setTimeout(function(){ ind.textContent=''; },2000); } }
     else saveFailed('localStorage and IndexedDB both refused');
   });
+  // every change to a works order reaches the cutting room (a line waiting
+  // there follows the works order; one already cut is left alone)
+  if(typeof cutRevBadge==='function') cutRevBadge();
+  if(typeof cutSyncSoon==='function') cutSyncSoon();
 }
 function stateSavedAt(){ try{ var raw=localStorage.getItem('tibard_production'); if(!raw) return ''; var m=/"savedAt":"([^"]*)"\s*\}\s*$/.exec(raw); return m?m[1]:''; }catch(e){ return ''; } }
 function loadState(){
@@ -2752,7 +2760,7 @@ function applyState(s){
 // whichever was saved later wins, because a save that localStorage refused
 // still reached IndexedDB. Nothing in either: the published file.
 function loadEditor(){
-  cutLoad(function(){});   // the cutting room's figures, for the works order panel and completion
+  cutLoad(function(){ cutRevBadge(); });   // the cutting room's figures, for the works order panel and completion
   var hadLocal=false; try{ hadLocal=!!localStorage.getItem('tibard_production'); }catch(e){}
   var haveRows=loadState(), localAt=stateLoadedAt;
   idbGet(function(json){
@@ -2848,7 +2856,10 @@ function smPrefix(c){ return c.indexOf('OLIVER')>=0 ? 'OH' : 'TIB'; }
 function smIsOH(c){ return (c||'').indexOf('OLIVER')>=0; }
 
 function smShowTab(which){
-  var sp = which==='special', kpi = which==='kpi', fab = which==='fabric', emb = which==='emb', cut = which==='cut', buf = !sp && !kpi && !fab && !emb && !cut;
+  var sp = which==='special', kpi = which==='kpi', fab = which==='fabric', emb = which==='emb', cut = which==='cut', rev = which==='cutrev', buf = !sp && !kpi && !fab && !emb && !cut && !rev;
+  var tr=document.getElementById('tabCutRev'); if(tr) tr.classList.toggle('on', rev);
+  var rv=document.getElementById('cutRevView'); if(rv) rv.classList.toggle('hidden', !rev);
+  if(rev) cutRevRender();
   var te=document.getElementById('tabEmb'); if(te) te.classList.toggle('on', emb);
   var ev=document.getElementById('embView'); if(ev) ev.classList.toggle('hidden', !emb);
   if(emb) embRender();
@@ -3503,36 +3514,93 @@ function cutSave(message, mutate, cb, attempt){
     })
     .catch(function(e){ cutLog.error=String(e.message||e); cutBusy=false; if(cb) cb(false, cutLog.error); });
 }
-// The fabric lines of a works order: the main cloth and any extra (a mesh
-// back) each as a line, with the standard metres for the quantity.
+// The fabric lines of a works order the cutting room can have: the main
+// cloth and any extra (a mesh back) each as a line, with the standard metres
+// for the quantity. A line with no fabric or no metres on file is not one of
+// them: it sits on the Cutting review tab for the PM until it has both.
 function cutKey(ref, code, fab){ return ref+'|'+code+'|'+(fab||''); }
 function cutEntriesFor(wo){
   var out=[];
   (wo.items||[]).forEach(function(it){
     var rec=null; try{ rec=fabricRecordFor(it); }catch(e){ rec=null; }
+    if(!rec || !rec.code || rec.std==null) return;
     var r=rows.filter(function(x){ return x.code===it.code; })[0];
     var desc=r ? r.desc : (wo.sm ? wo.sm.desc : '');
     var base={ref:wo.ref, code:it.code, desc:desc||'', qty:it.qty, due:wo.due||'', printedAt:wo.printedAt||d2s(now()), customer:wo.sm?(wo.sm.custName||wo.sm.customer||''):''};
-    var main=Object.assign({}, base, {k:cutKey(wo.ref,it.code,rec?rec.code:''), fabric:rec?rec.code:'', fabName:rec?(rec.name||''):'', std:rec?rec.std:null});
-    out.push(main);
-    ((rec&&rec.extras)||[]).forEach(function(x){ if(x.code) out.push(Object.assign({}, base, {k:cutKey(wo.ref,it.code,x.code), fabric:x.code, fabName:x.name||'', std:x.std, extra:true})); });
+    out.push(Object.assign({}, base, {k:cutKey(wo.ref,it.code,rec.code), fabric:rec.code, fabName:rec.name||'', std:rec.std}));
+    (rec.extras||[]).forEach(function(x){ if(x.code && x.std!=null) out.push(Object.assign({}, base, {k:cutKey(wo.ref,it.code,x.code), fabric:x.code, fabName:x.name||'', std:x.std, extra:true})); });
   });
   return out;
 }
-// Push the printed works orders that are not in the log yet (the print does
-// this as it happens; this catches up after a failure or a PC set up later).
-function cutPushPrinted(list, cb){
-  var wos=(list||WOs).filter(cutInScope);
+// Printed works order lines the cutting room cannot have yet, and why.
+function cutReviewLines(){
+  var out=[];
+  WOs.forEach(function(w, i){
+    if(!cutInScope(w)) return;
+    (w.items||[]).forEach(function(it){
+      var rec=null; try{ rec=fabricRecordFor(it, w); }catch(e){ rec=null; }
+      var why=(!rec || !rec.code) ? 'no fabric on file' : (rec.std==null ? 'no metres per garment for '+rec.code : '');
+      if(why) out.push({i:i, wo:w, it:it, fabric:rec?rec.code:'', why:why});
+      ((rec&&rec.extras)||[]).forEach(function(x){ if(x.code && x.std==null) out.push({i:i, wo:w, it:it, fabric:x.code, why:'no metres for the extra '+x.code}); });
+    });
+  });
+  return out;
+}
+function cutRevBadge(){ var el=document.getElementById('cutRevCount'); if(!el) return; var n=0; try{ n=cutReviewLines().length; }catch(e){} el.textContent=n; el.style.display=n?'':'none'; }
+// What the log should hold for these works orders against what it does. A
+// line already cut, or withdrawn, is left as it is whatever the works order
+// says now (Luke: "if it's already been cut, just ignore"). A line waiting
+// follows the works order - quantity, metres, due date - and goes if the
+// works order no longer calls for it (a fabric changed before the cut). A
+// line the works order now calls for is added, unless that product on that
+// works order has already been cut or withdrawn.
+function cutDiff(entries, wos){
+  var out={add:[], update:[], remove:[]};
+  var byRef={}; entries.forEach(function(e){ if(!byRef[e.ref]) byRef[e.ref]=[]; byRef[e.ref].push(e); });
+  wos.forEach(function(w){
+    var want={}; cutEntriesFor(w).forEach(function(e){ want[e.k]=e; });
+    var have=byRef[w.ref]||[], settled={}, keys={};
+    have.forEach(function(e){ keys[e.k]=1; if(e.cutAt || e.cancelledAt) settled[e.code]=1; });
+    have.forEach(function(e){
+      if(e.cutAt || e.cancelledAt) return;
+      var d=want[e.k];
+      if(!d){ out.remove.push(e); return; }
+      if(d.qty!==e.qty || d.std!==e.std || (d.due||'')!==(e.due||'') || (d.desc||'')!==(e.desc||'') || (d.fabName||'')!==(e.fabName||'') || (d.customer||'')!==(e.customer||'')) out.update.push({e:e, d:d});
+    });
+    Object.keys(want).forEach(function(k){ if(keys[k] || settled[want[k].code]) return; out.add.push(want[k]); });
+  });
+  return out;
+}
+function cutDiffEmpty(df){ return !df.add.length && !df.update.length && !df.remove.length; }
+function cutDiffApply(d, df){
+  df.remove.forEach(function(e){ var i=d.entries.indexOf(e); if(i>=0) d.entries.splice(i,1); });
+  df.update.forEach(function(u){ ['qty','std','due','desc','fabName','customer'].forEach(function(f){ u.e[f]=u.d[f]; }); });
+  df.add.forEach(function(e){ d.entries.push(e); });
+}
+// Bring the log into line with the printed works orders: on print, after a
+// change to a works order (a moment later, once the edit has settled), and
+// from the Push button after a failure or on a PC set up later.
+function cutSync(list, cb, message){
   if(!cutCanWrite()){ if(cb) cb(false,'no token'); return; }
-  cutSave('Printed: '+wos.map(function(w){ return w.ref; }).join(', '), function(d){
-    var have={}; d.entries.forEach(function(e){ have[e.k]=1; });
-    var n=0; wos.forEach(function(w){ cutEntriesFor(w).forEach(function(e){ if(!have[e.k]){ d.entries.push(e); have[e.k]=1; n++; } }); });
-    return n>0;
+  var wos=(list||WOs).filter(cutInScope);
+  if(!list && cutLog.loadedAt && cutDiffEmpty(cutDiff(cutLog.entries, wos))){ if(cb) cb(true,'nothing to do'); return; }
+  cutSave(message||('Works orders: '+(list?wos.map(function(w){ return w.ref; }).join(', '):'brought into line')), function(d){
+    var df=cutDiff(d.entries, wos); if(cutDiffEmpty(df)) return false; cutDiffApply(d, df); return true;
   }, cb);
 }
+function cutPushPrinted(list, cb){ cutSync(list, cb); }
+var cutSyncTimer=null;
+function cutSyncSoon(){
+  if(!IS_EDITOR || !cutCanWrite() || !cutLog.loadedAt) return;
+  if(cutSyncTimer) clearTimeout(cutSyncTimer);
+  cutSyncTimer=setTimeout(function(){ cutSyncTimer=null; if(cutBusy){ cutSyncSoon(); return; }
+    cutSync(null, function(ok, err){ if(!ok && err && err!=='no token') console.log('cutting log not updated:', err); var tc=document.getElementById('tabCut'); if(ok && err!=='nothing to do' && tc && tc.classList.contains('on')) cutRender(); var tr=document.getElementById('tabCutRev'); if(tr && tr.classList.contains('on')) cutRevRender(); }); }, 1500);
+}
+// Works orders whose lines on the log do not match them yet
 function cutNotPushed(){
-  var have={}; cutLog.entries.forEach(function(e){ have[e.k]=1; });
-  return WOs.filter(function(w){ return cutInScope(w) && cutEntriesFor(w).some(function(e){ return !have[e.k]; }); });
+  var wos=WOs.filter(cutInScope), df=cutDiff(cutLog.entries, wos), refs={};
+  df.add.forEach(function(e){ refs[e.ref]=1; }); df.update.forEach(function(u){ refs[u.e.ref]=1; }); df.remove.forEach(function(e){ refs[e.ref]=1; });
+  return wos.filter(function(w){ return refs[w.ref]; });
 }
 // A printed works order deleted in the planner: its uncut lines are
 // withdrawn from the cutting room's list rather than left asking to be cut.
@@ -3633,7 +3701,7 @@ function cutRender(){
     +'<button class="btn" style="font-size:11px;padding:3px 9px" onclick="cutSetup()" title="The cutting room PC (and the editor, for the push on print) hold the GitHub token for the cutting log">'+(can?'&#9881; Token':'&#9881; Set up this PC')+'</button>'
     +'</div>'
     +'<div class="sub">Printed works orders arrive here for the cutting room. Mark each one cut on the day: the metres start at the standard, change them with a comment if the roll gave more or less. Undo on the cut log puts a line back. Completion in the planner still drives the Sage write-off; the fabric in work in progress is on the KPIs tab.</div>'
-    +(IS_EDITOR && notPushed.length ? '<div class="sm-note">'+notPushed.length+' printed works order'+(notPushed.length===1?' is':'s are')+' not in the cutting log yet ('+esc(notPushed.slice(0,6).map(function(w){ return w.ref; }).join(', '))+(notPushed.length>6?', &hellip;':'')+')'+(can?': <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutPushPrinted(null, cutAfter)">&#8679; Push to the cutting room</button>':'. Set up this PC with the token and they go across on the next print.')+'</div>':'')
+    +(IS_EDITOR && notPushed.length ? '<div class="sm-note">'+notPushed.length+' printed works order'+(notPushed.length===1?' is':'s are')+' not on the cutting log as '+(notPushed.length===1?'it stands':'they stand')+' ('+esc(notPushed.slice(0,6).map(function(w){ return w.ref; }).join(', '))+(notPushed.length>6?', &hellip;':'')+')'+(can?': <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutSync(null, cutAfter)">&#8679; Push to the cutting room</button>':'. Set up this PC with the token and they go across on the next print.')+'</div>':'')
     +'</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0">'
     +'<div class="kpi-tile"><div class="l">To cut</div><div class="v">'+todo.length+'</div><div class="s">'+todoM.toFixed(1)+' m standard'+(late.length?' &middot; <b style="color:#b45309">'+late.length+' waiting '+CUT_LATE_DAYS+'+ days</b>':'')+'</div></div>'
@@ -3643,13 +3711,17 @@ function cutRender(){
     +'</div>';
   var chip=function(k,l,n){ return '<button class="fab-chip'+(cutSec===k?' on':'')+'" onclick="cutSec=\''+k+'\'; cutRender()">'+l+(n!=null?'<span class="cnt">'+n+'</span>':'')+'</button>'; };
   h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',todo.length)+chip('log','Cut log',cut.length)+chip('days','Metres per day')
-    +'<input type="text" id="cutQ" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutTyping=true; cutRender()" style="margin-left:auto;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:220px"></div>';
-  var match=function(e){ if(!cutQ.trim()) return true; return smMatch([e.ref,e.code,e.desc,e.fabric,e.fabName,e.customer||''].join(' '), cutQ); };
-  if(cutSec==='todo'){
+    +'<input type="text" id="cutQ" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutTyping=true; cutRender()" style="margin-left:6px;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:260px"></div>';
+  // Like the Embroidery tab: the lines come up for what is typed in the box,
+  // not as a list of everything (Luke, 2 Oct 2026)
+  var q=cutQ.trim();
+  var match=function(e){ if(!q) return false; return smMatch([e.ref,e.code,e.desc,e.fabric,e.fabName,e.customer||''].join(' '), q); };
+  if(!q && cutSec!=='days'){ h+='<div class="sm-empty" style="padding:18px">Type a works order number, a product code or a fabric to bring up its lines'+(cutSec==='todo'?' - '+todo.length+' waiting to be cut':' - '+cut.length+' on the log')+'.</div>'; }
+  if(cutSec==='todo' && q){
     var byRef={}, order=[];
     todo.filter(match).forEach(function(e){ if(!byRef[e.ref]){ byRef[e.ref]=[]; order.push(e.ref); } byRef[e.ref].push(e); });
     order.sort(function(a,b){ return (byRef[a][0].due||'').localeCompare(byRef[b][0].due||'') || a.localeCompare(b); });
-    if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut'+(cutQ?' that matches':'')+'.</div>'; }
+    if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut matches "'+esc(q)+'".</div>'; }
     else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th>Printed</th><th>Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th>'+(can?'Cut m &middot; comment':'')+'</th></tr></thead><tbody>'
       +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
         return es.map(function(e,i){
@@ -3663,11 +3735,11 @@ function cutRender(){
                 +'<button class="btn btn-p" style="font-size:11px;padding:2px 9px" onclick="cutMark(\''+esc(e.k)+'\')">&#10003; Cut</button>':'')+'</td></tr>'; }).join(''); }).join('')
       +'</tbody></table></div>';
   }
-  if(cutSec==='log'){
+  if(cutSec==='log' && q){
     var from=cutFrom, to=cutTo; if(!from && !to){ var d30=new Date(now()); d30.setDate(d30.getDate()-30); from=d2s(d30); }
     var list=cut.filter(match).filter(function(e){ return (!from||e.cutAt>=from) && (!to||e.cutAt<=to); }).sort(function(a,b){ return (b.cutAt+(b.at||'')).localeCompare(a.cutAt+(a.at||'')); });
     h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:12px">From <input type="date" value="'+esc(from)+'" onchange="cutFrom=this.value; cutRender()"> to <input type="date" value="'+esc(to)+'" onchange="cutTo=this.value; cutRender()">'+(cutFrom||cutTo?' <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutFrom=\'\'; cutTo=\'\'; cutRender()">last 30 days</button>':'')+'<span class="sm-sub" style="margin-left:auto">'+list.length+' lines &middot; '+list.reduce(function(s,e){ return s+cutMetres(e); },0).toFixed(1)+' m</span></div>';
-    if(!list.length) h+='<div class="sm-empty">Nothing cut in that range'+(cutQ?' that matches':'')+'.</div>';
+    if(!list.length) h+='<div class="sm-empty">Nothing cut in that range matches "'+esc(q)+'".</div>';
     else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Printed</th><th>Cut</th><th>Works order</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th style="text-align:right">Cut m</th><th>Comment</th><th>Completed</th><th></th></tr></thead><tbody>'
       +list.map(function(e){ var done=cutCompletedOn(e), adj=(e.metres!=null && e.std!=null && Math.abs(e.metres-e.std)>0.005);
         return '<tr><td>'+esc(fmtD(e.printedAt))+'</td><td>'+esc(fmtD(e.cutAt))+'</td><td><strong>'+esc(e.ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+'</td>'
@@ -3698,6 +3770,39 @@ var cutTyping=false, cutPoll=null;
 function cutPollStart(){ cutPollStop(); cutPoll=setInterval(function(){ var tc=document.getElementById('tabCut'); if(!tc || !tc.classList.contains('on') || cutBusy) return;
   var was=cutLog.savedAt; cutLoad(function(ok){ if(ok && cutLog.savedAt!==was && document.activeElement!==document.getElementById('cutQ')) cutRender(); }); }, 60000); }
 function cutPollStop(){ if(cutPoll){ clearInterval(cutPoll); cutPoll=null; } }
+// ── Cutting review: printed lines the cutting room cannot have yet ────────
+// A code with no fabric, or no metres, on file lands here for the PM rather
+// than on the cutting room's list with blanks. Put the fabric or the metres
+// right on the works order (or its record) and the line goes across on its
+// own; Push sends anything still waiting now. Luke, 2 Oct 2026.
+function cutRevAfter(ok, err){ if(!ok && err && err!=='no token') alert('The cutting log could not be saved: '+err+'\n\nNothing was lost - try again in a moment.'); cutRevRender(); var tc=document.getElementById('tabCut'); if(tc && tc.classList.contains('on')) cutRender(); }
+function cutRevRender(){
+  var el=document.getElementById('cutRevBody'); if(!el) return;
+  var lines=cutReviewLines(), can=cutCanWrite();
+  var pending=(IS_EDITOR && cutLog.loadedAt) ? cutNotPushed() : [];
+  var h='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    +'<h3 style="margin:0">&#128269; Cutting review</h3>'
+    +'<span class="sm-sub" style="font-size:11px">'+lines.length+' line'+(lines.length===1?'':'s')+' to check</span>'
+    +'<span style="flex:1"></span>'
+    +(IS_EDITOR && pending.length ? '<span class="sm-sub" style="font-size:11px">'+pending.length+' works order'+(pending.length===1?'':'s')+' with changes not on the cutting log</span> '+(can?'<button class="btn btn-p" style="font-size:11px;padding:3px 9px" onclick="cutSync(null, cutRevAfter)">&#8679; Push to cutting</button>':'<span class="sm-tag">set up this PC on the Cutting tab to push</span>'):'')
+    +'</div>'
+    +'<div class="sub">Printed works orders whose lines have no fabric or no metres on file, so the cutting room has not got them. Open the works order and put the fabric right (&#9998; fabric on the line) or the metres (the record\'s fabric rating); the line goes across to the Cutting tab on its own. A works order changed before it is cut replaces its lines on the cutting room\'s list; one already cut is left as cut.</div></div>';
+  if(!lines.length){ h+='<div class="sm-empty" style="padding:18px">Nothing to review: every printed works order has a fabric and metres on file.</div>'; el.innerHTML=h; return; }
+  var byRef={}, order=[];
+  lines.forEach(function(l){ if(!byRef[l.wo.ref]){ byRef[l.wo.ref]=[]; order.push(l.wo.ref); } byRef[l.wo.ref].push(l); });
+  order.sort(function(a,b){ return (byRef[a][0].wo.due||'').localeCompare(byRef[b][0].wo.due||'') || a.localeCompare(b); });
+  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th>Printed</th><th>Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Problem</th><th></th></tr></thead><tbody>'
+    +order.map(function(ref){ var ls=byRef[ref], w=ls[0].wo, cust=w.sm?(w.sm.custName||w.sm.customer||''):'';
+      return ls.map(function(l,i){ var r=rows.filter(function(x){ return x.code===l.it.code; })[0], desc=r?r.desc:(w.sm?w.sm.desc:'');
+        return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(cust?'<div class="sm-sub">'+esc(cust)+'</div>':''):'')+'</td>'
+          +'<td>'+(i===0?esc(fmtD(w.printedAt)):'')+'</td><td>'+(i===0?esc(fmtD(w.due)):'')+'</td>'
+          +'<td><span style="font-family:monospace;font-size:11px">'+esc(l.it.code)+'</span><div class="sm-sub">'+esc(desc||'')+'</div></td>'
+          +'<td style="text-align:right">'+esc(String(l.it.qty))+'</td>'
+          +'<td><span class="sm-tag warn">'+esc(l.why)+'</span></td>'
+          +'<td style="white-space:nowrap">'+(IS_EDITOR?'<button class="btn" style="font-size:11px;padding:2px 8px" onclick="openWOModal('+l.i+')">Open</button> <button class="btn" style="font-size:11px;padding:2px 8px" onclick="setFabricCode('+l.i+',\''+esc(l.it.code).replace(/'/g,"\\'")+'\')">&#9998; fabric</button>':'')+'</td></tr>'; }).join(''); }).join('')
+    +'</tbody></table></div>';
+  el.innerHTML=h;
+}
 
 // ── review queue helpers: tick + editable quantity, mirroring the buffer ───
 // Each pending line carries `take` (units to make, defaulting to the ordered
@@ -4266,7 +4371,8 @@ function setFabricCode(i, code){ if(!IS_EDITOR) return; var wo=WOs[i]; if(!wo) r
   fabricPick(it.fabricCode||'', code+' on '+wo.ref, function(v, all){
     if(v) it.fabricCode=v; else delete it.fabricCode;
     if(all) fabricOverrideSet(code, v);   // and every works order of this product from now on
-    saveState(); refreshWOModal(); renderWOCards(); if(document.getElementById('fabView') && !document.getElementById('fabView').classList.contains('hidden')) fabRender(); }, code); }
+    saveState(); refreshWOModal(); renderWOCards(); if(document.getElementById('fabView') && !document.getElementById('fabView').classList.contains('hidden')) fabRender();
+    var tr=document.getElementById('tabCutRev'); if(tr && tr.classList.contains('on')) cutRevRender(); }, code); }
 function fabSetFabric(idx){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c || fabState(c)!=='open') return;
   fabricPick(c.fabric&&c.fabric.code||'', c.code+' on '+c.ref, function(v, all){
     if(all) fabricOverrideSet(c.code, v);   // and every works order of this product from now on

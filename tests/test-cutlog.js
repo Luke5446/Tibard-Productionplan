@@ -3,7 +3,10 @@
 // and can adjust the metres with a comment; everyone else reads the copy
 // GitHub Pages serves. GitHub is stood in for here by an in-memory store
 // behind the two URLs, including one refused save (a stale sha) that the
-// app must read past and apply again. WIP = cut and not completed.
+// app must read past and apply again. WIP = cut and not completed. A line
+// with no fabric or metres on file goes to the Cutting review tab, not the
+// cutting room; a works order changed before the cut replaces its waiting
+// lines; one already cut is left alone. The lists come up for a search only.
 const { chromium } = require('playwright');
 const T=(a)=>a.join('\t');
 const buf=T(['APP300503','BLACK BIB APRON','40','120','0','30','90','160','300']);
@@ -29,24 +32,31 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  await open(true,'tok-editor');
  await p.evaluate(t=>{ document.getElementById('pasteTA').value=t; loadPaste();
    const mk=(ref,ta)=>{ document.getElementById('woRef').value=ref; document.getElementById('woStart').value='2026-09-30'; document.getElementById('woDue').value='2026-10-10'; document.getElementById('woTA').value=ta; saveWO(); };
-   mk('S-T1','CICJM0193XXS01\t7'); mk('S-T2','APP300503\t10');
+   mk('S-T1','CICJM0193XXS01\t7'); mk('S-T2','APP300503\t10'); mk('S-T3','ZZNOUSAGE\t5');
    document.getElementById('woRef').value='S-OLD'; document.getElementById('woStart').value='2026-09-01'; document.getElementById('woDue').value='2026-09-20'; document.getElementById('woTA').value='APP300503\t4'; saveWO();
    window.open=()=>({document:{open(){},write(){},close(){}}});
    printWOPTracked(WOs.findIndex(w=>w.ref==='S-T1'),'CICJM0193XXS01',7);
-   markWOPrinted(WOs.findIndex(w=>w.ref==='S-T2')); markWOPrinted(WOs.findIndex(w=>w.ref==='S-OLD')); }, buf);
+   markWOPrinted(WOs.findIndex(w=>w.ref==='S-T2')); markWOPrinted(WOs.findIndex(w=>w.ref==='S-OLD')); markWOPrinted(WOs.findIndex(w=>w.ref==='S-T3')); }, buf);
  await p.waitForTimeout(600);
  const s1=entries().map(e=>e.ref+':'+e.code+':'+e.fabric+':'+e.std+':'+(e.printedAt||'')+(e.extra?':extra':'')).sort();
+ // S-T3 has no fabric on file: not on the log, on the Cutting review tab with a badge
+ const r1=await p.evaluate(()=>{ smShowTab('cutrev'); return {lines:cutReviewLines().map(l=>l.wo.ref+':'+l.it.code+':'+l.why), badge:document.getElementById('cutRevCount').textContent, shown:document.getElementById('cutRevCount').style.display, rows:[...document.querySelectorAll('#cutRevBody .cut-tbl tbody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim()), fix:document.querySelectorAll('#cutRevBody button[onclick^="setFabricCode"]').length}; });
+ // the PM changes the quantity on S-T2 before it is cut: the waiting line follows, a moment later, on its own
+ await p.evaluate(()=>{ WOs.find(w=>w.ref==='S-T2').items[0].qty=12; saveState(); }); await p.waitForTimeout(2400);
+ const r2=entries().filter(e=>e.ref==='S-T2').map(e=>e.qty+':'+e.std+':'+(e.cutAt||'waiting'));
+ // the PM gives ZZNOUSAGE a fabric and a rating on its record: the line leaves review and goes across
+ await p.evaluate(()=>{ styleEdits['ZZNOUSAGE']={code:'ZZNOUSAGE', name:'TEST TUNIC', fabrics:[['Black poly cotton','PC2003ECO','',1.2,'']], trims:[]}; saveState(); }); await p.waitForTimeout(2400);
+ const r3={log:entries().filter(e=>e.ref==='S-T3').map(e=>e.fabric+':'+e.std+':'+e.qty), review:await p.evaluate(()=>({n:cutReviewLines().length, badge:document.getElementById('cutRevCount').style.display, empty:(document.querySelector('#cutRevBody .sm-empty')||{}).textContent||''}))};
  await p.evaluate(()=>{ delWO(WOs.findIndex(w=>w.ref==='S-T2')); }); await p.waitForTimeout(500);
  const s1b=entries().filter(e=>e.ref==='S-T2').map(e=>e.cancelledAt||'live');
- const s1c=await p.evaluate(()=>{ smShowTab('cut'); return new Promise(r=>setTimeout(()=>r({notPushed:cutNotPushed().length, rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, tag:(document.querySelector('#cutBody .sm-tag.ok')||{}).textContent||''}),500)); });
+ const s1c=await p.evaluate(()=>{ smShowTab('cut'); return new Promise(r=>setTimeout(()=>r({notPushed:cutNotPushed().length, rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, prompt:(document.querySelector('#cutBody .sm-empty')||{}).textContent||'', tag:(document.querySelector('#cutBody .sm-tag.ok')||{}).textContent||''}),500)); });
 
- // 2. the cutting room PC (a viewer with the token): the two lines wait; cut all; adjust the main cloth with a comment
+ // 2. the cutting room PC (a viewer with the token): nothing listed until a search; the works order's two lines come up; cut all; adjust the main cloth with a comment
  await open(false,'tok-cutting');
- const s2=await p.evaluate(()=>{ smShowTab('cut'); return new Promise(r=>setTimeout(()=>r({src:cutLog.source, rows:[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim().slice(0,60)), cutAll:!!document.querySelector('#cutBody button[onclick^="cutMarkWO"]'), todo:(document.querySelector('#cutBody .kpi-tile .v')||{}).textContent}),600)); });
- // typing in the search box: the tab redraws on each key and the box keeps its focus and text
+ const s2=await p.evaluate(()=>{ smShowTab('cut'); return new Promise(r=>setTimeout(()=>r({src:cutLog.source, rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, prompt:(document.querySelector('#cutBody .sm-empty')||{}).textContent||'', todo:(document.querySelector('#cutBody .kpi-tile .v')||{}).textContent, boxAfterChips:(function(){ var q=document.getElementById('cutQ'); return !!q && q.previousElementSibling && /Metres per day/.test(q.previousElementSibling.textContent) && q.style.marginLeft!=='auto'; })()}),600)); });
+ // typing in the search box: the tab redraws on each key and the box keeps its focus and text; the lines come up for the search
  await p.click('#cutQ'); await p.keyboard.type('S-T1'); await p.waitForTimeout(200);
- const sq=await p.evaluate(()=>({q:cutQ, val:document.getElementById('cutQ').value, focused:document.activeElement===document.getElementById('cutQ'), rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, polling:!!cutPoll}));
- await p.evaluate(()=>{ cutQ=''; cutRender(); });
+ const sq=await p.evaluate(()=>({q:cutQ, val:document.getElementById('cutQ').value, focused:document.activeElement===document.getElementById('cutQ'), rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, cutAll:!!document.querySelector('#cutBody button[onclick^="cutMarkWO"]'), polling:!!cutPoll}));
  // the main cloth gave more: 8 m with no comment is refused, with a comment it is taken; the mesh stays at standard
  const s3a=await p.evaluate(()=>{ document.querySelector('input[data-cutm="S-T1|CICJM0193XXS01|PC2001ECO"]').value='8'; cutMarkWO('S-T1'); return window.__alerts.length; });
  await p.waitForTimeout(300); const s3b=entries().filter(e=>e.ref==='S-T1'&&e.cutAt).length;
@@ -65,15 +75,21 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  const s6={retried:puts-putsBefore, cut:entries().filter(e=>e.fabric==='MESH2290901').map(e=>e.cutAt||'-').join(), alerts:(await p.evaluate(()=>window.__alerts.length))-alertsBefore};
  // a line that reached the file twice reads as one
  store=JSON.stringify(Object.assign(JSON.parse(store),{entries:JSON.parse(store).entries.concat([JSON.parse(store).entries[0]])}));
- // 4. anyone else: reads the Pages copy, sees the log, no buttons
+ // 4. anyone else: reads the Pages copy, sees the log for a search, no buttons
  await open(false,'');
- const s7=await p.evaluate(()=>{ smShowTab('cut'); cutSec='log'; return new Promise(r=>setTimeout(()=>r({src:cutLog.source, rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, buttons:document.querySelectorAll('#cutBody .cut-tbl button').length, tag:(document.querySelector('#cutBody .sm-tag')||{}).textContent||''}),600)); });
+ const s7=await p.evaluate(()=>{ smShowTab('cut'); cutSec='log'; cutQ='S-T1'; return new Promise(r=>setTimeout(()=>r({src:cutLog.source, n:cutLog.entries.length, rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, buttons:document.querySelectorAll('#cutBody .cut-tbl button').length, tag:(document.querySelector('#cutBody .sm-tag')||{}).textContent||''}),600)); });
  // 5. the editor completes the works order: it leaves WIP, the log shows the completion date; WIP as at the day before still counts it
  await open(true,'tok-editor');
  await p.waitForTimeout(500);
  const s9=await p.evaluate(()=>{ const i=WOs.findIndex(w=>w.ref==='S-T1'); openWOModal(i); const cell=fabricCellFor(i, WOs[i].items[0]).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
    return {loadedAtStartup:!!cutLog.loadedAt, cell:cell.slice(0,200), placeholder:(fabricCellFor(i, WOs[i].items[0]).match(/placeholder="([^"]*)"/)||[])[1]}; });
- const s8=await p.evaluate(()=>{ window.now=()=>new Date('2026-10-02T10:00:00'); completeWholeWO(WOs.findIndex(w=>w.ref==='S-T1')); smShowTab('cut'); cutSec='log';
+ // S-T1 is cut: a quantity change, then a fabric change, on the works order leave its cut lines as they are and add nothing
+ await p.evaluate(()=>{ WOs.find(w=>w.ref==='S-T1').items[0].qty=8; saveState(); }); await p.waitForTimeout(2400);
+ const r4=[...new Set(entries().filter(e=>e.ref==='S-T1').map(e=>e.fabric+':'+e.qty+':'+e.std+':'+(e.cutAt||'waiting')))].sort();   // (the file still holds the doubled line from step 3 until something is saved)
+ await p.evaluate(()=>{ const it=WOs.find(w=>w.ref==='S-T1').items[0]; it.qty=7; it.fabricCode='PC2003ECO'; saveState(); }); await p.waitForTimeout(2400);
+ const r5={lines:[...new Set(entries().filter(e=>e.ref==='S-T1').map(e=>e.fabric+':'+(e.cutAt||'waiting')))].sort(), notPushed:await p.evaluate(()=>cutNotPushed().length), review:await p.evaluate(()=>cutReviewLines().length)};
+ await p.evaluate(()=>{ delete WOs.find(w=>w.ref==='S-T1').items[0].fabricCode; saveState(); }); await p.waitForTimeout(2400);
+ const s8=await p.evaluate(()=>{ window.now=()=>new Date('2026-10-02T10:00:00'); completeWholeWO(WOs.findIndex(w=>w.ref==='S-T1')); smShowTab('cut'); cutSec='log'; cutQ='S-T1';
    return new Promise(r=>setTimeout(()=>{ cutRender(); const done=[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>tr.children[9].textContent.trim());
      smShowTab('kpi'); kpiWipAsAt='2026-10-01'; kpiRender(); const kpiBefore=(document.querySelector('#kpiWip .kpi-tile .v')||{}).textContent; const rowsBefore=document.querySelectorAll('#kpiWip table tbody tr').length;
      kpiWipAsAt=''; kpiRender(); const kpiNow=(document.querySelector('#kpiWip .kpi-tile .v')||{}).textContent; const assumedNow=[...document.querySelectorAll('#kpiWip table tbody tr')].map(tr=>tr.children[3].textContent.trim());
@@ -82,16 +98,20 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
      r({wipNow:cutWip('2026-10-02').total, wipBefore:cutWip('2026-10-01').total, done, kpiBefore, rowsBefore, kpiNow, assumedNow,
         rec:{actual:c.fabric.actual, std:c.fabric.std, source:c.fabric.source, note:c.fabric.cutNote, meshActual:c.fabric.extras[0].actual, meshStd:c.fabric.extras[0].std}, ledger:{metres:l.metres, varPct:Math.round(l.varPct*10)/10, note:l.cutNote}, rowHasNote:/roll end, 0.65 m short/.test(row)}); },600)); });
  console.log('printed   ->', JSON.stringify(s1), JSON.stringify(s1b), JSON.stringify(s1c));
+ console.log('review    ->', JSON.stringify(r1), JSON.stringify(r2), JSON.stringify(r3)); console.log('cut, edit ->', JSON.stringify(r4), JSON.stringify(r5));
  console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('marked    ->', s3a, s3b, JSON.stringify(s3), JSON.stringify(s4));
  console.log('figures   ->', JSON.stringify(s5)); console.log('conflict  ->', JSON.stringify(s6)); console.log('viewer    ->', JSON.stringify(s7)); console.log('panel     ->', JSON.stringify(s9)); console.log('completed ->', JSON.stringify(s8));
  const pass = s1.join('|')==='S-T1:CICJM0193XXS01:MESH2290901:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
-   && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===2 && /mark cuts/.test(s1c.tag)
-   && s2.src==='api' && s2.rows.length===2 && s2.cutAll && s2.todo==='2' && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.polling
+   && r1.lines.join()==='S-T3:ZZNOUSAGE:no fabric on file' && r1.badge==='1' && r1.shown==='' && r1.rows.length===1 && /S-T3.*ZZNOUSAGE.*5 ?no fabric on file.*Open.*fabric/.test(r1.rows[0]) && r1.fix===1
+   && r2.join()==='12:6:waiting' && r3.log.join()==='PC2003ECO:6:5' && r3.review.n===0 && r3.review.badge==='none' && /Nothing to review/.test(r3.review.empty)
+   && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===0 && /Type a works order.*3 waiting/.test(s1c.prompt) && /mark cuts/.test(s1c.tag)
+   && s2.src==='api' && s2.rows===0 && /Type a works order/.test(s2.prompt) && s2.todo==='3' && s2.boxAfterChips && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.cutAll && sq.polling
+   && r4.join('|')==='MESH2290901:7:1.75:2026-10-01|PC2001ECO:7:7.35:2026-10-01' && r5.lines.join('|')==='MESH2290901:2026-10-01|PC2001ECO:2026-10-01' && r5.notPushed===0 && r5.review===0
    && s3a===1 && s3b===0 && s3.join()==='2026-10-01:1.75,2026-10-01:8' && s4.join('|')==='MESH2290901:1.75::std|PC2001ECO:8:roll end, 0.65 m short:adj'
    && /Cut today=9.8 m/.test(s5.tiles.join()) && /Live, not on the log=0/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP'&&/Undo/.test(r[10]))
    && s5.day.length===1 && s5.day[0][2]==='9.75' && s5.wip.length===3 && s5.wip[0][0].startsWith('PC2001ECO') && s5.wip[0][5]==='£17.12' && s5.wip[2][5]==='£19.19' && Math.abs(s5.wipCalc.total.value-19.19)<0.01
    && s6.retried===2 && s6.cut==='2026-10-01' && s6.alerts===0
-   && s7.src==='pages' && s7.rows===2 && JSON.parse(store).entries.length===4 && s7.buttons===0 && s7.tag==='view only'
+   && s7.src==='pages' && s7.rows===2 && s7.n===4 && JSON.parse(store).entries.length===5 && s7.buttons===0 && s7.tag==='view only'
    && s8.wipNow.lines===1 && s8.wipNow.assumed===1 && Math.abs(s8.wipNow.value-4.64)<0.01 && s8.wipBefore.lines===3 && s8.wipBefore.logged===2 && Math.abs(s8.wipBefore.value-23.83)<0.01
    && s8.done.join()==='02 Oct 2026,02 Oct 2026' && s8.kpiBefore==='£23.83' && s8.rowsBefore===4 && s8.kpiNow==='£4.64' && s8.assumedNow.join('|')==='2.00 m taken as cut|'
    && s9.loadedAtStartup && /cut 01 Oct 2026 .middot; cutting room: 8 m .middot; roll end, 0.65 m short \(used as the actual\)/.test(s9.cell) && s9.placeholder==='8'
