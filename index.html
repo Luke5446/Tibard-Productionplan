@@ -387,7 +387,7 @@ tr.fab-done td{color:#6b7280}
 <div class="toolbar">
   <button class="btn btn-p edit-only" id="pasteBtn" onclick="togglePaste()">&#9998; Paste buffer stock data</button>
   <span id="skuCount" style="font-size:13px;font-weight:700;color:#7A1F3D;padding:0 4px"></span>
-  <div style="margin-left:auto;font-size:11px;color:#4b5563">Buffer target: <strong>28 days (4 wks)</strong> &nbsp;|&nbsp; Usage = 6-month sales ÷ 182 days</div>
+  <div style="margin-left:auto;font-size:11px;color:#4b5563">Buffer target: <strong>28 days (4 wks)</strong> &nbsp;|&nbsp; Usage = 6-month sales ÷ 182 days &nbsp;|&nbsp; <span id="contInfo"></span></div>
 </div>
 
 <nav class="smtabs non-warehouse" id="smTabs">
@@ -581,7 +581,7 @@ tr.fab-done td{color:#6b7280}
           <th onclick="sBy('inStock')" style="width:55px;text-align:right">In stock &#8597;</th>
           <th onclick="sBy('freeStock')" style="width:55px;text-align:right" title="In stock less On SOP, plus pipeline; in blue when it also counts units on a live works order">Free stock &#8597;</th>
           <th onclick="sBy('onSOP')" style="width:50px;text-align:right">On SOP &#8597;</th>
-          <th onclick="sBy('onPOP')" style="width:50px;text-align:right">On POP &#8597;</th>
+          <th onclick="sBy('onPOP')" style="width:50px;text-align:right" title="On purchase order in Sage (the paste). Clockwork containers from the stock planner show underneath with the date they land: blue when Sage already has the PO, grey when it does not yet">On POP &#8597;</th>
           <th onclick="sBy('s3m')" style="width:55px;text-align:right">3m sales &#8597;</th>
           <th onclick="sBy('s6m')" style="width:55px;text-align:right">6m sales &#8597;</th>
           <th onclick="sBy('dailyUsage')" style="width:52px;text-align:right">Daily use &#8597;</th>
@@ -2209,6 +2209,14 @@ function rowHTML(r){
   var free=(r.freeStock!=null)?r.freeStock:((r.inStock-r.onSOP)+(r.pipeline||0)+(r.onWOP||0));
   var freeH='<span style="font-weight:700;color:'+(free<0?'#b91c1c':(r.onWOP>0?'#1e40af':'#111827'))+'"'+(r.onWOP>0?' title="includes '+Math.round(r.onWOP).toLocaleString()+' on live works orders'+(r.pipeline>0?' and '+Math.round(r.pipeline).toLocaleString()+' in the pipeline':'')+'"':(r.pipeline>0?' title="includes '+Math.round(r.pipeline).toLocaleString()+' in the pipeline"':''))+'>'+Math.round(free).toLocaleString()+'</span>';
   var popH=r.onPOP>0?'<span style="font-weight:600;color:#1e40af">'+r.onPOP.toLocaleString()+'</span>':dash();
+  // Containers from the stock planner: the first to land named under the
+  // figure, every one in the hover. Blue when Sage already has the PO (the
+  // figure above), grey when the goods are not yet on the water.
+  var cs=contForCode(r.code);
+  if(cs.length){
+    popH='<span title="'+esc(cs.map(contLabel).join('\n'))+'">'+popH
+      +'<div style="font-size:9px;font-weight:600;white-space:nowrap;color:'+(r.onPOP>0?'#1e40af':'#6b7280')+'">&#128230; '+esc(contShort(cs[0]))+(cs.length>1?' +'+(cs.length-1):'')+'</div></span>';
+  }
   var rowCls='clickable'+(r.included?' row-ticked':'');
   var cbH='<input type="checkbox" class="inc-cb"'+(r.included?' checked':'')+' onclick="event.stopPropagation()" onchange="toggleIncl(\''+esc(r.code)+'\',this.checked)">';
   return '<tr class="'+rowCls+'" id="row-'+id+'" data-code="'+esc(r.code)+'">'
@@ -2231,6 +2239,55 @@ function rowHTML(r){
     +'</tr>';
 }
 
+// ── Containers on the water (from the stock planner) ──────────────────────
+// The stock planner publishes its container purchase orders, with the date
+// each one lands, on the same GitHub Pages site. They are read on every page
+// load so the runway and the On POP column can say WHEN Clockwork stock
+// arrives. Sage's On POP only knows a container once its PO is raised, which
+// is when the goods are on the water, and never knows the date. Nothing here
+// changes the WOP maths or is saved: it is information on the screen.
+var STOCK_PLAN_URL='https://luke5446.github.io/Tibard-Stock-Planner/data.json';
+var containers=[];                 // [{ref, date:'yyyy-mm-dd', items:[{code, qty}]}], soonest first
+var contInfo={state:'loading'};
+function fetchContainers(cb){
+  contInfo={state:'loading'}; renderContInfo();
+  fetch(STOCK_PLAN_URL+'?t='+Date.now(), {cache:'no-store'}).then(function(r){
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(s){
+    containers=((s&&s.cPOs)||[]).filter(function(po){ return po && po.ref && po.date && po.items && po.items.length; }).map(function(po){
+      return {ref:String(po.ref), date:String(po.date).slice(0,10),
+        items:po.items.filter(function(i){ return i && i.code && i.qty>0; }).map(function(i){ return {code:String(i.code).trim(), qty:+i.qty}; })};
+    }).filter(function(po){ return po.items.length; }).sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+    contInfo={state:'ok', savedAt:(s&&s.savedAt)||null, n:containers.length};
+    renderContInfo(); if(rows.length && !IS_WAREHOUSE) renderTable();
+    if(cb) cb(true);
+  }).catch(function(e){
+    containers=[]; contInfo={state:'error', error:String((e&&e.message)||e)};
+    renderContInfo(); if(rows.length && !IS_WAREHOUSE) renderTable();
+    if(cb) cb(false);
+  });
+}
+// Every container carrying this code, soonest first (lines for the same code on one container summed)
+function contForCode(code){
+  var out=[];
+  containers.forEach(function(po){
+    var q=0; po.items.forEach(function(i){ if(i.code===code) q+=i.qty; });
+    if(q>0) out.push({ref:po.ref, date:po.date, qty:q, days:daysUntil(po.date), late:(new Date(po.date)<now())});
+  });
+  return out;
+}
+function contShort(c){ return c.ref+' '+new Date(c.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}); }
+function contLabel(c){ return c.ref+': '+Math.round(c.qty).toLocaleString()+' lands '+fmtD(c.date)+(c.late?' (due, not yet booked in)':''); }
+function renderContInfo(){
+  var el=document.getElementById('contInfo'); if(!el) return;
+  if(contInfo.state==='ok'){
+    var sa=contInfo.savedAt?new Date(contInfo.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+    el.textContent='Containers: '+contInfo.n+' from the stock planner'+(sa?' (published '+sa+')':''); el.style.color='#1e40af';
+  } else if(contInfo.state==='error'){ el.textContent='Containers: stock planner not available'; el.style.color='#b91c1c'; }
+  else { el.textContent='Containers: reading the stock planner…'; el.style.color='#6b7280'; }
+}
+
 // ── Runway popup (day-by-day, weekly steps) ────────────────────────────────
 function openRWModal(code){
   var r=rows.find(function(x){return x.code===code;});
@@ -2241,16 +2298,22 @@ function openRWModal(code){
     var it=wo.items.find(function(i){return i.code===code;});
     if(it) landings.push({ref:wo.ref, days:daysUntil(wo.due), qty:it.qty});
   });
+  // Containers from the stock planner land the same way, on their date
+  var conts=contForCode(code);
+  conts.forEach(function(c){ landings.push({ref:c.ref, days:c.days, qty:c.qty, cont:true}); });
   landings.sort(function(a,b){return a.days-b.days;});
   document.getElementById('rwTitle').textContent=r.code+' — Stock Runway';
   var html='<div style="font-size:12px;color:#4b5563;margin-bottom:10px">'+esc(r.desc)
     +' &nbsp;|&nbsp; In stock: <strong>'+r.inStock.toLocaleString()+'</strong>'
     +' &nbsp;|&nbsp; Available: <strong>'+r.available.toLocaleString()+'</strong>'
     +' &nbsp;|&nbsp; Daily use: <strong>'+r.dailyUsage.toFixed(1)+'</strong>'
-    +' &nbsp;|&nbsp; Days stock: <strong>'+(r.daysOfStock>=999?'∞':r.daysOfStock.toFixed(0))+'</strong></div>';
+    +' &nbsp;|&nbsp; Days stock: <strong>'+(r.daysOfStock>=999?'∞':r.daysOfStock.toFixed(0))+'</strong>'
+    +(r.onPOP>0?' &nbsp;|&nbsp; On POP: <strong>'+r.onPOP.toLocaleString()+'</strong>':'')
+    +(conts.length?' &nbsp;|&nbsp; <span style="color:#1e40af">&#128230; '+conts.map(function(c){ return esc(c.ref)+' '+Math.round(c.qty).toLocaleString()+' lands '+new Date(c.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}); }).join(', ')+'</span>':'')
+    +'</div>';
   html+='<div style="overflow-x:auto"><table class="main" style="min-width:auto"><thead><tr>'
     +'<th style="text-align:left">Week</th><th style="text-align:left">Date</th><th style="text-align:right">Opening</th>'
-    +'<th style="text-align:left">WO completes</th><th style="text-align:right">Used</th><th style="text-align:right">Closing</th><th style="text-align:right">Days cover</th></tr></thead><tbody>';
+    +'<th style="text-align:left">WO completes / container lands</th><th style="text-align:right">Used</th><th style="text-align:right">Closing</th><th style="text-align:right">Days cover</th></tr></thead><tbody>';
   var stock=r.available, n=now();
   for(var wk=0;wk<=12;wk++){
     var wd=new Date(n.getTime()+wk*7*24*60*60*1000);
@@ -2263,7 +2326,7 @@ function openRWModal(code){
     var daysCover=r.dailyUsage>0?(closing/r.dailyUsage):999;
     var rc=closing<0?'background:#fef2f2':land.length?'background:#f0fdf4':'';
     var cc=closing<0?'#b91c1c':daysCover<7?'#92400e':'#065f46';
-    var landH=land.length?land.map(function(l){return '<span style="background:#ede9fe;color:#6d28d9;font-size:10px;padding:1px 5px;border-radius:10px;font-weight:600">+'+Math.round(l.qty)+' '+esc(l.ref)+'</span>';}).join(' '):'<span style="color:#e5e7eb">—</span>';
+    var landH=land.length?land.map(function(l){return '<span style="background:'+(l.cont?'#dbeafe':'#ede9fe')+';color:'+(l.cont?'#1e40af':'#6d28d9')+';font-size:10px;padding:1px 5px;border-radius:10px;font-weight:600"'+(l.cont?' title="Container from the stock planner"':'')+'>+'+Math.round(l.qty)+' '+(l.cont?'&#128230; ':'')+esc(l.ref)+'</span>';}).join(' '):'<span style="color:#e5e7eb">—</span>';
     html+='<tr style="'+rc+'"><td>Wk '+wk+'</td><td>'+wd.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+'</td>'
       +'<td style="text-align:right">'+Math.round(wk===0?r.available:prev).toLocaleString()+'</td>'
       +'<td>'+landH+'</td>'
@@ -2731,6 +2794,7 @@ document.addEventListener('DOMContentLoaded',function(){
   } else {
     fetchShared();
   }
+  fetchContainers();        // the stock planner's containers and when they land (every mode, read-only)
   document.getElementById('tBody').addEventListener('click',function(e){
     if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
     var tr=e.target.closest('tr');

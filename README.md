@@ -60,6 +60,18 @@ The file is created by the first push, so nothing needs adding to the repo by
 hand. When the token expires, GitHub emails a week ahead: make a new one and
 paste it on both PCs.
 
+## Containers on the water
+
+The stock planner publishes its container purchase orders, with the date each
+one lands, at `https://luke5446.github.io/Tibard-Stock-Planner/data.json`. The
+planner reads that file on every page load (editor, viewer and warehouse
+alike). Under the On POP figure the first container carrying the code is named
+with its landing date - blue when Sage already has the PO, grey when it does
+not yet, since the PO is raised in Sage only once the goods are on the water -
+with every container in the hover. The runway popup lands each container in
+its week, so the closing stock there follows the real arrivals. Nothing is
+saved and the WOP maths are unchanged: Sage's On POP stays the stock on order.
+
 ## Where the editor's data is kept
 
 In the browser, in two places at once: `localStorage` and IndexedDB, under the
