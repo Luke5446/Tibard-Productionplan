@@ -2775,7 +2775,9 @@ function applyState(s){
 // whichever was saved later wins, because a save that localStorage refused
 // still reached IndexedDB. Nothing in either: the published file.
 function loadEditor(){
-  cutLoad(function(){ cutRevBadge(); });   // the cutting room's figures, for the works order panel and completion
+  // the cutting room's figures, for the works order panel and completion;
+  // then the log is brought into line with the works orders without a click
+  cutLoad(function(){ cutRevBadge(); cutSyncSoon(); });
   var hadLocal=false; try{ hadLocal=!!localStorage.getItem('tibard_production'); }catch(e){}
   var haveRows=loadState(), localAt=stateLoadedAt;
   idbGet(function(json){
