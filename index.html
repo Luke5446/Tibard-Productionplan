@@ -3538,11 +3538,14 @@ function cutEntriesFor(wo){
   var out=[];
   (wo.items||[]).forEach(function(it){
     var rec=null; try{ rec=fabricRecordFor(it); }catch(e){ rec=null; }
-    if(!rec || !rec.code || rec.std==null) return;
+    // no usage on file: the metres the PM typed for the line (Metres cut on
+    // the works order panel) are what the cutting room cuts to
+    var std=(rec && rec.std!=null) ? rec.std : (it.metresActual!=null ? it.metresActual : null);
+    if(!rec || !rec.code || std==null) return;
     var r=rows.filter(function(x){ return x.code===it.code; })[0];
     var desc=r ? r.desc : (wo.sm ? wo.sm.desc : '');
     var base={ref:wo.ref, code:it.code, desc:desc||'', qty:it.qty, due:wo.due||'', printedAt:wo.printedAt||d2s(now()), customer:wo.sm?(wo.sm.custName||wo.sm.customer||''):''};
-    out.push(Object.assign({}, base, {k:cutKey(wo.ref,it.code,rec.code), fabric:rec.code, fabName:rec.name||'', std:rec.std}));
+    out.push(Object.assign({}, base, {k:cutKey(wo.ref,it.code,rec.code), fabric:rec.code, fabName:rec.name||'', std:std}));
     (rec.extras||[]).forEach(function(x){ if(x.code && x.std!=null) out.push(Object.assign({}, base, {k:cutKey(wo.ref,it.code,x.code), fabric:x.code, fabName:x.name||'', std:x.std, extra:true})); });
   });
   return out;
@@ -3554,7 +3557,7 @@ function cutReviewLines(){
     if(!cutInScope(w)) return;
     (w.items||[]).forEach(function(it){
       var rec=null; try{ rec=fabricRecordFor(it, w); }catch(e){ rec=null; }
-      var why=(!rec || !rec.code) ? 'no fabric on file' : (rec.std==null ? 'no metres per garment for '+rec.code : '');
+      var why=(!rec || !rec.code) ? 'no fabric on file' : ((rec.std==null && it.metresActual==null) ? 'no metres on file for '+rec.code+': type the metres for the line in Metres cut on the works order' : '');
       if(why) out.push({i:i, wo:w, it:it, fabric:rec?rec.code:'', why:why});
       ((rec&&rec.extras)||[]).forEach(function(x){ if(x.code && x.std==null) out.push({i:i, wo:w, it:it, fabric:x.code, why:'no metres for the extra '+x.code}); });
     });
@@ -3801,7 +3804,7 @@ function cutRevRender(){
     +'<span style="flex:1"></span>'
     +(IS_EDITOR && pending.length ? '<span class="sm-sub" style="font-size:11px">'+pending.length+' works order'+(pending.length===1?'':'s')+' with changes not on the cutting log</span> '+(can?'<button class="btn btn-p" style="font-size:11px;padding:3px 9px" onclick="cutSync(null, cutRevAfter)">&#8679; Push to cutting</button>':'<span class="sm-tag">set up this PC on the Cutting tab to push</span>'):'')
     +'</div>'
-    +'<div class="sub">Printed works orders whose lines have no fabric or no metres on file, so the cutting room has not got them. Open the works order and put the fabric right (&#9998; fabric on the line) or the metres (the record\'s fabric rating); the line goes across to the Cutting tab on its own. A works order changed before it is cut replaces its lines on the cutting room\'s list; one already cut is left as cut.</div></div>';
+    +'<div class="sub">Printed works orders whose lines have no fabric or no metres on file, so the cutting room has not got them. Open the works order: put the fabric right with &#9998; fabric on the line, and where there is no usage on file type the metres for the whole line in Metres cut (it saves as you leave the box); the line goes across to the Cutting tab on its own. A works order changed before it is cut replaces its lines on the cutting room\'s list; one already cut is left as cut.</div></div>';
   if(!lines.length){ h+='<div class="sm-empty" style="padding:18px">Nothing to review: every printed works order has a fabric and metres on file.</div>'; el.innerHTML=h; return; }
   var byRef={}, order=[];
   lines.forEach(function(l){ if(!byRef[l.wo.ref]){ byRef[l.wo.ref]=[]; order.push(l.wo.ref); } byRef[l.wo.ref].push(l); });
@@ -4429,7 +4432,8 @@ function fabricCellFor(i, it){
   var hint=u ? '<div style="font-size:10px;color:#6b7280">std '+std+' m &middot; '+(it.fabricCode ? '<b title="changed from '+esc(u.code||'?')+'">'+esc(it.fabricCode)+'</b>' : esc(u.code||'?'))
                +(u.extras&&u.extras.length ? u.extras.map(function(x){ return ' + '+Math.round(x.metres*it.qty*100)/100+' m '+esc(x.code||'mesh'); }).join('') : '')
                +(/^marker/.test(u.source) ? ' <span title="per-size marker from the lay plan sheet">&#9998;</span>' : '')+editLink+'</div>'
-             : '<div style="font-size:10px;color:#b45309">'+(it.fabricCode ? 'no usage on file &middot; cloth <b>'+esc(it.fabricCode)+'</b>' : 'no usage on file')+editLink+'</div>';
+             : '<div style="font-size:10px;color:#b45309">'+(it.fabricCode ? 'no usage on file &middot; cloth <b>'+esc(it.fabricCode)+'</b>' : 'no usage on file')+editLink
+               +(IS_EDITOR ? (it.metresActual!=null ? ' &middot; <span style="color:#065f46">'+it.metresActual+' m typed: the cutting room cuts to this</span>' : ' &middot; type the metres for the line: the cutting room cuts to them') : '')+'</div>';
   var wo=WOs[i], cf=(wo && u) ? cutFigureFor(wo.ref, it.code, it.fabricCode||u.code) : null;
   if(cf) hint+='<div style="font-size:10px;color:'+(cf.adjusted?'#b45309':'#065f46')+'">&#9986; cut '+esc(fmtD(cf.cutAt))+(cf.adjusted?' &middot; cutting room: <b>'+cf.metres+' m</b>'+(cf.note?' &middot; '+esc(cf.note):'')+(it.metresActual==null?' (used as the actual)':''):' at standard')+'</div>';
   if(!IS_EDITOR) return (it.metresActual!=null ? it.metresActual+' m' : (cf&&cf.adjusted ? cf.metres+' m' : (std!=null ? std+' m' : '&mdash;')))+hint;
@@ -4442,6 +4446,7 @@ function setMetresActual(i, code, val){
   var it=wo.items.find(function(x){ return x.code===code; }); if(!it) return;
   var n=parseFloat(val); it.metresActual = (val==='' || isNaN(n)) ? undefined : Math.round(n*100)/100;
   saveState();
+  var tr=document.getElementById('tabCutRev'); if(tr && tr.classList.contains('on')) cutRevRender();
 }
 
 // Sage's own description for a code, so the costing sheet and the works order

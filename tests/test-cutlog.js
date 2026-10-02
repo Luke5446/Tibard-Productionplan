@@ -44,8 +44,10 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  // the PM changes the quantity on S-T2 before it is cut: the waiting line follows, a moment later, on its own
  await p.evaluate(()=>{ WOs.find(w=>w.ref==='S-T2').items[0].qty=12; saveState(); }); await p.waitForTimeout(2400);
  const r2=entries().filter(e=>e.ref==='S-T2').map(e=>e.qty+':'+e.std+':'+(e.cutAt||'waiting'));
- // the PM gives ZZNOUSAGE a fabric and a rating on its record: the line leaves review and goes across
- await p.evaluate(()=>{ styleEdits['ZZNOUSAGE']={code:'ZZNOUSAGE', name:'TEST TUNIC', fabrics:[['Black poly cotton','PC2003ECO','',1.2,'']], trims:[]}; saveState(); }); await p.waitForTimeout(2400);
+ // the PM puts ZZNOUSAGE on a cloth: still no usage on file, so review says to type the metres; typed for the line, it goes across at that figure
+ await p.evaluate(()=>{ WOs.find(w=>w.ref==='S-T3').items[0].fabricCode='PC2003ECO'; saveState(); cutRevRender(); }); await p.waitForTimeout(2400);
+ const r3a={log:entries().filter(e=>e.ref==='S-T3').length, why:await p.evaluate(()=>cutReviewLines().map(l=>l.why).join()), hint:await p.evaluate(()=>fabricCellFor(WOs.findIndex(w=>w.ref==='S-T3'), WOs.find(w=>w.ref==='S-T3').items[0]).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim())};
+ await p.evaluate(()=>{ setMetresActual(WOs.findIndex(w=>w.ref==='S-T3'), 'ZZNOUSAGE', '6'); }); await p.waitForTimeout(2400);
  const r3={log:entries().filter(e=>e.ref==='S-T3').map(e=>e.fabric+':'+e.std+':'+e.qty), review:await p.evaluate(()=>({n:cutReviewLines().length, badge:document.getElementById('cutRevCount').style.display, empty:(document.querySelector('#cutRevBody .sm-empty')||{}).textContent||''}))};
  await p.evaluate(()=>{ delWO(WOs.findIndex(w=>w.ref==='S-T2')); }); await p.waitForTimeout(500);
  const s1b=entries().filter(e=>e.ref==='S-T2').map(e=>e.cancelledAt||'live');
@@ -98,12 +100,13 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
      r({wipNow:cutWip('2026-10-02').total, wipBefore:cutWip('2026-10-01').total, done, kpiBefore, rowsBefore, kpiNow, assumedNow,
         rec:{actual:c.fabric.actual, std:c.fabric.std, source:c.fabric.source, note:c.fabric.cutNote, meshActual:c.fabric.extras[0].actual, meshStd:c.fabric.extras[0].std}, ledger:{metres:l.metres, varPct:Math.round(l.varPct*10)/10, note:l.cutNote}, rowHasNote:/roll end, 0.65 m short/.test(row)}); },600)); });
  console.log('printed   ->', JSON.stringify(s1), JSON.stringify(s1b), JSON.stringify(s1c));
- console.log('review    ->', JSON.stringify(r1), JSON.stringify(r2), JSON.stringify(r3)); console.log('cut, edit ->', JSON.stringify(r4), JSON.stringify(r5));
+ console.log('review    ->', JSON.stringify(r1), JSON.stringify(r2), JSON.stringify(r3a), JSON.stringify(r3)); console.log('cut, edit ->', JSON.stringify(r4), JSON.stringify(r5));
  console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('marked    ->', s3a, s3b, JSON.stringify(s3), JSON.stringify(s4));
  console.log('figures   ->', JSON.stringify(s5)); console.log('conflict  ->', JSON.stringify(s6)); console.log('viewer    ->', JSON.stringify(s7)); console.log('panel     ->', JSON.stringify(s9)); console.log('completed ->', JSON.stringify(s8));
  const pass = s1.join('|')==='S-T1:CICJM0193XXS01:MESH2290901:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
    && r1.lines.join()==='S-T3:ZZNOUSAGE:no fabric on file' && r1.badge==='1' && r1.shown==='' && r1.rows.length===1 && /S-T3.*ZZNOUSAGE.*5 ?no fabric on file.*Open.*fabric/.test(r1.rows[0]) && r1.fix===1
-   && r2.join()==='12:6:waiting' && r3.log.join()==='PC2003ECO:6:5' && r3.review.n===0 && r3.review.badge==='none' && /Nothing to review/.test(r3.review.empty)
+   && r2.join()==='12:6:waiting' && r3a.log===0 && /^no metres on file for PC2003ECO: type the metres/.test(r3a.why) && /no usage on file .*PC2003ECO.*type the metres for the line/.test(r3a.hint)
+   && r3.log.join()==='PC2003ECO:6:5' && r3.review.n===0 && r3.review.badge==='none' && /Nothing to review/.test(r3.review.empty)
    && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===0 && /Type a works order.*3 waiting/.test(s1c.prompt) && /mark cuts/.test(s1c.tag)
    && s2.src==='api' && s2.rows===0 && /Type a works order/.test(s2.prompt) && s2.todo==='3' && s2.boxAfterChips && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.cutAll && sq.polling
    && r4.join('|')==='MESH2290901:7:1.75:2026-10-01|PC2001ECO:7:7.35:2026-10-01' && r5.lines.join('|')==='MESH2290901:2026-10-01|PC2001ECO:2026-10-01' && r5.notPushed===0 && r5.review===0

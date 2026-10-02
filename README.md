@@ -21,8 +21,10 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 A line with no fabric or no metres on file is not sent to the cutting room:
 it lands on the **Cutting review** tab (between Embroidery and Cutting, with a
 badge) for the production manager. Open the works order and put the fabric
-right (the ✎ fabric link on the line) or give the record a fabric rating; the
-line goes across on its own. The log follows the works orders: a change to
+right (the ✎ fabric link on the line); where there is no usage on file, type
+the metres for the whole line in **Metres cut** on the panel (it saves as you
+leave the box) and the cutting room cuts to that figure. The line goes across
+on its own. The log follows the works orders: a change to
 one that is not yet cut (quantity, fabric, due date) replaces its waiting
 lines a moment after the edit, and a works order already cut is left as cut
 whatever is changed on it afterwards. **Push to cutting** on the review tab
