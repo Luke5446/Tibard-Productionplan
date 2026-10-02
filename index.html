@@ -3544,7 +3544,7 @@ function cutEntriesFor(wo){
     if(!rec || !rec.code || std==null) return;
     var r=rows.filter(function(x){ return x.code===it.code; })[0];
     var desc=r ? r.desc : (wo.sm ? wo.sm.desc : '');
-    var base={ref:wo.ref, code:it.code, desc:desc||'', qty:it.qty, due:wo.due||'', printedAt:wo.printedAt||d2s(now()), customer:wo.sm?(wo.sm.custName||wo.sm.customer||''):''};
+    var base={ref:wo.ref, code:it.code, desc:desc||'', qty:it.qty, due:wo.due||'', created:wo.createdAt||wo.start||'', printedAt:wo.printedAt||d2s(now()), customer:wo.sm?(wo.sm.custName||wo.sm.customer||''):''};
     out.push(Object.assign({}, base, {k:cutKey(wo.ref,it.code,rec.code), fabric:rec.code, fabName:rec.name||'', std:std}));
     (rec.extras||[]).forEach(function(x){ if(x.code && x.std!=null) out.push(Object.assign({}, base, {k:cutKey(wo.ref,it.code,x.code), fabric:x.code, fabName:x.name||'', std:x.std, extra:true})); });
   });
@@ -3583,7 +3583,7 @@ function cutDiff(entries, wos){
       if(e.cutAt || e.cancelledAt) return;
       var d=want[e.k];
       if(!d){ out.remove.push(e); return; }
-      if(d.qty!==e.qty || d.std!==e.std || (d.due||'')!==(e.due||'') || (d.desc||'')!==(e.desc||'') || (d.fabName||'')!==(e.fabName||'') || (d.customer||'')!==(e.customer||'')) out.update.push({e:e, d:d});
+      if(d.qty!==e.qty || d.std!==e.std || (d.due||'')!==(e.due||'') || (d.created||'')!==(e.created||'') || (d.desc||'')!==(e.desc||'') || (d.fabName||'')!==(e.fabName||'') || (d.customer||'')!==(e.customer||'')) out.update.push({e:e, d:d});
     });
     Object.keys(want).forEach(function(k){ if(keys[k] || settled[want[k].code]) return; out.add.push(want[k]); });
   });
@@ -3592,7 +3592,7 @@ function cutDiff(entries, wos){
 function cutDiffEmpty(df){ return !df.add.length && !df.update.length && !df.remove.length; }
 function cutDiffApply(d, df){
   df.remove.forEach(function(e){ var i=d.entries.indexOf(e); if(i>=0) d.entries.splice(i,1); });
-  df.update.forEach(function(u){ ['qty','std','due','desc','fabName','customer'].forEach(function(f){ u.e[f]=u.d[f]; }); });
+  df.update.forEach(function(u){ ['qty','std','due','created','desc','fabName','customer'].forEach(function(f){ u.e[f]=u.d[f]; }); });
   df.add.forEach(function(e){ d.entries.push(e); });
 }
 // Bring the log into line with the printed works orders: on print, after a
@@ -3730,20 +3730,23 @@ function cutRender(){
   var chip=function(k,l,n){ return '<button class="fab-chip'+(cutSec===k?' on':'')+'" onclick="cutSec=\''+k+'\'; cutRender()">'+l+(n!=null?'<span class="cnt">'+n+'</span>':'')+'</button>'; };
   h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',todo.length)+chip('log','Cut log',cut.length)+chip('days','Metres per day')
     +'<input type="text" id="cutQ" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutTyping=true; cutRender()" style="margin-left:6px;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:260px"></div>';
-  // Like the Embroidery tab: the lines come up for what is typed in the box,
-  // not as a list of everything (Luke, 2 Oct 2026)
+  // To cut is the whole list, in the order the works orders were raised, and
+  // the search narrows it; the cut log, like the Embroidery tab, comes up for
+  // what is typed in the box only (Luke, 2 Oct 2026)
   var q=cutQ.trim();
-  var match=function(e){ if(!q) return false; return smMatch([e.ref,e.code,e.desc,e.fabric,e.fabName,e.customer||''].join(' '), q); };
-  if(!q && cutSec!=='days'){ h+='<div class="sm-empty" style="padding:18px">Type a works order number, a product code or a fabric to bring up its lines'+(cutSec==='todo'?' - '+todo.length+' waiting to be cut':' - '+cut.length+' on the log')+'.</div>'; }
-  if(cutSec==='todo' && q){
+  var match=function(e){ if(!q) return cutSec==='todo'; return smMatch([e.ref,e.code,e.desc,e.fabric,e.fabName,e.customer||''].join(' '), q); };
+  if(!q && cutSec==='log'){ h+='<div class="sm-empty" style="padding:18px">Type a works order number, a product code or a fabric to bring up its lines - '+cut.length+' on the log.</div>'; }
+  if(cutSec==='todo'){
     var byRef={}, order=[];
     todo.filter(match).forEach(function(e){ if(!byRef[e.ref]){ byRef[e.ref]=[]; order.push(e.ref); } byRef[e.ref].push(e); });
-    order.sort(function(a,b){ return (byRef[a][0].due||'').localeCompare(byRef[b][0].due||'') || a.localeCompare(b); });
-    if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut matches "'+esc(q)+'".</div>'; }
-    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th>Printed</th><th>Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th>'+(can?'Cut m &middot; comment':'')+'</th></tr></thead><tbody>'
+    var raised=function(ref){ var e=byRef[ref][0]; return e.created||e.printedAt||''; };
+    order.sort(function(a,b){ return raised(a).localeCompare(raised(b)) || a.localeCompare(b); });
+    if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut'+(q?' matches "'+esc(q)+'"':'')+'.</div>'; }
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th>Raised</th><th>Printed</th><th>Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th>'+(can?'Cut m &middot; comment':'')+'</th></tr></thead><tbody>'
       +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
         return es.map(function(e,i){
           return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
+            +'<td>'+(i===0?esc(fmtD(first.created||'')):'')+'</td>'
             +'<td>'+(i===0?esc(fmtD(first.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':''):'')+'</td><td>'+(i===0?esc(fmtD(first.due)):'')+'</td>'
             +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
             +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
