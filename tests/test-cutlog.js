@@ -47,10 +47,12 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  await p.click('#cutQ'); await p.keyboard.type('S-T1'); await p.waitForTimeout(200);
  const sq=await p.evaluate(()=>({q:cutQ, val:document.getElementById('cutQ').value, focused:document.activeElement===document.getElementById('cutQ'), rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, polling:!!cutPoll}));
  await p.evaluate(()=>{ cutQ=''; cutRender(); });
- await p.evaluate(()=>cutMarkWO('S-T1')); await p.waitForTimeout(600);
+ // the main cloth gave more: 8 m with no comment is refused, with a comment it is taken; the mesh stays at standard
+ const s3a=await p.evaluate(()=>{ document.querySelector('input[data-cutm="S-T1|CICJM0193XXS01|PC2001ECO"]').value='8'; cutMarkWO('S-T1'); return window.__alerts.length; });
+ await p.waitForTimeout(300); const s3b=entries().filter(e=>e.ref==='S-T1'&&e.cutAt).length;
+ await p.evaluate(()=>{ document.querySelector('input[data-cutn="S-T1|CICJM0193XXS01|PC2001ECO"]').value='roll end, 0.65 m short'; cutMarkWO('S-T1'); }); await p.waitForTimeout(600);
  const s3=entries().filter(e=>e.ref==='S-T1').map(e=>e.cutAt+':'+e.metres).sort();
- await p.evaluate(()=>{ const q=['8','roll end, 0.65 m short']; window.prompt=()=>q.shift(); cutAdjust('S-T1|CICJM0193XXS01|PC2001ECO'); }); await p.waitForTimeout(600);
- const s4=entries().filter(e=>e.ref==='S-T1').map(e=>e.fabric+':'+e.metres+':'+(e.note||'')).sort();
+ const s4=entries().filter(e=>e.ref==='S-T1').map(e=>e.fabric+':'+e.metres+':'+(e.note||'')+':'+(e.adjustedAt?'adj':'std')).sort();
  const s5=await p.evaluate(()=>{ cutSec='log'; cutRender(); const tiles=[...document.querySelectorAll('#cutBody .kpi-tile')].map(t=>t.querySelector('.l').textContent+'='+t.querySelector('.v').textContent.replace(/\s+/g,' '));
    const logRows=[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>[...tr.children].map(td=>td.textContent.replace(/\s+/g,' ').trim()));
    cutSec='days'; cutRender(); const day=[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>[...tr.children].map(td=>td.textContent.replace(/\s+/g,' ').trim()));
@@ -58,9 +60,9 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    return {tiles, logRows, day, wip, wipCalc:cutWip('2026-10-01')}; });
  // 3. a save refused once (someone else saved in between) is read past and applied again
  await p.evaluate(()=>cutUnmark('S-T1|CICJM0193XXS01|MESH2290901')); await p.waitForTimeout(500);
- refuseOnce=true; const putsBefore=puts;
+ refuseOnce=true; const putsBefore=puts; const alertsBefore=await p.evaluate(()=>window.__alerts.length);
  await p.evaluate(()=>cutMark('S-T1|CICJM0193XXS01|MESH2290901')); await p.waitForTimeout(800);
- const s6={retried:puts-putsBefore, cut:entries().filter(e=>e.fabric==='MESH2290901').map(e=>e.cutAt||'-').join(), alerts:await p.evaluate(()=>window.__alerts.length)};
+ const s6={retried:puts-putsBefore, cut:entries().filter(e=>e.fabric==='MESH2290901').map(e=>e.cutAt||'-').join(), alerts:(await p.evaluate(()=>window.__alerts.length))-alertsBefore};
  // a line that reached the file twice reads as one
  store=JSON.stringify(Object.assign(JSON.parse(store),{entries:JSON.parse(store).entries.concat([JSON.parse(store).entries[0]])}));
  // 4. anyone else: reads the Pages copy, sees the log, no buttons
@@ -80,13 +82,13 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
      r({wipNow:cutWip('2026-10-02').total, wipBefore:cutWip('2026-10-01').total, done, kpiBefore, rowsBefore, kpiNow, assumedNow,
         rec:{actual:c.fabric.actual, std:c.fabric.std, source:c.fabric.source, note:c.fabric.cutNote, meshActual:c.fabric.extras[0].actual, meshStd:c.fabric.extras[0].std}, ledger:{metres:l.metres, varPct:Math.round(l.varPct*10)/10, note:l.cutNote}, rowHasNote:/roll end, 0.65 m short/.test(row)}); },600)); });
  console.log('printed   ->', JSON.stringify(s1), JSON.stringify(s1b), JSON.stringify(s1c));
- console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('marked    ->', JSON.stringify(s3), JSON.stringify(s4));
+ console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('marked    ->', s3a, s3b, JSON.stringify(s3), JSON.stringify(s4));
  console.log('figures   ->', JSON.stringify(s5)); console.log('conflict  ->', JSON.stringify(s6)); console.log('viewer    ->', JSON.stringify(s7)); console.log('panel     ->', JSON.stringify(s9)); console.log('completed ->', JSON.stringify(s8));
  const pass = s1.join('|')==='S-T1:CICJM0193XXS01:MESH2290901:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
    && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===2 && /mark cuts/.test(s1c.tag)
    && s2.src==='api' && s2.rows.length===2 && s2.cutAll && s2.todo==='2' && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.polling
-   && s3.join()==='2026-10-01:1.75,2026-10-01:7.35' && s4.join('|')==='MESH2290901:1.75:|PC2001ECO:8:roll end, 0.65 m short'
-   && /Cut today=9.8 m/.test(s5.tiles.join()) && /Live, not on the log=0/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP')
+   && s3a===1 && s3b===0 && s3.join()==='2026-10-01:1.75,2026-10-01:8' && s4.join('|')==='MESH2290901:1.75::std|PC2001ECO:8:roll end, 0.65 m short:adj'
+   && /Cut today=9.8 m/.test(s5.tiles.join()) && /Live, not on the log=0/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP'&&/Undo/.test(r[10]))
    && s5.day.length===1 && s5.day[0][2]==='9.75' && s5.wip.length===3 && s5.wip[0][0].startsWith('PC2001ECO') && s5.wip[0][5]==='£17.12' && s5.wip[2][5]==='£19.19' && Math.abs(s5.wipCalc.total.value-19.19)<0.01
    && s6.retried===2 && s6.cut==='2026-10-01' && s6.alerts===0
    && s7.src==='pages' && s7.rows===2 && JSON.parse(store).entries.length===4 && s7.buttons===0 && s7.tag==='view only'
