@@ -3541,22 +3541,34 @@ function cutCancel(wo){
   cutSave('Withdrawn: '+wo.ref, function(d){ var n=0; d.entries.forEach(function(e){ if(e.ref===wo.ref && !e.cutAt && !e.cancelledAt){ e.cancelledAt=d2s(now()); n++; } }); return n>0; }, function(){ var tc=document.getElementById('tabCut'); if(tc && tc.classList.contains('on')) cutRender(); });
 }
 function cutAfter(ok, err){ if(!ok && err && err!=='no token') alert('The cutting log could not be saved: '+err+'\n\nNothing was lost - try again in a moment.'); cutRender(); }
+// The metres and comment typed on the To cut row, before the Cut button:
+// the metres start at the standard, and a figure that differs from it
+// needs a comment (the roll end, a re-cut, an extra garment).
+function cutRowInput(key){
+  var m=document.querySelector('input[data-cutm="'+key+'"]'), n=document.querySelector('input[data-cutn="'+key+'"]');
+  return {metres:m?m.value:'', note:n?n.value.trim():''};
+}
+function cutRowFigure(e){
+  var inp=cutRowInput(e.k), n=parseFloat(inp.metres);
+  var metres=(inp.metres===''||isNaN(n)) ? e.std : Math.round(n*100)/100;
+  if(metres!=null && metres<0){ alert('Metres must be a number.'); return null; }
+  var differs=(e.std==null && metres!=null) || (e.std!=null && metres!=null && Math.abs(metres-e.std)>0.005);
+  if(differs && !inp.note){ alert(e.ref+' '+e.code+' ('+e.fabric+'): the metres differ from the standard of '+(e.std!=null?e.std+' m':'none')+', so a comment is needed. Say why in the comment box.'); return null; }
+  return {metres:metres, note:differs?inp.note:'', differs:differs};
+}
+function cutApply(e, fig){ e.cutAt=d2s(now()); e.at=new Date().toISOString(); e.metres=fig.metres; if(fig.differs){ e.note=fig.note; e.adjustedAt=e.at; } else { delete e.note; delete e.adjustedAt; } }
 function cutMark(key){ if(!cutCanWrite()) return;
-  cutSave('Cut: '+key.split('|')[0], function(d){ var e=d.entries.filter(function(x){ return x.k===key; })[0]; if(!e || e.cutAt) return false; e.cutAt=d2s(now()); e.at=new Date().toISOString(); e.metres=e.std; return true; }, cutAfter); }
+  var e0=cutLog.entries.filter(function(x){ return x.k===key; })[0]; if(!e0 || e0.cutAt) return;
+  var fig=cutRowFigure(e0); if(!fig) return;
+  cutSave('Cut: '+key.split('|')[0], function(d){ var e=d.entries.filter(function(x){ return x.k===key; })[0]; if(!e || e.cutAt) return false; cutApply(e, fig); return true; }, cutAfter); }
 function cutMarkWO(ref){ if(!cutCanWrite()) return;
-  cutSave('Cut: '+ref, function(d){ var n=0; d.entries.forEach(function(e){ if(e.ref===ref && !e.cutAt && !e.cancelledAt){ e.cutAt=d2s(now()); e.at=new Date().toISOString(); e.metres=e.std; n++; } }); return n>0; }, cutAfter); }
-function cutUnmark(key){ if(!cutCanWrite()) return; if(!confirm('Take the cut mark off this line?')) return;
-  cutSave('Cut mark removed: '+key.split('|')[0], function(d){ var e=d.entries.filter(function(x){ return x.k===key; })[0]; if(!e || !e.cutAt) return false; delete e.cutAt; delete e.at; delete e.metres; delete e.note; return true; }, cutAfter); }
-// The metres cut, when the roll gave more or less than the standard: a
-// figure and a comment saying why, kept on the line.
-function cutAdjust(key){ if(!cutCanWrite()) return;
-  var e=cutLog.entries.filter(function(x){ return x.k===key; })[0]; if(!e || !e.cutAt) return;
-  var m=prompt('Metres actually cut for '+e.ref+' '+e.code+' ('+e.fabric+')\nStandard '+(e.std!=null?e.std+' m':'unknown')+':', e.metres!=null?String(e.metres):'');
-  if(m===null) return; var n=parseFloat(m); if(isNaN(n)||n<0){ alert('Metres must be a number.'); return; }
-  var note=e.note||'';
-  if(e.std==null || Math.abs(n-e.std)>0.005){ note=prompt('Why is it '+(e.std!=null?(n>e.std?'more':'less')+' than the standard':'this figure')+'? (a comment is kept with the line)', note||''); if(note===null) return; if(!note.trim()){ alert('A comment is needed when the metres differ from the standard.'); return; } }
-  else note='';
-  cutSave('Metres adjusted: '+e.ref, function(d){ var x=d.entries.filter(function(y){ return y.k===key; })[0]; if(!x) return false; x.metres=Math.round(n*100)/100; x.note=note.trim(); x.adjustedAt=new Date().toISOString(); return true; }, cutAfter); }
+  var figs={}, ok=true;
+  cutLog.entries.forEach(function(e){ if(!ok || e.ref!==ref || e.cutAt || e.cancelledAt) return; var f=cutRowFigure(e); if(!f) ok=false; else figs[e.k]=f; });
+  if(!ok) return;
+  cutSave('Cut: '+ref, function(d){ var n=0; d.entries.forEach(function(e){ if(e.ref===ref && !e.cutAt && !e.cancelledAt && figs[e.k]){ cutApply(e, figs[e.k]); n++; } }); return n>0; }, cutAfter); }
+// Undo on the cut log: the line goes back to To cut with its standard
+function cutUnmark(key){ if(!cutCanWrite()) return; if(!confirm('Undo the cut mark on this line? It goes back to the To cut list.')) return;
+  cutSave('Cut mark undone: '+key.split('|')[0], function(d){ var e=d.entries.filter(function(x){ return x.k===key; })[0]; if(!e || !e.cutAt) return false; delete e.cutAt; delete e.at; delete e.metres; delete e.note; delete e.adjustedAt; return true; }, cutAfter); }
 function cutCompletedOn(e){
   var c=completedWOs.filter(function(x){ return x.ref===e.ref && x.code===e.code; })[0];
   return c ? (c.completed||'') : '';
@@ -3620,7 +3632,7 @@ function cutRender(){
     +(can?'<span class="sm-tag ok">this PC can mark cuts</span> ':'<span class="sm-tag">view only</span> ')
     +'<button class="btn" style="font-size:11px;padding:3px 9px" onclick="cutSetup()" title="The cutting room PC (and the editor, for the push on print) hold the GitHub token for the cutting log">'+(can?'&#9881; Token':'&#9881; Set up this PC')+'</button>'
     +'</div>'
-    +'<div class="sub">Printed works orders arrive here for the cutting room. Mark each one cut on the day; adjust the metres with a comment if the roll gave more or less. Completion in the planner still drives the Sage write-off; the fabric in work in progress is on the KPIs tab.</div>'
+    +'<div class="sub">Printed works orders arrive here for the cutting room. Mark each one cut on the day: the metres start at the standard, change them with a comment if the roll gave more or less. Undo on the cut log puts a line back. Completion in the planner still drives the Sage write-off; the fabric in work in progress is on the KPIs tab.</div>'
     +(IS_EDITOR && notPushed.length ? '<div class="sm-note">'+notPushed.length+' printed works order'+(notPushed.length===1?' is':'s are')+' not in the cutting log yet ('+esc(notPushed.slice(0,6).map(function(w){ return w.ref; }).join(', '))+(notPushed.length>6?', &hellip;':'')+')'+(can?': <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutPushPrinted(null, cutAfter)">&#8679; Push to the cutting room</button>':'. Set up this PC with the token and they go across on the next print.')+'</div>':'')
     +'</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0">'
@@ -3638,7 +3650,7 @@ function cutRender(){
     todo.filter(match).forEach(function(e){ if(!byRef[e.ref]){ byRef[e.ref]=[]; order.push(e.ref); } byRef[e.ref].push(e); });
     order.sort(function(a,b){ return (byRef[a][0].due||'').localeCompare(byRef[b][0].due||'') || a.localeCompare(b); });
     if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut'+(cutQ?' that matches':'')+'.</div>'; }
-    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th>Printed</th><th>Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th></th></tr></thead><tbody>'
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th>Printed</th><th>Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th>'+(can?'Cut m &middot; comment':'')+'</th></tr></thead><tbody>'
       +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
         return es.map(function(e,i){
           return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
@@ -3646,7 +3658,9 @@ function cutRender(){
             +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
             +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
             +'<td style="text-align:right" class="fab-num">'+(e.std!=null?e.std.toFixed(2):'&mdash;')+'</td>'
-            +'<td>'+(can?'<button class="btn btn-p" style="font-size:11px;padding:2px 9px" onclick="cutMark(\''+esc(e.k)+'\')">&#10003; Cut</button>':'')+'</td></tr>'; }).join(''); }).join('')
+            +'<td style="white-space:nowrap">'+(can?'<input type="number" step="0.01" min="0" data-cutm="'+esc(e.k)+'" value="'+(e.std!=null?e.std:'')+'" title="metres cut: change it if the roll gave more or less" style="width:72px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px"> m '
+                +'<input type="text" data-cutn="'+esc(e.k)+'" placeholder="comment, if not the standard" title="needed when the metres differ from the standard" style="width:190px;font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px"> '
+                +'<button class="btn btn-p" style="font-size:11px;padding:2px 9px" onclick="cutMark(\''+esc(e.k)+'\')">&#10003; Cut</button>':'')+'</td></tr>'; }).join(''); }).join('')
       +'</tbody></table></div>';
   }
   if(cutSec==='log'){
@@ -3661,7 +3675,7 @@ function cutRender(){
           +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'')+'</span></td><td style="text-align:right">'+(e.std!=null?e.std.toFixed(2):'&mdash;')+'</td>'
           +'<td style="text-align:right" class="fab-num"'+(adj?' style="text-align:right;color:#b45309"':'')+'>'+cutMetres(e).toFixed(2)+(adj?' <span class="sm-tag warn">'+(e.metres>e.std?'+':'')+(e.metres-e.std).toFixed(2)+'</span>':'')+'</td>'
           +'<td>'+esc(e.note||'')+'</td><td>'+(done?esc(fmtD(done)):'<span class="sm-tag">in WIP</span>')+'</td>'
-          +'<td style="white-space:nowrap">'+(can?'<button class="btn" style="font-size:10px;padding:1px 7px" onclick="cutAdjust(\''+esc(e.k)+'\')">&#9998; metres</button> <button class="btn" style="font-size:10px;padding:1px 7px" onclick="cutUnmark(\''+esc(e.k)+'\')" title="Take the cut mark off">&#10005;</button>':'')+'</td></tr>'; }).join('')
+          +'<td style="white-space:nowrap">'+(can?'<button class="btn" style="font-size:10px;padding:1px 7px" onclick="cutUnmark(\''+esc(e.k)+'\')" title="Take the cut mark off: the line goes back to To cut">&#8630; Undo</button>':'')+'</td></tr>'; }).join('')
       +'</tbody></table></div>';
   }
   if(cutSec==='days'){

@@ -9,10 +9,11 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 - **To cut**: printed works orders not yet marked cut, oldest due first, with
   the standard metres per line. One printed five or more days ago is flagged.
   The cutting room PC marks a line, or a whole works order, cut: the mark is
-  dated that day and the metres start at the standard. **metres** adjusts the
-  figure and asks for a comment when it differs from the standard.
+  dated that day. Each line has a metres box, started at the standard, and a
+  comment box; a figure that differs from the standard needs the comment.
 - **Cut log**: what was cut and when, searchable by works order, product or
-  fabric, with the completion date or "in WIP".
+  fabric, with the completion date or "in WIP". **Undo** puts a line back on
+  To cut.
 - **Metres per day**, by fabric.
 
 A line the cutting room adjusted on the log carries that figure into the
