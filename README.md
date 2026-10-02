@@ -6,15 +6,27 @@ Printing a works order pushes its fabric lines (the main cloth and any extra,
 a mesh back) to a small shared file, `cutlog.json`, kept in its own GitHub
 repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 
-- **To cut**: printed works orders not yet marked cut, oldest due first, with
-  the standard metres per line. One printed five or more days ago is flagged.
-  The cutting room PC marks a line, or a whole works order, cut: the mark is
-  dated that day. Each line has a metres box, started at the standard, and a
-  comment box; a figure that differs from the standard needs the comment.
-- **Cut log**: what was cut and when, searchable by works order, product or
-  fabric, with the completion date or "in WIP". **Undo** puts a line back on
-  To cut.
+- **To cut**: printed works orders not yet marked cut, with the standard
+  metres per line. Like the Embroidery tab, the lines come up for what is
+  typed in the search box (a works order number, a product code or a fabric),
+  not as a list of everything; the tiles above still count what is waiting,
+  and one printed five or more days ago. The cutting room PC marks a line, or
+  a whole works order, cut: the mark is dated that day. Each line has a metres
+  box, started at the standard, and a comment box; a figure that differs from
+  the standard needs the comment.
+- **Cut log**: what was cut and when, for the search, with the completion
+  date or "in WIP". **Undo** puts a line back on To cut.
 - **Metres per day**, by fabric.
+
+A line with no fabric or no metres on file is not sent to the cutting room:
+it lands on the **Cutting review** tab (between Embroidery and Cutting, with a
+badge) for the production manager. Open the works order and put the fabric
+right (the ✎ fabric link on the line) or give the record a fabric rating; the
+line goes across on its own. The log follows the works orders: a change to
+one that is not yet cut (quantity, fabric, due date) replaces its waiting
+lines a moment after the edit, and a works order already cut is left as cut
+whatever is changed on it afterwards. **Push to cutting** on the review tab
+sends anything still waiting if GitHub was down at the time.
 
 A line the cutting room adjusted on the log carries that figure into the
 works order panel and, on completion, into the fabric ledger as the actual
@@ -52,7 +64,8 @@ repo's history is the audit trail.
    on the cutting room PC and on the editor's PC (the same token will do).
    The tag changes to "this PC can mark cuts".
 5. Print a works order: it appears on the Cutting tab. Works orders printed
-   before the token was set come across with **Push to the cutting room**.
+   before the token was set come across with **Push to the cutting room**
+   (also **Push to cutting** on the Cutting review tab).
 
 A works order due before 29 September 2026, when the log began, is never
 pushed: it was cut before there was a list.
