@@ -2,8 +2,9 @@
 // the On POP cell names the first container carrying the code and the date it
 // lands (blue when Sage already has the PO, grey when it does not yet), with
 // every container in the hover; the runway lands them in the right week and
-// the closing stock follows; a code on no container is unchanged; and the
-// stock planner being unreachable leaves everything as it was.
+// the closing stock follows; the WOP recommendation bridges to a container
+// rather than making what it brings; a code on no container is unchanged;
+// and the stock planner being unreachable leaves the display as it was.
 const { chromium } = require('playwright');
 const T=(a)=>a.join('\t');
 const buf=[
@@ -51,7 +52,10 @@ const URL='https://luke5446.github.io/Tibard-Stock-Planner/data.json';
    && /On POP: 1,806 \| 📦 C127 1,806 lands 19 Oct, C128 630 lands 11 Nov$/.test(ok.r.meta)
    && /Wk 2\/\+1806 📦 C127\/1,098/.test(ok.r.rows) && /Wk 6\/\+630 📦 C128\/928/.test(ok.r.rows) && /Wk 1\/—\/-508/.test(ok.r.rows)
    && ok.r.chip==='rgb(219, 234, 254)' && ok.r.plain==='—'.repeat(13)
-   && ok.r.wopRec===bad.r.wopRec                                   // the recommendation never changes: containers are information, not stock
+   // WOP REC: 13 weeks at the 6-month rate, or to the container that follows. CT3082LL03 is 308 oversold at 28.6 a day:
+   // with the feed, C127 counts from a week after 19 Oct (day 24), so 24 x 28.6 + 308 = 994 bridges to it (C128 then covers
+   // the rest); without the feed Sage's 1,806 On POP counts now and 91 days need 2,600 - 1,498 = 1,102
+   && ok.r.wopRec==='CT3082LL03:994 ABC002:0 XYZ001:0' && bad.r.wopRec==='CT3082LL03:1102 ABC002:0 XYZ001:0'
    && bad.r.state==='error' && bad.r.n===0 && bad.r.info==='Containers: stock planner not available'
    && bad.r.a==='1,806||' && bad.r.b==='—||' && !/C127/.test(bad.r.rows) && !/📦/.test(bad.r.meta)
    && ok.errs.length===0 && bad.errs.length===0;
