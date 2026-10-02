@@ -15,6 +15,10 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
   fabric, with the completion date or "in WIP".
 - **Metres per day**, by fabric.
 
+A line the cutting room adjusted on the log carries that figure into the
+works order panel and, on completion, into the fabric ledger as the actual
+(see FABRIC.md, "The cutting room's figure").
+
 The fabric in work in progress is on the **KPIs** tab: cloth cut and not
 completed as at any date, valued at the fabric price the planner holds, for
 month end and year end. A line the cutting room marked cut counts at its cut

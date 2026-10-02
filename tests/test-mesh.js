@@ -6,7 +6,6 @@
 // Checks the rule, the usage lookup, a works order completed now, the repair
 // that amends lines not yet written off (strip what should not be there,
 // re-rate a figure frozen from a corrected rate) while leaving a written-off
-// line alone, the write-off file, and the cutting sheet import: a mesh row
 // may never become a garment's own cloth, attaches as a second cloth where
 // the garment is allowed mesh, and is refused where it is not.
 const { chromium } = require('playwright');
@@ -51,26 +50,6 @@ const R=(ref,style,qty,code,m)=>['22/09/2026','OH',ref,'C/JKTS',style,String(qty
  const r6=await p.evaluate(async()=>{ smShowTab('fabric'); let blob=null; URL.createObjectURL=x=>{blob=x; return 'blob:x';}; HTMLAnchorElement.prototype.click=function(){};
    fabTickAll(true); exportFabricWriteOff(); return (await blob.text()).split('\r\n').filter(Boolean).slice(1).sort().join(' | '); });
  console.log('write-off  ->', r6);
- // 7. a lone mesh sheet row: refused on a no-M jacket, attached as a second cloth on a hat
- //    and on the Hampshire, and never written onto any garment's own cloth
- const r7=await p.evaluate(t=>{ const mk2=(ref,ta)=>{ document.getElementById('woRef').value=ref; document.getElementById('woStart').value='2026-09-22'; document.getElementById('woDue').value='2026-09-30'; document.getElementById('woTA').value=ta; saveWO(); completeWholeWO(WOs.findIndex(w=>w.ref===ref)); };
-   mk2('S-NOM','OHLCJSDERBYSHIRE1401\t8'); mk2('S-HAT','WAGHTM016024\t30'); mk2('S-HAM2','OHLCJSHAMPSHIRE1601\t6');
-   fabToggleSheet(); document.getElementById('fabSheetTA').value=t; fabLoadSheet('todo');
-   const g=r=>{ const c=completedWOs.find(x=>x.ref===r); return r+'='+c.fabric.code+'/'+c.fabric.std+'/'+c.fabric.actual+'/'+((c.fabric.extras||[]).map(x=>x.code+':'+(x.actual!=null?x.actual:x.std)).join('+')||'none'); };
-   return {rows:[g('S-NOM'),g('S-HAT'),g('S-HAM2')].join(' '), said:/could not be placed/.test(document.getElementById('fabSheetResult').textContent)}; },
-   [R('S-NOM','OHLCJSDERBYSHIRE1401',8,'MESH2290901',2.5), R('S-HAT','WAGHTM016024',30,'MESHPW31424',1), R('S-HAM2','OHLCJSHAMPSHIRE1601',6,'MESH2290901',0.2)].join('\n'));
- console.log('sheet      ->', JSON.stringify(r7));
- // 8. a live works order: a mesh row touches neither the cut figure nor the written-off mark
- const r8=await p.evaluate(([t,t2])=>{ const mkLive=(ref,ta)=>{ document.getElementById('woRef').value=ref; document.getElementById('woStart').value='2026-09-22'; document.getElementById('woDue').value='2026-09-30'; document.getElementById('woTA').value=ta; saveWO(); };
-   mkLive('S-LIVL','OHLCJSDERBYSHIRE1401\t8'); mkLive('S-LIVM','OHCJMCHESHIRE3201\t10');
-   const it=r=>WOs.find(w=>w.ref===r).items[0];
-   fabToggleSheet(); document.getElementById('fabSheetTA').value=t; fabLoadSheet('todo');
-   const todo=['S-LIVL='+(it('S-LIVL').metresActual===undefined?'untouched':it('S-LIVL').metresActual), 'S-LIVM='+(it('S-LIVM').metresActual===undefined?'untouched':it('S-LIVM').metresActual)].join(' ');
-   fabToggleSheet(); document.getElementById('fabSheetTA').value=t2; fabLoadSheet('done');
-   return {todo, done:it('S-LIVL').fabricExportedAt||'not marked'}; },
-   [[R('S-LIVL','OHLCJSDERBYSHIRE1401',8,'MESH2290901',9), R('S-LIVM','OHCJMCHESHIRE3201',10,'MESH2290901',1.5)].join('\n'), R('S-LIVL','OHLCJSDERBYSHIRE1401',8,'MESH2290901',9)]);
- console.log('live       ->', JSON.stringify(r8));
-
  const pass = r1==='OHCJMCHESHIRE3201:1 OHCJSMCHESHIRE3201:1 OHCJMDEVON4801:1 OHCJSMSTRATFORD4401:1 OHCJSCUMBRIA4201:0 OHCJCUMBRIA4201:0 OHCJSUFFOLK4401:0 OHCJSSUFFOLK4201:0 OHLCJSDERBYSHIRE1401:0 OHLCJYORK0801:0 OHLCJ40084293:0 OHLCJHAMPSHIRE1201:1 OHLCJSHAMPSHIRE1601:1 OHHTM0160248:1 WAGHTM016024:1 OHAPP0534GD:1 OHTAB82:1'
    && r2==='OHCJMCHESHIRE3201=1.41/MESH2290901:0.11 OHCJSMDEVON5601=1.26/MESH2290901:0.36 OHLCJHAMPSHIRE1201=1.075/MESH2290901:0.03 OHLCJSHAMPSHIRE1601=1.05/MESH2290901:0.03 OHLCJSDERBYSHIRE1401=1.19/none WAGHTM016024=0.12/none'
    && r3==='none'
@@ -79,8 +58,6 @@ const R=(ref,style,qty,code,m)=>['22/09/2026','OH',ref,'C/JKTS',style,String(qty
    && r5.after==='S-PLAIN=none S-HAMP=MESH2290901:0.18 S-GONE=MESH2290901:15 S-MESH=MESH2290901:1.1'
    && r5.again==='{"lines":0,"metres":0,"rerated":0,"reratedMetres":0}'
    && /MESH2290901,HOME,,1.1,Cutting,S-MESH/.test(r6) && /MESH2290901,HOME,,0.18,Cutting,S-HAMP/.test(r6)
-   && !r6.split(' | ').some(r=>/^MESH/.test(r) && /S-PLAIN/.test(r))
-   && r7.rows==='S-NOM=PC2001ECO/9.52/null/none S-HAT=PC2024/3.6/null/MESHPW31424:1 S-HAM2=PC14001/6.3/null/MESH2290901:0.2' && r7.said
-   && r8.todo==='S-LIVL=untouched S-LIVM=untouched' && r8.done==='not marked';
+   && !r6.split(' | ').some(r=>/^MESH/.test(r) && /S-PLAIN/.test(r));
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

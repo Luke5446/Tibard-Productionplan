@@ -255,64 +255,29 @@ same three states. An automatic poster on a site server would read the open
 lines, post them, and stamp them exported; neither the tab nor the CSV layout
 would change.
 
-## Catching up from the cutting sheet
+## The cutting room's figure
 
-The cutting room's own record is **Cutting Sheet 2026.xlsx**: one row per
-works order and cloth — the W/O number in column C, the Sage fabric code in
-K, the metres in L — with the rows already written off in Sage highlighted
-green. The ledger only began when this version went live, and the first
-weeks ran ahead of it, so the two had to be squared. **Cutting sheet** on
-the Fabric tab's toolbar opens a paste box: select the rows in the sheet,
-columns A to L, Ctrl+C, paste, then say what they are.
+The cutting room's record is the **cutting log** (see the README): printing a
+works order puts its fabric lines there, the cutting room marks each one cut
+and, when the roll gave more or less than the standard, adjusts the metres
+with a comment. That adjusted figure is the cutting room's word on the cloth
+and reaches the ledger on its own:
 
-- **Already written off in Sage** (the green rows). Each row is placed on
-  its completed line and the line is marked *Exported* with the file shown
-  as *Sage - cutting sheet*, so it can never go into a file from here. The
-  sheet's metres are kept as the cut figure, so the KPIs have the history.
-  A line completed before the ledger existed (no fabric on its record) gets
-  a record built from the works order's own usage. A works order still live
-  is flagged on its line and arrives on the ledger already exported when it
-  is booked in.
-- **Still to write off** (the rest). Each row is placed the same way, the
-  line is set to the sheet's metres and ticked; **Export ticked (CSV)**
-  then makes the file as usual. A row with no metres (`-`, or `WASTE` —
-  the cutting room used waste from another run) puts the line at nil: it
-  completes with the rest but no row goes to Sage for it.
+- On the works order panel the line shows *cut <date>*, and where the
+  cutting room adjusted it, their metres and comment. The metres box is
+  pre-filled with their figure; typing a figure there still wins.
+- On completion, when nothing was typed on the panel, the record takes the
+  cutting room's adjusted metres as the **actual** (source *cut log*) and
+  keeps the comment; a mesh line adjusted on the log is taken the same way.
+  A line marked cut at the standard changes nothing: the standard follows the
+  PM's quantity, which is the right figure when an extra garment was cut and
+  the metres were not revisited.
+- The ledger shows the comment under the cut figure, and the usual check on
+  figures far from the standard still applies.
 
-How a row finds its line. `W/O 1131`, `WO-1131`, `W/O/ 1131` all mean
-`WO-1131`; a manual ref finds the same characters, or the same six-figure
-sales order number with a compatible part (`S-OH115764-PT1` finds
-`S-OH115764-Pt1`; `S869335` finds `S869335`, `S869335a` and `S869335 pt1`;
-a seven-figure number is a slipped key, tried with each figure dropped, so
-`S-OH1160079` finds `S-OH116079-Pt1`). The date is read off the whole paste, day/month or
-month/day as the sheet's locale has it (Google Sheets in a US locale pastes
-`7/27/2026`); a date that cannot be read is no date and never rejects a
-match. The cut date must sit within a
-fortnight of the record's life, so a three-figure typo (`W/O 121`) cannot
-land on last quarter's works order of that number. Within the works order
-the row goes to the line whose record carries that cloth (main or mesh);
-failing that to the line the row names by style, or to every line when they
-are all on the one cloth. **The cloth on the record stays as the works
-order has it** — Luke's rule: match the fabric on the works order, not the
-sheet — and only the metres are taken; these rows are listed so the
-difference is seen (`PC2082` on the sheet, `PC2082ECO` on the order). A
-further row for a line that already has its cloth is added as a second
-cloth (a mesh row for a style whose usage carries no mesh). One sheet
-figure over several lines is shared by their standard metres. A works
-order with lines on several cloths and no row that names one is listed as
-*could not be placed* for the PM to do by hand.
-
-`SR` rows are samples and `EMB` rows embroidery backing — not works orders.
-They are listed for a manual write-off and never go into a file from here.
-Other rows the app does not know (a typo'd number, a sales order raised
-outside the app) are listed with the reason; on a *still to write off*
-paste the ones with metres can be downloaded as a write-off file of their
-own (Reference2 is the sheet's W/O number) once checked.
-
-`test-fabsheet.js` covers all of it. The first real run, on the published
-data of 21 Sep 2026: 616 green rows placed 496 lines (405 records built);
-149 later rows ticked 53 lines for 649 m, 8 of them at nil, and left 4 rows
-for a file of their own and 6 for a manual write-off.
+The PM owns the garments (the quantity booked in), the cutting room the
+cloth. The cutting sheet import this replaced (October 2026) is gone with the
+Google sheet it read.
 
 ## Cut figures that do not look right
 
@@ -326,18 +291,15 @@ AND at least 5 m adrift**. Both tests must be met, so a mesh insert whose
 A figure of exactly nil is the cutting room's own "cut from waste" and is
 left alone.
 
-The cutting sheet import will not apply a figure like that: the line stays
-on its standard and the row is listed in the result box. A figure already on
-a line puts it in the **Cut figures to check** panel at the top of the
-Fabric tab, with its own tile. Until each one is settled the line is not
+A figure like that on a line puts it in the **Cut figures to check** panel at
+the top of the Fabric tab, with its own tile. Until each one is settled the line is not
 ticked and cannot go into a write-off file. Two buttons per line:
 
 - **Standard** drops the cutting room's figure and writes off the standard.
 - **Accept** says the cutting room really did cut that much (`fabric.varOK`).
 
-The panel covers lines that are still open and lines marked off against the
-cutting sheet — those never went to Sage from here, so the figure can still
-be put right. A line exported in one of our own files is left out on
+The panel covers lines that are still open — those have not gone to Sage, so
+the figure can still be put right. A line exported in one of our own files is left out on
 purpose: that figure **is** what Sage was told, and changing it here would
 hide the error rather than fix it. Those are corrected in Sage by hand.
 
@@ -355,14 +317,7 @@ never adds it, and it looks at chef-jacket codes alone: hats (`OHHTM...`,
 `WAGHTM...`), aprons and straps keep whatever second cloth they carry.
 
 It is enforced everywhere a second cloth can attach. `fabricUsageFor` is the
-main gate, so no new works order picks up mesh it should not have. A guard
-there does not reach the cutting sheet import, which needs its own, stated as
-**where a mesh row is allowed to land**:
-
-- as a **second cloth**, only on a garment the rule allows mesh;
-- as the **main figure**, only when that garment's own cloth is that mesh.
-
-Anything else is listed as a row that could not be placed. Both halves matter.
+main gate, so no new works order picks up mesh it should not have.
 The import matches a row to a line by style, or by it being the only line on
 the works order, so without the second half a mesh row overwrote the garment's
 cloth figure with the mesh metres and sent that to Sage in its place — on a
