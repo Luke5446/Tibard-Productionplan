@@ -6,16 +6,17 @@ Printing a works order pushes its fabric lines (the main cloth and any extra,
 a mesh back) to a small shared file, `cutlog.json`, kept in its own GitHub
 repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 
-- **To cut**: printed works orders not yet marked cut, with the standard
-  metres per line. Like the Embroidery tab, the lines come up for what is
-  typed in the search box (a works order number, a product code or a fabric),
-  not as a list of everything; the tiles above still count what is waiting,
-  and one printed five or more days ago. The cutting room PC marks a line, or
-  a whole works order, cut: the mark is dated that day. Each line has a metres
+- **To cut**: printed works orders not yet marked cut, oldest raised first
+  (the Raised column is the date the works order was made), with the
+  standard metres per line; the search box narrows the list. One printed
+  five or more days ago is flagged. The cutting room PC marks a line, or a
+  whole works order, cut: the mark is dated that day. Each line has a metres
   box, started at the standard, and a comment box; a figure that differs from
   the standard needs the comment.
-- **Cut log**: what was cut and when, for the search, with the completion
-  date or "in WIP". **Undo** puts a line back on To cut.
+- **Cut log**: what was cut and when. Like the Embroidery tab, the lines come
+  up for what is typed in the search box (a works order number, a product
+  code or a fabric), with the completion date or "in WIP". **Undo** puts a
+  line back on To cut.
 - **Metres per day**, by fabric.
 
 A line with no fabric or no metres on file is not sent to the cutting room:
