@@ -3474,7 +3474,7 @@ var CUT_LATE_DAYS=5;                     // printed this long ago and not cut: f
 var CUTLOG_FROM='2026-09-29';
 function cutInScope(wo){ return !!wo.printed && (!wo.due || wo.due>=CUTLOG_FROM); }
 var cutLog={entries:[], savedAt:'', sha:null, loadedAt:null, error:'', source:''};
-var cutBusy=false, cutQ='', cutSec='todo', cutAsAt='', cutFrom='', cutTo='', cutDayOpen={};
+var cutBusy=false, cutQ='', cutSec='todo', cutAsAt='', cutFrom='', cutTo='', cutDayOpen={}, cutSortDesc=false;   // To cut: by date printed, oldest first; the header flips it
 function cutToken(){ try{ return localStorage.getItem('tibard_cutlog_token')||''; }catch(e){ return ''; } }
 function cutCanWrite(){ return !!cutToken(); }
 function cutSetup(){
@@ -3741,14 +3741,14 @@ function cutRender(){
   if(cutSec==='todo'){
     var byRef={}, order=[];
     todo.filter(match).forEach(function(e){ if(!byRef[e.ref]){ byRef[e.ref]=[]; order.push(e.ref); } byRef[e.ref].push(e); });
-    var raised=function(ref){ var e=byRef[ref][0]; return e.created||e.printedAt||''; };
-    order.sort(function(a,b){ return raised(a).localeCompare(raised(b)) || a.localeCompare(b); });
+    // by the date printed - the one date the cutter needs (Luke, 2 Oct 2026)
+    var printed=function(ref){ return byRef[ref][0].printedAt||''; };
+    order.sort(function(a,b){ var c=printed(a).localeCompare(printed(b)) || a.localeCompare(b); return cutSortDesc ? -c : c; });
     if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut'+(q?' matches "'+esc(q)+'"':'')+'.</div>'; }
-    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th>Raised</th><th>Printed</th><th>Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th>'+(can?'Cut m &middot; comment':'')+'</th></tr></thead><tbody>'
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Sort by the date printed" onclick="cutSortDesc=!cutSortDesc; cutRender()">Printed '+(cutSortDesc?'&#9660;':'&#9650;')+'</th><th>Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th>'+(can?'Cut m &middot; comment':'')+'</th></tr></thead><tbody>'
       +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
         return es.map(function(e,i){
           return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
-            +'<td>'+(i===0?esc(fmtD(first.created||'')):'')+'</td>'
             +'<td>'+(i===0?esc(fmtD(first.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':''):'')+'</td><td>'+(i===0?esc(fmtD(first.due)):'')+'</td>'
             +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
             +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
