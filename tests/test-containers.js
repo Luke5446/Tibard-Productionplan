@@ -52,10 +52,10 @@ const URL='https://luke5446.github.io/Tibard-Stock-Planner/data.json';
    && /On POP: 1,806 \| 📦 C127 1,806 lands 19 Oct, C128 630 lands 11 Nov$/.test(ok.r.meta)
    && /Wk 2\/\+1806 📦 C127\/1,098/.test(ok.r.rows) && /Wk 6\/\+630 📦 C128\/928/.test(ok.r.rows) && /Wk 1\/—\/-508/.test(ok.r.rows)
    && ok.r.chip==='rgb(219, 234, 254)' && ok.r.plain==='—'.repeat(13)
-   // WOP REC: 13 weeks at the 6-month rate, or to the container that follows. CT3082LL03 is 308 oversold at 28.6 a day:
-   // with the feed, C127 counts from a week after 19 Oct (day 24), so 24 x 28.6 + 308 = 994 bridges to it (C128 then covers
-   // the rest); without the feed Sage's 1,806 On POP counts now and 91 days need 2,600 - 1,498 = 1,102
-   && ok.r.wopRec==='CT3082LL03:994 ABC002:0 XYZ001:0' && bad.r.wopRec==='CT3082LL03:1102 ABC002:0 XYZ001:0'
+   // WOP REC: 28 days' cover, a container counted from a week after it lands. CT3082LL03 is 308 oversold at 28.6 a day:
+   // with the feed, C127 counts from day 24, so 24 x 28.6 + 308 = 994 bridges to it (C128 lands after the four weeks and
+   // is not counted); without the feed Sage's 1,806 On POP counts now and 28 days need 800 - 1,498 < 0, so nothing
+   && ok.r.wopRec==='CT3082LL03:994 ABC002:0 XYZ001:0' && bad.r.wopRec==='CT3082LL03:0 ABC002:0 XYZ001:0'
    && bad.r.state==='error' && bad.r.n===0 && bad.r.info==='Containers: stock planner not available'
    && bad.r.a==='1,806||' && bad.r.b==='—||' && !/C127/.test(bad.r.rows) && !/📦/.test(bad.r.meta)
    && ok.errs.length===0 && bad.errs.length===0;
