@@ -71,10 +71,10 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    smShowTab('kpi'); const wip=[...document.querySelectorAll('#kpiWip table tbody tr')].map(tr=>[...tr.children].map(td=>td.textContent.replace(/\s+/g,' ').trim()));
    return {tiles, logRows, day, wip, wipCalc:cutWip('2026-10-01')}; });
  // 3. a save refused once (someone else saved in between) is read past and applied again
- await p.evaluate(()=>cutUnmark('S-T1|CICJM0193XXS01|MESH2290901')); await p.waitForTimeout(500);
+ await p.evaluate(()=>cutUnmark('S-T1|CICJM0193XXS01|MESHPW31401')); await p.waitForTimeout(500);
  refuseOnce=true; const putsBefore=puts; const alertsBefore=await p.evaluate(()=>window.__alerts.length);
- await p.evaluate(()=>cutMark('S-T1|CICJM0193XXS01|MESH2290901')); await p.waitForTimeout(800);
- const s6={retried:puts-putsBefore, cut:entries().filter(e=>e.fabric==='MESH2290901').map(e=>e.cutAt||'-').join(), alerts:(await p.evaluate(()=>window.__alerts.length))-alertsBefore};
+ await p.evaluate(()=>cutMark('S-T1|CICJM0193XXS01|MESHPW31401')); await p.waitForTimeout(800);
+ const s6={retried:puts-putsBefore, cut:entries().filter(e=>e.fabric==='MESHPW31401').map(e=>e.cutAt||'-').join(), alerts:(await p.evaluate(()=>window.__alerts.length))-alertsBefore};
  // a line that reached the file twice reads as one
  store=JSON.stringify(Object.assign(JSON.parse(store),{entries:JSON.parse(store).entries.concat([JSON.parse(store).entries[0]])}));
  // 4. anyone else: reads the Pages copy, sees the log for a search, no buttons
@@ -103,21 +103,21 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  console.log('review    ->', JSON.stringify(r1), JSON.stringify(r2), JSON.stringify(r3a), JSON.stringify(r3)); console.log('cut, edit ->', JSON.stringify(r4), JSON.stringify(r5));
  console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('marked    ->', s3a, s3b, JSON.stringify(s3), JSON.stringify(s4));
  console.log('figures   ->', JSON.stringify(s5)); console.log('conflict  ->', JSON.stringify(s6)); console.log('viewer    ->', JSON.stringify(s7)); console.log('panel     ->', JSON.stringify(s9)); console.log('completed ->', JSON.stringify(s8));
- const pass = s1.join('|')==='S-T1:CICJM0193XXS01:MESH2290901:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
+ const pass = s1.join('|')==='S-T1:CICJM0193XXS01:MESHPW31401:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
    && r1.lines.join()==='S-T3:ZZNOUSAGE:no fabric on file' && r1.badge==='1' && r1.shown==='' && r1.rows.length===1 && /S-T3.*ZZNOUSAGE.*5 ?no fabric on file.*Open.*fabric/.test(r1.rows[0]) && r1.fix===1
    && r2.join()==='12:6:waiting' && r3a.log===0 && /^no metres on file for PC2003ECO: type the metres/.test(r3a.why) && /no usage on file .*PC2003ECO.*type the metres for the line/.test(r3a.hint)
    && r3.log.join()==='PC2003ECO:6:5' && r3.review.n===0 && r3.review.badge==='none' && /Nothing to review/.test(r3.review.empty)
    && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===3 && s1c.prompt==='' && /mark cuts/.test(s1c.tag)
    && s2.src==='api' && s2.rows===3 && s2.order==='S-T1,S-T1,S-T3' && s2.head==='Works orderPrinted ▲DueProductQtyFabricStd mCut m · comment' && s2.flipped==='S-T3,S-T1,S-T1' && s2.todo==='3' && s2.boxAfterChips && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.cutAll && sq.polling
    && s7.logPrompt && s7.todoRows===1
-   && r4.join('|')==='MESH2290901:7:1.75:2026-10-01|PC2001ECO:7:7.35:2026-10-01' && r5.lines.join('|')==='MESH2290901:2026-10-01|PC2001ECO:2026-10-01' && r5.notPushed===0 && r5.review===0
-   && s3a===1 && s3b===0 && s3.join()==='2026-10-01:1.75,2026-10-01:8' && s4.join('|')==='MESH2290901:1.75::std|PC2001ECO:8:roll end, 0.65 m short:adj'
+   && r4.join('|')==='MESHPW31401:7:1.75:2026-10-01|PC2001ECO:7:7.35:2026-10-01' && r5.lines.join('|')==='MESHPW31401:2026-10-01|PC2001ECO:2026-10-01' && r5.notPushed===0 && r5.review===0
+   && s3a===1 && s3b===0 && s3.join()==='2026-10-01:1.75,2026-10-01:8' && s4.join('|')==='MESHPW31401:1.75::std|PC2001ECO:8:roll end, 0.65 m short:adj'
    && /Cut today=9.8 m/.test(s5.tiles.join()) && /Live, not on the log=0/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP'&&/Undo/.test(r[10]))
-   && s5.day.length===1 && s5.day[0][2]==='9.75' && s5.wip.length===3 && s5.wip[0][0].startsWith('PC2001ECO') && s5.wip[0][5]==='£17.12' && s5.wip[2][5]==='£19.19' && Math.abs(s5.wipCalc.total.value-19.19)<0.01
+   && s5.day.length===1 && s5.day[0][2]==='9.75' && s5.wip.length===3 && s5.wip[0][0].startsWith('PC2001ECO') && s5.wip[0][5]==='£17.12' && s5.wip[2][5]==='£21.06' && Math.abs(s5.wipCalc.total.value-21.06)<0.01
    && s6.retried===2 && s6.cut==='2026-10-01' && s6.alerts===0
    && s7.src==='pages' && s7.rows===2 && s7.n===4 && JSON.parse(store).entries.length===5 && s7.buttons===0 && s7.tag==='view only'
-   && s8.wipNow.lines===1 && s8.wipNow.assumed===1 && Math.abs(s8.wipNow.value-4.64)<0.01 && s8.wipBefore.lines===3 && s8.wipBefore.logged===2 && Math.abs(s8.wipBefore.value-23.83)<0.01
-   && s8.done.join()==='02 Oct 2026,02 Oct 2026' && s8.kpiBefore==='£23.83' && s8.rowsBefore===4 && s8.kpiNow==='£4.64' && s8.assumedNow.join('|')==='2.00 m taken as cut|'
+   && s8.wipNow.lines===1 && s8.wipNow.assumed===1 && Math.abs(s8.wipNow.value-4.64)<0.01 && s8.wipBefore.lines===3 && s8.wipBefore.logged===2 && Math.abs(s8.wipBefore.value-25.70)<0.01
+   && s8.done.join()==='02 Oct 2026,02 Oct 2026' && s8.kpiBefore==='£25.70' && s8.rowsBefore===4 && s8.kpiNow==='£4.64' && s8.assumedNow.join('|')==='2.00 m taken as cut|'
    && s9.loadedAtStartup && /cut 01 Oct 2026 .middot; cutting room: 8 m .middot; roll end, 0.65 m short \(used as the actual\)/.test(s9.cell) && s9.placeholder==='8'
    && s8.rec.actual===8 && s8.rec.std===7.35 && /cut log/.test(s8.rec.source) && s8.rec.note==='roll end, 0.65 m short' && s8.rec.meshActual===undefined && s8.rec.meshStd===1.75
    && s8.ledger.metres===9.75 && s8.ledger.varPct===8.8 && s8.ledger.note==='roll end, 0.65 m short' && s8.rowHasNote;
