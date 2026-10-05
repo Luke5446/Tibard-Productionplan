@@ -89,6 +89,26 @@ with every container in the hover. The runway popup lands each container in
 its week, so the closing stock there follows the real arrivals. Nothing is
 saved and the WOP maths are unchanged: Sage's On POP stays the stock on order.
 
+## Publishing for the team
+
+**Publish for team** writes the editor's state to `data.json` in this repo,
+which the viewers and the warehouse page read. With a GitHub token on the
+editor's PC it puts the file into the repo itself, through the GitHub API,
+and the team sees it within a minute; with no token, or if GitHub refuses,
+it downloads `data.json` for the upload-and-commit routine and says why.
+
+Setting the token up, once, on the production manager's PC: on GitHub,
+**Settings → Developer settings → Personal access tokens → Fine-grained
+tokens → Generate new token**; name it "Tibard production planner", expiry
+one year, **Repository access: Only select repositories → Tibard-Productionplan**,
+**Permissions → Repository permissions → Contents: Read and write**. Copy it
+(shown once), then in the planner header **Set up this PC** and paste it. The
+button changes to **Token**; an empty box removes it. This is a different
+token from the cutting log's, which can write only `Tibard-Cutlog` and so is
+safe on the cutting room PC. A token that can write this repo can change the
+page itself, so it stays on the one PC that publishes. Every publish is a
+commit, so the repo's history holds every version.
+
 ## Where the editor's data is kept
 
 In the browser, in two places at once: `localStorage` and IndexedDB, under the

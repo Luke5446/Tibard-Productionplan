@@ -376,7 +376,8 @@ tr.fab-done td{color:#6b7280}
   <div style="display:flex;gap:6px;align-items:center">
     <span id="modeBadge" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;background:#1e40af"></span>
     <span id="saveInd" style="font-size:10px;opacity:.6"></span>
-    <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:#16a34a;font-size:12px" onclick="publishData()">&#128228; Publish for team</button>
+    <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:#16a34a;font-size:12px" onclick="publishData()" id="publishBtn">&#128228; Publish for team</button>
+    <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="pubSetup()" id="pubSetupBtn" title="A GitHub token on this PC lets Publish put data.json straight into the repo">&#9881; Set up this PC</button>
     <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="showCreateWO()">&#128296; Create works orders</button>
     <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:#c2872b;font-size:12px" onclick="openPlanner()">&#128202; Capacity Planner</button>
     <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:#3d6b8a;font-size:12px" onclick="showTrimCosts()">&#128183; Trim costs</button>
@@ -2402,6 +2403,7 @@ function applyMode(){
   }
   if(IS_EDITOR){
     if(badge){ badge.textContent='EDITOR'; badge.style.background='#065f46'; }
+    if(typeof pubRefreshBtn==='function') pubRefreshBtn();
   } else {
     document.body.classList.add('viewer-mode');
     if(badge){ badge.textContent='VIEW ONLY'; badge.style.background='#1e40af'; }
@@ -2479,15 +2481,65 @@ function absorbSnapshots(list){
 }
 
 // Publish current data for the team (editor only)
+// With a GitHub token on this PC (Set up this PC), Publish puts data.json
+// straight into the repo through the GitHub API, as the cutting log and the
+// stock planner are written: read the file's sha, put the new one back with
+// it, read again if GitHub refuses a stale sha. Without a token it downloads
+// the file for the upload-and-commit routine as before. The token is its own
+// (tibard_prod_token): the cutting-log one can write only the Tibard-Cutlog
+// repo, which is what makes it safe on the cutting room PC. Luke, 5 Oct 2026.
+var PUB_REPO='Luke5446/Tibard-Productionplan', PUB_FILE='data.json';
+var PUB_API='https://api.github.com/repos/'+PUB_REPO+'/contents/'+PUB_FILE;
+function pubToken(){ try{ return localStorage.getItem('tibard_prod_token')||''; }catch(e){ return ''; } }
+function pubSetup(){ if(!IS_EDITOR) return;
+  var cur=pubToken();
+  var t=prompt((cur?'This PC can publish straight to GitHub. Paste a new token to replace it, or clear the box to go back to downloading data.json.':'Paste the GitHub token for publishing (a fine-grained token that can write the '+PUB_REPO+' repo, Contents: read and write). This is not the cutting-log token: that one can only write Tibard-Cutlog.'), cur?'(kept)':'');
+  if(t===null) return;
+  t=t.trim();
+  try{ if(!t) localStorage.removeItem('tibard_prod_token'); else if(t!=='(kept)') localStorage.setItem('tibard_prod_token', t); }catch(e){ alert('Could not keep the token in this browser.'); }
+  pubRefreshBtn();
+}
+function pubRefreshBtn(){ var b=document.getElementById('pubSetupBtn'); if(b) b.innerHTML=pubToken()?'&#9881; Token':'&#9881; Set up this PC'; var pb=document.getElementById('publishBtn'); if(pb) pb.title=pubToken()?'Puts data.json into the repo; viewers see it within a minute':'Downloads data.json to upload to the repo (Set up this PC to publish straight from here)'; }
+function pubB64(s){ return btoa(unescape(encodeURIComponent(s))); }
+function publishState(){
+  return JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,
+    savedAt:new Date().toISOString()});
+}
+function publishDownload(json, why){
+  var blob=new Blob([json],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
+  alert((why?why+'\n\n':'')+'data.json downloaded.\n\nNow upload it to your GitHub repo (replacing the old data.json) and commit. Viewers will see the update within a minute.');
+}
+var pubBusy=false;
 function publishData(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
   if(!rows.length){ alert('Load buffer data first.'); return; }
-  var state={rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,
-    savedAt:new Date().toISOString()};
-  var blob=new Blob([JSON.stringify(state)],{type:'application/json'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
-  alert('data.json downloaded.\n\nNow upload it to your GitHub repo (replacing the old data.json) and commit. Viewers will see the update within a minute.');
+  if(pubBusy) return;
+  var json=publishState(), tok=pubToken();
+  if(!tok){ publishDownload(json, ''); return; }
+  var pb=document.getElementById('publishBtn'), was=pb?pb.innerHTML:'';
+  pubBusy=true; if(pb) pb.innerHTML='&#8987; Publishing&hellip;';
+  var done=function(ok, err){ pubBusy=false; if(pb) pb.innerHTML=was;
+    if(ok){ var ind=document.getElementById('saveInd'); if(ind){ ind.textContent='\u2713 Published'; setTimeout(function(){ ind.textContent=''; },4000); }
+      var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+    else publishDownload(json, 'GitHub did not take the publish ('+err+').'); };
+  var headers={'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'};
+  var attempt=function(n){
+    fetch(PUB_API+'?t='+Date.now(), {headers:headers, cache:'no-store'})
+      .then(function(r){ if(r.status===404) return {sha:null}; if(!r.ok) throw new Error('GitHub said '+r.status+(r.status===401?' (token refused)':r.status===403?' (token cannot write this repo)':'')); return r.json(); })
+      .then(function(j){
+        var body={message:'Production plan published '+new Date().toISOString().slice(0,16).replace('T',' '), content:pubB64(json)}; if(j.sha) body.sha=j.sha;
+        return fetch(PUB_API, {method:'PUT', headers:Object.assign({'Content-Type':'application/json'}, headers), body:JSON.stringify(body)});
+      })
+      .then(function(r){
+        if((r.status===409 || r.status===422) && n<3){ attempt(n+1); return; }
+        if(!r.ok) throw new Error('GitHub refused the save ('+r.status+')');
+        done(true);
+      })
+      .catch(function(e){ done(false, String(e.message||e)); });
+  };
+  attempt(1);
 }
 
 // ── Date grouping helpers (today vs monthly folders) ───────────────────────
