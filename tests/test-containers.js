@@ -27,6 +27,8 @@ const URL='https://luke5446.github.io/Tibard-Stock-Planner/data.json';
   await p.addInitScript(()=>{ window.now=()=>new Date('2026-10-02T10:00:00'); window.confirm=()=>true; window.alert=()=>{}; });
   await p.goto('file://'+require('path').join(__dirname,'..','index.html')+'?edit');
   await p.waitForFunction(()=>window.contInfo && window.contInfo.state!=='loading', null, {timeout:10000});
+  // the page's own now() replaces the init script's: pin the date again before the maths run (days to a container)
+  await p.evaluate(()=>{ window.now=()=>new Date('2026-10-02T10:00:00'); });
   await p.evaluate(t=>{ document.getElementById('pasteTA').value=t; loadPaste(); }, buf);
   const r=await p.evaluate(()=>{
    document.getElementById('sfilt').value=''; renderTable();

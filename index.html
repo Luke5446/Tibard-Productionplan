@@ -660,7 +660,7 @@ tr.fab-done td{color:#6b7280}
       <button class="btn btn-p edit-only" onclick="smTogglePaste()">&#9998; Paste Special Makes data</button>
       <button class="btn edit-only" onclick="smOpenImport()" title="Bring a works order across from the costing app">&#128229; Import from costing</button>
       <input id="smSearch" placeholder="Search anything - code, customer, order, description..." oninput="smRender()" style="padding:6px 9px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;min-width:250px">
-      <span style="margin-left:auto;font-size:11px;color:#6b7280">Pasting again is safe &mdash; anything raised or dismissed is never offered twice.</span>
+      <span style="margin-left:auto;font-size:11px;color:#6b7280">Paste the whole sheet each time: the queue is what the latest paste says. Anything raised or dismissed is never offered twice; a line the sheet no longer shows comes off the queue.</span>
     </div>
 
     <div id="smPendingList"></div>
@@ -3010,8 +3010,19 @@ function smLoadPaste(){
     }
     if(seen && seen.what==='dismissed'){ dismissedBefore++; if(known[o.key]) refresh(known[o.key], o); return; }
     if(pendKeys[o.key]){ if(known[o.key]) refresh(known[o.key], o); return; }   // already waiting: keep it current
+    // back on the sheet after it had gone: offered again, the old record let go
+    if(known[o.key] && known[o.key].gone){ var gi=smDropped.indexOf(known[o.key]); if(gi>=0) smDropped.splice(gi,1); delete known[o.key]; }
     o.seenAt=d2s(now()); smPending.push(o); pendKeys[o.key]=true; added++;
   });
+  // The queue is what the latest paste says and nothing older: a line waiting
+  // for a works order that the sheet no longer shows (sales changed or
+  // cancelled the order, or it was despatched) comes off the queue, kept in
+  // the history as gone so it can be seen and put back. Luke, 5 Oct 2026:
+  // a CT code sales corrected in Sage was still asking for a works order.
+  var onSheet={}; lines.forEach(function(o){ onSheet[o.key]=true; });
+  var gone=[];
+  for(var gi2=smPending.length-1; gi2>=0; gi2--){ var gp=smPending[gi2]; if(onSheet[gp.key]) continue;
+    smPending.splice(gi2,1); gp.gone=true; gp.goneAt=d2s(now()); gp.dismissedAt=gp.goneAt; smDropped.push(gp); gone.push(gp); }
 
   // Sort the queue by sales order then line order, so multi-product orders are
   // reviewed together and Pt numbers come out in line order.
@@ -3030,6 +3041,7 @@ function smLoadPaste(){
   if(updated)         bits.push('<strong>'+updated+'</strong> known line'+(updated===1?'':'s')+' updated from Sage (quantity or date changed)');
   if(woUpdated)       bits.push('<strong>'+woUpdated+'</strong> raised works order'+(woUpdated===1?'':'s')+' updated from Sage (date, description or customer order changed - see the card)');
   if(released)        bits.push('<strong>'+released+'</strong> line'+(released===1?'':'s')+' back for review: the works order raised for it was deleted');
+  if(gone.length)     bits.push('<span style="color:#b45309"><strong>'+gone.length+'</strong> line'+(gone.length===1?'':'s')+' no longer on the sheet, taken off the queue ('+esc(gone.map(function(g){ return g.code||'(no code)'; }).join(', '))+')</span>');
   if(notes)           bits.push('<strong>'+notes+'</strong> logo/text line'+(notes===1?'':'s')+' kept with the sales order (printed on stock-style works orders)');
   if(keptNotes.lost)  bits.push('<span style="color:#b45309">'+keptNotes.lost+' logo/text line'+(keptNotes.lost===1?'':'s')+' sit under a garment the sheet does not show (stock held or bought in) and were not attached</span>');
   if(inter)           bits.push(inter+' inter-company line'+(inter===1?'':'s')+' ignored');
@@ -3146,6 +3158,7 @@ function smUndismiss(key){
       var o=smDropped.splice(i,1)[0];
       delete smSeen[o.key];
       delete o.dismissedAt;      // it is not dismissed any more; the date must not linger on it
+      delete o.gone; delete o.goneAt;
       smPending.push(o);
       break;
     }
@@ -4094,10 +4107,10 @@ function smRenderInner(){
             +esc(o.code)+' &times; '+o.qty+' &middot; '+esc(o.customer||'')+(o.deletedAt?' &middot; <em>deleted '+esc(fmtD(o.deletedAt))+', line back for review</em>':'')+'</span>'
             +'<span>'+esc(fmtD(o.raisedAt))+'</span></div>';
         },'made-'):'')
-      +(smDropped.length?'<div class="sm-hsub">&#10005; Dismissed ('+smDropped.length+')</div>'
+      +(smDropped.length?'<div class="sm-hsub">&#10005; Dismissed or gone from the sheet ('+smDropped.length+')</div>'
         +smMonthBlocks(smDropped,'dismissedAt',function(o){
           return '<div class="sm-dism"><span>'+esc(o.code||'(no code)')+' &times; '+o.qty+(o.qtyWas!=null?' <span title="the outstanding balance in Sage changed on a later paste">(was '+o.qtyWas+')</span>':'')
-            +' &middot; SO '+esc(o.so.replace(/^0+/,''))+' &middot; '+esc(o.customer||'')+'</span>'
+            +' &middot; SO '+esc(o.so.replace(/^0+/,''))+' &middot; '+esc(o.customer||'')+(o.gone?' &middot; <em title="it was waiting for a works order and a later paste of the sheet did not have it">gone from the sheet '+esc(fmtD(o.goneAt))+'</em>':'')+'</span>'
             +(IS_EDITOR?'<button class="btn" style="font-size:10px;padding:2px 8px" onclick="smUndismiss(\''+esc(o.key)+'\')">Undo</button>':'')
             +'</div>';
         },'drop-'):'');

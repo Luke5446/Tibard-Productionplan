@@ -38,7 +38,8 @@ const L=(key,so,code,desc,qty,promised,po)=>T([key,'TIBARD',so,'1',code,desc,Str
    return { pending:smPending.map(o=>o.key+':'+o.promised).join(','), hist:(document.getElementById('smHist')||document.body).textContent.replace(/\s+/g,' ').match(/S-TIB871161-Pt1[^|]*?deleted 28 Sept 2026, line back for review/)?'marked':'not marked' }; });
  // a line left "seen" by a deletion made before this fix: nothing live, nothing completed
  await p.evaluate(()=>{ smSeen['TIB-9']={what:'wo', ref:'S-TIB871169-Pt1'}; smMade.push({key:'TIB-9', ref:'S-TIB871169-Pt1', part:1, code:'X', qty:1, so:'0000871169', company:'TIBARD', raisedAt:'2026-09-20', promised:'2026-09-24'}); });
- const r4=await run(L('TIB-9','0000871169','OHCJSMOXFORD4803','BLACK S/S OXFORD 48',1,'2026-10-06'));
+ //    (TIB-1 is still on the sheet, so it is pasted again: a line a paste leaves out comes off the queue)
+ const r4=await run([L('TIB-1','0000871161','OHCJSMOXFORD4003','BLACK S/S OXFORD 40',1,'2026-10-06'), L('TIB-9','0000871169','OHCJSMOXFORD4803','BLACK S/S OXFORD 48',1,'2026-10-06')].join('\n'));
  const z=await p.evaluate(()=>[smPending.map(o=>o.key).join(','), smMade.find(m=>m.key==='TIB-9').deletedAt||'-'].join('|'));
  console.log('paste 1 ->', r1); console.log('made    ->', made);
  console.log('paste 2 ->', r2); console.log('after   ->', JSON.stringify(a));

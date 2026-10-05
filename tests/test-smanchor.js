@@ -46,7 +46,8 @@ const NOTE='NOTE - charge or logo line';
  const dup=await anchors('0000200004');
  console.log('filtered   ->', filtered, '| double paste ->', dup);
  // 5. a free-text note on its own is printed as a note but is not embroidery
- await paste([L('E-1','0000200005',1,'OHCJSSUFFOLK6001','SUFFOLK 60',4,'WORKS ORDER'), L('E-2','0000200005',2,'','Rush - opening night',0,'NOTE - free text')].join('\n'));
+ //    (the sheet still carries order 200004, so it is pasted again: a line a paste leaves out comes off the queue)
+ await paste([dbl, L('E-1','0000200005',1,'OHCJSSUFFOLK6001','SUFFOLK 60',4,'WORKS ORDER'), L('E-2','0000200005',2,'','Rush - opening night',0,'NOTE - free text')].join('\n'));
  const pr=await p.evaluate(()=>{ smTickAll(true); smCreateAllShown(); const w=WOs.find(w=>w.sm&&w.sm.so==='0000200005');
    let html=''; window.open=()=>({document:{open(){},write(h){html+=h;},close(){}}}); printWOP(w.ref,w.items[0].code,4,w.due,w.sm);
    return {emb:(html.match(/<th>Embroidery<\/th><td>(.*?)<\/td>/)||['',''])[1], note:/<th>Note<\/th><td colspan="3"[^>]*>Rush - opening night/.test(html)}; });
