@@ -99,7 +99,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && r.cnm==='CNM|CO5003ECO/0.5+CO5007/0.15|CO5003ECO/0.5475/marker AP0534380/CO5007:0.15|brand|chart|own'
    && r.olive==='6|CMP-THR-EP80-05742-83+LABELOH5771+TAXTABOH07/01+CMP-OH-LBL-WASH-01+CMP-OH-NTT-25-03|12|PC2083ECO/1/All Costings/|PC2083ECO'
    && r.ap==='AP352801||CO5001ECO/0.5/All Costings/|chart|printable'
-   && r.wag==='WAGCJM0193--01|XS|WAGCJM0193--01/52|PC2001ECO/1.35+MESH2290901/0.35|PC2001ECO/1.35/All Costings/MESH2290901:0.35|brand|chart|own|no pocket'
+   && r.wag==='WAGCJM0193--01|XS|WAGCJM0193--01/52|PC2001ECO/1.35+MESHPW31401/0.35|PC2001ECO/1.35/All Costings/MESHPW31401:0.35|brand|chart|own|no pocket'
    && r.brown==='PC2082ECO|PC2082ECO/1/All Costings/|6|thread|chart'
    && r.rs515==="Rick Stein's Cookery School|CO5015ECO|1|CO5015ECO/1/All Costings/|4|brand|artwork|own"
    && r.navy3005==='5/4/clean|5/3/clean|4/4/clean|6/5/clean|PC2015ECO/0.805/marker 300501/|PC2015ECO/1.1/works order data/'
