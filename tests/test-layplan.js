@@ -104,11 +104,11 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && r.rs515==="Rick Stein's Cookery School|CO5015ECO|1|CO5015ECO/1/All Costings/|4|brand|artwork|own"
    && r.navy3005==='5/4/clean|5/3/clean|4/4/clean|6/5/clean|PC2015ECO/0.805/marker 300501/|PC2015ECO/1.1/works order data/'
    && r.rebuilt==='0|CO5241ECO+CO5222ECO+LEATHERHIDE|CO5241ECO/1/All Costings/CO5222ECO:0.1+LEATHERHIDE:0.021|3|PC2001ECO/0.805/marker 300501/|none|6'
-   && r.cjmls==='CJM0193--01|SS|0193LSMESH|PC2001ECO/1.25+MESH2290901/0.25|PC2001ECO/1.25/All Costings/MESH2290901:0.25|PC2003ECO+MESH2290903|lectra|pocket'
+   && r.cjmls==='CJM0193--01|SS|0193LSMESH|PC2001ECO/1.25+MESHPW31401/0.25|PC2001ECO/1.25/All Costings/MESHPW31401:0.25|PC2003ECO+MESH2290903|lectra|pocket'
    && r.bettys==='Bettys|CO5001ECO|CO5001ECO/0.8/All Costings/|brand|artwork|chart|own'
    && r.star==='BRG Star Ltd|0631WPFT|PC2003ECO/0.45/marker 0631WPFT01/|marker|brand|artwork|place|own'
    && r.cvrKnee==='ok'
-   && r.cjm==='CICJM0193--01|XXS|0193SSMESH|PC2001ECO/1.05+MESH2290901/0.25|PC2001ECO/1.05/All Costings/MESH2290901:0.25|CICJM0193--03|PC2003ECO+MESH2290903|lectra|chart|printable'
+   && r.cjm==='CICJM0193--01|XXS|0193SSMESH|PC2001ECO/1.05+MESHPW31401/0.25|PC2001ECO/1.05/All Costings/MESHPW31401:0.25|CICJM0193--03|PC2003ECO+MESH2290903|lectra|chart|printable'
    && r.gd==='CO5014DEN|0.72|CO5014DEN/0.715/marker 0596003/'
    && r.cvr==="Carmel Valley Ranch|PC9068/0.83|Embroidery|CMP-THR-EP80-08569-68,LABELOH5771,CMP-OH-LBL-WASH-01,,LEATHERHIDE,CMP-DR32-N254-287,CMP-STD-PST-9B-287,CMP-STD-SOC-9B-287,CMP-30ED-28-931,CMP-30RD-28-931,PKG-OH-GPS-500X750-01|70|logo|sketch|place|THREAD — COATS EPIC 80&#39;S BISCUIT 08569 — cost per metre"
    && r.f0544==='CO5001ECO:1 CO5003ECO:1 CO5015ECO:1 CO5173ECO:1 CO5241ECO:1 CO5083ECO:1'
