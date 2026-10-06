@@ -108,6 +108,36 @@ completion carries no fabric. Its print is the first page only, with a banner
 saying what to pick, for the embroidery room. The card and the panel say
 **EMB only**.
 
+The base code is the longest stock code in the buffer found inside the
+branded code, so GIRHT016003 and TRGHT016003SHARP both pick HT016003. One
+that cannot be found is left blank and flagged **base code not found** (a
+typed code that is not in the buffer is flagged **not a stock code**): the
+panel's **✎ base code** link sets it, and the warehouse cannot book the line
+in until it is right.
+
+The life of an embroidery-only works order, each step a mark on the
+warehouse log:
+
+1. Made by the PM and published. It is on the Warehouse tab as **needs
+   printing**.
+2. The warehouse prints it (printed on the tracker too), picks the base
+   stock and marks it **Picked**.
+3. It appears in the **Embroidery queue** at the top of the Embroidery tab.
+   The embroidery manager chooses the machine (1 to 5) it goes on; the tab's
+   badge counts the picked works orders not yet on a machine. When it is
+   embroidered they mark it **Done**.
+4. It appears on the Warehouse tab under **EMB to book in**. **Book in +
+   files** writes the mark and makes two CSV files for the Sage data exchange
+   folder: `EMB_WriteOff_<WO>_<date>.csv` writes the base stock off HOME
+   (the fabric write-off layout, reference Embroidery, Manual Reduction) and
+   `EMB_BookIn_<WO>_<date>.csv` books the branded code in (the same columns
+   with AdditionCat, Manual Addition).
+5. The editor takes the book-in mark on its next load: the works order
+   completes in the planner as at the day it was booked, with no fabric.
+
+The embroidery room's PC needs the same token as the warehouse's to mark
+the machine and done.
+
 ## The Warehouse tab
 
 The warehouse's own address (`?warehouse`) now opens the planner on the
@@ -122,9 +152,12 @@ The warehouse's own address (`?warehouse`) now opens the planner on the
   **Picked** marks the line, with the last 30 days underneath and Undo. The
   warehouse reads the published data, so a new works order reaches it on the
   next Publish.
-- **Ready to book in** and **Booked in history**: as before, items completed
-  by production to book into Sage, with Copy ticked, Export CSV and the
-  marks.
+- **EMB to book in**: embroidery-only works orders marked done in the
+  embroidery room, with the home stock to write off and the branded code to
+  book in; **Book in + files** (see above).
+- **Production to book in** and **Booked in history**: as before, items
+  completed by production to book into Sage, with Copy ticked, Export CSV
+  and the marks.
 
 The marks live in `warehouse.json` in the `Tibard-Cutlog` repo, read the way
 the cutting log is: through GitHub Pages for anyone, and through the API on

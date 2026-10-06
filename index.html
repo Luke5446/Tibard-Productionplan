@@ -579,9 +579,18 @@ tr.fab-done td{color:#6b7280}
       <table class="wh-tbl"><thead><tr><th>Printed</th><th>Due</th><th>WO Ref</th><th>Pick from stock</th><th>Embroidered code</th><th>Customer</th><th style="text-align:right">Qty</th><th class="ns" style="text-align:center">Action</th></tr></thead><tbody id="whPickBody"></tbody></table>
     </div><div id="whPickedHist" style="margin-top:8px"></div></div>
   </div>
+  <div class="wh-section">
+    <div class="wh-hdr" style="background:#0f766e" onclick="whToggleSection('whEmbBodyWrap',this)">
+      <h2><span class="wh-chev">&#9660;</span> &#129697; EMB to book in <span id="whEmbCount" style="font-size:11px;opacity:.8"></span></h2>
+      <div style="font-size:11px;opacity:.85" onclick="event.stopPropagation()">Done in the embroidery room: Book in makes the two files for the Sage data exchange folder - the home stock written off, the branded stock booked in - and marks it booked</div>
+    </div>
+    <div class="wh-body" id="whEmbBodyWrap"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table class="wh-tbl"><thead><tr><th>Done</th><th>WO Ref</th><th>Write off (home stock)</th><th>Book in (branded)</th><th>Customer</th><th style="text-align:right">Qty</th><th class="ns" style="text-align:center">Action</th></tr></thead><tbody id="whEmbBody"></tbody></table>
+    </div><div id="whEmbHist" style="margin-top:8px"></div></div>
+  </div>
 <div class="wh-section">
     <div class="wh-hdr" onclick="whToggleSection('whPendingBodyWrap',this)">
-      <h2><span class="wh-chev">&#9660;</span> &#128203; Ready to Book In <span id="whPendingCount" style="font-size:11px;opacity:.8"></span></h2>
+      <h2><span class="wh-chev">&#9660;</span> &#128203; Production to book in <span id="whPendingCount" style="font-size:11px;opacity:.8"></span></h2>
       <div style="display:flex;gap:6px;flex-wrap:wrap" onclick="event.stopPropagation()">
         <button class="btn" style="font-size:12px;background:#fff" onclick="whCopyPending()">&#128203; Copy ticked</button>
         <button class="btn" style="font-size:12px;background:#fff" onclick="whExportPending()">&#8659; Export CSV</button>
@@ -791,12 +800,19 @@ function stampWO(wo, inherit){
 // embroidery room does the rest. Nothing is cut or made. The base code is the
 // longest tail of the code that is a product in the buffer, else the code
 // with its customer prefix (two to four letters) taken off.
+// A branded code can carry a customer prefix, a suffix, or both
+// (GIRHT016003, TRGHT016003SHARP): the base is the longest stock code in
+// the buffer found inside it. None found is left blank and flagged for the
+// PM to set, never guessed (Luke, 6 Oct 2026).
 function embBaseFor(code){
   var c=(code||'').toUpperCase(), best='';
-  for(var i=1;i<c.length-2;i++){ var tail=c.slice(i); if(rows.some(function(r){ return r.code===tail; })){ best=tail; break; } }
-  if(best) return best;
-  var m=c.match(/^[A-Z]{2,4}([A-Z]{2,}\d.*)$/); return m ? m[1] : c;
+  rows.forEach(function(r){ var rc=(r.code||'').toUpperCase(); if(rc && rc!==c && rc.length>best.length && c.indexOf(rc)>=0) best=rc; });
+  return best;
 }
+function embBaseKnown(code){ var c=(code||'').toUpperCase(); return !!c && rows.some(function(r){ return (r.code||'').toUpperCase()===c; }); }
+function embSetPick(i){ if(!IS_EDITOR) return; var wo=WOs[i]; if(!wo) return;
+  var v=prompt('The stock code to pick for '+wo.ref+' ('+(wo.items[0]?wo.items[0].code:'')+'): the plain product the embroidered one is made from.', wo.pickCode||'');
+  if(v===null) return; wo.pickCode=v.trim().toUpperCase(); saveState(); refreshWOModal(); renderWOCards(); var wv=document.getElementById('whView'); if(wv && !wv.classList.contains('hidden')) whRender(); }
 
 // ── UI ─────────────────────────────────────────────────────────────────────
 function togglePaste(){ var p=document.getElementById('pastePanel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')) document.getElementById('pasteTA').focus(); }
@@ -1423,7 +1439,7 @@ function openWOModal(i){
     :('<span style="color:#b91c1c;font-weight:700">NOT PRINTED</span>'
       +(IS_EDITOR?' <button class="btn" style="font-size:10px;padding:2px 8px" title="Clear this WO from the unprinted list without printing (e.g. no template set up yet)" onclick="markWOPrinted('+i+')">&#10003; Mark as printed</button>':''));
   var splitH=IS_EDITOR?' &nbsp;<button class="btn" style="font-size:10px;padding:3px 9px" title="Split this works order into two" onclick="splitWO('+i+')">&#9986; Split WO</button>':'';
-  if(wo.embOnly) splitH='<br><span style="color:#6d28d9;font-weight:700">&#129697; Embroidery only</span> &mdash; pick '+(wo.pickCode?'<strong>'+esc(wo.pickCode)+'</strong>':'the base garment')+' from stock for the embroidery room; not cut, not on the cutting log; the print is the first page only'+splitH;
+  if(wo.embOnly) splitH='<br><span style="color:#6d28d9;font-weight:700">&#129697; Embroidery only</span> &mdash; pick '+(wo.pickCode?'<strong>'+esc(wo.pickCode)+'</strong>'+(embBaseKnown(wo.pickCode)?'':' <span class="sm-tag warn" title="This code is not a product in the buffer, so the warehouse cannot book the home stock off it">not a stock code</span>'):'<span class="sm-tag warn">base code not found</span>')+' from stock for the embroidery room'+(IS_EDITOR?' <a href="#" onclick="embSetPick('+i+');return false">&#9998; base code</a>':'')+'; not cut, not on the cutting log; the print is the first page only'+splitH;
   document.getElementById('woModalMeta').innerHTML=
     dateH+' &nbsp;|&nbsp; '
     +'<strong>'+wo.items.length+'</strong> SKU(s) &nbsp;|&nbsp; <strong>'+tot.toLocaleString()+'</strong> units total'
@@ -2673,7 +2689,25 @@ function whRender(){
   if(sb) sb.innerHTML=can?'&#9881; Token':'&#9881; Set up this PC';
   renderWarehouse();
   whRenderPick(can);
-  var tc=document.getElementById('whTabCount'); if(tc){ var n=whPickList().length+completedWOs.filter(function(c){ return !bookedMap[whKey(c)]; }).length; tc.textContent=n; tc.style.display=n?'':'none'; }
+  whRenderEmb(can);
+  embBadge();
+  var tc=document.getElementById('whTabCount'); if(tc){ var n=whPickList().length+embToBook().length+completedWOs.filter(function(c){ return !c.embOnly && !bookedMap[whKey(c)]; }).length; tc.textContent=n; tc.style.display=n?'':'none'; }
+}
+function whRenderEmb(can){
+  var eb=document.getElementById('whEmbBody'); if(!eb) return;
+  var list=embToBook();
+  var ec=document.getElementById('whEmbCount'); if(ec) ec.textContent=list.length?'('+list.length+')':'';
+  if(!list.length) eb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:1.4rem;color:#6b7280">Nothing back from embroidery to book in</td></tr>';
+  else eb.innerHTML=list.map(function(l){ var known=embBaseKnown(l.pickCode);
+    return '<tr><td style="font-weight:600">'+esc(fmtD(l.doneAt.slice(0,10)))+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.ref)+'</td>'
+      +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:'+(known?'#b91c1c':'#b45309')+'">'+esc(l.pickCode||'?')+(known?'':' <span class="sm-tag warn" title="Not a product in the buffer: the PM sets the base code on the works order">not a stock code</span>')+'</td>'
+      +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:#065f46">'+esc(l.code)+'</td><td>'+esc(l.customer)+'</td><td style="text-align:right;font-weight:700">'+Math.round(l.qty).toLocaleString()+'</td>'
+      +'<td style="text-align:center;white-space:nowrap">'+(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#15803d;border-color:#a7d4bb" onclick="embBookIn(\''+esc(l.k)+'\')"'+(known?'':' disabled title="Set the base code first"')+'>&#10003; Book in + files</button>':'')+'</td></tr>'; }).join('');
+  var hist=document.getElementById('whEmbHist'); if(!hist) return;
+  var d30=new Date(now()); d30.setDate(d30.getDate()-30); var from=d2s(d30);
+  var booked=whLog.entries.filter(function(e){ return e.kind==='embbook' && !e.cancelledAt && (e.bookedAt||'').slice(0,10)>=from; }).sort(function(a,b){ return (b.bookedAt||'').localeCompare(a.bookedAt||''); });
+  hist.innerHTML=booked.length?'<div class="sm-sub" style="font-size:11px;margin-bottom:4px">Booked in from embroidery in the last 30 days</div><table class="wh-tbl" style="min-width:auto"><thead><tr><th>Booked</th><th>WO Ref</th><th>Written off</th><th>Booked in</th><th style="text-align:right">Qty</th><th>Files</th></tr></thead><tbody>'
+    +booked.map(function(e){ return '<tr class="booked-row"><td style="font-weight:600">'+esc(fmtD((e.bookedAt||'').slice(0,10)))+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.ref)+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.baseCode||'')+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.code)+'</td><td style="text-align:right;font-weight:700">'+Math.round(e.qty||0).toLocaleString()+'</td><td class="sm-sub" style="font-size:10px">'+esc((e.files||[]).join(', '))+'</td></tr>'; }).join('')+'</tbody></table>':'';
 }
 // ── To pick: printed embroidery-only works orders not yet picked ──
 function whPickKey(ref, code){ return 'pick|'+ref+'|'+code; }
@@ -2705,7 +2739,12 @@ function whPrint(i, code, qty){
 function whApplyPrintMarks(){
   if(!IS_EDITOR) return; var n=0;
   WOs.forEach(function(w){ if(!w.embOnly || w.printed) return; var pm=whPrintMark(w.ref); if(!pm) return; w.printed=true; w.printedAt=(pm.printedAt||'').slice(0,10)||d2s(now()); n++; });
-  if(n){ saveState(); renderWOCards(); refreshWOModal(); }
+  // booked in by the warehouse after embroidery: the works order is complete here too, as at the day it was booked
+  var done=[];
+  WOs.forEach(function(w, i){ if(!w.embOnly) return; (w.items||[]).forEach(function(it){ var bk=whEntry(embBookKey(w.ref, it.code)); if(bk) done.push({w:w, it:it, bk:bk}); }); });
+  done.forEach(function(x){ var w=x.w; recordCompleted(w, x.it); var c=completedWOs[completedWOs.length-1]; if(c && c.ref===w.ref && c.code===x.it.code){ c.completed=(x.bk.bookedAt||'').slice(0,10)||c.completed; c.embBookedAt=x.bk.bookedAt; }
+    w.items=w.items.filter(function(y){ return y!==x.it; }); if(!w.items.length){ var ix=WOs.indexOf(w); if(ix>=0) WOs.splice(ix,1); } n++; });
+  if(n){ recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState(); }
   return n;
 }
 function whRenderPick(can){
@@ -2715,7 +2754,7 @@ function whRenderPick(can){
   if(!list.length) pb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:1.4rem;color:#6b7280">Nothing waiting to be printed or picked</td></tr>';
   else pb.innerHTML=list.map(function(l){ var w=l.wo, cust=w.sm?(w.sm.custName||w.sm.customer||''):'';
     return '<tr'+(l.printedAt?'':' style="background:#fff7ed"')+'><td style="font-weight:600">'+(l.printedAt?esc(fmtD(l.printedAt)):'<span class="sm-tag warn">needs printing</span>')+'</td><td>'+esc(fmtD(w.due))+'</td><td style="font-family:monospace;font-size:11px">'+esc(w.ref)+'</td>'
-      +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:#4c1d95">'+esc(w.pickCode||'?')+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.it.code)+'</td><td>'+esc(cust)+'</td>'
+      +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:#4c1d95">'+(w.pickCode?esc(w.pickCode)+(embBaseKnown(w.pickCode)?'':' <span class="sm-tag warn" title="Not a product in the buffer: the PM sets the base code on the works order">not a stock code</span>'):'<span class="sm-tag warn">base code not found</span>')+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.it.code)+'</td><td>'+esc(cust)+'</td>'
       +'<td style="text-align:right;font-weight:700">'+Math.round(l.it.qty).toLocaleString()+'</td>'
       +'<td style="text-align:center;white-space:nowrap"><button class="btn" style="font-size:10px;padding:2px 8px;color:#1e40af;border-color:#b6c4e8" title="'+(l.printedAt?'Print the sheet again':'Print the sheet for the embroidery room (first page only); this marks the works order printed')+'" onclick="whPrint('+l.i+',\''+esc(l.it.code)+'\','+l.it.qty+')">&#128424; '+(l.printedAt?'Print again':'Print')+'</button> '
       +(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#4c1d95;border-color:#c4b5fd" onclick="whMarkPicked(\''+esc(l.k)+'\','+l.i+',\''+esc(l.it.code)+'\')">&#10003; Picked</button>':'')+'</td></tr>'; }).join('');
@@ -2724,6 +2763,63 @@ function whRenderPick(can){
   var picked=whLog.entries.filter(function(e){ return e.kind==='pick' && !e.cancelledAt && (e.pickedAt||'').slice(0,10)>=from; }).sort(function(a,b){ return (b.pickedAt||'').localeCompare(a.pickedAt||''); });
   hist.innerHTML=picked.length?'<div class="sm-sub" style="font-size:11px;margin-bottom:4px">Picked in the last 30 days</div><table class="wh-tbl" style="min-width:auto"><thead><tr><th>Picked</th><th>WO Ref</th><th>Picked from</th><th>Embroidered code</th><th style="text-align:right">Qty</th><th class="ns"></th></tr></thead><tbody>'
     +picked.map(function(e){ return '<tr class="booked-row"><td style="font-weight:600">'+esc(fmtD((e.pickedAt||'').slice(0,10)))+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.ref)+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.pickCode||'')+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.code)+'</td><td style="text-align:right;font-weight:700">'+Math.round(e.qty||0).toLocaleString()+'</td><td style="text-align:center">'+(can?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="whUnpick(\''+esc(e.k)+'\')">&#8634; Undo</button>':'')+'</td></tr>'; }).join('')+'</tbody></table>':'';
+}
+// ── Embroidery queue: picked, on a machine, done, then booked in ──────────
+function embKey(ref, code){ return 'emb|'+ref+'|'+code; }
+function embBookKey(ref, code){ return 'embbook|'+ref+'|'+code; }
+function whEntry(k){ var m=null; whLog.entries.forEach(function(e){ if(e.k===k && !e.cancelledAt) m=e; }); return m; }
+// Picked embroidery-only lines not yet booked in: the embroidery room's queue
+function embQueue(){
+  var out=[];
+  whLog.entries.forEach(function(pk){ if(pk.kind!=='pick' || pk.cancelledAt) return;
+    if(whEntry(embBookKey(pk.ref, pk.code))) return;
+    var i=-1; WOs.forEach(function(w, ix){ if(w.ref===pk.ref) i=ix; }); var w=i>=0?WOs[i]:null, it=w?(w.items||[]).filter(function(x){ return x.code===pk.code; })[0]:null;
+    var em=whEntry(embKey(pk.ref, pk.code))||{};
+    out.push({i:i, wo:w, ref:pk.ref, code:pk.code, pickCode:(w&&w.pickCode)||pk.pickCode||'', qty:it?it.qty:(pk.qty||0), customer:w&&w.sm?(w.sm.custName||w.sm.customer||''):(pk.customer||''), due:w?(w.due||''):(pk.due||''), pickedAt:(pk.pickedAt||'').slice(0,10), machine:em.machine||'', allocatedAt:em.allocatedAt||'', doneAt:em.doneAt||'', k:embKey(pk.ref, pk.code)}); });
+  out.sort(function(a,b){ return (a.doneAt?1:0)-(b.doneAt?1:0) || (a.machine?1:0)-(b.machine?1:0) || (a.due||'').localeCompare(b.due||'') || a.ref.localeCompare(b.ref); });
+  return out;
+}
+function embSetMachine(k, machine){ if(!cutCanWrite()) return; var parts=k.split('|');
+  whSave((machine?'On machine '+machine+': ':'Off the machine: ')+parts[1], function(d){ var e=d.entries.filter(function(x){ return x.k===k && !x.cancelledAt; })[0];
+    if(!e){ if(!machine) return false; d.entries.push({k:k, kind:'emb', ref:parts[1], code:parts[2], machine:machine, allocatedAt:new Date().toISOString()}); return true; }
+    if((e.machine||'')===machine) return false; e.machine=machine; e.allocatedAt=machine?new Date().toISOString():''; return true; }, function(ok, err){ if(!ok && err && err!=='no token') alert('The log could not be saved: '+err); embRender(); embBadge(); }); }
+function embComplete(k){ if(!cutCanWrite()) return; var parts=k.split('|');
+  whSave('Embroidery done: '+parts[1], function(d){ var e=d.entries.filter(function(x){ return x.k===k && !x.cancelledAt; })[0];
+    if(!e){ d.entries.push({k:k, kind:'emb', ref:parts[1], code:parts[2], machine:'', allocatedAt:'', doneAt:new Date().toISOString()}); return true; }
+    if(e.doneAt) return false; e.doneAt=new Date().toISOString(); return true; }, function(ok, err){ if(!ok && err && err!=='no token') alert('The log could not be saved: '+err); embRender(); embBadge(); }); }
+function embUndone(k){ if(!cutCanWrite()) return; if(!confirm('Undo the done mark? The line goes back to the embroidery queue.')) return;
+  whSave('Embroidery done undone: '+k.split('|')[1], function(d){ var e=d.entries.filter(function(x){ return x.k===k && !x.cancelledAt; })[0]; if(!e || !e.doneAt) return false; delete e.doneAt; return true; }, function(){ embRender(); embBadge(); }); }
+function embQueueHtml(can){
+  var q=embQueue(), open=q.filter(function(l){ return !l.doneAt; }), done=q.filter(function(l){ return !!l.doneAt; });
+  var h='<div class="wh-section" style="margin-top:8px"><div class="wh-hdr" style="background:#4c1d95"><h2>&#129697; Embroidery queue <span style="font-size:11px;opacity:.8">('+open.length+' picked'+(done.length?' &middot; '+done.length+' done, waiting to be booked in':'')+')</span></h2>'
+    +'<div style="font-size:11px;opacity:.85">Picked by the warehouse: choose the machine it goes on, then mark it done; the warehouse books it in from there</div></div>'
+    +'<div class="wh-body"><div style="overflow-x:auto"><table class="wh-tbl"><thead><tr><th>Picked</th><th>Due</th><th>WO Ref</th><th>Embroidered code</th><th>Base garment</th><th>Customer</th><th style="text-align:right">Qty</th><th>Machine</th><th class="ns" style="text-align:center">Action</th></tr></thead><tbody>';
+  if(!q.length) h+='<tr><td colspan="9" style="text-align:center;padding:1.2rem;color:#6b7280">Nothing picked for embroidery</td></tr>';
+  q.forEach(function(l){
+    var sel='<select '+(can&&!l.doneAt?'':'disabled ')+'onchange="embSetMachine(\''+esc(l.k)+'\', this.value)" style="font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px'+(l.machine?'':';background:#fff7ed')+'"><option value="">not allocated</option>'+[1,2,3,4,5].map(function(m){ return '<option value="'+m+'"'+(String(l.machine)===String(m)?' selected':'')+'>Machine '+m+'</option>'; }).join('')+'</select>';
+    h+='<tr'+(l.doneAt?' class="booked-row"':(l.machine?'':' style="background:#fff7ed"'))+'><td style="font-weight:600">'+esc(fmtD(l.pickedAt))+'</td><td>'+esc(fmtD(l.due))+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.ref)+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+esc(l.code)+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.pickCode||'?')+'</td><td>'+esc(l.customer)+'</td><td style="text-align:right;font-weight:700">'+Math.round(l.qty).toLocaleString()+'</td>'
+      +'<td>'+sel+'</td><td style="text-align:center;white-space:nowrap">'+(l.doneAt?'<span class="sm-tag ok">done '+esc(fmtD(l.doneAt.slice(0,10)))+'</span> '+(can?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="embUndone(\''+esc(l.k)+'\')">&#8634; Undo</button>':''):(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#065f46;border-color:#a7d4bb" onclick="embComplete(\''+esc(l.k)+'\')"'+(l.machine?'':' title="Choose the machine first" disabled')+'>&#10003; Done</button>':''))+'</td></tr>'; });
+  return h+'</tbody></table></div></div></div>';
+}
+// ── EMB to book in: done in embroidery, two files for Sage, then booked ───
+var EMB_WRITEOFF_REF1='Embroidery', EMB_BOOKIN_CAT='Manual Addition';
+function embToBook(){ return embQueue().filter(function(l){ return !!l.doneAt; }); }
+function embBookFiles(l){
+  var date=ukDate(d2s(now())), stamp=d2s(now());
+  var off=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat'], [l.pickCode, WRITEOFF_LOCATION, '', Math.round(l.qty), EMB_WRITEOFF_REF1, l.ref, date, WRITEOFF_CAT]];
+  var add=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','AdditionCat'], [l.code, WRITEOFF_LOCATION, '', Math.round(l.qty), EMB_WRITEOFF_REF1, l.ref, date, EMB_BOOKIN_CAT]];
+  var csv=function(rows){ return rows.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n')+'\r\n'; };
+  return [{name:'EMB_WriteOff_'+l.ref.replace(/[^A-Za-z0-9-]/g,'_')+'_'+stamp+'.csv', text:csv(off)}, {name:'EMB_BookIn_'+l.ref.replace(/[^A-Za-z0-9-]/g,'_')+'_'+stamp+'.csv', text:csv(add)}];
+}
+function downloadCsv(name, text){ var blob=new Blob([text],{type:'text/csv;charset=utf-8;'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); }
+function embBookIn(k){ if(!cutCanWrite()) return;
+  var l=embToBook().filter(function(x){ return x.k===k; })[0]; if(!l) return;
+  if(!embBaseKnown(l.pickCode)){ alert('The base code '+(l.pickCode||'(none)')+' is not a product in the buffer, so the home stock cannot be written off. The production manager sets the base code on the works order panel.'); return; }
+  var files=embBookFiles(l);
+  whSave('Booked in (embroidery): '+l.ref, function(d){ if(d.entries.some(function(e){ return e.k===embBookKey(l.ref, l.code) && !e.cancelledAt; })) return false;
+    d.entries.push({k:embBookKey(l.ref, l.code), kind:'embbook', ref:l.ref, code:l.code, baseCode:l.pickCode, qty:l.qty, bookedAt:new Date().toISOString(), files:files.map(function(f){ return f.name; })}); return true; },
+    function(ok, err){ if(ok){ files.forEach(function(f){ downloadCsv(f.name, f.text); }); } else if(err && err!=='no token') alert('The warehouse log could not be saved: '+err+'\n\nNothing was booked and no files were made - try again in a moment.'); whRender(); });
 }
 function whMarkPicked(k, i, code){ if(!cutCanWrite()) return;
   var w=WOs[i]; if(!w) return; var it=(w.items||[]).filter(function(x){ return x.code===code; })[0]; if(!it) return;
@@ -2734,8 +2830,8 @@ function whUnpick(k){ if(!cutCanWrite()) return; if(!confirm('Undo the pick? The
 function renderWarehouse(){
   var sa=document.getElementById('whUpdated');
   // Pending = completed items NOT yet booked locally
-  var pending=completedWOs.filter(function(c){ return !bookedMap[whKey(c)]; });
-  var booked=completedWOs.filter(function(c){ return bookedMap[whKey(c)]; });
+  var pending=completedWOs.filter(function(c){ return !c.embOnly && !bookedMap[whKey(c)]; });   // embroidery-only lines are booked in from EMB to book in
+  var booked=completedWOs.filter(function(c){ return !c.embOnly && bookedMap[whKey(c)]; });
 
   // Pending table
   var pb=document.getElementById('whPendingBody');
@@ -2843,7 +2939,7 @@ function whMarkSelected(){ if(!cutCanWrite()){ alert('This PC cannot write to th
 
 
 function whPendingList(){
-  return completedWOs.filter(function(c){ return !bookedMap[whKey(c)]; })
+  return completedWOs.filter(function(c){ return !c.embOnly && !bookedMap[whKey(c)]; })
     .sort(function(a,b){ return (b.completed||'').localeCompare(a.completed||''); });
 }
 function whCopyPending(){
@@ -2983,7 +3079,7 @@ function loadEditor(){
   // the cutting room's figures, for the works order panel and completion;
   // then the log is brought into line with the works orders without a click
   cutLoad(function(){ cutRevBadge(); cutSyncSoon(); });
-  whLoad(function(){ whApplyPrintMarks(); });   // an embroidery-only works order the warehouse printed is printed here too
+  whLoad(function(){ whApplyPrintMarks(); embBadge(); });   // the warehouse's marks: printed here too, booked in completes here
   var hadLocal=false; try{ hadLocal=!!localStorage.getItem('tibard_production'); }catch(e){}
   var haveRows=loadState(), localAt=stateLoadedAt;
   idbGet(function(json){
@@ -3648,7 +3744,8 @@ function embRows(){
   rows.sort(function(a,b){ return (a.due||'')<(b.due||'')?-1:(a.due||'')>(b.due||'')?1:(a.ref<b.ref?-1:1); });
   return rows;
 }
-function embBadge(){ var el=document.getElementById('embTabCount'); if(!el) return; var n=0; try{ n=embRows().length; }catch(e){} el.textContent=n; el.style.display=n?'':'none'; }
+// The badge: picked embroidery-only works orders not yet on a machine (Luke, 6 Oct 2026)
+function embBadge(){ var el=document.getElementById('embTabCount'); if(!el) return; var n=0; try{ if(whLog.loadedAt) n=embQueue().filter(function(l){ return !l.machine && !l.doneAt; }).length; }catch(e){} el.textContent=n; el.style.display=n?'':'none'; }
 function embRender(){
   var el=document.getElementById('embBody'); if(!el) return;
   var q=embQ.trim();
@@ -3657,7 +3754,9 @@ function embRender(){
     +'<input type="text" id="embQ" value="'+esc(embQ)+'" placeholder="&#128269; works order, sales order, product code, customer, name or a word on a line" oninput="embQ=this.value; embRender()" style="flex:1;min-width:280px;font-size:13px;padding:6px 9px;border:1px solid #c8d0df;border-radius:6px">'
     +'<label style="font-size:12px;color:#374151;display:flex;gap:5px;align-items:center"><input type="checkbox" '+(embDone?'checked':'')+' onchange="embDone=this.checked; embRender()"> include completed (last 30 days)</label></div>'
     +'<div class="sub">The words to embroider on each works order - names, titles, text lines - as the sales order has them. Highlight and copy them into the embroidery software; the logos are listed underneath for reference.</div></div>';
-  if(!q){ h+='<div class="sm-empty" style="padding:18px">Search for a works order, a sales order number, a product code, a customer or a name to see its embroidery.</div>'; el.innerHTML=h; return; }
+  if(!whLog.loadedAt && !whLog.error && !whLog.busy){ whLoad(function(){ embRender(); embBadge(); }); }
+  h+=embQueueHtml(cutCanWrite()); embBadge();
+  if(!q){ h+='<div class="sm-empty" style="padding:18px">Search for a works order, a sales order number, a product code, a customer or a name to see its embroidery words.</div>'; el.innerHTML=h; return; }
   var rows=embRows().filter(function(r){ return smMatch(r.ref+' '+r.so+' '+r.code+' '+r.customer+' '+(r.logo.map(function(n){ return n.desc; }).join(' '))+' '+r.brand, q); });
   if(!rows.length){ h+='<div class="sm-empty" style="padding:18px">Nothing with embroidery matches "'+esc(q)+'".</div>'; el.innerHTML=h; return; }
   h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk emb-tbl"><thead><tr><th>Works order</th><th>Product</th><th>Customer</th><th>Due</th><th>Words to embroider</th></tr></thead><tbody>'
