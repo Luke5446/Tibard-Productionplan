@@ -55,7 +55,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
 
  // 2. the cutting room PC (a viewer with the token): nothing listed until a search; the works order's two lines come up; cut all; adjust the main cloth with a comment
  await open(false,'tok-cutting');
- const s2=await p.evaluate(()=>{ smShowTab('cut'); return new Promise(r=>setTimeout(()=>r({src:cutLog.source, rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, order:[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>(tr.children[0].querySelector('strong')||{}).textContent||'').map((t,i,a)=>t||a.slice(0,i).reverse().find(Boolean)).join(), head:document.querySelector('#cutBody .cut-tbl thead').textContent.replace(/\s+/g,' ').trim(), flipped:(function(){ document.querySelector('#cutBody .cut-tbl thead th:nth-child(2)').click(); var o=[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>(tr.children[0].querySelector('strong')||{}).textContent||'').map((t,i,a)=>t||a.slice(0,i).reverse().find(Boolean)).join(); cutSortDesc=false; cutRender(); return o; })(), prompt:(document.querySelector('#cutBody .sm-empty')||{}).textContent||'', todo:(document.querySelector('#cutBody .kpi-tile .v')||{}).textContent, boxAfterChips:(function(){ var q=document.getElementById('cutQ'); return !!q && q.previousElementSibling && /Metres per day/.test(q.previousElementSibling.textContent) && q.style.marginLeft!=='auto'; })()}),600)); });
+ const s2=await p.evaluate(()=>{ smShowTab('cut'); return new Promise(r=>setTimeout(()=>r({src:cutLog.source, rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, order:[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>(tr.children[0].querySelector('strong')||{}).textContent||'').map((t,i,a)=>t||a.slice(0,i).reverse().find(Boolean)).join(), head:document.querySelector('#cutBody .cut-tbl thead').textContent.replace(/\s+/g,' ').trim(), flipped:(function(){ document.querySelector('#cutBody .cut-tbl thead th:nth-child(2)').click(); var o=[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>(tr.children[0].querySelector('strong')||{}).textContent||'').map((t,i,a)=>t||a.slice(0,i).reverse().find(Boolean)).join(); cutSortDesc=false; cutRender(); return o; })(), prompt:(document.querySelector('#cutBody .sm-empty')||{}).textContent||'', todo:(function(){ var t=[...document.querySelectorAll('#cutBody .kpi-tile')].find(x=>/^To cut/.test(x.querySelector('.l').textContent)); return t?t.querySelector('.v').textContent:''; })(), boxAfterChips:(function(){ var q=document.getElementById('cutQ'); return !!q && q.previousElementSibling && /Metres per day/.test(q.previousElementSibling.textContent) && q.style.marginLeft!=='auto'; })()}),600)); });
  // typing in the search box: the tab redraws on each key and the box keeps its focus and text; the lines come up for the search
  await p.click('#cutQ'); await p.keyboard.type('S-T1'); await p.waitForTimeout(200);
  const sq=await p.evaluate(()=>({q:cutQ, val:document.getElementById('cutQ').value, focused:document.activeElement===document.getElementById('cutQ'), rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, cutAll:!!document.querySelector('#cutBody button[onclick^="cutMarkWO"]'), polling:!!cutPoll}));
@@ -90,6 +90,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  // 4. anyone else: reads the Pages copy, sees the log for a search, no buttons
  await open(false,'');
  const s7=await p.evaluate(()=>{ smShowTab('cut'); cutSec='log'; cutQ=''; return new Promise(r=>setTimeout(()=>{ cutRender(); const logPrompt=/Type a works order.*on the log/.test((document.querySelector('#cutBody .sm-empty')||{}).textContent||'') && !document.querySelector('#cutBody .cut-tbl'); cutSec='todo'; cutRender(); const todoRows=document.querySelectorAll('#cutBody .cut-tbl tbody tr').length; cutSec='log'; cutQ='S-T1'; cutRender(); r({logPrompt, todoRows, src:cutLog.source, n:cutLog.entries.length, rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, buttons:document.querySelectorAll('#cutBody .cut-tbl button').length, tag:(document.querySelector('#cutBody .sm-tag')||{}).textContent||''}); },600)); });
+ const s7n=JSON.parse(store).entries.length;   // the doubled line is still in the file: nothing has saved since
  // 5. the editor completes the works order: it leaves WIP, the log shows the completion date; WIP as at the day before still counts it
  await open(true,'tok-editor');
  await p.waitForTimeout(500);
@@ -109,6 +110,15 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
      smShowTab('fabric'); fabOpen.mon['2026-10']=true; fabOpen.day['2026-10-02']=true; fabRender(); const row=[...document.querySelectorAll('#fabBody .sm-tbl tbody tr, #fabBody .fab-stk tbody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ')).find(t=>/S-T1/.test(t))||'';
      r({wipNow:cutWip('2026-10-02').total, wipBefore:cutWip('2026-10-01').total, done, kpiBefore, rowsBefore, kpiNow, assumedNow,
         rec:{actual:c.fabric.actual, std:c.fabric.std, source:c.fabric.source, note:c.fabric.cutNote, meshActual:c.fabric.extras[0].actual, meshStd:c.fabric.extras[0].std}, ledger:{metres:l.metres, varPct:Math.round(l.varPct*10)/10, note:l.cutNote}, rowHasNote:/roll end, 0.65 m short/.test(row)}); },600)); });
+ // 6. splits. S-T3 is marked cut, then split for an urgent two: the new works order, printed, asks the cutting room for
+ //    nothing and is not on review. S-T5 is split while it still waits: the new one gets its own line and S-T5's follows.
+ const sp=await p.evaluate(()=>{ window.now=()=>new Date('2026-10-02T10:00:00'); window.__alerts=[]; cutMark('S-T3|ZZNOUSAGE|PC2003ECO'); return new Promise(r=>setTimeout(()=>{
+   window.prompt=()=>'2'; splitWO(WOs.findIndex(w=>w.ref==='S-T3')); const kid=WOs[WOs.length-1]; markWOPrinted(WOs.length-1);
+   document.getElementById('woRef').value='S-T5'; document.getElementById('woStart').value='2026-10-01'; document.getElementById('woDue').value='2026-10-12'; document.getElementById('woTA').value='APP300503\t4'; saveWO(); markWOPrinted(WOs.findIndex(w=>w.ref==='S-T5'));
+   setTimeout(()=>{ splitWO(WOs.findIndex(w=>w.ref==='S-T5')); const kid2=WOs[WOs.length-1]; markWOPrinted(WOs.length-1);
+     setTimeout(()=>r({kid:kid.ref, kidFrom:kid.splitFrom, kidQty:kid.items[0].qty, parentQty:WOs.find(w=>w.ref==='S-T3').items[0].qty, kid2:kid2.ref, kid2From:kid2.splitFrom, review:cutReviewLines().map(l=>l.wo.ref).join(), notPushed:cutNotPushed().map(w=>w.ref).join()}), 2600); }, 800); }, 800)); });
+ const spLog=entries().filter(e=>['S-T3','S-T5',sp.kid,sp.kid2].includes(e.ref)).map(e=>e.ref+':'+e.code+':'+e.qty+':'+e.std+':'+(e.cutAt?'cut':(e.cancelledAt?'withdrawn':'waiting'))).sort();
+ console.log('splits    ->', JSON.stringify(sp), JSON.stringify(spLog));
  console.log('printed   ->', JSON.stringify(s1), JSON.stringify(s1b), JSON.stringify(s1c));
  console.log('review    ->', JSON.stringify(r1), JSON.stringify(r2), JSON.stringify(r3a), JSON.stringify(r3)); console.log('cut, edit ->', JSON.stringify(r4), JSON.stringify(r5));
  console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('sort/new  ->', JSON.stringify(s2c)); console.log('marked    ->', s3a, s3b, JSON.stringify(s3), JSON.stringify(s4));
@@ -120,18 +130,20 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===3 && s1c.prompt==='' && /mark cuts/.test(s1c.tag)
    && s2.src==='api' && s2.rows===3 && s2.order==='S-T1,S-T1,S-T3' && s2.head==='Works orderPrinted ▲DueProductQtyFabricStd mCut m · comment' && s2.flipped==='S-T3,S-T1,S-T1' && s2.todo==='3' && s2.boxAfterChips && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.cutAll && sq.polling
    && s7.logPrompt && s7.todoRows===1
-   && s2c.tiles.join()==='New today=2,Live works orders to cut=2' && s2c.byPrinted==='S-T3,S-T1' && s2c.byDue==='S-T3,S-T1' && s2c.dueHead==='Due ▲' && s2c.byDueDesc==='S-T1,S-T3'
+   && s2c.tiles.join()==='New today=1,Live works orders to cut=2' && s2c.byPrinted==='S-T3,S-T1' && s2c.byDue==='S-T3,S-T1' && s2c.dueHead==='Due ▲' && s2c.byDueDesc==='S-T1,S-T3'
    && s2c.newOnly==='S-T1' && s2c.note && s2c.back==='S-T1,S-T3'
    && r4.join('|')==='MESHPW31401:7:1.75:2026-10-01|PC2001ECO:7:7.35:2026-10-01' && r5.lines.join('|')==='MESHPW31401:2026-10-01|PC2001ECO:2026-10-01' && r5.notPushed===0 && r5.review===0
    && s3a===1 && s3b===0 && s3.join()==='2026-10-01:1.75,2026-10-01:8' && s4.join('|')==='MESHPW31401:1.75::std|PC2001ECO:8:roll end, 0.65 m short:adj'
    && /Cut today=9.8 m/.test(s5.tiles.join()) && /Live, not on the log=0/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP'&&/Undo/.test(r[10]))
    && s5.day.length===1 && s5.day[0][2]==='9.75' && s5.wip.length===3 && s5.wip[0][0].startsWith('PC2001ECO') && s5.wip[0][5]==='£17.12' && s5.wip[2][5]==='£21.06' && Math.abs(s5.wipCalc.total.value-21.06)<0.01
    && s6.retried===2 && s6.cut==='2026-10-01' && s6.alerts===0
-   && s7.src==='pages' && s7.rows===2 && s7.n===4 && JSON.parse(store).entries.length===5 && s7.buttons===0 && s7.tag==='view only'
+   && s7.src==='pages' && s7.rows===2 && s7.n===4 && s7n===5 && s7.buttons===0 && s7.tag==='view only'
    && s8.wipNow.lines===1 && s8.wipNow.assumed===1 && Math.abs(s8.wipNow.value-4.64)<0.01 && s8.wipBefore.lines===3 && s8.wipBefore.logged===2 && Math.abs(s8.wipBefore.value-25.70)<0.01
    && s8.done.join()==='02 Oct 2026,02 Oct 2026' && s8.kpiBefore==='£25.70' && s8.rowsBefore===4 && s8.kpiNow==='£4.64' && s8.assumedNow.join('|')==='2.00 m taken as cut|'
    && s9.loadedAtStartup && /cut 01 Oct 2026 .middot; cutting room: 8 m .middot; roll end, 0.65 m short \(used as the actual\)/.test(s9.cell) && s9.placeholder==='8'
    && s8.rec.actual===8 && s8.rec.std===7.35 && /cut log/.test(s8.rec.source) && s8.rec.note==='roll end, 0.65 m short' && s8.rec.meshActual===undefined && s8.rec.meshStd===1.75
+   && sp.kidFrom==='S-T3' && sp.kidQty===2 && sp.parentQty===3 && sp.kid2From==='S-T5' && sp.review==='' && sp.notPushed===''
+   && spLog.join('|')===['S-T3:ZZNOUSAGE:5:6:cut','S-T5:APP300503:2:1:waiting',sp.kid2+':APP300503:2:1:waiting'].sort().join('|')
    && s8.ledger.metres===9.75 && s8.ledger.varPct===8.8 && s8.ledger.note==='roll end, 0.65 m short' && s8.rowHasNote;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

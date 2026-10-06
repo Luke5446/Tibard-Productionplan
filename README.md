@@ -9,7 +9,7 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 - **To cut**: printed works orders not yet marked cut, oldest printed first
   (click the Printed or Due heading to sort by that date, again to flip),
   with the standard metres per line; the search box narrows the list. The
-  tiles above count what was printed today (click it to show only those),
+  tiles above count the works orders printed today (click it to show only those),
   the works orders with a line waiting, and the lines waiting. One printed
   five or more days ago is flagged. The cutting room PC marks a line, or a
   whole works order, cut: the mark is dated that day. Each line has a metres
@@ -30,7 +30,10 @@ leave the box) and the cutting room cuts to that figure. The line goes across
 on its own. The log follows the works orders: a change to
 one that is not yet cut (quantity, fabric, due date) replaces its waiting
 lines a moment after the edit, and a works order already cut is left as cut
-whatever is changed on it afterwards. **Push to cutting** on the review tab
+whatever is changed on it afterwards. A works order split off another after
+that one was cut asks the cutting room for nothing: its cloth was cut with
+the parent. A split made while the parent still waits gets its own line and
+the parent's quantity follows. **Push to cutting** on the review tab
 sends anything still waiting if GitHub was down at the time.
 
 A line the cutting room adjusted on the log carries that figure into the

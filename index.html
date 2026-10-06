@@ -1813,7 +1813,9 @@ function splitWO(i){ if(!IS_EDITOR) return;
   wo.items=wo.items.filter(function(x){return x.qty>0;});
   // Create the new WO (fresh auto number, same dates - edit its due date in the popup that opens)
   var newRef=nextWORef();
-  WOs.push(stampWO({ref:newRef, start:wo.start, due:wo.due, items:moved}, wo.createdAt));
+  // splitFrom: the cutting log knows the new works order came out of this
+  // one, so a split made after the cloth was cut does not ask for it again
+  WOs.push(stampWO({ref:newRef, start:wo.start, due:wo.due, items:moved, splitFrom:wo.ref}, wo.createdAt));
   var newIdx=WOs.length-1;
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderCompleted(); saveState();
   alert('Split done.\n\n'+wo.ref+' keeps '+wo.items.map(function(x){return Math.round(x.qty)+' x '+x.code;}).join(', ')
@@ -3603,9 +3605,19 @@ function cutSave(message, mutate, cb, attempt){
 // for the quantity. A line with no fabric or no metres on file is not one of
 // them: it sits on the Cutting review tab for the PM until it has both.
 function cutKey(ref, code, fab){ return ref+'|'+code+'|'+(fab||''); }
+// A works order split off another after that one's line was cut (or
+// withdrawn as cut): the cloth for these units was cut with the parent, so
+// the line is not asked for again. Luke, 6 Oct 2026: WO-1430, split for an
+// urgent two, came up as new on the cutting tab. A split made while the
+// parent still waits gets its own line, and the parent's quantity follows.
+function cutCutWithParent(wo, code){
+  if(!wo || !wo.splitFrom) return false;
+  return cutLog.entries.some(function(e){ return e.ref===wo.splitFrom && e.code===code && (e.cutAt || e.cancelledAt); });
+}
 function cutEntriesFor(wo){
   var out=[];
   (wo.items||[]).forEach(function(it){
+    if(cutCutWithParent(wo, it.code)) return;
     var rec=null; try{ rec=fabricRecordFor(it); }catch(e){ rec=null; }
     // no usage on file: the metres the PM typed for the line (Metres cut on
     // the works order panel) are what the cutting room cuts to
@@ -3625,6 +3637,7 @@ function cutReviewLines(){
   WOs.forEach(function(w, i){
     if(!cutInScope(w)) return;
     (w.items||[]).forEach(function(it){
+      if(cutCutWithParent(w, it.code)) return;   // cut with the works order it was split from
       var rec=null; try{ rec=fabricRecordFor(it, w); }catch(e){ rec=null; }
       var why=(!rec || !rec.code) ? 'no fabric on file' : ((rec.std==null && it.metresActual==null) ? 'no metres on file for '+rec.code+': type the metres for the line in Metres cut on the works order' : '');
       if(why) out.push({i:i, wo:w, it:it, fabric:rec?rec.code:'', why:why});
@@ -3794,7 +3807,7 @@ function cutRender(){
     +'</div>';
   // New today: printed today and not yet cut; the tile is a filter on the To cut list (Luke, 6 Oct 2026)
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0">'
-    +'<div class="kpi-tile" id="cutNewTile" style="cursor:pointer'+(cutNewOnly?';outline:2px solid #7A1F3D':'')+'" title="'+(cutNewOnly?'Showing only what was printed today - click to show everything waiting':'Click to show only what was printed today')+'" onclick="cutNewOnly=!cutNewOnly; cutSec=\'todo\'; cutRender()"><div class="l">New today</div><div class="v">'+newToday.length+'</div><div class="s">line'+(newToday.length===1?'':'s')+' printed '+esc(fmtD(today))+' &middot; '+Object.keys(newRefs).length+' works order'+(Object.keys(newRefs).length===1?'':'s')+(cutNewOnly?' &middot; <b style="color:#7A1F3D">filter on</b>':' &middot; click to filter')+'</div></div>'
+    +'<div class="kpi-tile" id="cutNewTile" style="cursor:pointer'+(cutNewOnly?';outline:2px solid #7A1F3D':'')+'" title="'+(cutNewOnly?'Showing only what was printed today - click to show everything waiting':'Click to show only what was printed today')+'" onclick="cutNewOnly=!cutNewOnly; cutSec=\'todo\'; cutRender()"><div class="l">New today</div><div class="v">'+Object.keys(newRefs).length+'</div><div class="s">works order'+(Object.keys(newRefs).length===1?'':'s')+' printed '+esc(fmtD(today))+' &middot; '+newToday.length+' line'+(newToday.length===1?'':'s')+(cutNewOnly?' &middot; <b style="color:#7A1F3D">filter on</b>':' &middot; click to filter')+'</div></div>'
     +'<div class="kpi-tile"><div class="l">Live works orders to cut</div><div class="v">'+Object.keys(todoRefs).length+'</div><div class="s">works orders with a line waiting</div></div>'
     +'<div class="kpi-tile"><div class="l">To cut</div><div class="v">'+todo.length+'</div><div class="s">'+todoM.toFixed(1)+' m standard'+(late.length?' &middot; <b style="color:#b45309">'+late.length+' waiting '+CUT_LATE_DAYS+'+ days</b>':'')+'</div></div>'
     +'<div class="kpi-tile"><div class="l">Cut today</div><div class="v">'+todayM.toFixed(1)+' m</div><div class="s">'+cut.filter(function(e){ return e.cutAt===today; }).length+' lines</div></div>'
