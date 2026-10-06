@@ -92,12 +92,12 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    && s4.tabOn && s4.viewer && s4.badge==='WAREHOUSE' && /needs printing.*E-GIR1.*HT016003.*GIRHT016003.*18.*Print.*Picked/.test(s4.pick) && s4.pending==='S-AP1' && /can mark/.test(s4.can)
    && /06 Oct 2026.*E-GIR1/.test(s4b.row) && !/needs printing/.test(s4b.row) && /Print again/.test(s4b.btn) && printMark.join()==='print|E-GIR1:HT016003:18:2026-10-06'
    && s9.live===false && s9.completed==='2026-10-06:emb:HT016003:nofabric' && s9.inProd===false && s9.card===false
-   && e1.badge==='1' && e1.rows.length===1 && /06 Oct 2026.*E-GIR1.*GIRHT016003.*HT016003.*18/.test(e1.rows[0]) && e1.sel && e1.doneDisabled===true
+   && e1.badge==='1' && e1.rows.length===1 && /06 Oct 2026.*E-GIR1.*GIRHT016003.*HT016003.*18.*Machine 5DTF/.test(e1.rows[0]) && e1.sel && e1.doneDisabled===true
    && e2.badge==='none' && e2.machine==='3' && e2.doneDisabled===false && embMark.join()==='emb|E-GIR1|GIRHT016003:3:2026-10-06:-'
    && /done 06 Oct 2026/.test(e3.row) && embDone.join()==='emb|E-GIR1|GIRHT016003:3:2026-10-06'
    && /EMB to book in \(1\)/.test(w1.hdr) && /Production to book in/.test(w1.prodHdr) && w1.rows.length===1 && /06 Oct 2026.*E-GIR1.*HT016003.*GIRHT016003.*18.*Book in/.test(w1.rows[0])
    && w1.files[0]==='EMB_WriteOff_E-GIR1_2026-10-06.csv\nStockCode,Location,Bin,Qty,Reference1,Reference2,ActivityDate,WriteOffCat\r\nHT016003,HOME,,18,Embroidery,E-GIR1,06/10/2026,Manual Reduction\r\n'
-   && w1.files[1]==='EMB_BookIn_E-GIR1_2026-10-06.csv\nStockCode,Location,Bin,Qty,Reference1,Reference2,ActivityDate,AdditionCat\r\nGIRHT016003,HOME,,18,Embroidery,E-GIR1,06/10/2026,Manual Addition\r\n'
+   && w1.files[1]==='EMB_BookIn_E-GIR1_2026-10-06.csv\nStockCode,Location,Bin,Qty,StockExported,Reference1\r\nGIRHT016003,Home,,18,,Embroidery E-GIR1\r\n'
    && w2.dls.join()==='EMB_WriteOff_E-GIR1_2026-10-06.csv,EMB_BookIn_E-GIR1_2026-10-06.csv' && /Nothing back from embroidery/.test(w2.rows) && /06 Oct 2026E-GIR1HT016003GIRHT01600318EMB_WriteOff/.test(w2.hist)
    && embBooked.join()==='embbook|E-GIR1|GIRHT016003:HT016003:18:2026-10-06:2'
    && migrated.join()==='book|S-OLD1|APP300503|2026-09-30|4:2026-10-01:this PC' && localGone

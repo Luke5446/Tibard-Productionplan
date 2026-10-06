@@ -123,15 +123,16 @@ warehouse log:
 2. The warehouse prints it (printed on the tracker too), picks the base
    stock and marks it **Picked**.
 3. It appears in the **Embroidery queue** at the top of the Embroidery tab.
-   The embroidery manager chooses the machine (1 to 5) it goes on; the tab's
+   The embroidery manager chooses the machine (1 to 5, or DTF) it goes on; the tab's
    badge counts the picked works orders not yet on a machine. When it is
    embroidered they mark it **Done**.
 4. It appears on the Warehouse tab under **EMB to book in**. **Book in +
    files** writes the mark and makes two CSV files for the Sage data exchange
    folder: `EMB_WriteOff_<WO>_<date>.csv` writes the base stock off HOME
    (the fabric write-off layout, reference Embroidery, Manual Reduction) and
-   `EMB_BookIn_<WO>_<date>.csv` books the branded code in (the same columns
-   with AdditionCat, Manual Addition).
+   `EMB_BookIn_<WO>_<date>.csv` books the branded code in, in the add-stock
+   layout the routine reads: `StockCode,Location,Bin,Qty,StockExported,
+   Reference1`, location Home, reference "Embroidery <WO>".
 5. The editor takes the book-in mark on its next load: the works order
    completes in the planner as at the day it was booked, with no fabric.
 
