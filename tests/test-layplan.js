@@ -45,6 +45,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
      cjm:(()=>{ const h=styleForCode('CICJM0193XXS01'); const s=h.style; cap=''; printWOP('S-TIB871541-Pt1','CICJM0193XXS01',7,null,null);
        return [s.code, h.size, s.variant, s.fabrics.map(f=>f[1]+'/'+f[3]).join('+'), u('CICJM0193XXS01'), styleForCode('CICJM01935803').style.code, styleForCode('CICJM01935803').style.fabrics.map(f=>f[1]).join('+'), /0193SSMESH/.test(cap)?'lectra':'-', /XXL/.test(cap)?'chart':'-', smPrintable('CICJM0193XXS01')?'printable':'-'].join('|'); })(),
      olive:(()=>{ const s=styleForCode('OHAPP300583').style; return [s.trims.length, s.trims.map(t=>t[3]).filter(Boolean).join('+'), s.mfg.length, u('OHAPP300583'), s.fabrics[0][1]].join('|'); })(),
+     ego:(()=>{ const h=styleForCode('OHEGOAPP065003'), s=h.style; return [s.code, s.oneSize?'onesize':'sized', s.trims.length, s.trims.map(t=>t[3]).filter(Boolean).join('+'), s.mfg.length, s.fin.length, u('OHEGOAPP065003'), s.customer, s.brandType, /14.5 cm from the finished left side seam/.test(s.brandPlace)?'place':'noplace', s.logoImg&&s.logoImg.slice(0,15), (STYLE_MASTER.charts[s.chart]||[]).length, /2 x hip pocket/.test(s.desc)?'pockets':'nopockets'].join('|'); })(),
      ap:(()=>{ const h=styleForCode('AP352801'); cap=''; printWOP('WO-1403','AP352801',30,null,null); return [h.style.code, h.size, u('AP352801'), /Finished width/.test(cap)?'chart':'-', smPrintable('AP352801')?'printable':'-'].join('|'); })(),
      wag:(()=>{ const h=styleForCode('WAGCJM0193XS01'), h2=styleForCode('WAGCJM01935201S'); cap=''; printWOP('WO-1419','WAGCJM0193XS01',12,null,null);
        return [h.style.code, h.size, h2.style.code+'/'+h2.size, h.style.fabrics.map(f=>f[1]+'/'+f[3]).join('+'), u('WAGCJM0193XS01'), /Wagamama logo on left breast/.test(cap)?'brand':'-', /89.5 cm/.test(cap)?'chart':'-', smIsStockStyle('WAGCJM0193XS01')?'stock':'own', /Set pen pocket|Edgestitch pen pocket/.test(h.style.mfg.join(' '))?'pocket':'no pocket'].join('|'); })(),
@@ -98,6 +99,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && r.gg==='CNM|CO5364ECO/0.62+CO5222ECO/0.17|,,LABELOH5771,CMP-OH-LBL-WASH-01,,CMP-DCF-DCW40-40-931,OHBRASSBUTTON,|CO5364ECO/0.5475/marker AP0534380/CO5222ECO:0.17|chart|con|notab'
    && r.cnm==='CNM|CO5003ECO/0.5+CO5007/0.15|CO5003ECO/0.5475/marker AP0534380/CO5007:0.15|brand|chart|own'
    && r.olive==='6|CMP-THR-EP80-05742-83+LABELOH5771+TAXTABOH07/01+CMP-OH-LBL-WASH-01+CMP-OH-NTT-25-03|12|PC2083ECO/1/All Costings/|PC2083ECO'
+   && r.ego==='OHEGOAPP065003|onesize|6|CMP-THR-EP80-09700-03+LABELOH5771+CMP-OH-LBL-WASH-01+TAXTABOH07/01+CMP-STD-CAP-050-929+CMP-STD-SOC-050-929|13|2|CO5003ECO/0.8/All Costings/|Ego Restaurants|Embroidery|place|data:image/jpeg|5|pockets'
    && r.ap==='AP352801||CO5001ECO/0.5/All Costings/|chart|printable'
    && r.wag==='WAGCJM0193--01|XS|WAGCJM0193--01/52|PC2001ECO/1.35+MESHPW31401/0.35|PC2001ECO/1.35/All Costings/MESHPW31401:0.35|brand|chart|own|no pocket'
    && r.brown==='PC2082ECO|PC2082ECO/1/All Costings/|6|thread|chart'

@@ -36,6 +36,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `OHAPP053403-07CT-2026-09-30.json` | That record for the costing app. |
 | `CICJM0193-01-Stock.xlsx` | Stock works order for CICJM0193_ _ 01, the Tibard mandarin collar chef jacket, short sleeve with a mesh back (JH 2017, YL 2018/19). In the app as styles CICJM0193--01 and CICJM0193--03 (the black one derived from it). |
 | `CICJM0193-2026-10-01.json` | Those two records for the costing app. |
+| `OHEGOAPP065003-Ego.xlsx` | Works order for OHEGOAPP065003, the black Ego Mediterranean bib apron: narrow (retail) width, two hip pockets, studded self-fabric neck strap, 100% organic cotton 260 gsm (JH 2018, ECO fabric 2025), logo artwork included. In the app as style OHEGOAPP065003. |
+| `OHEGOAPP065003-2026-10-06.json` | That record for the costing app. |
 | `OHAPP300583-Stock.xlsx` | Stock works order for OHAPP300583, the olive green OH bib apron with pocket (JH 2014, amended to 2025). The app's record was rebuilt from it with coded trims. |
 | `AP3528-01-Stock.xlsx` | Stock works order for AP352801, the Tibard white 100% cotton waist apron (Yvonne 2017, amended 2019 and 2024). In the app as style AP352801. |
 | `WAGCJM0193-01S-Wagamama.xlsx` | Works order for the Wagamama long sleeve mesh back chef jacket, 6" longer body, no pen pocket (JH 2017, longer version 2026). In the app as style WAGCJM0193--01, matching the Sage codes with and without the S. |

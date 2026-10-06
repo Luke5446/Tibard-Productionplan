@@ -34,7 +34,7 @@ const path = require('path');
  ck('template is in the style master, flagged, with trim costs', r.tplInMaster&&r.tplCosts);
  ck('no-branding (U) and extra-length (L) codes stay unmatched', r.unbranded===null&&r.long10===null, [r.unbranded,r.long10]);
  ck('CJ0193MM01 is a stock style; a special of the family still shows "no works order data"', r.stock&&r.specialFamily&&!r.specialPrints, r);
- ck('285 styles in the master', r.count===285, r.count);
+ ck('286 styles in the master', r.count===286, r.count);
 
  // ── printed works order: Tibard long sleeve, medium ──
  async function printOf(code, qty){
