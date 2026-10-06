@@ -30,10 +30,8 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    document.getElementById('woEmbOnly').checked=true; saveWO();
    document.getElementById('woRef').value='S-AP1'; document.getElementById('woStart').value='2026-10-06'; document.getElementById('woDue').value='2026-10-12'; document.getElementById('woTA').value='APP300503\t5'; saveWO();
    const w=WOs.find(x=>x.ref==='E-GIR1'), i=WOs.indexOf(w);
-   const card=document.querySelector('.woc .woc-emb');   // read before the print: a printed card leaves the unprinted list
-   let html=''; window.open=()=>({document:{open(){},write(h){html+=h;},close(){}}});
-   const ok=printWOPTracked(i,'GIRHT016003',18);
-   return {embOnly:w.embOnly, pick:w.pickCode, tickReset:!document.getElementById('woEmbOnly').checked, printed:w.printed, ok, pages:(html.match(/<div class="page">/g)||[]).length, banner:/EMBROIDERY ONLY.*Pick 18 x HT016003 from stock/.test(html), noMfg:!/MANUFACTURING &amp; TIMES/.test(html), card:card?card.textContent.trim():'', badgeTitle:card?card.title:'', base:[embBaseFor('GIRHT016003'), embBaseFor('ZZAPP300503'), embBaseFor('NOTHING')].join()}; }, buf);
+   const card=document.querySelector('.woc .woc-emb'), cardText=card?card.closest('.woc').textContent:'';
+   return {embOnly:w.embOnly, pick:w.pickCode, tickReset:!document.getElementById('woEmbOnly').checked, printed:!!w.printed, noTplNote:/no print template/.test(cardText), card:card?card.textContent.trim():'', badgeTitle:card?card.title:'', base:[embBaseFor('GIRHT016003'), embBaseFor('ZZAPP300503'), embBaseFor('NOTHING')].join()}; }, buf);
  await p.evaluate(()=>{ markWOPrinted(WOs.findIndex(w=>w.ref==='S-AP1')); }); await p.waitForTimeout(800);
  // the cutting log has the apron, never the embroidery-only one; it is not on review either
  const s2={log:entries('cutlog.json').map(e=>e.ref+':'+e.code).join(), scope:await p.evaluate(()=>({review:cutReviewLines().length, notPushed:cutNotPushed().length, wip:cutWip('2026-10-06').total.assumed, inScope:WOs.filter(cutInScope).map(w=>w.ref).join()}))};
@@ -53,7 +51,11 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    pick:[...document.querySelectorAll('#whPickBody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim()).join(' | '), pending:[...document.querySelectorAll('#whPendingBody tr')].map(tr=>tr.children[2]?tr.children[2].textContent.trim():tr.textContent.trim()).join(), can:document.getElementById('whCan').textContent.trim()}),1200)));
  const migrated=entries('warehouse.json').filter(e=>e.kind==='book').map(e=>e.k+':'+e.bookedAt.slice(0,10)+':'+(e.movedFrom||''));
  const localGone=await p.evaluate(()=>localStorage.getItem('tibard_production_booked')===null);
- await p.evaluate(()=>{ let html=''; window.open=()=>({document:{open(){},write(h){html+=h;},close(){}}}); const pb=document.querySelector('#whPickBody button[onclick^="printWOP"]'); if(pb) pb.click(); window.__whPrint={pages:(html.match(/<div class="page">/g)||[]).length, banner:/EMBROIDERY ONLY/.test(html)}; const mb=document.querySelector('#whPickBody button[onclick^="whMarkPicked"]'); if(mb) mb.click(); }); await p.waitForTimeout(800);
+ // the warehouse prints it: first page only, and the print mark goes on the log; the row then says printed; then it is picked
+ await p.evaluate(()=>{ let html=''; window.open=()=>({document:{open(){},write(h){html+=h;},close(){}}}); const pb=document.querySelector('#whPickBody button[onclick^="whPrint"]'); if(pb) pb.click(); window.__whPrint={pages:(html.match(/<div class="page">/g)||[]).length, banner:/EMBROIDERY ONLY.*Pick 18 x HT016003 from stock/.test(html), noMfg:!/MANUFACTURING &amp; TIMES/.test(html)}; }); await p.waitForTimeout(800);
+ const s4b=await p.evaluate(()=>({row:(document.querySelector('#whPickBody tr')||{}).textContent||'', btn:(document.querySelector('#whPickBody button[onclick^="whPrint"]')||{}).textContent||''}));
+ const printMark=entries('warehouse.json').filter(e=>e.kind==='print').map(e=>e.k+':'+e.pickCode+':'+e.qty+':'+(e.printedAt||'').slice(0,10));
+ await p.evaluate(()=>{ const mb=document.querySelector('#whPickBody button[onclick^="whMarkPicked"]'); if(mb) mb.click(); }); await p.waitForTimeout(800);
  const s5=await p.evaluate(()=>({print:window.__whPrint, pick:document.querySelectorAll('#whPickBody tr').length, pickText:(document.querySelector('#whPickBody tr')||{}).textContent||'', hist:[...document.querySelectorAll('#whPickedHist tbody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim()).join(' | ')}));
  const picked=entries('warehouse.json').filter(e=>e.kind==='pick').map(e=>e.k+':'+e.pickCode+':'+e.qty+':'+(e.pickedAt||'').slice(0,10));
  // book the apron in from the tick list, then undo one
@@ -61,17 +63,23 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  const s6=await p.evaluate(()=>({pending:document.querySelectorAll('#whPendingBody tr').length, pendingText:(document.querySelector('#whPendingBody tr')||{}).textContent||'', booked:[...document.querySelectorAll('#whBookedBody tr.booked-row')].map(tr=>tr.children[2].textContent.trim()).join()}));
  await p.evaluate(()=>{ whUnbook('S-AP1|APP300503|2026-10-06|5'); }); await p.waitForTimeout(800);
  const s7={pendingBack:await p.evaluate(()=>[...document.querySelectorAll('#whPendingBody tr')].map(tr=>tr.children[2]?tr.children[2].textContent.trim():'').join()), log:entries('warehouse.json').filter(e=>e.kind==='book').map(e=>e.ref).sort().join()};
- // 3. a plain viewer: sees the tab, no buttons
+ // 3. the editor opens again: the warehouse's print mark makes the works order printed on the tracker
+ await p.unroute('**/data.json*');
+ await open('?edit','tok-editor'); await p.waitForTimeout(1500);
+ const s9=await p.evaluate(()=>{ const w=WOs.find(x=>x.ref==='E-GIR1'); return {printed:!!w.printed, printedAt:w.printedAt, card:!!document.querySelector('.woc .woc-emb')}; });
+ // 4. a plain viewer: sees the tab, no buttons
  await open('','');
  const s8=await p.evaluate(()=>{ smShowTab('wh'); return new Promise(r=>setTimeout(()=>r({can:document.getElementById('whCan').textContent.trim(), buttons:document.querySelectorAll('#whPendingBody button, #whPickBody button[onclick^="whMark"], #whBookedBody button').length, printBtns:document.querySelectorAll('#whPickBody button[onclick^="printWOP"]').length, src:whLog.source}),1200)); });
  console.log('create  ->', JSON.stringify(s1)); console.log('cutting ->', JSON.stringify(s2)); console.log('editor  ->', JSON.stringify(s3));
- console.log('whouse  ->', JSON.stringify(s4), JSON.stringify(migrated), localGone); console.log('picked  ->', JSON.stringify(s5), JSON.stringify(picked)); console.log('booked  ->', JSON.stringify(s6), JSON.stringify(s7)); console.log('viewer  ->', JSON.stringify(s8));
- const pass = s1.embOnly===true && s1.pick==='HT016003' && s1.tickReset && s1.printed===true && s1.ok===true && s1.pages===1 && s1.banner && s1.noMfg && /EMB only/.test(s1.card) && /HT016003/.test(s1.badgeTitle) && s1.base==='HT016003,APP300503,NOTHING'
+ console.log('whouse  ->', JSON.stringify(s4), JSON.stringify(migrated), localGone); console.log('whprint ->', JSON.stringify(s4b), JSON.stringify(printMark), JSON.stringify(s9)); console.log('picked  ->', JSON.stringify(s5), JSON.stringify(picked)); console.log('booked  ->', JSON.stringify(s6), JSON.stringify(s7)); console.log('viewer  ->', JSON.stringify(s8));
+ const pass = s1.embOnly===true && s1.pick==='HT016003' && s1.tickReset && s1.printed===false && !s1.noTplNote && /EMB only/.test(s1.card) && /HT016003/.test(s1.badgeTitle) && s1.base==='HT016003,APP300503,NOTHING'
    && s2.log==='S-AP1:APP300503' && s2.scope.review===0 && s2.scope.notPushed===0 && s2.scope.wip===0 && s2.scope.inScope==='S-AP1'
-   && s3.meta && s3.rows.length===1 && /06 Oct 2026.*E-GIR1.*HT016003.*GIRHT016003.*18/.test(s3.rows[0]) && s3.badge==='1' && s3.tabOn && !s3.viewHidden
-   && s4.tabOn && s4.viewer && s4.badge==='WAREHOUSE' && /E-GIR1.*HT016003.*GIRHT016003.*18.*Print.*Picked/.test(s4.pick) && s4.pending==='S-AP1' && /can mark/.test(s4.can)
+   && s3.meta && s3.rows.length===1 && /needs printing.*E-GIR1.*HT016003.*GIRHT016003.*18/.test(s3.rows[0]) && s3.badge==='1' && s3.tabOn && !s3.viewHidden
+   && s4.tabOn && s4.viewer && s4.badge==='WAREHOUSE' && /needs printing.*E-GIR1.*HT016003.*GIRHT016003.*18.*Print.*Picked/.test(s4.pick) && s4.pending==='S-AP1' && /can mark/.test(s4.can)
+   && /06 Oct 2026.*E-GIR1/.test(s4b.row) && !/needs printing/.test(s4b.row) && /Print again/.test(s4b.btn) && printMark.join()==='print|E-GIR1:HT016003:18:2026-10-06'
+   && s9.printed===true && s9.printedAt==='2026-10-06' && s9.card===false
    && migrated.join()==='book|S-OLD1|APP300503|2026-09-30|4:2026-10-01:this PC' && localGone
-   && s5.print.pages===1 && s5.print.banner && s5.pick===1 && /Nothing waiting to be picked/.test(s5.pickText) && /06 Oct 2026E-GIR1HT016003GIRHT01600318/.test(s5.hist) && picked.join()==='pick|E-GIR1|GIRHT016003:HT016003:18:2026-10-06'
+   && s5.print.pages===1 && s5.print.banner && s5.print.noMfg && s5.pick===1 && /Nothing waiting to be printed or picked/.test(s5.pickText) && /06 Oct 2026E-GIR1HT016003GIRHT01600318/.test(s5.hist) && picked.join()==='pick|E-GIR1|GIRHT016003:HT016003:18:2026-10-06'
    && s6.pending===1 && /Nothing waiting to be booked in/.test(s6.pendingText) && s6.booked==='S-AP1' && s7.pendingBack==='S-AP1' && s7.log==='S-OLD1'
    && s8.can==='view only' && s8.buttons===0 && s8.printBtns===0 && s8.src==='pages'
    && errs.length===0;

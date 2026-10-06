@@ -1374,7 +1374,7 @@ function renderWOCards(){
       var pdays=(u.days>=999?'':' &middot; '+u.days.toFixed(0)+'d stock');
       prioH='<div style="font-size:10px;font-weight:700;color:#fff;background:'+pcol+';border-radius:4px;padding:2px 7px;margin-bottom:4px;display:inline-block">#'+(pos+1)+' '+plbl+pdays+'</div><br>';
     }
-    var noTpl=wo.items.filter(function(it){ return !smPrintable(it.code); }).length;
+    var noTpl=wo.embOnly ? 0 : wo.items.filter(function(it){ return !smPrintable(it.code); }).length;
     return '<div class="woc" onclick="openWOModal('+i+')" style="cursor:pointer">'+prioH
       +'<button class="woc-del" onclick="event.stopPropagation();delWO('+i+')" title="Remove WO (without completing)">&#10005;</button>'
       +'<button class="woc-edit" onclick="event.stopPropagation();editWODate('+i+')" title="Edit dates &amp; quantities">&#9998;</button>'
@@ -2666,7 +2666,7 @@ function whRender(){
   var el=document.getElementById('whView'); if(!el) return;
   var info=document.getElementById('whInfo'), canEl=document.getElementById('whCan'), sb=document.getElementById('whSetupBtn');
   if(!whLog.loadedAt && !whLog.error && !whLog.busy){ whLoad(function(){ whRender(); }); if(info) info.textContent='Reading the warehouse log\u2026'; return; }
-  loadBooked(); whMigrateLocal();
+  loadBooked(); whMigrateLocal(); whApplyPrintMarks();
   if(info) info.innerHTML=whLog.error?'<span style="color:#b91c1c;font-weight:700">&#9888; '+esc(whLog.error)+'</span>':(whLog.loadedAt?'Log read '+whLog.loadedAt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+(whLog.savedAt?' &middot; last change '+esc(new Date(whLog.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})):' &middot; nothing in it yet'):'');
   var can=cutCanWrite();
   if(canEl) canEl.innerHTML=can?'<span class="sm-tag ok">this PC can mark picked and booked</span>':'<span class="sm-tag">view only</span>';
@@ -2677,23 +2677,47 @@ function whRender(){
 }
 // ── To pick: printed embroidery-only works orders not yet picked ──
 function whPickKey(ref, code){ return 'pick|'+ref+'|'+code; }
+// An embroidery-only works order is on the list from the moment it is made:
+// the warehouse prints it (print|ref, a mark on the log), picks the stock and
+// marks it picked. The editor takes the print mark on its next load or look
+// at the tab, so the tracker shows it printed too. Luke, 6 Oct 2026.
+function whPrintKey(ref){ return 'print|'+ref; }
+function whPrintMark(ref){ var m=null; whLog.entries.forEach(function(e){ if(e.kind==='print' && e.k===whPrintKey(ref) && !e.cancelledAt) m=e; }); return m; }
 function whPickList(){
   var picked={}; whLog.entries.forEach(function(e){ if(e.kind==='pick' && !e.cancelledAt) picked[e.k]=e; });
   var out=[];
-  WOs.forEach(function(w, i){ if(!w.embOnly || !w.printed) return; (w.items||[]).forEach(function(it){ if(picked[whPickKey(w.ref, it.code)]) return; out.push({i:i, wo:w, it:it, k:whPickKey(w.ref, it.code)}); }); });
-  out.sort(function(a,b){ return (a.wo.due||'').localeCompare(b.wo.due||'') || a.wo.ref.localeCompare(b.wo.ref); });
+  WOs.forEach(function(w, i){ if(!w.embOnly) return; var pm=whPrintMark(w.ref);
+    (w.items||[]).forEach(function(it){ if(picked[whPickKey(w.ref, it.code)]) return; out.push({i:i, wo:w, it:it, k:whPickKey(w.ref, it.code), printedAt:w.printed?(w.printedAt||''):(pm?(pm.printedAt||'').slice(0,10):'')}); }); });
+  out.sort(function(a,b){ return (a.printedAt?1:0)-(b.printedAt?1:0) || (a.wo.due||'').localeCompare(b.wo.due||'') || a.wo.ref.localeCompare(b.wo.ref); });
   return out;
+}
+// Print from the Warehouse tab: the first page, then the mark on the log
+function whPrint(i, code, qty){
+  var w=WOs[i]; if(!w) return;
+  var ok=printWOP(w.ref, code, qty, w.due||'', w.sm||null, {embOnly:true, pickCode:w.pickCode||''});
+  if(ok===false) return;
+  if(IS_EDITOR){ w.printed=true; w.printedAt=w.printedAt||d2s(now()); saveState(); renderWOCards(); }
+  if(!cutCanWrite()){ whRender(); return; }
+  whSave('Printed: '+w.ref, function(d){ if(d.entries.some(function(e){ return e.k===whPrintKey(w.ref) && !e.cancelledAt; })) return false;
+    d.entries.push({k:whPrintKey(w.ref), kind:'print', ref:w.ref, code:code, pickCode:w.pickCode||'', qty:qty, printedAt:new Date().toISOString()}); return true; }, whAfter);
+}
+// The editor takes the warehouse's print marks: printed there is printed here
+function whApplyPrintMarks(){
+  if(!IS_EDITOR) return; var n=0;
+  WOs.forEach(function(w){ if(!w.embOnly || w.printed) return; var pm=whPrintMark(w.ref); if(!pm) return; w.printed=true; w.printedAt=(pm.printedAt||'').slice(0,10)||d2s(now()); n++; });
+  if(n){ saveState(); renderWOCards(); refreshWOModal(); }
+  return n;
 }
 function whRenderPick(can){
   var pb=document.getElementById('whPickBody'); if(!pb) return;
   var list=whPickList();
   var pc=document.getElementById('whPickCount'); if(pc) pc.textContent=list.length?'('+list.length+')':'';
-  if(!list.length) pb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:1.4rem;color:#6b7280">Nothing waiting to be picked</td></tr>';
+  if(!list.length) pb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:1.4rem;color:#6b7280">Nothing waiting to be printed or picked</td></tr>';
   else pb.innerHTML=list.map(function(l){ var w=l.wo, cust=w.sm?(w.sm.custName||w.sm.customer||''):'';
-    return '<tr><td style="font-weight:600">'+esc(fmtD(w.printedAt))+'</td><td>'+esc(fmtD(w.due))+'</td><td style="font-family:monospace;font-size:11px">'+esc(w.ref)+'</td>'
+    return '<tr'+(l.printedAt?'':' style="background:#fff7ed"')+'><td style="font-weight:600">'+(l.printedAt?esc(fmtD(l.printedAt)):'<span class="sm-tag warn">needs printing</span>')+'</td><td>'+esc(fmtD(w.due))+'</td><td style="font-family:monospace;font-size:11px">'+esc(w.ref)+'</td>'
       +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:#4c1d95">'+esc(w.pickCode||'?')+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.it.code)+'</td><td>'+esc(cust)+'</td>'
       +'<td style="text-align:right;font-weight:700">'+Math.round(l.it.qty).toLocaleString()+'</td>'
-      +'<td style="text-align:center;white-space:nowrap"><button class="btn" style="font-size:10px;padding:2px 8px;color:#1e40af;border-color:#b6c4e8" title="Print the sheet for the embroidery room (first page only)" onclick="printWOP(\''+esc(w.ref)+'\',\''+esc(l.it.code)+'\','+l.it.qty+',\''+esc(w.due||'')+'\',WOs['+l.i+'].sm||null,{embOnly:true,pickCode:\''+esc(w.pickCode||'')+'\'})">&#128424; Print</button> '
+      +'<td style="text-align:center;white-space:nowrap"><button class="btn" style="font-size:10px;padding:2px 8px;color:#1e40af;border-color:#b6c4e8" title="'+(l.printedAt?'Print the sheet again':'Print the sheet for the embroidery room (first page only); this marks the works order printed')+'" onclick="whPrint('+l.i+',\''+esc(l.it.code)+'\','+l.it.qty+')">&#128424; '+(l.printedAt?'Print again':'Print')+'</button> '
       +(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#4c1d95;border-color:#c4b5fd" onclick="whMarkPicked(\''+esc(l.k)+'\','+l.i+',\''+esc(l.it.code)+'\')">&#10003; Picked</button>':'')+'</td></tr>'; }).join('');
   var hist=document.getElementById('whPickedHist'); if(!hist) return;
   var d30=new Date(now()); d30.setDate(d30.getDate()-30); var from=d2s(d30);
@@ -2959,6 +2983,7 @@ function loadEditor(){
   // the cutting room's figures, for the works order panel and completion;
   // then the log is brought into line with the works orders without a click
   cutLoad(function(){ cutRevBadge(); cutSyncSoon(); });
+  whLoad(function(){ whApplyPrintMarks(); });   // an embroidery-only works order the warehouse printed is printed here too
   var hadLocal=false; try{ hadLocal=!!localStorage.getItem('tibard_production'); }catch(e){}
   var haveRows=loadState(), localAt=stateLoadedAt;
   idbGet(function(json){

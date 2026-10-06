@@ -113,10 +113,15 @@ saying what to pick, for the embroidery room. The card and the panel say
 The warehouse's own address (`?warehouse`) now opens the planner on the
 **Warehouse** tab, next to Cutting; everyone sees the tab. Two lists:
 
-- **To pick for embroidery**: printed embroidery-only works orders, with the
-  base code to pick from stock, the embroidered code, the quantity and the
-  customer. **Print** gives the one-page sheet for the embroidery room;
-  **Picked** marks the line, with the last 30 days underneath and Undo.
+- **To pick for embroidery**: every embroidery-only works order, from the
+  moment it is made, with the base code to pick from stock, the embroidered
+  code, the quantity and the customer. One not yet printed says **needs
+  printing**: **Print** on the warehouse PC gives the one-page sheet for the
+  embroidery room and marks the works order printed on the log, which the
+  editor takes on its next load, so the tracker shows it printed too.
+  **Picked** marks the line, with the last 30 days underneath and Undo. The
+  warehouse reads the published data, so a new works order reaches it on the
+  next Publish.
 - **Ready to book in** and **Booked in history**: as before, items completed
   by production to book into Sage, with Copy ticked, Export CSV and the
   marks.
