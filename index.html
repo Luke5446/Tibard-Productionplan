@@ -586,7 +586,7 @@ tr.fab-done td{color:#6b7280}
     </div>
     <div class="wh-body" id="whEmbBodyWrap"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
       <table class="wh-tbl"><thead><tr><th>Done</th><th>WO Ref</th><th>Write off (home stock)</th><th>Book in (branded)</th><th>Customer</th><th style="text-align:right">Qty</th><th class="ns" style="text-align:center">Action</th></tr></thead><tbody id="whEmbBody"></tbody></table>
-    </div><div id="whEmbHist" style="margin-top:8px"></div></div>
+    </div></div>
   </div>
 <div class="wh-section">
     <div class="wh-hdr" onclick="whToggleSection('whPendingBodyWrap',this)">
@@ -2652,7 +2652,17 @@ function whRefresh(){ whLoad(function(){ whRender(); }); }
 function loadBooked(){
   bookedMap={};
   whLog.entries.forEach(function(e){ if(e.kind==='book' && !e.cancelledAt) bookedMap[e.k.slice(5)]={booked:e.bookedAt||''}; });
+  whEmbBookedRows().forEach(function(c){ bookedMap[whKey(c)]={booked:c.__emb.bookedAt||''}; });
 }
+// An embroidery-only line booked in reads as a row of the one booked-in
+// history: completed the day the embroidery room marked it done, the branded
+// code with the home stock written off and the files it went in.
+function whEmbBookedRows(){
+  return whLog.entries.filter(function(e){ return e.kind==='embbook' && !e.cancelledAt; }).map(function(e){
+    var em=whEntry(embKey(e.ref, e.code))||{}, r=rows.find(function(x){ return x.code===e.code; });
+    return {ref:e.ref, code:e.code, desc:r?r.desc:'', qty:e.qty||0, completed:(em.doneAt||e.bookedAt||'').slice(0,10), __emb:e}; });
+}
+function whBookedAll(){ return completedWOs.filter(function(c){ return !c.embOnly && bookedMap[whKey(c)]; }).concat(whEmbBookedRows()); }
 function saveBooked(){ /* the log is the store now; see whMarkOne, whMarkSelected, whUnbook */ }
 function whMigrateLocal(){
   if(whMigrated || !cutCanWrite() || !whLog.loadedAt) return; whMigrated=true;
@@ -2703,11 +2713,6 @@ function whRenderEmb(can){
       +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:'+(known?'#b91c1c':'#b45309')+'">'+esc(l.pickCode||'?')+(known?'':' <span class="sm-tag warn" title="Not a product in the buffer: the PM sets the base code on the works order">not a stock code</span>')+'</td>'
       +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:#065f46">'+esc(l.code)+'</td><td>'+esc(l.customer)+'</td><td style="text-align:right;font-weight:700">'+Math.round(l.qty).toLocaleString()+'</td>'
       +'<td style="text-align:center;white-space:nowrap">'+(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#15803d;border-color:#a7d4bb" onclick="embBookIn(\''+esc(l.k)+'\')"'+(known?'':' disabled title="Set the base code first"')+'>&#10003; Book in + files</button>':'')+'</td></tr>'; }).join('');
-  var hist=document.getElementById('whEmbHist'); if(!hist) return;
-  var d30=new Date(now()); d30.setDate(d30.getDate()-30); var from=d2s(d30);
-  var booked=whLog.entries.filter(function(e){ return e.kind==='embbook' && !e.cancelledAt && (e.bookedAt||'').slice(0,10)>=from; }).sort(function(a,b){ return (b.bookedAt||'').localeCompare(a.bookedAt||''); });
-  hist.innerHTML=booked.length?'<div class="sm-sub" style="font-size:11px;margin-bottom:4px">Booked in from embroidery in the last 30 days</div><table class="wh-tbl" style="min-width:auto"><thead><tr><th>Booked</th><th>WO Ref</th><th>Written off</th><th>Booked in</th><th style="text-align:right">Qty</th><th>Files</th></tr></thead><tbody>'
-    +booked.map(function(e){ return '<tr class="booked-row"><td style="font-weight:600">'+esc(fmtD((e.bookedAt||'').slice(0,10)))+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.ref)+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.baseCode||'')+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.code)+'</td><td style="text-align:right;font-weight:700">'+Math.round(e.qty||0).toLocaleString()+'</td><td class="sm-sub" style="font-size:10px">'+esc((e.files||[]).join(', '))+'</td></tr>'; }).join('')+'</tbody></table>':'';
 }
 // ── To pick: printed embroidery-only works orders not yet picked ──
 function whPickKey(ref, code){ return 'pick|'+ref+'|'+code; }
@@ -2815,6 +2820,8 @@ function embBookFiles(l){
   return [{name:'EMB_WriteOff_'+l.ref.replace(/[^A-Za-z0-9-]/g,'_')+'_'+stamp+'.csv', text:csv(off)}, {name:'EMB_BookIn_'+l.ref.replace(/[^A-Za-z0-9-]/g,'_')+'_'+stamp+'.csv', text:csv(add)}];
 }
 function downloadCsv(name, text){ var blob=new Blob([text],{type:'text/csv;charset=utf-8;'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); }
+function embUnbook(k){ if(!cutCanWrite()) return; if(!confirm('Undo the booking? The line goes back to EMB to book in. The files already made are not taken back: do not drop them into Sage twice.')) return;
+  whSave('Embroidery booking undone: '+k.split('|')[1], function(d){ var i=d.entries.findIndex(function(e){ return e.k===k; }); if(i<0) return false; d.entries.splice(i,1); return true; }, whAfter); }
 function embBookIn(k){ if(!cutCanWrite()) return;
   var l=embToBook().filter(function(x){ return x.k===k; })[0]; if(!l) return;
   if(!embBaseKnown(l.pickCode)){ alert('The base code '+(l.pickCode||'(none)')+' is not a product in the buffer, so the home stock cannot be written off. The production manager sets the base code on the works order panel.'); return; }
@@ -2833,7 +2840,7 @@ function renderWarehouse(){
   var sa=document.getElementById('whUpdated');
   // Pending = completed items NOT yet booked locally
   var pending=completedWOs.filter(function(c){ return !c.embOnly && !bookedMap[whKey(c)]; });   // embroidery-only lines are booked in from EMB to book in
-  var booked=completedWOs.filter(function(c){ return !c.embOnly && bookedMap[whKey(c)]; });
+  var booked=whBookedAll();
 
   // Pending table
   var pb=document.getElementById('whPendingBody');
@@ -2882,13 +2889,14 @@ function renderWarehouse(){
     });
     function whRow(c){
       var k=whKey(c); var info=bookedMap[k]||{};
+      var e=c.__emb;
       return '<tr class="booked-row"><td style="font-weight:600">'+fmtD(info.booked)+'</td>'
-        +'<td>'+fmtD(c.completed)+'</td>'
+        +'<td>'+fmtD(c.completed)+(e?'<div class="sm-sub" style="font-size:10px">embroidery</div>':'')+'</td>'
         +'<td style="font-family:monospace;font-size:11px">'+esc(c.ref)+'</td>'
-        +'<td style="font-family:monospace;font-size:11px">'+esc(c.code)+'</td>'
-        +'<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(c.desc)+'">'+esc(c.desc)+'</td>'
+        +'<td style="font-family:monospace;font-size:11px">'+esc(c.code)+(e?'<div class="sm-sub" style="font-size:10px">'+esc(e.baseCode||'')+' written off</div>':'')+'</td>'
+        +'<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(c.desc)+(e?' &middot; '+esc((e.files||[]).join(', ')):'')+'">'+esc(c.desc)+(e?'<div class="sm-sub" style="font-size:10px">'+esc((e.files||[]).join(', '))+'</div>':'')+'</td>'
         +'<td style="text-align:right;font-weight:700">'+Math.round(c.qty).toLocaleString()+'</td>'
-        +'<td style="text-align:center">'+(cutCanWrite()?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="whUnbook(\''+esc(k)+'\')">&#8634; Undo</button>':'')+'</td></tr>';
+        +'<td style="text-align:center">'+(cutCanWrite()?(e?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="embUnbook(\''+esc(e.k)+'\')" title="Take the booked mark off: the line goes back to EMB to book in (the files already made stay made)">&#8634; Undo</button>':'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="whUnbook(\''+esc(k)+'\')">&#8634; Undo</button>'):'')+'</td></tr>';
     }
     function sortByBooked(a,b){ var ba=bookedMap[whKey(a)].booked||'', bb2=bookedMap[whKey(b)].booked||''; return bb2.localeCompare(ba); }
     var out='';
@@ -2970,7 +2978,7 @@ function fallbackCopy(text,msg){
 }
 function whExportPending(){ whExportRows(whPendingList(), 'Ready_To_Book_In'); }
 function whExportBooked(){
-  var booked=completedWOs.filter(function(c){ return bookedMap[whKey(c)]; });
+  var booked=whBookedAll();
   whExportRows(booked, 'Booked_In', true);
 }
 function whExportRows(list, name, withBooked){

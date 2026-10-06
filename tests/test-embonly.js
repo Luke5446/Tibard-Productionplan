@@ -69,7 +69,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  // the warehouse: EMB to book in shows it with the home stock to write off and the branded code to book in; Book in makes the two files and marks it
  const w1=await p.evaluate(()=>{ smShowTab('wh'); return new Promise(r=>setTimeout(()=>{ window.__dls=[]; window.downloadCsv=(n,t)=>window.__dls.push({n,t}); r({hdr:document.querySelector('#whEmbBodyWrap').previousElementSibling.textContent.replace(/\s+/g,' ').trim(), prodHdr:document.querySelector('#whPendingBodyWrap').previousElementSibling.textContent.replace(/\s+/g,' ').trim(), rows:[...document.querySelectorAll('#whEmbBody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim()), files:embBookFiles(embToBook()[0]).map(f=>f.name+'\n'+f.text)}); },800)); });
  await p.evaluate(()=>{ document.querySelector('#whEmbBody button[onclick^="embBookIn"]').click(); }); await p.waitForTimeout(800);
- const w2=await p.evaluate(()=>({dls:window.__dls.map(d=>d.n), rows:(document.querySelector('#whEmbBody tr')||{}).textContent||'', hist:[...document.querySelectorAll('#whEmbHist tbody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim()).join(' | ')}));
+ const w2=await p.evaluate(()=>({dls:window.__dls.map(d=>d.n), rows:(document.querySelector('#whEmbBody tr')||{}).textContent||'', hist:[...document.querySelectorAll('#whBookedBody tr.booked-row')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim()).join(' | '), count:document.getElementById('whBookedCount').textContent}));
  const embBooked=entries('warehouse.json').filter(e=>e.kind==='embbook').map(e=>e.k+':'+e.baseCode+':'+e.qty+':'+(e.bookedAt||'').slice(0,10)+':'+(e.files||[]).length);
  // book the apron in from the tick list, then undo one
  await p.evaluate(()=>{ document.querySelectorAll('.wh-pend').forEach(cb=>cb.checked=true); whMarkSelected(); }); await p.waitForTimeout(800);
@@ -98,11 +98,11 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    && /EMB to book in \(1\)/.test(w1.hdr) && /Production to book in/.test(w1.prodHdr) && w1.rows.length===1 && /06 Oct 2026.*E-GIR1.*HT016003.*GIRHT016003.*18.*Book in/.test(w1.rows[0])
    && w1.files[0]==='EMB_WriteOff_E-GIR1_2026-10-06.csv\nStockCode,Location,Bin,Qty,Reference1,Reference2,ActivityDate,WriteOffCat\r\nHT016003,HOME,,18,Embroidery,E-GIR1,06/10/2026,Manual Reduction\r\n'
    && w1.files[1]==='EMB_BookIn_E-GIR1_2026-10-06.csv\nStockCode,Location,Bin,Qty,StockExported,Reference1\r\nGIRHT016003,Home,,18,,Embroidery E-GIR1\r\n'
-   && w2.dls.join()==='EMB_WriteOff_E-GIR1_2026-10-06.csv,EMB_BookIn_E-GIR1_2026-10-06.csv' && /Nothing back from embroidery/.test(w2.rows) && /06 Oct 2026E-GIR1HT016003GIRHT01600318EMB_WriteOff/.test(w2.hist)
+   && w2.dls.join()==='EMB_WriteOff_E-GIR1_2026-10-06.csv,EMB_BookIn_E-GIR1_2026-10-06.csv' && /Nothing back from embroidery/.test(w2.rows) && /06 Oct 2026 ?06 Oct 2026 ?embroidery ?E-GIR1 ?GIRHT016003 ?HT016003 written off ?EMB_WriteOff_E-GIR1_2026-10-06.csv, EMB_BookIn_E-GIR1_2026-10-06.csv ?18 ?↺ Undo/.test(w2.hist) && w2.count==='(2)'
    && embBooked.join()==='embbook|E-GIR1|GIRHT016003:HT016003:18:2026-10-06:2'
    && migrated.join()==='book|S-OLD1|APP300503|2026-09-30|4:2026-10-01:this PC' && localGone
    && s5.print.pages===1 && s5.print.banner && s5.print.noMfg && s5.pick===1 && /Nothing waiting to be printed or picked/.test(s5.pickText) && /06 Oct 2026E-GIR1HT016003GIRHT01600318/.test(s5.hist) && picked.join()==='pick|E-GIR1|GIRHT016003:HT016003:18:2026-10-06'
-   && s6.pending===1 && /Nothing waiting to be booked in/.test(s6.pendingText) && s6.booked==='S-AP1' && s7.pendingBack==='S-AP1' && s7.log==='S-OLD1'
+   && s6.pending===1 && /Nothing waiting to be booked in/.test(s6.pendingText) && s6.booked==='S-AP1,E-GIR1' && s7.pendingBack==='S-AP1' && s7.log==='S-OLD1'
    && s8.can==='view only' && s8.buttons===0 && s8.printBtns===0 && s8.src==='pages'
    && errs.length===0;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
