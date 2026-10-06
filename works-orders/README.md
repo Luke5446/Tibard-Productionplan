@@ -51,6 +51,10 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `raw-records-rebuilt-2026-10-01.json` | The last thirteen raw records (OHAP3005 colourways, the contrast-tie and leather neck strap aprons, the neck strap, the utility belt) rebuilt with coded trims. |
 | `CJM0193-01-Stock.xlsx` | Stock works order for CJM0193_ _ 01, the Tibard mandarin collar chef jacket, long sleeve with a mesh back (JH 2017, pen pocket 2023). In the app as styles CJM0193--01 and CJM0193--03 (the black one derived from it). |
 | `BEAPP047801C-Bettys.xlsx` | Works order for BEAPP047801C, the Bettys white organic cotton bib apron with pocket, self fabric neck straps and ties (JH 2022, cloth amended 2024 and 2026), logo included. In the app as style BEAPP047801C with the logo as its own branding. |
+| `CBHT016064PG-CiaoBella.xlsx` | Works order for CBHT016064PG, the storm grey revised-fit velcro skull cap with the Ciao Bella logo, no tax tab (JH 2022, new fit 2023, eco fabric 2024), logo and sketch included. Made from scratch. In the app as style CBHT016064PG. |
+| `CBHT016064PG-2026-10-06.json` | That record for the costing app. |
+| `GIRHT016003-Giraffe-emb-form.xlsx` | The Giraffe hats embroidery form (Boparan Group, 27/11/24): HT016003 embroidered with the Giraffe logo and booked in as GIRHT016003. In the app as the embroidery-only style GIRHT016003, whose only trim is the stock hat. |
+| `GIRHT016003-2026-10-06.json` | That record for the costing app. |
 | `BEAP300601-Bettys.xlsx` | Works order for BEAP300601, the Bettys white 100% cotton waist apron with centre pocket and non tangle ties, logo on the pocket (YL 2018, cloth 2024, centre divide removed 2024), logo and placement sketch included. In the app as style BEAP300601. |
 | `BEAP300601-2026-10-06.json` | That record for the costing app. |
 | `CJM0193-BEAPP047801C-2026-10-01.json` | Those three records for the costing app. |
