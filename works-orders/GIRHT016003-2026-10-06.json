@@ -1,0 +1,42 @@
+{
+ "styles": [
+  {
+   "code": "GIRHT016003",
+   "name": "Black velcro fasten skull cap with the Giraffe logo — HT016003 embroidered (embroidery only)",
+   "desc": "BLACK VELCRO FASTEN SKULL CAP · HT016003 picked from stock and embroidered with the Giraffe logo to the front · Nothing to cut or make",
+   "lectra": "None: the stock hat HT016003 (HT0160, variant HT0160NEW) is picked and embroidered",
+   "variant": "",
+   "chart": "",
+   "fabrics": [],
+   "trims": [
+    [
+     "Base garment",
+     "HT016003 — black velcro fasten skull cap, one per hat, picked from stock and booked back in as GIRHT016003.",
+     1,
+     "HT016003",
+     null
+    ]
+   ],
+   "mfg": [
+    "Pick HT016003 from stock, one per hat.",
+    "Embroider the Giraffe logo to the front of the hat.",
+    "Book in as GIRHT016003 (the embroidered code), not as HT016003."
+   ],
+   "fin": [
+    "Check and fold."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 0,
+   "tol": "",
+   "oneSize": true,
+   "customer": "Giraffe (Boparan Group)",
+   "brandType": "Embroidery",
+   "brandPlace": "Giraffe logo to the front of the hat (embroidery form, Stacia, Boparan Group, 27/11/24: all to be embroidered with Giraffe, logo to front of hat).",
+   "logoImg": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCABqAPgDASIAAhEBAxEB/8QAGwABAAMBAQEBAAAAAAAAAAAAAAIEBQMBBgj/xABKEAABAwIEAQcFCQwLAAAAAAABAAIRAwQFEiExBhQiM0FRYXITcYGR8DI0U2NzobHB0RUWIyQlJkNSg7LT4TU2QkWSk5Sis7Tx/8QAGAEBAQEBAQAAAAAAAAAAAAAAAAECAwT/xAAiEQEBAAIDAAIDAAMAAAAAAAAAAQIRAxIhEzEiMkEzUWH/2gAMAwEAAhEDEQA/AP2TR6FnhCko0ehZ4QpJSCIiAiIgIiICIiAiSvJQeoiICIqWH3/K7zErfyWTkVyKGbNOeaNOpO2nSRGu09aC6iLhcXIouylpPm9vN7RNk39Jbp3RUH4kGzFGesc7cepevxFoa0tp5pMRm7h9q38Wf+k7ReRVLS95RVLPJ5dJnNPZ9qtysZS43VWXYiIooiIgIiICIiAiIgjR6FnhCko0ehZ4QpJSCIiAiIgIovdlaTEx2LJubqq55DXwNCCFrDC5pbI2JXk9qy7e7qB5zvGXcyrtzUIo56c67Ef+FXLjspLt3lJWba3Ny9/Oqc0RoQJ9YC9vLurRrlrHbDURKvxXek7NKUWPy24DoDwYnq3V60uM7WteW5iNJME+hMuK4zazKVaWJw8fyxxHp/eTP+pbrXrVG06WY+hfI4DeVnYzxEcxGXE2mAdPeltophx3ObhcpPt9lKzMVdFVsOA01EnXq+sqxYV31GAP5ztTMab7KrixPKm+AfSt8eOs9VnK7jha2764dkc3m9pOqsPsKpMtcwCB27wJ+hVKFSoxx8nOoO09QUnV65PSPBgdZ1C75TO3ys+L1jbPoV3FzmmGxAPf/JXupUMKc6o6q5zy4iBqrF7UNOlmbO8aLzZy3PTc8jsvVjcrrFwcHOOnbovTdVMmUZ9gJnza/MfWtfBkndsoudsSbekSZJYJPoXRcWxERAREQEREEaPQs8IUlGj0LPCFJKQREQEREFHFajW0m0z7pzubr6ZVSwY2vcODySAJM7krnxVZXF2KTqGMXuH5A6W27aRFTb3XlKb9o6o361nYbhOIUqdZ7+LMbIECfI2nf8QvTh5x7jnfav1mZKr2gaSQPWrr3t5BTc9sAuiBPf3rOFleOj868bE7TRtP4Ht61xxTCMRfZtcOLMZjN8Fadh+IU7XKyWGtTxbtjTa4h4OpGgH2GF1xEjy7m83YAduywbbBsR5RTH32YyJcBpStP4Cne4PihvKgdxXjIMiPwVpt/kLtdd2ZfG0ymx9i+qRz2vifV9q8snAV6bs+V0wNJmfSsRmG4k22dR++zGuc4GfJ2nd8R3LrY4BibrhgPFWNQIdPkrSP+BTKal2T78buI13Nrim06BvOBXzfDdMvxPih4/sYiwkDXe0t+zXqPzLriOD4hyp0cV42DAmadprpPwCzeGcOu3XfEVJnEWJ0jRvWeUqhluatZ5tqMuJNLK1oaWNDWtBBa4kuzQ2Y3rhuLfa+qtq3k6zQ+oWAGYA36oXfFWzVa8R7gCJHavmXYPf/AKPivG2jwWh2/YK3i2C4lykfnZjPuPgrTt+QSz84n8beGU6VRjpaS4fNPpUS+1cQHUBIAEZzIG3zLJwfBcRipPFmNHb9FafwFSrYNiReSeLsadPxVpoI+QUmO876u/H0tO6p25Pk6MZ9SM20KdxVFxasdkaCXbFw09K+fbwzi9RgeOL8X5wkTTtev9gu11gmJ0LCm13FuMkh+/krTvPwCzevaaWb0vWTGPuGNdDhr190rUFtQa0gUxHnPt1L5O1wrEKddtR3FmNQJ2pWnZ8grz7W7B/rVjfUZFK088dD605plb4Y3z19NTAaxrWiAAAAvV40Q0DsC9XmdBERAREQEREEaPQs8IUlGj0LPCFJKQREQEREGbjG9ON+d9S8oMfWt6rcgZmggkEA9a6YtTJptqAjmk6Hvj7Fxw2tlqua4sa0N7APnXom/j8c7+yo8GnULXEHKYJ3jze31q3dFpwunldmGbePOq1U5rh5bzpcSO8SrN04Pw2nDYhxlo6t10z+8U/itbe+aXyjfpXTEZ5ZU17PoXO2P4zT20qNn1rpiPvypqBt9Ct/yMz6QbScbY1QAQDB122+1dLGoaddvPEExETO3qU6U/cqrpEuH1KmDJ6txp2K/tLK1JqrGI+/Kno/dWBw2KhxXibKD/SLM3+ktv5LfxGBdvPVp+6s3hRrTf8AE8tp5vugzXm6/ilvE+obrMy64Q0uMAc6HS0TuBO6t4qBykeAfSq1MPZX5uTMNR2LtiZPKBJaRlgQe9W/vE1464U4NbUJI1hUPnWhg8fhCDpos+ezZMP3pfonuC0L0/k6gY/V/dK721FhoMc9lN3NBBDddlzxIZ7RuQAQZE6bArneSZZRqY/ioUGGpVy9cGPUuzrKuCMjJ2JJI3jVeWEG6p69vqha8jtV5eS45eJji9b7kL1Bsi8rqIiICIiAiIgjR6FnhCko0ehZ4QpJSCIiAiIg43VIVqLmHzhY9Si9rmtMFznQBIW8oGk0uzENJGxjZdOPkuDGWG2Ra0m1XFriZGug2Vy8a6lbN5/O0bMns7FcZTaz3LQJ0Oi9InrVy5bctr18Y9k4trAF+hIMFztV0xI85zcwIBBADnStMNjr+bdeluspeT8t6OvjNzF2GP1DiI2nuVSg9zakiZOky77Vu5e0z5wmVMeXW/E6esnEHO54zg6yILtNFlcKF5vuKs1XMPugyM080ckt+72hfVlusrzJrIMTvpv7aJ8n46OjByDPlzDL+sQd1dxB2UBgIbm1iTMzJWjl749C9y9p9Ct5d3Z08UMMP4NwJ0GsZjIVOo8mu05mnL1y769fVC2g2OzzQvcvepOXWVuluKNHWiwzPNGuv1qviLM1CILtdgN1bGy8c0O31XOXV2uvGHkqGsQIa8kg93sdFzJjr/3fzW6KTBs1o7NE8hR+Cp/4Qu/z/wDGOha+9qXgH0LogAAAAgDYIvPXQREQEREBERBGj0LPCFJRo9CzwhSSkEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQRo9CzwhSUaPQs8IUkpBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREH/9k=",
+   "embOnly": true,
+   "note": "Embroidery-only product: GIRHT016003 is HT016003 with the Giraffe logo. Set up from the ESTOCK Giraffe hats embroidery form of 27/11/24 (40 HT016003 embroidered and booked in as GIRHT016003). Works orders for it are ticked Embroidery only and go to the Warehouse tab to be picked."
+  }
+ ]
+}
