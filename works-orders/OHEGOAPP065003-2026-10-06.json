@@ -1,0 +1,125 @@
+{
+ "styles": [
+  {
+   "code": "OHEGOAPP065003",
+   "name": "Black Ego bib apron, narrow width with two hip pockets — studded neck strap, Ego Mediterranean logo",
+   "desc": "BIB APRON · Narrow width apron (retail width) · 2 x hip pocket · Self fabric neck strap fastened with studs · Self fabric waist ties set into side seam · Ego logo bottom left hem as worn",
+   "lectra": "Model OHAPP0649, variant 0650 — discard the right side as worn stud re-inforcement piece",
+   "chart": "OHEGOAPP065003-MEAS",
+   "fabrics": [
+    [
+     "Black 100% organic cotton 260 gsm X149ECO AM08 (Tiajo) — rating 0.80 m",
+     "CO5003ECO",
+     "A5",
+     0.8,
+     2.81
+    ]
+   ],
+   "trims": [
+    [
+     "Thread — main",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     70,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "OH woven label",
+     "Oliver Harvey British button woven label, set just below the base of the re-inforcement patch in the right side seam as worn, on top of the OH care label.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "OH care label",
+     "Oliver Harvey wash instructions, set just below the base of the re-inforcement patch in the right side seam as worn, below the OH woven label: 100% cotton · 40° wash · do not bleach · 2 dot iron · P dry clean · low tumble dry.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "OH tax tab",
+     "Red OH tax tab set to the left side of the pocket as worn, level with the top edge.",
+     1,
+     "TAXTABOH07/01",
+     0.01678
+    ],
+    [
+     "Capped studs — cap (quality 050B, parts A/B)",
+     "Antique brass capped spring studs, quality 050B: 4 x male (parts A/B) on the neck strap. Sage holds quality 050 as the gilt 15 mm round spring fastener.",
+     4,
+     "CMP-STD-CAP-050-929",
+     0.05338
+    ],
+    [
+     "Capped studs — socket (quality 050B, parts C/D)",
+     "Antique brass capped spring studs, quality 050B: 2 x female (parts C/D) on the bib.",
+     2,
+     "CMP-STD-SOC-050-929",
+     0.03101
+    ]
+   ],
+   "mfg": [
+    "Make waist ties. Bag out one end and enclose raw edges and edgestitch long edge.",
+    "Make neck strap. Bag out both ends and edgestitch one side.",
+    "Discard right side as worn stud re-inforcement piece.",
+    "Neaten long edge of stud re-inforcement piece turning onto right side of fabric as wrong side of fabric to be uppermost. Set to left side as worn so it is included into top of bib turning and armhole turning. Note: set so wrong side is uppermost on finished garment.",
+    "Fold over bib top 1 + 3.2 cm and topstitch 3 cm.",
+    "Edgestitch top edge.",
+    "Double turn armhole and topstitch 6 mm.",
+    "Double turn hem and side seams and topstitch 12 mm. Set labels 4 cm down from finished right side seam as worn. Insert waist ties.",
+    "Fold waist tie back on itself and edgestitch down to width of waist tie.",
+    "Set neck strap to right side of bib as worn. Edgestitching side of strap to be set to inside of neck as worn to reduce bulk. Set strap to bib, box stitch strap and stitch X detail. Position strap so edgestitching of base of strap end is in line with 3 cm topstitching of bib.",
+    "Set pocket hem. Turn under 1 cm and turn 2 cm and topstitch 2 cm.",
+    "Set hip pockets. Set bottom of pocket 24 cm up from finished hem and 5 cm in from finished side seam. Insert Oliver Harvey red tab to top of pocket left side as worn. Edgestitch pocket in position. Set left pocket, fold over and mark for right pocket. Ensure pocket set parallel to side seam.",
+    "Triangle stitch at top of pocket mouth to secure."
+   ],
+   "fin": [
+    "Set studs to strap. Female capped stud set to strap, set centrally to width and first stud 1.5 cm from end then 4 cm spacing — total 4 studs (measurement from centre of stud). Male stud set 1.5 cm down and 1.5 cm in from end of bib; second stud set 4 cm spacing and 1.5 cm in from edge of bib, vertically down. Ensure it is set onto the re-inforcement patch.",
+    "Check, trim, press and fold. Wrap in tissue, set product sticker and set into bag."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "variant": "0650",
+   "customer": "Ego Restaurants",
+   "brandType": "Embroidery",
+   "brandPlace": "Ego Mediterranean logo set to the bottom left hem as worn: centre of the logo 14.5 cm from the finished left side seam as worn and 9 cm up from the finished hem. Sharon to check on the first apron.",
+   "logoImg": "data:image/jpeg;base64,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",
+   "note": "Works order OHEGOAPP065003 (JH created for SR706 17/7/18; logo position amended 4/7/19; pocket position 2.5 to 24 cm YL 11/7/19; approved for bulk JH 13/6/19; ECO fabric Tiajo and care label JH 28/4/25)."
+  }
+ ],
+ "charts": {
+  "OHEGOAPP065003-MEAS": [
+   [
+    "Across bib",
+    "26.5 cm"
+   ],
+   [
+    "Neck strap length, measured end to end",
+    "61 cm"
+   ],
+   [
+    "Length from top to hem",
+    "93 cm"
+   ],
+   [
+    "Width at hem",
+    "63 cm"
+   ],
+   [
+    "Pocket",
+    "18.5 cm wide x 19.5 cm deep"
+   ]
+  ]
+ },
+ "chartCols": {
+  "OHEGOAPP065003-MEAS": [
+   "Measurement",
+   "Value"
+  ]
+ }
+}
