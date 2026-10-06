@@ -94,6 +94,41 @@ with every container in the hover. The runway popup lands each container in
 its week, so the closing stock there follows the real arrivals. Nothing is
 saved and the WOP maths are unchanged: Sage's On POP stays the stock on order.
 
+## Embroidery-only works orders
+
+A customer's code can be a stock garment with their logo on: GIRHT016003 is
+HT016003 embroidered for Girlguiding. Such a works order is ticked
+**Embroidery only** when it is made (on the Add works order form or the
+Create works orders box). The base code to pick is worked out from the code
+(the longest tail of it that is a product in the buffer, else the code with
+its customer prefix taken off) and can be typed over. An embroidery-only
+works order is never the cutting room's: it is not pushed to the cutting log,
+not on Cutting review, not in the fabric in work in progress, and its
+completion carries no fabric. Its print is the first page only, with a banner
+saying what to pick, for the embroidery room. The card and the panel say
+**EMB only**.
+
+## The Warehouse tab
+
+The warehouse's own address (`?warehouse`) now opens the planner on the
+**Warehouse** tab, next to Cutting; everyone sees the tab. Two lists:
+
+- **To pick for embroidery**: printed embroidery-only works orders, with the
+  base code to pick from stock, the embroidered code, the quantity and the
+  customer. **Print** gives the one-page sheet for the embroidery room;
+  **Picked** marks the line, with the last 30 days underneath and Undo.
+- **Ready to book in** and **Booked in history**: as before, items completed
+  by production to book into Sage, with Copy ticked, Export CSV and the
+  marks.
+
+The marks live in `warehouse.json` in the `Tibard-Cutlog` repo, read the way
+the cutting log is: through GitHub Pages for anyone, and through the API on
+a PC that holds the token. Marking picked or booked needs the token: a
+fine-grained one that can write `Tibard-Cutlog`, set with **Set up this PC**
+on either tab (one token serves both logs on that PC). The marks a warehouse
+PC kept in its own browser before this move across to the log the first time
+that PC opens the tab with a token.
+
 ## Publishing for the team
 
 **Publish for team** writes the editor's state to `data.json` in this repo,
