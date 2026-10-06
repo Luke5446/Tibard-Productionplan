@@ -1,0 +1,77 @@
+{
+ "styles": [
+  {
+   "code": "OHAPP300503PC",
+   "name": "BLACK Bib apron in poly cotton with pocket, OH ties and cloth loop",
+   "desc": "BIB APRON · Centre pocket · OH non tangle ties OH towel loop",
+   "lectra": "Ap3005 butchers style with pocket / Standard pocket - cut 9\" x 11\" marker oh3005003",
+   "chart": "OHAPP300503-MEAS",
+   "fabrics": [
+    [
+     "Black 65%recycled polyester 35%organic cotton 200gsm x133eco-am125 — rating 1.0m",
+     "PC2003ECO",
+     "B11"
+    ]
+   ],
+   "trims": [
+    [
+     "Thread - main",
+     "Coats 80's black",
+     70
+    ],
+    [
+     "OH centre fold label",
+     "Oliver harvey woven british button label set into right side seam as worn. 4cm down from top edge."
+    ],
+    [
+     "OH care label",
+     "Oliver harvey wash instructions set under OH woven label right side seam as worn / Wash - 65%recycled polyester/35% organic cotton/60 degree wash / tumble dry/ 2 dot iron/do not bleach / p dry clean"
+    ],
+    [
+     "Tax tab",
+     "Oliver harvey tax tab set to level with top edge of left side of pocket as worn"
+    ],
+    [
+     "OH non tangle ties",
+     "OH black non tangle ties"
+    ],
+    [
+     "OH towel loop",
+     "OH black non tangle tape cut at 39cm to make towel loop"
+    ]
+   ],
+   "mfg": [
+    "Make neck strap. Fold in half and enclose raw edges. Edge stitch long edge to close seam.",
+    "Set bib facing and insert neck straps. Edge stitched side of neck strap to be set to outside edge of bib and ensure good side of strap to topside.",
+    "Top of bib 6MM TOPSTITCHED.",
+    "Bib facing - Fold in 10mm to neaten lower edge. Edge stitch lower edge of facing which forms 5.5cm topstitching to front",
+    "Armhole double turned and topstitching to finish 6mm from edge. Cut towel loop at 39cm. Fold loop in half and set towel loop 17cm from cut edge of left side seam as worn. Stitch down towel loop to follow armhole stitching.",
+    "Hem - double turned and topstitching to finish 12mm from edge",
+    "Sides - double turned and topstitching to finish 12mm from edge. Insert waist tie. Insert labels right side as worn. Set 4cm down from top edge. OH woven label on top.",
+    "NOTE- Neaten armholes before side seam neatened",
+    "Fold waist tie back on itself to fall away from garment and edge stitch down to width of strap to secure.",
+    "Pocket hem double turned and topstitched 1cm.",
+    "Edgestitch pocket to front. pocket set centrally within apron and bottom of pocket set 33cm (13\") up from finished hem .",
+    "2 stitch triangle to top of pocket to secure."
+   ],
+   "fin": [
+    "Check ,trim, press and fold in tissue. set product sticker to bottom right hand corner of tissue."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "variant": "3005 LARGE",
+   "customer": "",
+   "brandType": "",
+   "brandPlace": "",
+   "logoImg": "",
+   "markerMain": "300501",
+   "markerLen": 1.61,
+   "layQty": 2,
+   "note": "The same apron as OHRSAPP300503PC without the Rick Stein logo: the Rick Stein code is the customer-branded version (Luke, 6 Oct 2026). OHAP300503PC is the one with no pocket."
+  }
+ ]
+}

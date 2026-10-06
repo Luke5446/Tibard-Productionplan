@@ -7,8 +7,10 @@ a mesh back) to a small shared file, `cutlog.json`, kept in its own GitHub
 repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 
 - **To cut**: printed works orders not yet marked cut, oldest printed first
-  (click the Printed heading to flip the order), with the standard metres
-  per line; the search box narrows the list. One printed
+  (click the Printed or Due heading to sort by that date, again to flip),
+  with the standard metres per line; the search box narrows the list. The
+  tiles above count what was printed today (click it to show only those),
+  the works orders with a line waiting, and the lines waiting. One printed
   five or more days ago is flagged. The cutting room PC marks a line, or a
   whole works order, cut: the mark is dated that day. Each line has a metres
   box, started at the standard, and a comment box; a figure that differs from

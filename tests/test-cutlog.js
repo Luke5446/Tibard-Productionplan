@@ -59,6 +59,16 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  // typing in the search box: the tab redraws on each key and the box keeps its focus and text; the lines come up for the search
  await p.click('#cutQ'); await p.keyboard.type('S-T1'); await p.waitForTimeout(200);
  const sq=await p.evaluate(()=>({q:cutQ, val:document.getElementById('cutQ').value, focused:document.activeElement===document.getElementById('cutQ'), rows:document.querySelectorAll('#cutBody .cut-tbl tbody tr').length, cutAll:!!document.querySelector('#cutBody button[onclick^="cutMarkWO"]'), polling:!!cutPoll}));
+ // sort by due date, and the New today tile as a filter (S-T3 made to look printed yesterday and due sooner, in this page only)
+ const s2c=await p.evaluate(()=>{ cutQ=''; const t3=cutLog.entries.find(e=>e.ref==='S-T3'); const was={p:t3.printedAt, d:t3.due}; t3.printedAt='2026-09-30'; t3.due='2026-10-05'; cutRender();
+   const refs=()=>[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>(tr.children[0].querySelector('strong')||{}).textContent||'').filter(Boolean).join();
+   const tiles=()=>[...document.querySelectorAll('#cutBody .kpi-tile')].slice(0,2).map(t=>t.querySelector('.l').textContent+'='+t.querySelector('.v').textContent);
+   const out={tiles:tiles(), byPrinted:refs()};
+   document.querySelector('#cutBody .cut-tbl thead th:nth-child(3)').click(); out.byDue=refs(); out.dueHead=document.querySelector('#cutBody .cut-tbl thead th:nth-child(3)').textContent.trim();
+   document.querySelector('#cutBody .cut-tbl thead th:nth-child(3)').click(); out.byDueDesc=refs();
+   document.getElementById('cutNewTile').click(); out.newOnly=refs(); out.note=!!document.querySelector('#cutBody .sm-note button'); out.newTile=tiles()[0];
+   document.querySelector('#cutBody .sm-note button').click(); out.back=refs();
+   cutSortKey='printed'; cutSortDesc=false; t3.printedAt=was.p; t3.due=was.d; cutQ='S-T1'; cutRender(); return out; });
  // the main cloth gave more: 8 m with no comment is refused, with a comment it is taken; the mesh stays at standard
  const s3a=await p.evaluate(()=>{ document.querySelector('input[data-cutm="S-T1|CICJM0193XXS01|PC2001ECO"]').value='8'; cutMarkWO('S-T1'); return window.__alerts.length; });
  await p.waitForTimeout(300); const s3b=entries().filter(e=>e.ref==='S-T1'&&e.cutAt).length;
@@ -101,7 +111,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
         rec:{actual:c.fabric.actual, std:c.fabric.std, source:c.fabric.source, note:c.fabric.cutNote, meshActual:c.fabric.extras[0].actual, meshStd:c.fabric.extras[0].std}, ledger:{metres:l.metres, varPct:Math.round(l.varPct*10)/10, note:l.cutNote}, rowHasNote:/roll end, 0.65 m short/.test(row)}); },600)); });
  console.log('printed   ->', JSON.stringify(s1), JSON.stringify(s1b), JSON.stringify(s1c));
  console.log('review    ->', JSON.stringify(r1), JSON.stringify(r2), JSON.stringify(r3a), JSON.stringify(r3)); console.log('cut, edit ->', JSON.stringify(r4), JSON.stringify(r5));
- console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('marked    ->', s3a, s3b, JSON.stringify(s3), JSON.stringify(s4));
+ console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('sort/new  ->', JSON.stringify(s2c)); console.log('marked    ->', s3a, s3b, JSON.stringify(s3), JSON.stringify(s4));
  console.log('figures   ->', JSON.stringify(s5)); console.log('conflict  ->', JSON.stringify(s6)); console.log('viewer    ->', JSON.stringify(s7)); console.log('panel     ->', JSON.stringify(s9)); console.log('completed ->', JSON.stringify(s8));
  const pass = s1.join('|')==='S-T1:CICJM0193XXS01:MESHPW31401:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
    && r1.lines.join()==='S-T3:ZZNOUSAGE:no fabric on file' && r1.badge==='1' && r1.shown==='' && r1.rows.length===1 && /S-T3.*ZZNOUSAGE.*5 ?no fabric on file.*Open.*fabric/.test(r1.rows[0]) && r1.fix===1
@@ -110,6 +120,8 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===3 && s1c.prompt==='' && /mark cuts/.test(s1c.tag)
    && s2.src==='api' && s2.rows===3 && s2.order==='S-T1,S-T1,S-T3' && s2.head==='Works orderPrinted ▲DueProductQtyFabricStd mCut m · comment' && s2.flipped==='S-T3,S-T1,S-T1' && s2.todo==='3' && s2.boxAfterChips && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.cutAll && sq.polling
    && s7.logPrompt && s7.todoRows===1
+   && s2c.tiles.join()==='New today=2,Live works orders to cut=2' && s2c.byPrinted==='S-T3,S-T1' && s2c.byDue==='S-T3,S-T1' && s2c.dueHead==='Due ▲' && s2c.byDueDesc==='S-T1,S-T3'
+   && s2c.newOnly==='S-T1' && s2c.note && s2c.back==='S-T1,S-T3'
    && r4.join('|')==='MESHPW31401:7:1.75:2026-10-01|PC2001ECO:7:7.35:2026-10-01' && r5.lines.join('|')==='MESHPW31401:2026-10-01|PC2001ECO:2026-10-01' && r5.notPushed===0 && r5.review===0
    && s3a===1 && s3b===0 && s3.join()==='2026-10-01:1.75,2026-10-01:8' && s4.join('|')==='MESHPW31401:1.75::std|PC2001ECO:8:roll end, 0.65 m short:adj'
    && /Cut today=9.8 m/.test(s5.tiles.join()) && /Live, not on the log=0/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP'&&/Undo/.test(r[10]))
