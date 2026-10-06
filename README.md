@@ -135,6 +135,8 @@ warehouse log:
    Reference1`, location Home, reference "Embroidery <WO>".
 5. The editor takes the book-in mark on its next load: the works order
    completes in the planner as at the day it was booked, with no fabric.
+   The booking sits in the one Booked in history on the Warehouse tab,
+   marked embroidery, with the home stock written off and the files.
 
 The embroidery room's PC needs the same token as the warehouse's to mark
 the machine and done.
