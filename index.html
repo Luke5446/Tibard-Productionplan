@@ -2780,7 +2780,7 @@ function embQueue(){
   return out;
 }
 function embSetMachine(k, machine){ if(!cutCanWrite()) return; var parts=k.split('|');
-  whSave((machine?'On machine '+machine+': ':'Off the machine: ')+parts[1], function(d){ var e=d.entries.filter(function(x){ return x.k===k && !x.cancelledAt; })[0];
+  whSave((machine?(machine==='DTF'?'DTF: ':'On machine '+machine+': '):'Off the machine: ')+parts[1], function(d){ var e=d.entries.filter(function(x){ return x.k===k && !x.cancelledAt; })[0];
     if(!e){ if(!machine) return false; d.entries.push({k:k, kind:'emb', ref:parts[1], code:parts[2], machine:machine, allocatedAt:new Date().toISOString()}); return true; }
     if((e.machine||'')===machine) return false; e.machine=machine; e.allocatedAt=machine?new Date().toISOString():''; return true; }, function(ok, err){ if(!ok && err && err!=='no token') alert('The log could not be saved: '+err); embRender(); embBadge(); }); }
 function embComplete(k){ if(!cutCanWrite()) return; var parts=k.split('|');
@@ -2796,19 +2796,21 @@ function embQueueHtml(can){
     +'<div class="wh-body"><div style="overflow-x:auto"><table class="wh-tbl"><thead><tr><th>Picked</th><th>Due</th><th>WO Ref</th><th>Embroidered code</th><th>Base garment</th><th>Customer</th><th style="text-align:right">Qty</th><th>Machine</th><th class="ns" style="text-align:center">Action</th></tr></thead><tbody>';
   if(!q.length) h+='<tr><td colspan="9" style="text-align:center;padding:1.2rem;color:#6b7280">Nothing picked for embroidery</td></tr>';
   q.forEach(function(l){
-    var sel='<select '+(can&&!l.doneAt?'':'disabled ')+'onchange="embSetMachine(\''+esc(l.k)+'\', this.value)" style="font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px'+(l.machine?'':';background:#fff7ed')+'"><option value="">not allocated</option>'+[1,2,3,4,5].map(function(m){ return '<option value="'+m+'"'+(String(l.machine)===String(m)?' selected':'')+'>Machine '+m+'</option>'; }).join('')+'</select>';
+    var sel='<select '+(can&&!l.doneAt?'':'disabled ')+'onchange="embSetMachine(\''+esc(l.k)+'\', this.value)" style="font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px'+(l.machine?'':';background:#fff7ed')+'"><option value="">not allocated</option>'+['1','2','3','4','5','DTF'].map(function(m){ return '<option value="'+m+'"'+(String(l.machine)===m?' selected':'')+'>'+(m==='DTF'?'DTF':'Machine '+m)+'</option>'; }).join('')+'</select>';
     h+='<tr'+(l.doneAt?' class="booked-row"':(l.machine?'':' style="background:#fff7ed"'))+'><td style="font-weight:600">'+esc(fmtD(l.pickedAt))+'</td><td>'+esc(fmtD(l.due))+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.ref)+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+esc(l.code)+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.pickCode||'?')+'</td><td>'+esc(l.customer)+'</td><td style="text-align:right;font-weight:700">'+Math.round(l.qty).toLocaleString()+'</td>'
       +'<td>'+sel+'</td><td style="text-align:center;white-space:nowrap">'+(l.doneAt?'<span class="sm-tag ok">done '+esc(fmtD(l.doneAt.slice(0,10)))+'</span> '+(can?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="embUndone(\''+esc(l.k)+'\')">&#8634; Undo</button>':''):(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#065f46;border-color:#a7d4bb" onclick="embComplete(\''+esc(l.k)+'\')"'+(l.machine?'':' title="Choose the machine first" disabled')+'>&#10003; Done</button>':''))+'</td></tr>'; });
   return h+'</tbody></table></div></div></div>';
 }
 // ── EMB to book in: done in embroidery, two files for Sage, then booked ───
-var EMB_WRITEOFF_REF1='Embroidery', EMB_BOOKIN_CAT='Manual Addition';
+// The book-in file is the add-stock layout Luke's routine reads (TIB_Add_Stock.csv, 6 Oct 2026):
+//   StockCode,Location,Bin,Qty,StockExported,Reference1  e.g.  TX456987U,Home,,50,,Stock Take
+var EMB_WRITEOFF_REF1='Embroidery', EMB_BOOKIN_LOCATION='Home';
 function embToBook(){ return embQueue().filter(function(l){ return !!l.doneAt; }); }
 function embBookFiles(l){
   var date=ukDate(d2s(now())), stamp=d2s(now());
   var off=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat'], [l.pickCode, WRITEOFF_LOCATION, '', Math.round(l.qty), EMB_WRITEOFF_REF1, l.ref, date, WRITEOFF_CAT]];
-  var add=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','AdditionCat'], [l.code, WRITEOFF_LOCATION, '', Math.round(l.qty), EMB_WRITEOFF_REF1, l.ref, date, EMB_BOOKIN_CAT]];
+  var add=[['StockCode','Location','Bin','Qty','StockExported','Reference1'], [l.code, EMB_BOOKIN_LOCATION, '', Math.round(l.qty), '', EMB_WRITEOFF_REF1+' '+l.ref]];
   var csv=function(rows){ return rows.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n')+'\r\n'; };
   return [{name:'EMB_WriteOff_'+l.ref.replace(/[^A-Za-z0-9-]/g,'_')+'_'+stamp+'.csv', text:csv(off)}, {name:'EMB_BookIn_'+l.ref.replace(/[^A-Za-z0-9-]/g,'_')+'_'+stamp+'.csv', text:csv(add)}];
 }
