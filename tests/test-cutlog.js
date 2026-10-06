@@ -35,10 +35,12 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    mk('S-T1','CICJM0193XXS01\t7'); mk('S-T2','APP300503\t10'); mk('S-T3','ZZNOUSAGE\t5');
    document.getElementById('woRef').value='S-OLD'; document.getElementById('woStart').value='2026-09-01'; document.getElementById('woDue').value='2026-09-20'; document.getElementById('woTA').value='APP300503\t4'; saveWO();
    window.open=()=>({document:{open(){},write(){},close(){}}});
-   printWOPTracked(WOs.findIndex(w=>w.ref==='S-T1'),'CICJM0193XXS01',7);
+   var cardBtn=document.getElementById('woc-print-'+WOs.findIndex(w=>w.ref==='S-T1')), cardLabel=cardBtn.textContent.trim(); cardBtn.click();   // the card's own print button: no panel opens
+   window.__cardPrint={modal:document.getElementById('woModal').classList.contains('open'), label:cardLabel, printed:WOs.find(w=>w.ref==='S-T1').printed, printedCardStill:!!document.getElementById('woc-print-'+WOs.findIndex(w=>w.ref==='S-T1'))};
    markWOPrinted(WOs.findIndex(w=>w.ref==='S-T2')); markWOPrinted(WOs.findIndex(w=>w.ref==='S-OLD')); markWOPrinted(WOs.findIndex(w=>w.ref==='S-T3')); }, buf);
  await p.waitForTimeout(600);
  const s1=entries().map(e=>e.ref+':'+e.code+':'+e.fabric+':'+e.std+':'+(e.printedAt||'')+(e.extra?':extra':'')).sort();
+ const cp=await p.evaluate(()=>window.__cardPrint);
  // S-T3 has no fabric on file: not on the log, on the Cutting review tab with a badge
  const r1=await p.evaluate(()=>{ smShowTab('cutrev'); return {lines:cutReviewLines().map(l=>l.wo.ref+':'+l.it.code+':'+l.why), badge:document.getElementById('cutRevCount').textContent, shown:document.getElementById('cutRevCount').style.display, rows:[...document.querySelectorAll('#cutRevBody .cut-tbl tbody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim()), fix:document.querySelectorAll('#cutRevBody button[onclick^="setFabricCode"]').length}; });
  // the PM changes the quantity on S-T2 before it is cut: the waiting line follows, a moment later, on its own
@@ -123,7 +125,9 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  console.log('review    ->', JSON.stringify(r1), JSON.stringify(r2), JSON.stringify(r3a), JSON.stringify(r3)); console.log('cut, edit ->', JSON.stringify(r4), JSON.stringify(r5));
  console.log('cutting   ->', JSON.stringify(s2), JSON.stringify(sq)); console.log('sort/new  ->', JSON.stringify(s2c)); console.log('marked    ->', s3a, s3b, JSON.stringify(s3), JSON.stringify(s4));
  console.log('figures   ->', JSON.stringify(s5)); console.log('conflict  ->', JSON.stringify(s6)); console.log('viewer    ->', JSON.stringify(s7)); console.log('panel     ->', JSON.stringify(s9)); console.log('completed ->', JSON.stringify(s8));
- const pass = s1.join('|')==='S-T1:CICJM0193XXS01:MESHPW31401:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
+ console.log('card print->', JSON.stringify(cp));
+ const pass = cp.modal===false && cp.label==='🖨 Print WOP' && cp.printed===true && cp.printedCardStill===false
+   && s1.join('|')==='S-T1:CICJM0193XXS01:MESHPW31401:1.75:2026-10-01:extra|S-T1:CICJM0193XXS01:PC2001ECO:7.35:2026-10-01|S-T2:APP300503:PC2003ECO:5:2026-10-01'
    && r1.lines.join()==='S-T3:ZZNOUSAGE:no fabric on file' && r1.badge==='1' && r1.shown==='' && r1.rows.length===1 && /S-T3.*ZZNOUSAGE.*5 ?no fabric on file.*Open.*fabric/.test(r1.rows[0]) && r1.fix===1
    && r2.join()==='12:6:waiting' && r3a.log===0 && /^no metres on file for PC2003ECO: type the metres/.test(r3a.why) && /no usage on file .*PC2003ECO.*type the metres for the line/.test(r3a.hint)
    && r3.log.join()==='PC2003ECO:6:5' && r3.review.n===0 && r3.review.badge==='none' && /Nothing to review/.test(r3.review.empty)

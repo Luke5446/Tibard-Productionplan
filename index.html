@@ -1374,7 +1374,8 @@ function renderWOCards(){
         // carried the warning and a stock one found out at the print button
         :(noTpl?'<div style="font-size:10px;color:#b45309;font-weight:700;margin-top:2px">no print template'+(wo.items.length>1?' for '+noTpl+' of '+wo.items.length:'')+'</div>':''))
       +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
-      +'<button class="btn" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button>'
+      +(IS_EDITOR?'<button class="btn" id="woc-print-'+i+'" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#1e40af;border-color:#b6c4e8" title="'+(wo.printed?'Print the works order document again':'Print the works order document')+(wo.items.length>1?' - every line of it':'')+'" onclick="event.stopPropagation();printWOCard('+i+')">&#128424; '+(wo.printed?'Print again':'Print WOP')+'</button>':'')
+      +'<button class="btn" style="font-size:10px;padding:3px 8px;margin-top:4px;width:100%;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button>'
       +'</div>';
   }).join('');
 }
@@ -1779,14 +1780,24 @@ function markWOPrinted(i){ if(!IS_EDITOR) return;
 // After the push on print: a failure is said once, the card stays printed.
 function cutPushDone(ok, err){ if(!ok && err && err!=='no token') alert('The works order is printed, but the cutting log could not be updated: '+err+'\n\nUse "Push to the cutting room" on the Cutting tab when GitHub is back.'); var tc=document.getElementById('tabCut'); if(tc && tc.classList.contains('on')) cutRender(); cutRevBadge(); }
 
-function printWOPTracked(i, code, qty){
-  var wo=WOs[i]; if(!wo) return;
+function printWOPTracked(i, code, qty, quiet){
+  var wo=WOs[i]; if(!wo) return false;
   var ok=printWOP(wo.ref, code, qty, wo.due||'', wo.sm||null);
   if(ok!==false){
     wo.printed=true; wo.printedAt=wo.printedAt||d2s(now());
-    saveState(); renderWOCards(); openWOModal(i);   // refresh badge + tile visibility
-    if(cutCanWrite()) cutSync([wo], cutPushDone, 'Printed: '+wo.ref);   // to the cutting room
+    saveState(); renderWOCards(); if(!quiet) openWOModal(i);   // refresh badge + tile visibility
+    if(!quiet && cutCanWrite()) cutSync([wo], cutPushDone, 'Printed: '+wo.ref);   // to the cutting room
   }
+  return ok!==false;
+}
+// Print from the card on the tracker, without opening the works order (Luke,
+// 6 Oct 2026): every line of the works order in turn, then one push to the
+// cutting room. A browser may let only the first window open from one click;
+// the panel's WOP buttons are there for the rest.
+function printWOCard(i){ if(!IS_EDITOR) return;
+  var wo=WOs[i]; if(!wo) return;
+  var any=false; wo.items.forEach(function(it){ if(printWOPTracked(i, it.code, it.qty, true)) any=true; });
+  if(any && cutCanWrite()) cutSync([wo], cutPushDone, 'Printed: '+wo.ref);
 }
 
 // Split a works order into two: move a chosen quantity to a NEW auto-numbered WO.
