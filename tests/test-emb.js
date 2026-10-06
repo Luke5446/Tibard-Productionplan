@@ -67,12 +67,13 @@ const sheet=[
    smLogoToggle('S-OH116105-Pt3','OH-42'); cap=''; printWOP(w.ref, w.items[0].code, w.items[0].qty, w.due, w.sm); const back=[...cap.matchAll(/<th>Logo application/g)].length;
    return {emb:emb, lines:lines, after:after, off:off, back:back, kept:WOs.find(x=>x.ref==='S-OH116105-Pt3').sm.logoOff.length}; });
  // the Embroidery tab: everything, then found by works order, sales order, code, customer and logo wording; copy one line and copy all
- const tab=await p.evaluate(()=>{ smShowTab('emb'); const rows=()=>[...document.querySelectorAll('#embBody tbody tr')].map(tr=>tr.querySelector('strong').textContent);
-   const out={empty:rows().length===0 && /Search for a works order/.test(document.getElementById('embBody').textContent), badge:document.getElementById('embTabCount').textContent, shown:!document.getElementById('embView').classList.contains('hidden')};
+ const tab=await p.evaluate(()=>{ smShowTab('emb'); const rows=()=>[...document.querySelectorAll('#embBody .emb-tbl tbody tr')].map(tr=>tr.querySelector('strong').textContent);   // the words table, under the embroidery queue
+   // the badge counts picked embroidery-only works orders not yet on a machine, not the works orders with words: none here
+   const out={empty:rows().length===0 && /Search for a works order/.test(document.getElementById('embBody').textContent), badge:document.getElementById('embTabCount').style.display, shown:!document.getElementById('embView').classList.contains('hidden')};
    const q=s=>{ const i=document.getElementById('embQ'); i.value=s; i.dispatchEvent(new Event('input')); return rows().join(','); };
    const all='S-OH116105-Pt1,S-OH116105-Pt2,S-OH116105-Pt3,S-OH116105-Pt4';
    out.byRef=q('pt3'); out.bySo=q('116105')===all; out.byCode=q('OHCJSMOXFORD4815L'); out.byCust=q('essential cuisine')===all; out.byLogo=q('zafron')===all; out.byName=q('rob hamilton'); out.none=q('nothing here');
-   q('4815L'); const tr=document.querySelector('#embBody tbody tr');
+   q('4815L'); const tr=document.querySelector('#embBody .emb-tbl tbody tr');
    out.words=[...tr.querySelectorAll('.emb-txt')].map(e=>e.textContent.replace(/\s+/g,' ').trim().slice(0,30)); out.logos=(tr.querySelector('.emb-logos')||{}).textContent||''; out.buttons=tr.querySelectorAll('button').length;
    // a completed works order drops off, and comes back with the tick for 30 days
    completeWholeWO(WOs.findIndex(w=>w.ref==='S-OH116105-Pt1')); out.afterDone=q('116105'); embDone=true; embRender(); out.withDone=q('116105'); embDone=false; embRender();
@@ -90,7 +91,7 @@ const sheet=[
    && logos.stock===true && logos.p1===shared6+' ; 1|1 - 38" - Jess Nghiem-' && logos.p3===shared6+' ; 3|3 - 48" - Rob Hamilton ; 4|4 - 48" - Andy Beattie' && logos.p4===shared6+' ; 19|19 - 56" - Various - U'
    && /^Yes/.test(pr.emb) && pr.lines.length===8 && pr.lines[0]==='each garment|Solina Logo - Left Che' && pr.lines[6]==='3 \u00d7|3 - 48&quot; - Rob Ham'
    && pr.after===7 && pr.off && pr.back===8 && pr.kept===0
-   && tab.shown && tab.badge==='4' && tab.empty
+   && tab.shown && tab.badge==='none' && tab.empty
    && tab.byRef==='S-OH116105-Pt3' && tab.bySo && tab.byCode==='S-OH116105-Pt3' && tab.byCust && tab.byLogo && tab.byName==='S-OH116105-Pt3' && tab.none===''
    && tab.words.join('|')==='3 × 3 - 48" - Rob Hamilton - U|4 × 4 - 48" - Andy Beattie - U' && /^Logos: Solina Logo - Left Chest as Worn in Orange · Essential Cuisine Blue/.test(tab.logos) && tab.buttons===0
    && tab.afterDone==='S-OH116105-Pt2,S-OH116105-Pt3,S-OH116105-Pt4' && tab.withDone==='S-OH116105-Pt1,S-OH116105-Pt2,S-OH116105-Pt3,S-OH116105-Pt4'
