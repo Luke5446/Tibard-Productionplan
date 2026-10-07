@@ -2499,7 +2499,7 @@ function fetchShared(cb){
       smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{};
       styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
       bufSnaps=s.bufSnaps||[]; fabStock=s.fabStock||{rows:{},pastedAt:''}; fabricOverrides=s.fabricOverrides||{};
-      fabFixMesh(); threadApplyStdAll();
+      fabFixMesh(); threadApplyStdAll(); trimFixSetsAll();
       var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
       var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+sa;
       var wu=document.getElementById('whUpdated'); if(wu) wu.textContent='Data published: '+sa;
@@ -3073,9 +3073,9 @@ function applyState(s){
     (s.smReview||[]).forEach(function(o){
       if(!smSeen[o.key] && !smPending.some(function(p){return p.key===o.key;})) smPending.push(o);
     });
-    if(!s.rows||!s.rows.length){ WOs=s.WOs||[]; completedWOs=s.completedWOs||[]; fabFixMesh(); threadApplyStdAll(); smRender(); renderWOCards(); return false; }
+    if(!s.rows||!s.rows.length){ WOs=s.WOs||[]; completedWOs=s.completedWOs||[]; fabFixMesh(); threadApplyStdAll(); trimFixSetsAll(); smRender(); renderWOCards(); return false; }
     rows=s.rows; WOs=s.WOs||[]; completedWOs=s.completedWOs||[];
-    fabFixMesh(); threadApplyStdAll();
+    fabFixMesh(); threadApplyStdAll(); trimFixSetsAll();
     var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
     document.getElementById('lastUpdated').textContent='Last saved: '+sa;
     recalcWOs(); recalcQtys(); showData();
@@ -4574,6 +4574,29 @@ function threadApplyStd(st){
   row[2]=std; return true;
 }
 function threadApplyStdAll(){ var n=0; Object.keys(styleEdits||{}).forEach(function(k){ if(threadApplyStd(styleEdits[k])) n++; }); return n; }
+/* Detachable chef jacket buttons are a SET of 12 in Sage (OHDETACHABLEBUTTON01 white, 03 black): one set per
+   jacket at the set price in SAGE_TRIMS (£0.636). Works orders saved before 6 Oct 2026 priced one button
+   (£0.053), some at qty 12, and said "12 per jacket, £0.636 per 12"; a costing export can still bring qty 12.
+   Such a line becomes 1 set at the Sage price with the set wording. A line already in the set wording is
+   left as it is, so a later deliberate change sticks. Runs at load and on every import, like the thread. */
+var BTN_SETS={OHDETACHABLEBUTTON01:'WHITE', OHDETACHABLEBUTTON03:'BLACK'};
+function trimFixSets(st){
+  if(!st || !Array.isArray(st.trims)) return false;
+  var ch=false;
+  st.trims.forEach(function(r){
+    if(!Array.isArray(r) || r.length<4) return;
+    var k=String(r[3]||'').trim().toUpperCase(); if(!BTN_SETS[k]) return;
+    var c=parseFloat(r[4]), q=parseFloat(r[2]); if(isNaN(c)) c=0; if(isNaN(q)) q=0;
+    if(!(/12 per jacket/i.test(String(r[1]||'')) || Math.abs(c-0.053)<1e-9 || (!(c>0) && q===12))) return;
+    var sg=(typeof SAGE_TRIMS!=='undefined' && SAGE_TRIMS[k]) || {};
+    while(r.length<5) r.push(null);
+    if(!r[0]) r[0]='Buttons';
+    r[1]=(sg.n || (BTN_SETS[k]+' DETACHABLE CHEF JACKET BUTTONS (SET OF 12)'))+' \u2014 1 set per jacket';
+    r[2]=1; r[3]=k; r[4]=(sg.c>0)?sg.c:0.636; ch=true;
+  });
+  return ch;
+}
+function trimFixSetsAll(){ var n=0; Object.keys(styleEdits||{}).forEach(function(k){ if(trimFixSets(styleEdits[k])) n++; }); return n; }
 function woTrims(st){
   if(!st) return [];
   var t=st.trims||[];
@@ -4894,7 +4917,7 @@ function smDoImport(txt){
       st.editedAt=s.editedAt||d2s(now());
       if(!known[code]) st.importedAt=(styleEdits[code]&&styleEdits[code].importedAt)||d2s(now());
       else delete st.importedAt;
-      threadApplyStd(st);
+      threadApplyStd(st); trimFixSets(st);
       styleEdits[code]=st;
       var rows=(data.charts||{})[st.chart];
       done.push({code:code, sr:st.sr||'', trims:(st.trims||[]).length, fabrics:(st.fabrics||[]).length,
@@ -4950,7 +4973,7 @@ function smDoImport(txt){
       chartEdits[d.chart]=d.chartRows;
       if(d.chartCols) chartColEdits[d.chart]=d.chartCols;
     }
-    threadApplyStd(st);
+    threadApplyStd(st); trimFixSets(st);
     styleEdits[code]=st;
     done.push({code:code, sr:d.sr||'', trims:st.trims.length, fabrics:st.fabrics.length,
                meas:(d.chartRows||[]).length, logo:!!st.logoImg,
