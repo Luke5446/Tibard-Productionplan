@@ -1,0 +1,1357 @@
+{
+ "styles": [
+  {
+   "code": "OHSTRAP222",
+   "name": "Cocoa detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Cocoa 100% organic cotton 260 gsm X149ECO-AM307 (Tiajo) — rating 0.20 m per pair",
+     "CO5222ECO",
+     "A4",
+     0.2,
+     4.4
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BROWN 08975 — cost per metre",
+     10,
+     "CMP-THR-EP80-08975-82",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Cocoa sheet (created JH 10/5/16; red band YL 14.11.17; fabric amended to X149ECO and care label updated JH 26/2/25). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP83",
+   "name": "Olive detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Olive 100% organic cotton 260 gsm X149ECO-AM302 (Tiajo) — rating 0.20 m per pair",
+     "CO5083ECO",
+     "A4",
+     0.2,
+     4.4
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S OLIVE 05742 — cost per metre",
+     10,
+     "CMP-THR-EP80-05742-83",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Olive sheet (created JH 10/5/16; red band YL 14.11.17; olive colourway YL 5.9.18; fabric amended to X149ECO from 3110 JH 20/2/25). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP15",
+   "name": "Navy detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Navy 100% organic cotton 260 gsm X149ECO-AM303 (Tiajo) — rating 0.20 m per pair",
+     "CO5015ECO",
+     "A4",
+     0.2,
+     2.81
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     10,
+     "CMP-THR-EP80-07935-15",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Navy sheet (created JH 10/5/16; red band YL 14.11.17; thread shade amended from 07912 YL 9/4/19; fabric amended to X149ECO from 3110 JH 20/2/25). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP03",
+   "name": "Black detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Black 100% organic cotton 260 gsm X149ECO-AM05 (Tiajo) — rating 0.20 m per pair",
+     "CO5003ECO",
+     "A4",
+     0.2,
+     2.81
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     10,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Black sheet (created JH 10/5/16; red band YL 14.11.17; fabric amended to X149ECO from 3110 JH 20/2/25). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP05",
+   "name": "Maroon detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Maroon 100% cotton 3110 255 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "CO5005",
+     "A4",
+     0.2,
+     3.35
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BURGUNDY 03922 — cost per metre",
+     10,
+     "CMP-THR-EP80-03922-06",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Maroon sheet (created JH 10/5/16; red band YL 14.11.17). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP241",
+   "name": "Slate grey detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Slate grey 100% organic cotton 260 gsm X149ECO-AM308 (Tiajo) — rating 0.20 m per pair",
+     "CO5241ECO",
+     "A3",
+     0.2,
+     2.81
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S SLATE GREY 09975 — cost per metre",
+     10,
+     "CMP-THR-EP80-09975-241",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Slate Grey sheet (created JH 10/5/16; thread corrected JH 1/2/17; red band YL 14.11.17; new thread shade YL 23.7.18; fabric amended to X149ECO and care label updated JH 26/2/25). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP209",
+   "name": "Natural detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Natural 100% cotton 3110 255 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "CO5209",
+     "A6",
+     0.2,
+     3.35
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S NATURAL 08135 (no Sage code on the trims list) — cost per metre",
+     10,
+     "",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Natural sheet (created JH 10/5/16; red band YL 14.11.17). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP153",
+   "name": "Khaki detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Khaki 100% organic cotton 260 gsm X149ECO-AM305 (Tiajo) — rating 0.20 m per pair",
+     "CO5153ECO",
+     "A4",
+     0.2,
+     4.4
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S KHAKI 08489 — cost per metre",
+     10,
+     "CMP-THR-EP80-08489-153",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Khaki sheet (created JH 10/5/16; red band YL 14.11.17; fabric amended to X149ECO and care label updated JH 26/2/25). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP24",
+   "name": "Viridian green detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Viridian green 100% cotton 3110 255 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "CO5024",
+     "A4",
+     0.2,
+     2.65
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S GREEN 05968 (no Sage code on the trims list) — cost per metre",
+     10,
+     "",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Viridian Green sheet (created JH 10/5/16; viridian version JH 22/9/16; red band YL 14.11.17). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP03DEN",
+   "name": "Black denim detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DSDP, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Black denim 100% cotton Murray 315 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "CO5003DEN",
+     "C5",
+     0.2,
+     6.71
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     10,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Black Denim sheet (created JH 5/1/17; red band YL 14.11.17). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP01",
+   "name": "White detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "White 100% organic cotton 260 gsm X149ECO-AM05 (Tiajo) — rating 0.20 m per pair",
+     "CO5001ECO",
+     "A3",
+     0.2,
+     2.58
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     10,
+     "CMP-THR-PC075-32109-01",
+     0.0005055
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP White sheet (created JH 10/5/16; white JH 8/3/17; fabric amended to X149ECO and care label updated JH 26/2/25). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP224DEN",
+   "name": "Navy denim detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DSDP, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Navy denim 100% cotton Murray 315 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "CO5224DEN",
+     "C5",
+     0.2,
+     6.71
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 40'S GOLD 02362 — cost per metre",
+     10,
+     "CMP-THR-EP80-02362-79",
+     0.001018
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Navy Denim sheet (created JH 8/17; red band YL 14.11.17). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP07",
+   "name": "Red detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Red 100% cotton 3110 255 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "CO5007",
+     "A4",
+     0.2,
+     3.25
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S RED 03860 — cost per metre",
+     10,
+     "CMP-THR-EP80-03860-07",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Red sheet (created JH 10/5/16; red band YL 14.11.17; red colourway JH 26/2/18; thread amended to 03860 JH 23/2/26). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP315PC",
+   "name": "Hot pink detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Hot pink 65% polyester / 35% cotton 195 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "PC2004A",
+     "B5",
+     0.2,
+     2.35
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S PINK 03697 (no Sage code on the trims list) — cost per metre",
+     10,
+     "",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Hot Pink sheet (created JH 10/5/16; hot pink JH 12/10/17; red band YL 14.11.17). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP45",
+   "name": "Orange detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Orange 100% cotton 3110 255 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "CO545",
+     "A4",
+     0.2,
+     3.25
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S ORANGE 00198 (no Sage code on the trims list) — cost per metre",
+     10,
+     "",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Orange sheet (created JH 10/5/16; orange JH 18/11/17; red band YL 14.11.17). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP110",
+   "name": "Putty detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Putty 100% organic cotton 260 gsm X149ECO-AM306 (Tiajo) — rating 0.20 m per pair",
+     "CO5364ECO",
+     "A4",
+     0.2,
+     4.4
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S PUTTY 08561 — cost per metre",
+     10,
+     "CMP-THR-EP80-08561-110",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Putty sheet (created JH 10/5/16; red band YL 14.11.17; putty colour RCR050 JH 16/5/18). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP420",
+   "name": "Zest detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Zest 65% polyester / 35% cotton 195 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "PC2420",
+     "B5",
+     0.2,
+     2.35
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S GREEN 05367 (no Sage code on the trims list) — cost per metre",
+     10,
+     "",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Zest sheet (created JH 10/5/16; zest colourway RCR180 JH 4/6/19). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP298PC",
+   "name": "Orchid pink detachable long strap for the cross-over bib apron — stud fastened, pair",
+   "desc": "Detachable long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, sold and made in pairs · Top studs x 2 with 3 cm spacing set to one end of the strap, use the marker · Stitch side of the strap to the outside of the bib · Stud as pairs and keep together",
+   "lectra": "OHSTRAP, variant OHSTRAP — cut at 192 cm x 7 cm, one pair",
+   "variant": "OHSTRAP",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Orchid pink 65% polyester / 35% cotton 195 gsm (P and R Fabrics) — rating 0.20 m per pair",
+     "PC2ORCHID04",
+     "B5",
+     0.2,
+     2.45
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S PINK 00380 (no Sage code on the trims list) — cost per metre",
+     10,
+     "",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Female part (socket), set to the strap with the marker: 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out both ends of the strap.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the top studs to the end of the strap, use the marker: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre. Stitch side of the strap to the outer edge of the bib. Ensure the straps are studded as a pair and kept together. On the bib the centre of the top stud sits 1.5 cm from the side of the bib and 1.5 cm in from the top edge, second stud 3 cm spacing.",
+    "Roll up and put in pairs. Set a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Orchid Pink sheet (created JH 20/5/21; approved for bulk 28/5/21). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP222/LT",
+   "alias": [
+    "OHSTRAP222LT"
+   ],
+   "name": "Cocoa and leather detachable long strap for the cross-over bib apron — leather end stud fastened, pair",
+   "desc": "Detachable leather-and-fabric long strap for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, made in pairs · The leather part is studded: top studs x 2 with 3 cm spacing set to the leather end, use the marker · No need to pair for production (JH 23/3/17)",
+   "lectra": "OHSTRAP, variant OHSTRAPLT — fabric cut at 119 cm x 7 cm x 2; brown leather cut at 74 cm x 2.5 cm x 2",
+   "variant": "OHSTRAPLT",
+   "chart": "OHSTRAPSHT-MEAS",
+   "fabrics": [
+    [
+     "Cocoa 100% organic cotton 260 gsm X149ECO-AM307 (Tiajo) — rating 0.15 m per pair",
+     "CO5222ECO",
+     "A4",
+     0.15,
+     4.4
+    ],
+    [
+     "Brown leather, cut 74 cm x 2.5 cm x 2 — average 30 pairs per hide (0.033 of a hide)",
+     "LEATHERHIDE",
+     "C1",
+     0.033,
+     222.75
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BROWN 08975 — cost per metre",
+     10,
+     "CMP-THR-EP80-08975-82",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze large studs — female",
+     "Set to the leather part of the strap, use the marker to set the holes: centre of the first stud 1.5 cm from the end, then 3 cm spacing centre to centre, 2 per strap, 4 per pair. The male part is on the bib apron.",
+     4,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "OH band",
+     "Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Bag out one end of the strap.",
+    "Insert the leather to the other end. Fold in the raw edges of the fabric strap and edgestitch across the join. Ensure there is no bump in the fabric at the join.",
+    "Enclose the raw edges and edgestitch the long edge.",
+    "Press, avoiding the leather, to ensure there is no twisting of the strap and it lies flat."
+   ],
+   "fin": [
+    "Set the studs to the leather part of the strap, use the marker to make the holes: centre of the first stud 1.5 cm from the end of the strap, 3 cm spacing measured centre to centre, centrally within the width of the strap.",
+    "Roll up and put in twos. Set an Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Leather + Cocoa sheet (created JH 8/3/17; taken off pairing JH 23/3/17; shortened by 6 cm as the end is not folded on the thicker leather JH 10/5/17; created for stock JH 19/3/18; rating 30 per hide AC 13/11/18; fabric amended to X149ECO JH 26/2/25). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  },
+  {
+   "code": "OHSTRAP921",
+   "name": "Rainbow webbing detachable long strap for the cross-over bib apron — cap stud fastened, pair",
+   "desc": "Detachable long strap in rainbow webbing for the neck / waist tie of the cross-over bib apron OHAPP0535_ _ _ /__DS, made in pairs · Caps (top part) x 2 with 3 cm spacing set to one end of the strap, use the WEBBING marker, not the standard OHSTRAP marker · Stud as pairs and keep together · The side with no hem turning is the right side of the strap",
+   "lectra": "No Lectra pattern: cut the rainbow webbing at 194 cm x 2 for one pair, finished length 190 cm",
+   "variant": "",
+   "chart": "OHSTRAP921-MEAS",
+   "fabrics": [
+    [
+     "Rainbow 25 mm polyurethane webbing — New Lace WEBB/C/25/RAINBOW, £9.31 per 100 m roll (29/4/26) — cut 194 cm x 2, usage 3.88 m per pair",
+     "WEBBING921",
+     "",
+     3.88,
+     0.0931
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S RED 03860 — cost per metre",
+     10,
+     "CMP-THR-EP80-03860-07",
+     0.000714
+    ],
+    [
+     "Towel loop",
+     "Black Oliver Harvey logo'd non tangle tape, cut 39 cm, \"Oliver Harvey\" to read from top to bottom. One per pair.",
+     1,
+     "CMP-OH-NTT-25-03",
+     0.25171
+    ],
+    [
+     "Bronze heavy duty cap / socket studs (YKK parts A and B)",
+     "Set the cap (top part) x 2 to one end of the strap, 3 cm spacing between the centres of the caps, 2 caps per strap, 4 per pair. Use the marker for the webbing detachable strap: the reverse side is the hemmed side. Pre-hole the webbing before setting the stud. Not the standard large bronze apron stud (no Sage code on the trims list).",
+     4,
+     "",
+     null
+    ],
+    [
+     "Red OH band",
+     "Red Oliver Harvey band around each rolled pair (no Sage code on the trims list).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "To neaten each end, narrow double turn at 6 mm and stitch down."
+   ],
+   "fin": [
+    "Set the top studs (caps) to the end of the strap. Use the webbing OHSTRAP marker on the reverse of the strap, pushed up to the hem turning: mark the centre and pre-hole. Centre of the first cap 1.8 cm from the finished end of the strap, 3 cm spacing to the second cap measured centre to centre. The cap is set to the side with no hem turning. The red stripe of the webbing is to the inside of the strap.",
+    "Roll up and put in pairs. Secure a red Oliver Harvey band around them."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 2 cm",
+   "oneSize": true,
+   "customer": "Oliver Harvey stock",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHSTRAP Rainbow sheet (rainbow webbing version created for bulk JH 29/4/26 from the red strap sheet). Quantities are in pairs. The sheet is in works-orders/OHSTRAP-straps.xlsx."
+  }
+ ],
+ "charts": {
+  "OHSTRAPSHT-MEAS": [
+   [
+    "190CM",
+    "2.6CM"
+   ]
+  ],
+  "OHSTRAP921-MEAS": [
+   [
+    "190CM",
+    "2.5CM"
+   ]
+  ]
+ },
+ "chartCols": {
+  "OHSTRAPSHT-MEAS": [
+   "Length of strap",
+   "Width of strap"
+  ],
+  "OHSTRAP921-MEAS": [
+   "Length of strap (finished)",
+   "Width of strap"
+  ]
+ }
+}
