@@ -6,7 +6,8 @@ Printing a works order pushes its fabric lines (the main cloth and any extra,
 a mesh back) to a small shared file, `cutlog.json`, kept in its own GitHub
 repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 
-- **To cut**: printed works orders not yet marked cut, oldest printed first
+- **To cut** (the chip counts works orders, like the tile): printed works
+  orders not yet marked cut, oldest printed first
   (click the Printed or Due heading to sort by that date, again to flip),
   with the standard metres per line; the search box narrows the list. The
   tiles above count the works orders printed today (click it to show only those),

@@ -4162,7 +4162,7 @@ function cutRender(){
     +'<div class="kpi-tile"><div class="l">Live, not on the log</div><div class="v">'+wip.total.assumed+'</div><div class="s">lines taken as cut at standard &middot; WIP is on the KPIs tab</div></div>'
     +'</div>';
   var chip=function(k,l,n){ return '<button class="fab-chip'+(cutSec===k?' on':'')+'" onclick="cutSec=\''+k+'\'; cutRender()">'+l+(n!=null?'<span class="cnt">'+n+'</span>':'')+'</button>'; };
-  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',todo.length)+chip('log','Cut log',cut.length)+chip('days','Metres per day')
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',Object.keys(todoRefs).length)+chip('log','Cut log',cut.length)+chip('days','Metres per day')
     +'<input type="text" id="cutQ" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutTyping=true; cutRender()" style="margin-left:6px;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:260px"></div>';
   // To cut is the whole list, in the order the works orders were raised, and
   // the search narrows it; the cut log, like the Embroidery tab, comes up for
