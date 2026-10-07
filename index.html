@@ -2742,7 +2742,7 @@ function whPrint(i, code, qty){
 }
 // The editor takes the warehouse's print marks: printed there is printed here
 function whApplyPrintMarks(){
-  if(!IS_EDITOR) return; var n=0;
+  if(!IS_EDITOR || !stateReady) return; var n=0;
   WOs.forEach(function(w){ if(!w.embOnly || w.printed) return; var pm=whPrintMark(w.ref); if(!pm) return; w.printed=true; w.printedAt=(pm.printedAt||'').slice(0,10)||d2s(now()); n++; });
   // booked in by the warehouse after embroidery: the works order is complete here too, as at the day it was booked
   var done=[];
@@ -3085,11 +3085,23 @@ function applyState(s){
 // The editor's start: localStorage first (it is synchronous), then IndexedDB;
 // whichever was saved later wins, because a save that localStorage refused
 // still reached IndexedDB. Nothing in either: the published file.
+// Nothing that reads the two logs may touch or save the state until BOTH
+// stores have been read: the logs come back over the network while
+// IndexedDB is still being read, and a mark applied to the localStorage copy
+// (which can be a save or more behind, or stale when localStorage is full)
+// would save that older copy over the newer one in IndexedDB. Luke, 7 Oct
+// 2026: a works order raised, the page refreshed, the works order gone.
+var stateReady=false;
+function editorAfterLoad(){
+  if(!IS_EDITOR || !stateReady) return;
+  if(cutLog.loadedAt){ cutRevBadge(); cutSyncSoon(); }
+  if(whLog.loadedAt){ whApplyPrintMarks(); embBadge(); }
+}
 function loadEditor(){
-  // the cutting room's figures, for the works order panel and completion;
-  // then the log is brought into line with the works orders without a click
-  cutLoad(function(){ cutRevBadge(); cutSyncSoon(); });
-  whLoad(function(){ whApplyPrintMarks(); embBadge(); });   // the warehouse's marks: printed here too, booked in completes here
+  // the cutting room's figures, for the works order panel and completion,
+  // and the warehouse's marks; acted on once the state is in (editorAfterLoad)
+  cutLoad(function(){ editorAfterLoad(); });
+  whLoad(function(){ editorAfterLoad(); });
   var hadLocal=false; try{ hadLocal=!!localStorage.getItem('tibard_production'); }catch(e){}
   var haveRows=loadState(), localAt=stateLoadedAt;
   idbGet(function(json){
@@ -3106,6 +3118,7 @@ function loadEditor(){
       try{ localStorage.setItem('tibard_production', json); }catch(e){}
     }
     if(haveRows) mergePublishedSnapshots(); else fetchShared();
+    stateReady=true; editorAfterLoad();
   });
 }
 function clearAll(){ if(!IS_EDITOR) return;
@@ -3962,7 +3975,7 @@ function cutSync(list, cb, message){
 function cutPushPrinted(list, cb){ cutSync(list, cb); }
 var cutSyncTimer=null;
 function cutSyncSoon(){
-  if(!IS_EDITOR || !cutCanWrite() || !cutLog.loadedAt) return;
+  if(!IS_EDITOR || !stateReady || !cutCanWrite() || !cutLog.loadedAt) return;
   if(cutSyncTimer) clearTimeout(cutSyncTimer);
   cutSyncTimer=setTimeout(function(){ cutSyncTimer=null; if(cutLog.busy){ cutSyncSoon(); return; }
     cutSync(null, function(ok, err){ if(!ok && err && err!=='no token') console.log('cutting log not updated:', err); var tc=document.getElementById('tabCut'); if(ok && err!=='nothing to do' && tc && tc.classList.contains('on')) cutRender(); var tr=document.getElementById('tabCutRev'); if(tr && tr.classList.contains('on')) cutRevRender(); }); }, 1500);
