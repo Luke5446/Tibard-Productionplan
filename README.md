@@ -24,6 +24,13 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
   line back on To cut.
 - **Metres per day**, by fabric.
 
+A save or a read that GitHub answers with a server error (a 500, as the
+cutting room saw at 16:00 on 7 Oct 2026) is tried again after a pause, up to
+four times. Each try reads the file afresh and applies the change to that,
+so a save that did land despite the error is found done rather than made
+twice. Only when every try fails does the cutter see the alert, and the
+line stays on To cut to be marked again.
+
 ### Cutting time and the target
 
 Luke set the cut room's figures on 7 Oct 2026. A works order takes **25

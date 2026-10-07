@@ -3842,20 +3842,22 @@ function cutParse(txt){ var d=null; try{ d=JSON.parse(txt); }catch(e){ d=null; }
 // same repo, read and written the same way, with the same token on a PC.
 function ghApiFor(file){ return 'https://api.github.com/repos/'+CUTLOG_REPO+'/contents/'+file; }
 function ghPagesFor(file){ return 'https://luke5446.github.io/Tibard-Cutlog/'+file; }
-function ghLoad(log, cb){
+function ghLoad(log, cb, attempt){
   log.busy=true; log.error='';
-  var tok=cutToken();
+  var tok=cutToken(); attempt=attempt||1;
   var done=function(d, sha, src){ log.entries=d.entries||[]; log.savedAt=d.savedAt||''; log.sha=sha||null; log.loadedAt=new Date(); log.source=src; log.busy=false; if(cb) cb(true); };
   var fail=function(msg){ log.error=msg; log.busy=false; if(cb) cb(false); };
+  // GitHub answering 5xx: read again after a pause, like a save (GH_RETRIES)
+  var again=function(){ log.busy=false; setTimeout(function(){ ghLoad(log, cb, attempt+1); }, (attempt-1)*GH_RETRY_MS); return GH_AGAIN; };
   if(tok){
     fetch(ghApiFor(log.file)+'?t='+Date.now(), {headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'}, cache:'no-store'})
-      .then(function(r){ if(r.status===404) return {empty:true}; if(!r.ok) throw new Error('GitHub said '+r.status+(r.status===401?' (token refused)':'')); return r.json(); })
-      .then(function(j){ if(j.empty){ done({entries:[]}, null, 'api'); return; } done(cutParse(cutB64Dec(j.content)), j.sha, 'api'); })
+      .then(function(r){ if(r.status===404) return {empty:true}; if(r.status>=500 && attempt<GH_RETRIES) return again(); if(!r.ok) throw new Error('GitHub said '+r.status+(r.status===401?' (token refused)':'')); return r.json(); })
+      .then(function(j){ if(j===GH_AGAIN) return; if(j.empty){ done({entries:[]}, null, 'api'); return; } done(cutParse(cutB64Dec(j.content)), j.sha, 'api'); })
       .catch(function(e){ fail(String(e.message||e)); });
   } else {
     fetch(ghPagesFor(log.file)+'?t='+Date.now(), {cache:'no-store'})
-      .then(function(r){ if(r.status===404) return null; if(!r.ok) throw new Error('could not read the log ('+r.status+')'); return r.text(); })
-      .then(function(t){ done(t==null?{entries:[]}:cutParse(t), null, 'pages'); })
+      .then(function(r){ if(r.status===404) return null; if(r.status>=500 && attempt<GH_RETRIES) return again(); if(!r.ok) throw new Error('could not read the log ('+r.status+')'); return r.text(); })
+      .then(function(t){ if(t===GH_AGAIN) return; done(t==null?{entries:[]}:cutParse(t), null, 'pages'); })
       .catch(function(e){ fail(String(e.message||e)); });
   }
 }
@@ -3863,21 +3865,30 @@ function cutLoad(cb){ ghLoad(cutLog, cb); }
 // Write: read the latest copy, apply the change, put it back with its sha.
 // Another PC saving in between makes GitHub refuse the sha; then read again
 // and apply the change once more, so nothing of theirs is lost.
+// GitHub answering 5xx (the cutting room saw a 500 at 16:00 on 7 Oct 2026,
+// with the commit in the repo all the same) is tried again after a pause,
+// up to GH_RETRIES times. Each try reads the file afresh and applies the
+// change to that, so a save that did land is found done ("nothing to do")
+// rather than made twice.
+var GH_RETRIES=4, GH_RETRY_MS=1500, GH_AGAIN={again:true};
+function ghRetryable(status){ return status===409 || status===422 || status>=500; }
 function ghSave(log, message, mutate, cb, attempt){
   var tok=cutToken(); if(!tok){ if(cb) cb(false,'no token'); return; }
   attempt=attempt||1; log.busy=true;
   var api=ghApiFor(log.file);
+  var again=function(){ log.busy=false; setTimeout(function(){ ghSave(log, message, mutate, cb, attempt+1); }, (attempt-1)*GH_RETRY_MS); };
   fetch(api+'?t='+Date.now(), {headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'}, cache:'no-store'})
-    .then(function(r){ if(r.status===404) return {empty:true}; if(!r.ok) throw new Error('GitHub said '+r.status+(r.status===401?' (token refused)':'')); return r.json(); })
+    .then(function(r){ if(r.status===404) return {empty:true}; if(r.status>=500 && attempt<GH_RETRIES){ again(); return GH_AGAIN; } if(!r.ok) throw new Error('GitHub said '+r.status+(r.status===401?' (token refused)':'')); return r.json(); })
     .then(function(j){
+      if(j===GH_AGAIN) return null;
       var d=j.empty ? {entries:[]} : cutParse(cutB64Dec(j.content)), sha=j.empty?null:j.sha;
       if(mutate(d)===false){ log.entries=d.entries; log.sha=sha; log.busy=false; if(cb) cb(true,'nothing to do'); return null; }
       d.savedAt=new Date().toISOString();
       var body={message:message, content:cutB64Enc(JSON.stringify(d,null,1))}; if(sha) body.sha=sha;
       return fetch(api, {method:'PUT', headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json','Content-Type':'application/json'}, body:JSON.stringify(body)})
         .then(function(r){
-          if((r.status===409 || r.status===422) && attempt<3){ log.busy=false; ghSave(log, message, mutate, cb, attempt+1); return null; }
-          if(!r.ok) throw new Error('GitHub refused the save ('+r.status+')');
+          if(ghRetryable(r.status) && attempt<GH_RETRIES){ again(); return GH_AGAIN; }
+          if(!r.ok) throw new Error('GitHub refused the save ('+r.status+')'+(r.status>=500?' - GitHub is having trouble; the cut has not been lost, mark it again in a minute':''));
           return r.json().then(function(res){ log.entries=d.entries; log.savedAt=d.savedAt; log.sha=(res&&res.content&&res.content.sha)||null; log.loadedAt=new Date(); log.error=''; log.busy=false; if(cb) cb(true); });
         });
     })
