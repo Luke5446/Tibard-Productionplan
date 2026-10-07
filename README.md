@@ -11,7 +11,9 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
   with the standard metres per line; the search box narrows the list. The
   tiles above count the works orders printed today (click it to show only those),
   the works orders with a line waiting, and the lines waiting. One printed
-  five or more days ago is flagged. The cutting room PC marks a line, or a
+  five or more days ago is flagged. Each works order on the list shows its
+  lays and cutting minutes (see "Cutting time" below); one with a code that
+  has no lay plan is tagged **no lay plan**. The cutting room PC marks a line, or a
   whole works order, cut: the mark is dated that day. Each line has a metres
   box, started at the standard, and a comment box; a figure that differs from
   the standard needs the comment.
@@ -20,6 +22,26 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
   code or a fabric), with the completion date or "in WIP". **Undo** puts a
   line back on To cut.
 - **Metres per day**, by fabric.
+
+### Cutting time and the target
+
+Luke set the cut room's figures on 7 Oct 2026. A works order takes **25
+minutes** to cut for up to **50 lays**; past that, each further 50 lays (or
+part) adds **15 minutes**, as the set-up is done and the fabric is laid. The
+lays of a line are its quantity over the garments per lay of the default
+marker on the lay plan (an apron at 4 per lay: 60 aprons are 15 lays), or
+the marker on the works order data; a code with no lay plan is taken at one
+garment per lay and flagged. The cut room works 8 hours Monday to Thursday
+including two paid 15-minute breaks (450 minutes, 18 works orders) and 5
+hours on Friday including one break (285 minutes); nothing at the weekend.
+
+- The **Live works orders to cut** tile puts the queue in those terms: the
+  minutes over every works order waiting, how many working days that is
+  from today, and the day the work runs out, so the PM sees it coming.
+- The **Cutting target** tile is the KPI: what was marked cut on the last
+  five working days before today (a works order's lines cut on one day count
+  as one run of it) against those days' capacity, 2,085 minutes for a full
+  week. Under **90%** the tile goes red. Today so far is shown under it.
 
 A line with no fabric or no metres on file is not sent to the cutting room:
 it lands on the **Cutting review** tab (between Embroidery and Cutting, with a

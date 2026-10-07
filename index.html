@@ -4026,6 +4026,62 @@ function cutCompletedOn(e){
   return c ? (c.completed||'') : '';
 }
 function cutMetres(e){ return (e.metres!=null) ? e.metres : (e.std!=null ? e.std : 0); }
+// ── Cutting time and the cut room's week ─────────────────────────────────
+// Luke, 7 Oct 2026: a works order takes 25 minutes to cut for up to 50 lays
+// (plies); past that each further 50 lays, or part, adds 15 minutes - the
+// set-up is done and the fabric is laid. Lays for a line are its quantity
+// over the garments per lay of the default marker on the lay plan (an apron
+// at 4 per lay, 60 aprons = 15 lays); a code with no lay plan is taken at
+// one garment per lay and flagged. The cut room works 8 hours Monday to
+// Thursday with two paid 15-minute breaks (450 minutes = 18 works orders)
+// and 5 hours on Friday with one break (285 minutes); nothing at the
+// weekend. The KPI is what was marked cut against that capacity, flagged
+// under 90%.
+var CUT_WO_MINS=25, CUT_RUN_LAYS=50, CUT_EXTRA_MINS=15, CUT_KPI_TARGET=0.9;
+var CUT_DAY_MINS={1:450, 2:450, 3:450, 4:450, 5:285, 6:0, 0:0};
+function cutDayMins(d){ return CUT_DAY_MINS[new Date(d).getDay()]||0; }
+function cutLayFor(code){
+  var lp=null; try{ lp=layPlanFor(code); }catch(e){ lp=null; }
+  if(lp && lp.main && lp.main.length){ var m=lp.main.filter(function(x){ return x.d; })[0]||lp.main[0]; if(m.lay>0) return {lay:m.lay, src:'lay plan '+(m.m||'')}; }
+  try{ var h=styleForCode(code); if(h && h.style && h.style.layQty>0) return {lay:h.style.layQty, src:'works order data'}; }catch(e){}
+  return {lay:1, src:''};
+}
+function cutWoMins(lays){ return CUT_WO_MINS + CUT_EXTRA_MINS*Math.max(0, Math.ceil((lays||0)/CUT_RUN_LAYS)-1); }
+// One works order's cutting plan from its log lines: lays over the main-cloth
+// lines (an extra - mesh, contrast - is cut in the same run), the minutes,
+// and the codes with no lay plan.
+function cutWoPlan(lines){
+  var lays=0, unknown=[], seen={};
+  lines.forEach(function(e){ if(e.extra || seen[e.code]) return; seen[e.code]=1; var l=cutLayFor(e.code); lays+=Math.ceil((e.qty||0)/l.lay); if(!l.src) unknown.push(e.code); });
+  return {lays:lays, mins:cutWoMins(lays), unknown:unknown};
+}
+function cutGroupByRef(lines){ var by={}; lines.forEach(function(e){ (by[e.ref]=by[e.ref]||[]).push(e); }); return by; }
+// The queue in cutting time: minutes over the works orders waiting, the
+// working days that is from today, and the day the work runs out.
+function cutQueueEstimate(todo){
+  var by=cutGroupByRef(todo), mins=0, unknown=0, wos=0;
+  Object.keys(by).forEach(function(r){ var pl=cutWoPlan(by[r]); mins+=pl.mins; wos++; if(pl.unknown.length) unknown++; });
+  var left=mins, days=0, d=new Date(d2s(now())), runsOut='', n=0;
+  while(left>0 && n<400){ var cap=cutDayMins(d); if(cap>0){ if(left<=cap){ days+=left/cap; left=0; runsOut=d2s(d); break; } left-=cap; days+=1; } d.setDate(d.getDate()+1); n++; }
+  return {wos:wos, mins:mins, days:Math.round(days*10)/10, runsOut:runsOut, unknown:unknown};
+}
+// Minutes credited for the lines marked cut, by the day they were cut: each
+// works order's lines cut on one day count as one run of that works order.
+function cutMinsByDay(cut){
+  var by={}; cut.forEach(function(e){ if(!e.cutAt) return; (by[e.cutAt]=by[e.cutAt]||{})[e.ref]=(by[e.cutAt][e.ref]||[]).concat([e]); });
+  var out={}; Object.keys(by).forEach(function(day){ var m=0, w=0; Object.keys(by[day]).forEach(function(r){ m+=cutWoPlan(by[day][r]).mins; w++; }); out[day]={mins:m, wos:w}; });
+  return out;
+}
+// The KPI: the last five working days before today (a full week's 2,085
+// minutes once Friday is in) against what was marked cut on them, plus today
+// so far.
+function cutKpi(cut, today){
+  var byDay=cutMinsByDay(cut), days=[], d=new Date(today), n=0;
+  while(days.length<5 && n<30){ d.setDate(d.getDate()-1); n++; var s=d2s(d), cap=cutDayMins(s); if(cap>0) days.unshift({day:s, cap:cap, mins:(byDay[s]||{}).mins||0, wos:(byDay[s]||{}).wos||0}); }
+  var cutM=0, target=0, wos=0; days.forEach(function(x){ cutM+=x.mins; target+=x.cap; wos+=x.wos; });
+  var t=byDay[today]||{mins:0, wos:0};
+  return {days:days, from:days.length?days[0].day:'', to:days.length?days[days.length-1].day:'', cutMins:cutM, target:target, wos:wos, pct:target>0?cutM/target:null, under:target>0&&cutM/target<CUT_KPI_TARGET, today:{mins:t.mins, wos:t.wos, cap:cutDayMins(today)}};
+}
 function cutPrice(e){ var p=fabPriceFor(e.fabric); return p!=null ? p : null; }
 // WIP as at a date: fabric cut and not completed by then. Two sources: a line
 // the cutting room marked cut on or before the day, and a live works order
@@ -4079,6 +4135,7 @@ function cutRender(){
   var newToday=todo.filter(function(e){ return e.printedAt===today; }), todoRefs={}; todo.forEach(function(e){ todoRefs[e.ref]=1; });
   var newRefs={}; newToday.forEach(function(e){ newRefs[e.ref]=1; });
   var notPushed=IS_EDITOR ? cutNotPushed() : [];
+  var est=cutQueueEstimate(todo), kpi=cutKpi(cut, today);
   var h='<div class="kpi-sec" style="margin-top:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
     +'<h3 style="margin:0">&#9986; Cutting room</h3>'
     +'<span class="sm-sub" style="font-size:11px">'+(cutLog.error?'<span style="color:#b91c1c;font-weight:700">&#9888; '+esc(cutLog.error)+'</span>':(cutLog.loadedAt?'Log read '+cutLog.loadedAt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+(cutLog.savedAt?' &middot; last change '+esc(new Date(cutLog.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})):' &middot; nothing in it yet'):''))+'</span>'
@@ -4093,7 +4150,12 @@ function cutRender(){
   // New today: printed today and not yet cut; the tile is a filter on the To cut list (Luke, 6 Oct 2026)
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0">'
     +'<div class="kpi-tile" id="cutNewTile" style="cursor:pointer'+(cutNewOnly?';outline:2px solid #7A1F3D':'')+'" title="'+(cutNewOnly?'Showing only what was printed today - click to show everything waiting':'Click to show only what was printed today')+'" onclick="cutNewOnly=!cutNewOnly; cutSec=\'todo\'; cutRender()"><div class="l">New today</div><div class="v">'+Object.keys(newRefs).length+'</div><div class="s">works order'+(Object.keys(newRefs).length===1?'':'s')+' printed '+esc(fmtD(today))+' &middot; '+newToday.length+' line'+(newToday.length===1?'':'s')+(cutNewOnly?' &middot; <b style="color:#7A1F3D">filter on</b>':' &middot; click to filter')+'</div></div>'
-    +'<div class="kpi-tile"><div class="l">Live works orders to cut</div><div class="v">'+Object.keys(todoRefs).length+'</div><div class="s">works orders with a line waiting</div></div>'
+    +'<div class="kpi-tile" title="'+esc(CUT_WO_MINS+' min a works order up to '+CUT_RUN_LAYS+' lays, +'+CUT_EXTRA_MINS+' min each further '+CUT_RUN_LAYS+'; 450 min a day Monday to Thursday, 285 on Friday')+'"><div class="l">Live works orders to cut</div><div class="v">'+Object.keys(todoRefs).length+'</div><div class="s">'
+      +(est.wos ? '&asymp; <b>'+est.days+' day'+(est.days===1?'':'s')+'</b> of cutting ('+est.mins+' min) &middot; runs out '+esc(fmtD(est.runsOut)) : 'works orders with a line waiting')
+      +(est.unknown ? '<br><span class="sm-tag warn" title="No lay plan for a code on these: taken as one garment per lay">'+est.unknown+' with no lay plan</span>' : '')+'</div></div>'
+    +'<div class="kpi-tile'+(kpi.under?' warn':'')+'"'+(kpi.under?' style="border-color:#dc2626;background:#fef2f2"':'')+' title="'+esc('Marked cut on the last '+kpi.days.length+' working days against the cut room\'s capacity of '+kpi.target+' min; the target is '+Math.round(CUT_KPI_TARGET*100)+'%')+'"><div class="l">Cutting target, last 5 working days</div><div class="v"'+(kpi.under?' style="color:#b91c1c"':'')+'>'+(kpi.pct==null?'&mdash;':Math.round(kpi.pct*100)+'%')+'</div><div class="s">'
+      +(kpi.under?'<b style="color:#b91c1c">&#9888; under '+Math.round(CUT_KPI_TARGET*100)+'% target</b> &middot; ':'')+kpi.cutMins+' of '+kpi.target+' min &middot; '+kpi.wos+' works order'+(kpi.wos===1?'':'s')+(kpi.from?' &middot; '+esc(fmtD(kpi.from))+' to '+esc(fmtD(kpi.to)):'')
+      +'<br>today so far '+kpi.today.mins+' min'+(kpi.today.cap?' of '+kpi.today.cap:'')+' &middot; '+kpi.today.wos+' works order'+(kpi.today.wos===1?'':'s')+'</div></div>'
     +'<div class="kpi-tile"><div class="l">To cut</div><div class="v">'+todo.length+'</div><div class="s">'+todoM.toFixed(1)+' m standard'+(late.length?' &middot; <b style="color:#b45309">'+late.length+' waiting '+CUT_LATE_DAYS+'+ days</b>':'')+'</div></div>'
     +'<div class="kpi-tile"><div class="l">Cut today</div><div class="v">'+todayM.toFixed(1)+' m</div><div class="s">'+cut.filter(function(e){ return e.cutAt===today; }).length+' lines</div></div>'
     +'<div class="kpi-tile"><div class="l">Cut, last 7 days</div><div class="v">'+weekM.toFixed(1)+' m</div><div class="s">from '+esc(fmtD(wkS))+'</div></div>'
@@ -4120,7 +4182,7 @@ function cutRender(){
     else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Sort by the date printed" onclick="cutSortBy(\'printed\')">Printed'+arrow('printed')+'</th><th style="cursor:pointer" title="Sort by the due date" onclick="cutSortBy(\'due\')">Due'+arrow('due')+'</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th>'+(can?'Cut m &middot; comment':'')+'</th></tr></thead><tbody>'
       +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
         return es.map(function(e,i){
-          return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
+          return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(function(){ var pl=cutWoPlan(es); return '<div class="sm-sub" title="'+esc(pl.lays+' lays: '+CUT_WO_MINS+' min up to '+CUT_RUN_LAYS+', +'+CUT_EXTRA_MINS+' min each further '+CUT_RUN_LAYS)+'">'+pl.lays+' lay'+(pl.lays===1?'':'s')+' &middot; '+pl.mins+' min'+(pl.unknown.length?' <span class="sm-tag warn" title="No lay plan for '+esc(pl.unknown.join(', '))+': taken as one garment per lay">no lay plan</span>':'')+'</div>'; })()+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
             +'<td>'+(i===0?esc(fmtD(first.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':''):'')+'</td><td>'+(i===0?esc(fmtD(first.due)):'')+'</td>'
             +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
             +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
