@@ -1,0 +1,98 @@
+{
+ "styles": [
+  {
+   "code": "OHAPP062615PC",
+   "name": "Navy bib apron, longer with a wider bib, concealed adjustable neck strap and self fabric ties — Moor Hall deer logo",
+   "desc": "BIB APRON · Longer than OHAPP0544 with a wider bib · Self fabric waist ties and neck strap · Stud fastened adjustable neck strap, 2 cm longer than OHAPP0544 · Concealed pocket in the bib · No towel loop · Moor Hall deer logo in copper, top right as worn",
+   "lectra": "APP0626, variant APP0626",
+   "variant": "APP0626",
+   "chart": "OHAPP062615PC-MEAS",
+   "fabrics": [
+    [
+     "Navy 65% recycled polyester / 35% organic cotton 200 gsm X133ECO-AM297 (Tiajo) — rating 1.0 m",
+     "PC2015ECO",
+     "B4",
+     1.0,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S NAVY 07935 — cost per metre",
+     70,
+     "CMP-THR-EP80-07935-15",
+     0.000714
+    ],
+    [
+     "Oliver Harvey woven label",
+     "Set to the right side seam as worn, 4 cm down from the finished top edge.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "Oliver Harvey care label",
+     "65% recycled polyester / 35% organic cotton · wash at 60° · tumble dry · 2 dot iron · do not bleach · dry clean P. Set 4 cm down from the top of the right side seam as worn, underneath the OH woven label.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Neck strap studs",
+     "Set to the neck strap before make-up, use the marker (the same marker as OHAPP0544): 1 male and 4 female per apron, as on OHAPP0544. The sheet gives no stud code.",
+     5,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Set the studs to the neck strap before make-up: use the marker, the same marker as OHAPP0544.",
+    "Make the neck strap loop: fold in half lengthways, fold in the raw edges to neaten and edgestitch one edge.",
+    "Make the neck strap: bag out the end, edgestitch all round.",
+    "Make and set the small concealed pocket. Add a stitch line for the pen pocket through the pocket bag. Edgestitch the inside of the pocket opening.",
+    "4 or 5 thread close the pocket bag.",
+    "Set the bib top to the apron.",
+    "Double turn the armhole and topstitch 6 mm. Single turn the bib top to reduce bulk.",
+    "Set the loop and neck strap to the bib facing. The neck strap is set to the right side of the bib as worn, studs to the underside of the strap. The loop is set as high as possible to the fold of the bib top and inserted into the end of the left side of the bib top. Edgestitch the end of the bib and the top edge of the bib before stitching the loop down. The loop finishes 3 cm wide and fits the neck strap neatly.",
+    "Stitch down the bib top.",
+    "Make the waist ties: bag out the ends, edgestitch all round.",
+    "Insert the waist ties. Double turn the side seams and hem to neaten and topstitch 12 mm. Insert the labels.",
+    "Fold the waist tie back onto the apron and edgestitch down onto the side seam."
+   ],
+   "fin": [
+    "Trim, check and press. Thread the neck strap through the loop and fold the garment.",
+    "Tissue, bag and set the bag label."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Width ± 2 cm · Across bib ± 1 cm · Neck strap ± 1.5 cm · Length ± 2 cm",
+   "oneSize": true,
+   "customer": "Moor Hall Hotel (James Lovatt)",
+   "brandType": "Embroidery",
+   "brandPlace": "Revised deer logo (no circles) in copper, set to the top right-hand corner as worn: centre of the embroidery 8 cm from the top of the apron and 5.5 cm in from the finished armhole, set as high as possible.",
+   "logoImg": "data:image/png;base64,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",
+   "note": "Works order OHAPP062615PC for James Lovatt, Moor Hall Hotel (JH created 11/1/17 from SR528, slightly longer apron and wider bib than 0544; logo image added YL 4/4/18; thread shade 07912 replaced YL 29/1/19; eco fabric supplier and code YL 23/10/24; organic cotton instead of BCI YL 29/1/25; studs marker as OHAPP0544 JH 15/7/25). The sheet is in works-orders/OHAPP062615PC-MoorHall.xlsx."
+  }
+ ],
+ "charts": {
+  "OHAPP062615PC-MEAS": [
+   [
+    "86 cm (± 2)",
+    "28 cm (± 1)",
+    "68.5 cm (± 1.5)",
+    "99 cm (± 2)"
+   ]
+  ]
+ },
+ "chartCols": {
+  "OHAPP062615PC-MEAS": [
+   "Width (skirt)",
+   "Across bib",
+   "Neck strap",
+   "Length from bib to hem"
+  ]
+ }
+}
