@@ -1,0 +1,88 @@
+{
+ "styles": [
+  {
+   "code": "GBKAPP064464",
+   "name": "Storm grey waist apron with wide pocket and centre stitch divide, black non tangle ties — GBK, no logo",
+   "desc": "WAIST APRON · Wide pocket 40 cm x 23 cm with centre stitch divide, set centrally · Black non tangle waist ties · No triangle stitch on the pocket: bartacked · No logo",
+   "lectra": "APP0644, variant 0644",
+   "variant": "0644",
+   "chart": "GBKAPP064464-MEAS",
+   "fabrics": [
+    [
+     "Storm grey 6 oz 65% recycled polyester / 35% BCI cotton 200 gsm (Tiajo) — rating 0.50 m",
+     "PC2064ECO",
+     "A3",
+     0.5,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "Grey 09963 Coats Epic 80's. No Sage code for this shade yet.",
+     70,
+     "",
+     null
+    ],
+    [
+     "Care label",
+     "Tibard printed care label, set to the right side seam as worn, 4 cm down from the finished top edge: 65% recycled polyester / 35% BCI cotton · 60° wash · no bleach · 2 dot iron · tumble dry · P dry clean. Printed at Tibard on the 25 mm nylon label tape.",
+     0.05,
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Waist ties",
+     "Black non tangle tape, cut 100 cm, two per apron. Sage holds black non tangle tape only as the OH-branded CMP-OH-NTT-25-03: use that code if it is the same tape.",
+     2,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Double turn hem and waist and topstitch 12 mm.",
+    "Double turn side seams and topstitch 12 mm. Insert waist ties to finish level with the top edge. Insert labels in the right side seam.",
+    "Double stitch waist ties to secure.",
+    "Set hem to pocket: double turned and topstitched 1 cm.",
+    "Edgestitch pocket to front. Pocket set centrally to width, top of pocket 10 cm down from the finished top edge.",
+    "Set centre divide to pocket.",
+    "Bartack the top of the pocket and the centre stitch divide: 3 bartacks in total. No triangle stitch on the pocket."
+   ],
+   "fin": [
+    "Check, trim and fold. Set into a polybag with the sticker in the bottom right-hand corner of the bag."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "GBK",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order GBKAPP064464 (JH 22/3/16 for SR596; JH 10/9/18 SR713, approved for bulk 5/11/18; polybag and label added JH 12/11/18; eco fabric, supplier and code YL 31/10/24). No logo. The sheet's sketch of the apron is in works-orders/GBKAPP064464-GBK.xlsx."
+  }
+ ],
+ "charts": {
+  "GBKAPP064464-MEAS": [
+   [
+    "Width at waist",
+    "91 cm (TOL ± 1)"
+   ],
+   [
+    "Length from waist to hem",
+    "51 cm (TOL ± 1)"
+   ],
+   [
+    "Pocket",
+    "40 cm x 23 cm, centre stitch divide"
+   ]
+  ]
+ },
+ "chartCols": {
+  "GBKAPP064464-MEAS": [
+   "Measurement",
+   "Value"
+  ]
+ }
+}

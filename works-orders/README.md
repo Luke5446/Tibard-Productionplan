@@ -55,6 +55,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `CBHT016064PG-2026-10-06.json` | That record for the costing app. |
 | `GIRHT016003-Giraffe-emb-form.xlsx` | The Giraffe hats embroidery form (Boparan Group, 27/11/24): HT016003 embroidered with the Giraffe logo and booked in as GIRHT016003. In the app as the embroidery-only style GIRHT016003, whose only trim is the stock hat. |
 | `GIRHT016003-2026-10-06.json` | That record for the costing app. |
+| `GBKAPP064464-GBK.xlsx` | Works order for GBKAPP064464, the GBK storm grey waist apron with wide pocket and centre stitch divide, black non tangle ties, no logo (JH 2016, bulk 2018, eco fabric 2024), sketch included. In the app as style GBKAPP064464. |
+| `GBKAPP064464-2026-10-07.json` | That record for the costing app. |
 | `BEAP300601-Bettys.xlsx` | Works order for BEAP300601, the Bettys white 100% cotton waist apron with centre pocket and non tangle ties, logo on the pocket (YL 2018, cloth 2024, centre divide removed 2024), logo and placement sketch included. In the app as style BEAP300601. |
 | `BEAP300601-2026-10-06.json` | That record for the costing app. |
 | `CJM0193-BEAPP047801C-2026-10-01.json` | Those three records for the costing app. |
