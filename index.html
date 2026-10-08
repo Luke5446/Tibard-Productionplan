@@ -373,6 +373,7 @@ tr.fab-done td{color:#6b7280}
   <div style="display:flex;gap:6px;align-items:center">
     <span id="modeBadge" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;background:#1e40af"></span>
     <span id="saveInd" style="font-size:10px;opacity:.6"></span>
+    <span id="storeNote" class="edit-only" style="font-size:10px;opacity:.85"></span>
     <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:#16a34a;font-size:12px" onclick="publishData()" id="publishBtn">&#128228; Publish for team</button>
     <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="pubSetup()" id="pubSetupBtn" title="A GitHub token on this PC lets Publish put data.json straight into the repo">&#9881; Set up this PC</button>
     <button class="btn edit-only" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);font-size:12px" onclick="showCreateWO()">&#128296; Create works orders</button>
@@ -2590,6 +2591,8 @@ function publishData(){
   if(!IS_EDITOR){ alert('View-only mode.'); return; }
   if(!rows.length){ alert('Load buffer data first.'); return; }
   if(pubBusy) return;
+  // a page that is behind another window must not publish its older copy
+  var behind=stateBehind(); if(behind){ saveRefused(behind); alert('Not published: this page is behind (the planner was saved at '+staleWhen(behind)+' in another window). Reload this page and publish again.'); return; }
   var json=publishState(), tok=pubToken();
   if(!tok){ publishDownload(json, ''); return; }
   var pb=document.getElementById('publishBtn'), was=pb?pb.innerHTML:'';
@@ -3035,17 +3038,45 @@ function saveFailed(where){
   if(!saveFailedTold){ saveFailedTold=true;
     alert('This change could not be saved in the browser ('+where+').\n\nThe browser\'s storage for this site is full or blocked, so what you do here will be lost when the tab closes. Publish now to keep it, then tell Luke.'); }
 }
+// A page that is behind must not save. Luke, 7 Oct 2026: a works order
+// completed and its quantity changed, published, and back as if never
+// completed - twice. Nothing in the planner reloads its state on its own, so
+// the save that undid it came from a second window or tab (or a page that
+// had loaded the older localStorage copy) holding an older state, and the
+// publish went out from there. Every page remembers the savedAt of the state
+// it loaded or last wrote (stateLoadedAt); every save also notes its savedAt
+// under a small key of its own, which always fits, and before writing a page
+// reads that note: newer than what it holds means the page is behind, so
+// the change is not saved, the page says so, and asks for a reload. Publish
+// checks the same way, so a stale page cannot publish over newer work.
+var AT_KEY='tibard_production_at', staleTold=0;
+function stateLatestAt(){ try{ return localStorage.getItem(AT_KEY)||''; }catch(e){ return ''; } }
+function stateNoteAt(ts){ try{ if(ts && (localStorage.getItem(AT_KEY)||'')<ts) localStorage.setItem(AT_KEY, ts); }catch(e){} }
+function stateBehind(){ var at=stateLatestAt(); return (at && at>(stateLoadedAt||'')) ? at : ''; }
+function staleWhen(at){ try{ return new Date(at).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){ return at; } }
+function saveRefused(at){
+  var ind=document.getElementById('saveInd'); if(ind){ ind.innerHTML='<span style="color:#dc2626;font-weight:700">&#9888; NOT SAVED - this page is behind, reload it</span>'; }
+  storeNote('<span style="color:#fecaca;font-weight:700">&#9888; This page is behind another window (saved '+esc(staleWhen(at))+'). Reload before changing anything.</span>');
+  if(Date.now()-staleTold>20000){ staleTold=Date.now();
+    alert('This page is behind: the planner was saved more recently ('+staleWhen(at)+') in another window or tab, or this page loaded an older copy.\n\nYour last change here has NOT been saved, so it cannot undo the newer work.\n\nReload this page to pick up the latest, then do the change again.'); }
+}
+function storeNote(msg){ var sn=document.getElementById('storeNote'); if(sn) sn.innerHTML=msg||''; }
+var STORE_FULL_NOTE='<span title="The state has outgrown the browser\'s localStorage; it is kept in IndexedDB, which is fine, and Publish works as usual. Clearing site data would lose it: publish first.">&#128190; kept in IndexedDB only (browser storage full)</span>';
 function saveState(){
-  var json='';
+  var json='', ts=new Date().toISOString();
   try{
     json=JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
       smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,
-      savedAt:new Date().toISOString()});
+      savedAt:ts});
   }catch(e){ console.log('Save failed:',e); saveFailed('could not serialise'); return; }
+  var behind=stateBehind(); if(behind){ saveRefused(behind); return; }
+  stateLoadedAt=ts;
   var localOK=false;
   try{ localStorage.setItem('tibard_production',json); localOK=true; }catch(e){ console.log('localStorage save failed:',e); }
+  stateNoteAt(ts);
+  if(!localOK) storeNote(STORE_FULL_NOTE);
   idbSet(json, function(ok){
-    if(ok || localOK){ var ind=document.getElementById('saveInd'); if(ind){ ind.innerHTML='\u2713 Saved'+(localOK?'':' (browser storage nearly full)'); setTimeout(function(){ ind.textContent=''; },2000); } }
+    if(ok || localOK){ var ind=document.getElementById('saveInd'); if(ind){ ind.innerHTML='✓ Saved'+(localOK?'':' (browser storage nearly full)'); setTimeout(function(){ ind.textContent=''; },2000); } }
     else saveFailed('localStorage and IndexedDB both refused');
   });
   // every change to a works order reaches the cutting room (a line waiting
@@ -3115,8 +3146,10 @@ function loadEditor(){
     var newer=!!(s && (!hadLocal || (s.savedAt||'')>(localAt||'')));
     if(newer){
       haveRows=applyState(s);
-      try{ localStorage.setItem('tibard_production', json); }catch(e){}
+      var lsOK=false; try{ localStorage.setItem('tibard_production', json); lsOK=true; }catch(e){}
+      if(hadLocal && !lsOK) storeNote(STORE_FULL_NOTE);
     }
+    stateNoteAt(stateLoadedAt);
     if(haveRows) mergePublishedSnapshots(); else fetchShared();
     stateReady=true; editorAfterLoad();
   });
@@ -3124,7 +3157,7 @@ function loadEditor(){
 function clearAll(){ if(!IS_EDITOR) return;
   if(!confirm('Clear all saved data?')) return;
   try{
-    localStorage.removeItem('tibard_production');
+    localStorage.removeItem('tibard_production'); try{ localStorage.removeItem(AT_KEY); }catch(e){}
     try{ idbOpen(function(db){ if(!db) return; try{ db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).delete('state'); }catch(e){} }); }catch(e){}
     rows=[];WOs=[];completedWOs=[];
     smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};fabStock={rows:{},pastedAt:''};fabricOverrides={};

@@ -230,3 +230,23 @@ every save failed silently and printed or deleted works orders came back on
 the next open (30 Sep 2026). IndexedDB has no such cap. If a save reaches
 neither store the header shows **NOT SAVED** and the editor is told once -
 publish straight away and the work is safe in `data.json`.
+
+### One window at a time
+
+Each open window or tab of the editor holds its own copy of the planner in
+memory. A change saved in one is not seen by another until that one reloads,
+and a save from the older window would put its older copy back over the
+newer work (Luke, 7 Oct 2026: WO-1306 completed with its quantity changed,
+published, and back as if never completed). So every page remembers when the
+state it holds was saved; every save also notes its time under a small key
+of its own, and before writing a page reads that note: newer than what it
+holds means the page is behind. Its change is not saved, the
+header says **NOT SAVED - this page is behind, reload it**, an alert explains,
+and Publish refuses too. Reload the page, which picks up the latest, and do
+the change again. Keep the editor in one window; a second window is fine for
+looking, not for changing.
+
+When the state outgrows the browser's localStorage (about 5 MB) the header
+shows **kept in IndexedDB only**: that is fine, IndexedDB holds it and
+Publish works as usual, but clearing the site's data would lose what is not
+published.
