@@ -61,6 +61,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `OHSTRAP-straps-2026-10-07.json` | Those 20 records for the costing app. |
 | `OHAPP062615PC-MoorHall.xlsx` | Works order for OHAPP062615PC, the navy bib apron for James Lovatt at Moor Hall Hotel: pattern APP0626 (longer than OHAPP0544 with a wider bib, neck strap 2 cm longer), concealed adjustable stud neck strap, self fabric ties, concealed pocket, no towel loop, revised deer logo in copper top right as worn (JH 2017, eco fabric 2024, organic cotton 2025, studs marker 2025), logo image included. In the app as style OHAPP062615PC. |
 | `OHAPP062615PC-2026-10-07.json` | That record for the costing app. |
+| `OHAPP0617110-222CTS-GallopingGourmet.xlsx` | Works order for OHAPP0617110/222CTS, the Galloping Gourmet (Venue Catering) putty retail waist apron: pattern APP0617 variant 0617RPCT, retail mitred pocket with two pen pocket stitch lines, cocoa contrast waist ties, plain black towel loop, no tax tab (JH 2017, Tiajo eco fabric 2025). The sheet gives no fabric ratings: the putty comes from the lay plan's marker AP0617080 (0.4125 m each), the cocoa ties have no figure yet. In the app as style OHAPP0617110/222CTS. |
+| `OHAPP0617110-222CTS-2026-10-08.json` | That record for the costing app. |
 | `BEAP300601-Bettys.xlsx` | Works order for BEAP300601, the Bettys white 100% cotton waist apron with centre pocket and non tangle ties, logo on the pocket (YL 2018, cloth 2024, centre divide removed 2024), logo and placement sketch included. In the app as style BEAP300601. |
 | `BEAP300601-2026-10-06.json` | That record for the costing app. |
 | `CJM0193-BEAPP047801C-2026-10-01.json` | Those three records for the costing app. |

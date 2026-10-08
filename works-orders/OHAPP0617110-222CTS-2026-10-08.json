@@ -1,0 +1,116 @@
+{
+ "styles": [
+  {
+   "code": "OHAPP0617110/222CTS",
+   "alias": [
+    "OHAPP0617110222CTS"
+   ],
+   "name": "Putty retail waist apron with mitred pocket, two pen pockets and cocoa contrast ties, no tax tab — Galloping Gourmet",
+   "desc": "RETAIL WAIST APRON · Retail mitred pocket with 2 pen pocket stitch lines, right side as worn · Cocoa contrast waist ties · Plain black towel loop · No tax tab",
+   "lectra": "APP0617, variant 0617RPCT",
+   "variant": "0617RPCT",
+   "chart": "OHAPP0617110/222CTS-MEAS",
+   "fabrics": [
+    [
+     "Putty 100% organic cotton 260 gsm X149ECO-AM305 (Tiajo) — main; no rating on the sheet: the lay plan's marker AP0617080 (4 per lay) is the usage",
+     "CO5364ECO",
+     "A4",
+     0.4125,
+     4.4
+    ],
+    [
+     "Cocoa 100% organic cotton 260 gsm X149ECO-AM307 (Tiajo) — contrast for the waist ties; no rating on the sheet (lay plan marker APTIES)",
+     "CO5222ECO",
+     "A4",
+     null,
+     4.4
+    ]
+   ],
+   "trims": [
+    [
+     "Thread — main",
+     "THREAD — COATS EPIC 80'S PUTTY 08561 — cost per metre",
+     30,
+     "CMP-THR-EP80-08561-110",
+     0.000714
+    ],
+    [
+     "Thread — contrast",
+     "THREAD — COATS EPIC 80'S BROWN 08975 (cocoa) — for the contrast waist ties",
+     10,
+     "CMP-THR-EP80-08975-82",
+     0.000714
+    ],
+    [
+     "OH care label",
+     "100% organic cotton · 40° wash · no bleach · 2 dot iron · tumble dry low · dry clean. Set 4 cm down from the finished right side seam as worn.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "OH woven label",
+     "Set 4 cm down from the right side seam as worn, on top of the care label.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "Towel loop — plain black",
+     "Plain black tape (no OH logo), cut 56 cm. Set 5 cm in from the finished edge of the left side seam as worn. No Sage code for the plain tape.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Bag",
+     "Set into a bag, no tissue; product sticker to the bottom right-hand corner of the bag, seal the bag. The sheet names no bag code.",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Make the waist ties: fold in half to enclose the raw edges, bag out one end, edgestitch the long edge.",
+    "Double turn the side seams and hem and topstitch 12 mm. Insert the waist ties. Insert the labels in the right side seam.",
+    "Neaten the waist edge: turn 1 cm and then 2.6 cm (to the width of the waist tie) and stitch down at 2.5 cm. Insert the towel loop 5 cm in from the finished edge of the left side seam as worn.",
+    "Double stitch the waist ties to secure.",
+    "Set the hem to the pocket: double turn 1 + 2 cm and topstitch 1.9 cm.",
+    "Edgestitch the pocket to the front: set 29.5 cm up from the finished hem and centrally within the width of the apron. Set 2 x pen pocket stitch lines, right side as worn, 3 cm wide x 13 cm deep.",
+    "2 stitch triangle tack to the top of the pocket to secure."
+   ],
+   "fin": [
+    "Check, trim, press and fold. Set into a bag, no tissue.",
+    "Sticker set to the bottom right-hand corner of the bag. Seal the bag."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1.5 cm",
+   "oneSize": true,
+   "customer": "Galloping Gourmet (Venue Catering)",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHAPP0617110/222CTS for Galloping Gourmet, Venue Catering (JH created 19/6/17 for SR585, bulk 11/7/17; fabric amended to Tiajo X149ECO and care label changed JH 25/3/25). No embroidery, no tax tab. The sheet gives no fabric ratings: the putty is the lay plan's marker AP0617080 (1.65 m for 4, 0.4125 m each; All Costings has 0.7 m) and the cocoa for the ties has no figure. The sheet's sketch is in works-orders/OHAPP0617110-222CTS-GallopingGourmet.xlsx."
+  }
+ ],
+ "charts": {
+  "OHAPP0617110/222CTS-MEAS": [
+   [
+    "63 cm (± 1.5)",
+    "31 cm wide x 22.5 cm deep",
+    "63 cm (± 1.5)",
+    "63 cm (± 1.5)"
+   ]
+  ]
+ },
+ "chartCols": {
+  "OHAPP0617110/222CTS-MEAS": [
+   "Width of skirt",
+   "Pocket",
+   "Length from waist to hem",
+   "Length of side seam"
+  ]
+ }
+}
