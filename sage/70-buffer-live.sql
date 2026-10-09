@@ -173,7 +173,7 @@ custs AS (
     GROUP BY cv.ItemID
 ),
 /* ------------------------------------------------ the Clockwork list -- */
-bulk AS (
+cwlist AS (   -- not "bulk": BULK is a reserved word in T-SQL and the query failed on it (9 Oct 2026)
     SELECT DISTINCT LTRIM(RTRIM(Code)) AS Code
     FROM   S200_LIVE.dbo.eve_AllLiveSOPPOPStockBULK
 ),
@@ -226,6 +226,6 @@ LEFT JOIN   sales    sa ON sa.Code   = i.Code
 LEFT JOIN   supplier sp ON sp.ItemID = i.ItemID
 LEFT JOIN   excl     ex ON ex.ItemID = i.ItemID
 LEFT JOIN   custs    cu ON cu.ItemID = i.ItemID
-LEFT JOIN   bulk     bk ON bk.Code   = i.Code
+LEFT JOIN   cwlist   bk ON bk.Code   = i.Code
 LEFT JOIN   dols     d  ON d.Code    = i.Code
 ORDER BY    i.Code;
