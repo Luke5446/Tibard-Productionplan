@@ -1,79 +1,19 @@
 /* =========================================================================
-   70-buffer-live.sql  -  THE BUFFER SHEET, built in one query
+   74-buffer-paste.sql  -  BOTH SHEETS AS ONE, for a single copy and paste
    -------------------------------------------------------------------------
-   Server TIB-SQL-002. Reads S200_LIVE (Tibard) and OliverHarveyLive in one
-   pass via three-part names, like 10-special-makes-live.sql.
+   Luke, 9 Oct 2026: one tab, so the PM copies one page. This is 70 and 71
+   in one result: the buffer rows first (28 columns, as 70 lays them out),
+   then every live sales order line underneath in columns A to L (as 71 lays
+   them out) with M to AB blank. The planner tells the two apart by the first
+   cell - a TIB- / OH- line key is a sales order line - so the whole table,
+   A to AB without the header, goes into the one paste box.
 
-   Replaces the Buffer_Report workbook: its 11 queries, 18 hidden columns and
-   the VLOOKUP chains between them. One row per STOCK-HELD Tibard code (the
-   same set as today: Tibard's Stock Held analysis code = Yes, BULK codes
-   left out), with the Oliver Harvey figures for the same code added in.
+   Everything is text here (a UNION needs one type per column); the planner
+   reads numbers out of text anyway. Buffer and SOPDemand (70 and 71) stay in
+   the workbook for reading with proper numbers; this is the one to copy.
 
-   THE ROW SET IS THE OLD SHEET AS LUKE COPIED IT, not the whole table. The
-   old sheet carried two filters (its autoFilter, read 9 Oct 2026):
-     Manufacturer  in  Tibard / Oliver Harvey / Urban Textiles/Tibard / MPLG
-     Customer(s)   not NHSP
-   which left 757 of its 1,533 rows - the garments made here, less the NHS
-   Professionals range. The first refresh without them pasted 1,555 codes
-   into the planner (Luke, 9 Oct 2026). Both filters are in the WHERE below;
-   the first refresh with them gave 758.
-
-   Paste the whole file into a NEW workbook's Power Query connection (see
-   sage/README.md, "The buffer workbook"), Refresh All, then copy columns
-   A to AB, all rows, without the header, into the planner's buffer paste box.
-
-   COLUMNS A TO I ARE TODAY'S PASTE, in today's order, so the planner reads
-   the sheet before it learns anything new - nothing has to be hidden:
-
-     A StockCode    B Name    C InStock    D OnSOP    E OnPOP
-     F Sales1M      G Sales3M H Sales6M    I Sales12M
-
-   What each is, against the old sheet:
-     C InStock  = Tibard stock in every warehouse EXCEPT Bulk + OH stock
-                  (the old M: "01 No SP" + "02 OH" + "04 Consignment"; the
-                  old formula also looked up an OffSite table that is not in
-                  the workbook, so it always added 0)
-     D OnSOP    = outstanding quantity on live sales orders, both companies
-                  (line quantity less despatched, orders only, not returns)
-     E OnPOP    = Sage's on-purchase-order figure for every warehouse except
-                  Bulk, both companies (WarehouseItem.QuantityOnPOPOrder,
-                  the figure the fabric sheet already uses)
-     F Sales1M  = Sales3M / 3, as the old sheet worked it (the planner
-                  stores it and shows nothing from it)
-     G-I        = the existing bm_ sales views, Tibard + Oliver Harvey
-
-   THE NEW COLUMNS, for what the planner is being asked to do next:
-
-     J Category        product group description
-     K Manufacturer    the stock record's Manufacturer field
-     L SupplierAcct    preferred supplier's account number (CLO003 = Clockwork)
-     M SupplierName
-     N ClockworkMade   Y when the code is on the Clockwork Bulk list - the
-                       eve_AllLiveSOPPOPStockBULK view the old workbook read
-                       as "03 Tibard Limited Bulk". Checked 9 Oct 2026: of its
-                       615 codes 369 are in the buffer, and 343 of those are
-                       the ones the typed Supplier Lead Times sheet marked
-                       Clockwork (344). These are shown in the planner but
-                       kept OUT of the stock KPI: bought in on containers the
-                       stock planner tracks, not production's to make
-     O LeadDays        the preferred supplier's lead time on the stock record
-     P MinLevel        the HOME warehouse's minimum level
-     Q StockHome       Tibard HOME
-     R StockOther      Tibard, every other warehouse except Bulk (consignment)
-     S StockBulk       Tibard Bulk - NOT in C, shown so it is not invisible
-     T StockOH         Oliver Harvey, every warehouse
-     U OnSOPTib        D split by company
-     V OnSOPOH
-     W OnPOPBulk       Sage POP landing in Bulk - NOT in E
-     X DateOfLastSale  yyyy-mm-dd, blank when never sold
-     Y ExcludeAutoPO   the "Exclude From Auto B2B PO" search value
-     Z Customers       the old sheet's "Customer(s)", read from the
-                       bm_LiveStockItems_NoBulk view the old Query1 used
-     AA StockHeldOH    Y when OH's own record also says stock held / website
-     AB Company        TIBARD - every row is a Tibard stock record
-
-   Numbers are plain integers or 2-dp decimals, dates are yyyy-mm-dd text, and
-   tabs / line breaks are stripped from names, so the paste survives Excel.
+   The row set and every figure are exactly 70's and 71's: the CTEs below are
+   70's, and the demand half is 71's SELECT joined to the same items.
    ========================================================================= */
 
 WITH
@@ -183,7 +123,9 @@ dols AS (
     FROM   S200_LIVE.dbo.bm_HOME_MinimumLevel
     GROUP BY LTRIM(RTRIM(Code))
 )
-
+,
+/* ------------------------------------------------------- the buffer rows -- */
+buffer AS (
 SELECT
     i.Code                                                              AS StockCode,       -- A
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(i.Name,''),
@@ -227,4 +169,83 @@ LEFT JOIN   supplier sp ON sp.ItemID = i.ItemID
 LEFT JOIN   excl     ex ON ex.ItemID = i.ItemID
 LEFT JOIN   cwlist   bk ON bk.Code   = i.Code
 LEFT JOIN   dols     d  ON d.Code    = i.Code
-ORDER BY    i.Code;
+),
+/* ---------------------------------------------- the sales order lines -- */
+demand AS (
+SELECT
+    'TIB-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20))             AS LineKey,
+    'TIBARD'                                                            AS Company,
+    sor.DocumentNo                                                      AS SalesOrderNo,
+    LTRIM(RTRIM(sorl.ItemCode))                                         AS ProductCode,
+    CAST(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0) AS int) AS Qty,
+    CONVERT(varchar(10), COALESCE(sor.PromisedDeliveryDate, sorl.PromisedDeliveryDate,
+                                  sor.RequestedDeliveryDate, sorl.RequestedDeliveryDate), 23) AS PromisedDate,
+    CONVERT(varchar(10), sor.DocumentDate, 23)                          AS OrderDate,
+    CASE WHEN cust.CustomerAccountNumber IN ('PROFORMA','PROFEURO','XONLINE')
+              AND NULLIF(LTRIM(RTRIM(sor.CustomerDocumentNo)),'') IS NOT NULL
+         THEN LTRIM(RTRIM(CASE WHEN LTRIM(sor.CustomerDocumentNo) LIKE 'EMB:%' THEN SUBSTRING(LTRIM(sor.CustomerDocumentNo),5,200)
+                               WHEN LTRIM(sor.CustomerDocumentNo) LIKE 'DTF:%' THEN SUBSTRING(LTRIM(sor.CustomerDocumentNo),5,200)
+                               ELSE LTRIM(sor.CustomerDocumentNo) END))
+         ELSE LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(cust.CustomerAccountName,''), CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))
+    END                                                                 AS CustomerName,
+    LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(sor.CustomerDocumentNo,''), CHAR(9),' '), CHAR(13),' '), CHAR(10),' '))) AS CustomerOrderNo,
+    ISNULL(cust.CustomerAccountNumber,'')                               AS Account,
+    CASE WHEN cust.CustomerAccountNumber = 'OLIVER' THEN 'Y' ELSE 'N' END AS Intercompany,
+    sorl.PrintSequenceNumber                                            AS LineSeq
+FROM        S200_LIVE.dbo.SOPOrderReturn      sor
+INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
+INNER JOIN  items                             sh   ON sh.Code                  = LTRIM(RTRIM(sorl.ItemCode))
+LEFT  JOIN  S200_LIVE.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
+WHERE   sor.DocumentTypeID = 0 AND sor.DocumentStatusID = 0 AND sorl.LineTypeID = 0
+  AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
+
+UNION ALL
+
+SELECT
+    'OH-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20)),
+    'OLIVER HARVEY',
+    sor.DocumentNo,
+    LTRIM(RTRIM(sorl.ItemCode)),
+    CAST(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0) AS int),
+    CONVERT(varchar(10), COALESCE(sor.PromisedDeliveryDate, sorl.PromisedDeliveryDate,
+                                  sor.RequestedDeliveryDate, sorl.RequestedDeliveryDate), 23),
+    CONVERT(varchar(10), sor.DocumentDate, 23),
+    CASE WHEN cust.CustomerAccountNumber IN ('PROFORMA','PROFEURO','XONLINE')
+              AND NULLIF(LTRIM(RTRIM(sor.CustomerDocumentNo)),'') IS NOT NULL
+         THEN LTRIM(RTRIM(CASE WHEN LTRIM(sor.CustomerDocumentNo) LIKE 'EMB:%' THEN SUBSTRING(LTRIM(sor.CustomerDocumentNo),5,200)
+                               WHEN LTRIM(sor.CustomerDocumentNo) LIKE 'DTF:%' THEN SUBSTRING(LTRIM(sor.CustomerDocumentNo),5,200)
+                               ELSE LTRIM(sor.CustomerDocumentNo) END))
+         ELSE LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(cust.CustomerAccountName,''), CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))
+    END,
+    LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(sor.CustomerDocumentNo,''), CHAR(9),' '), CHAR(13),' '), CHAR(10),' '))),
+    ISNULL(cust.CustomerAccountNumber,''),
+    CASE WHEN cust.CustomerAccountNumber = 'TIB003' THEN 'Y' ELSE 'N' END,
+    sorl.PrintSequenceNumber
+FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
+INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
+INNER JOIN  items                                    sh   ON sh.Code                  = LTRIM(RTRIM(sorl.ItemCode))
+LEFT  JOIN  OliverHarveyLive.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
+WHERE   sor.DocumentTypeID = 0 AND sor.DocumentStatusID = 0 AND sorl.LineTypeID = 0
+  AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
+)
+
+SELECT  A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, AB
+FROM (
+    SELECT  0 AS SortA, StockCode AS SortB, '' AS SortC,
+            StockCode AS A, Name AS B,
+            CAST(InStock AS nvarchar(20)) AS C, CAST(OnSOP AS nvarchar(20)) AS D, CAST(OnPOP AS nvarchar(20)) AS E,
+            CAST(Sales1M AS nvarchar(20)) AS F, CAST(Sales3M AS nvarchar(20)) AS G, CAST(Sales6M AS nvarchar(20)) AS H, CAST(Sales12M AS nvarchar(20)) AS I,
+            Category AS J, Manufacturer AS K, SupplierAcct AS L, SupplierName AS M, ClockworkMade AS N,
+            CAST(LeadDays AS nvarchar(20)) AS O, CAST(MinLevel AS nvarchar(20)) AS P,
+            CAST(StockHome AS nvarchar(20)) AS Q, CAST(StockOther AS nvarchar(20)) AS R, CAST(StockBulk AS nvarchar(20)) AS S, CAST(StockOH AS nvarchar(20)) AS T,
+            CAST(OnSOPTib AS nvarchar(20)) AS U, CAST(OnSOPOH AS nvarchar(20)) AS V, CAST(OnPOPBulk AS nvarchar(20)) AS W,
+            DateOfLastSale AS X, ExcludeAutoPO AS Y, Customers AS Z, StockHeldOH AS AA, Company AS AB
+    FROM    buffer
+    UNION ALL
+    SELECT  1, ProductCode, ISNULL(PromisedDate,'') + Company + SalesOrderNo + RIGHT('00000' + CAST(LineSeq AS varchar(10)), 5),
+            LineKey, Company, SalesOrderNo, ProductCode, CAST(Qty AS nvarchar(20)), ISNULL(PromisedDate,''), ISNULL(OrderDate,''),
+            CustomerName, CustomerOrderNo, Account, Intercompany, CAST(LineSeq AS nvarchar(20)),
+            '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+    FROM    demand
+) u
+ORDER BY SortA, SortB, SortC;

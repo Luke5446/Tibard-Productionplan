@@ -20,6 +20,7 @@ Excel works order + Google Sheet step the sales office does today.
 | `51-grouping-coverage.sql` | Profit report, step 1b: whether sizes can be rolled up into a garment. Not yet run. |
 | `70-buffer-live.sql` | **The new buffer sheet.** One query in place of the Buffer_Report workbook's eleven: today's nine paste columns first, in today's order, then the Clockwork flag, supplier, lead time, product category, minimum level, stock by warehouse and the rest. Not yet run against the live server - see "The buffer workbook" below. |
 | `71-buffer-sop-demand.sql` | **The sales orders behind On SOP.** One row per live sales order line for a stock-held code: order number, promised date, customer. The second sheet of the new workbook, for the works order to name the orders it covers. |
+| `74-buffer-paste.sql` | **The one to copy.** 70 and 71 as one table: the buffer rows, then every live sales order line underneath in columns A to L. One tab, one copy, one paste; the planner tells the two apart by the first cell (Luke, 9 Oct 2026). |
 | `72-buffer-validate.sql` | **Run before switching the planner over.** Works In Stock / SOP / POP out the old sheet's way and lists the codes where 70 differs. Empty is the goal. |
 | `73-buffer-discovery.sql` | Six small checks on the names 70 takes on trust: warehouse names, the customer search category, Clockwork's account, codes with no supplier, the old views' definitions, OH-only stock codes. |
 
@@ -742,12 +743,16 @@ A code starting `BULK` is a garment's container stock (BULKTWAP052031P, the Book
 
 ## 4. The buffer workbook (replacing Buffer_Report_Stock_Held_Production)
 
-**`sage/Buffer Live.xlsx` is the workbook, built with the two queries already
-in it.** `tools/build-buffer-workbook.py` writes it from the SQL files, so a
-change to the SQL is a re-run of the script, not a hand edit in Excel. Open
-it, **Refresh All**, pick Windows credentials when asked (once), and the two
-tables fill: `Buffer` (28 columns) and `SOPDemand` (12). The ReadMe sheet in
-the workbook has the steps. Copy each table's rows without the header into
+**`sage/Buffer Live.xlsx` is the workbook, with the three queries already in
+it: `Paste` (the one to copy, 74), and `Buffer` and `SOPDemand` (70 and 71,
+the same halves with proper numbers, for reading).** `tools/build-buffer-workbook.py` writes it from the SQL files, so a
+change to the SQL is a re-run of the script, not a hand edit in Excel. The
+queries are connection-only: the first time, **Data → Queries & Connections**,
+right-click each of `Buffer` and `SOPDemand` → **Load To… → Table → New
+worksheet**, picking Windows credentials when asked. From then on **Refresh
+All** fills both. (The first build pre-bound the tables by hand and both
+sheets came up blank on 9 Oct 2026; Excel's own Load To binding is the one
+that works.) The ReadMe sheet in the workbook has the steps. Copy each table's rows without the header into
 the planner's one **Paste buffer stock data** box, in either order: the
 planner tells a demand line by its `TIB-`/`OH-` line key.
 
@@ -760,6 +765,13 @@ Three of its inputs are not queries at all:
 - The **In Stock** formula also looks up an OffSite table that is not in the
   workbook, so that term has always been 0.
 - **1M Sales** is 3M ÷ 3, not the view's own 1MSales column.
+
+**The row set is the sheet as Luke copied it, not the whole table.** The old
+sheet carried two filters: Manufacturer in Tibard / Oliver Harvey / Urban
+Textiles/Tibard / MPLG, and Customer(s) not NHSP, leaving 757 of 1,533
+rows. The first refresh without them put 1,555 codes into the planner
+(9 Oct 2026); both are now in the WHERE of 70 and 71, and the Customer(s)
+value comes from the old Query1's view, `bm_LiveStockItems_NoBulk`.
 
 `70-buffer-live.sql` does the lot in one query, reading the same custom
 views for sales (`bm_Tib_Sales_12_6_3_Grouped`, `bm_OH_Sales_Grouped`) so

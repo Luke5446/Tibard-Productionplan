@@ -116,17 +116,20 @@ paste it on both PCs.
 
 `sage/Buffer Live.xlsx` (built by `tools/build-buffer-workbook.py` from
 `sage/70-buffer-live.sql` and `sage/71-buffer-sop-demand.sql`) replaces the
-Buffer_Report workbook: Refresh All, then both tables go into the one
-**Paste buffer stock data** box, in either order. The Buffer sheet's first
+Buffer_Report workbook: Refresh All, then the **Paste** sheet (both halves
+as one table, `sage/74-buffer-paste.sql`) goes into the one **Paste buffer
+stock data** box; the two halves pasted separately work too. The Buffer sheet's first
 nine columns are the old paste; from column J the planner also reads the
 category, the **Clockwork** flag (column N, the code is on the Clockwork
 Bulk list), the lead time and the minimum level. The SOPDemand sheet is
 every live sales order line for a stock-held code.
 
-- **Clockwork codes** stay on the table with a **CW** tag, have no WOP REC
-  (nothing for production to make), and are left out of the SKU count, the
-  % Good, the status tiles, the buffer snapshots and the KPI tab: their
-  stock is the stock planner's, not production's (Luke, 9 Oct 2026).
+- **Clockwork codes** stay on the table with a **CW** tag and have no WOP
+  REC (nothing for production to make). The headline counts every code
+  pasted, but the % Good, the status tiles, the status filter, the buffer
+  snapshots and the KPI tab are measured on the rest: their stock is the
+  stock planner's, not production's. A **Hide Clockwork** tick box in the
+  filter bar takes them off the table (Luke, 9 Oct 2026).
 - **Who covers each sales order** is worked out after every paste and every
   change to the works orders: the stock on the shelf covers the oldest
   promised date first, then the live works orders in the order they were
