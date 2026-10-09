@@ -124,10 +124,12 @@ category, the **Clockwork** flag (column N, the code is on the Clockwork
 Bulk list), the lead time and the minimum level. The SOPDemand sheet is
 every live sales order line for a stock-held code.
 
-- **Clockwork codes** stay on the table with a **CW** tag, have no WOP REC
-  (nothing for production to make), and are left out of the SKU count, the
-  % Good, the status tiles, the buffer snapshots and the KPI tab: their
-  stock is the stock planner's, not production's (Luke, 9 Oct 2026).
+- **Clockwork codes** stay on the table with a **CW** tag and have no WOP
+  REC (nothing for production to make). The headline counts every code
+  pasted, but the % Good, the status tiles, the status filter, the buffer
+  snapshots and the KPI tab are measured on the rest: their stock is the
+  stock planner's, not production's. A **Hide Clockwork** tick box in the
+  filter bar takes them off the table (Luke, 9 Oct 2026).
 - **Who covers each sales order** is worked out after every paste and every
   change to the works orders: the stock on the shelf covers the oldest
   promised date first, then the live works orders in the order they were

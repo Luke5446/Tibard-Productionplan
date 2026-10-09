@@ -517,6 +517,7 @@ tr.fab-done td{color:#6b7280}
         <option value="latewop">On a LATE works order</option>
         <option value="onsop">Has On SOP</option>
       </select>
+      <label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap" title="Codes on the Clockwork Bulk list: bought in on containers, not production's to make"><input type="checkbox" id="hideCW" onchange="renderTable()"> Hide Clockwork</label>
       <button class="btn" onclick="clearFilt()" style="font-size:11px;padding:4px 9px">&#10005; Clear filters</button>
       <button class="btn" onclick="resetWops()" style="font-size:11px;padding:4px 9px">&#8635; Reset to rec</button>
       <button class="btn" onclick="tickAll(false)" style="font-size:11px;padding:4px 9px">&#9744; Untick all</button>
@@ -2245,10 +2246,11 @@ function updateStats(){
       var okHealthy=nOk+nHea;
       var pct=kr.length>0?(okHealthy/kr.length*100):0;
       var pctCol=pct>93?'#065f46':'#b91c1c';   // green if over 93%, red if below
-      sc.innerHTML=kr.length.toLocaleString()+' SKUs'
+      // every code pasted; the percentage on the ones production is scored on
+      sc.innerHTML=rows.length.toLocaleString()+' SKUs'
         +' &nbsp;<span style="font-weight:600;color:#4b5563">|</span>&nbsp; '
         +'<span style="color:'+pctCol+'"><strong>'+pct.toFixed(0)+'% Good</strong></span>'
-        +(nCW?' <span style="font-size:10px;font-weight:600;color:#6b7280" title="On the Clockwork Bulk list: shown in the table, not counted here">&middot; '+nCW+' Clockwork not counted</span>':'');
+        +(nCW?' <span style="font-size:10px;font-weight:600;color:#6b7280" title="On the Clockwork Bulk list: on the table with a CW tag, not in the percentage, the tiles or the KPI">&middot; on '+kr.length.toLocaleString()+' scored, '+nCW+' Clockwork not counted</span>':'');
     } else sc.textContent='';
   }
 
@@ -2365,12 +2367,13 @@ function tickAll(state){ if(!IS_EDITOR) return;
 
 // ── Sort / filter / table ──────────────────────────────────────────────────
 function sBy(col){ if(sortCol===col)sortAsc=!sortAsc; else{sortCol=col;sortAsc=(col==='daysOfStock');} renderTable(); }
-function clearFilt(){ activeTile=null; document.getElementById('srch').value=''; document.getElementById('sfilt').value=''; document.getElementById('ofilt').value=''; renderTable(); updateStats(); }
+function clearFilt(){ activeTile=null; document.getElementById('srch').value=''; document.getElementById('sfilt').value=''; document.getElementById('ofilt').value=''; var hc=document.getElementById('hideCW'); if(hc) hc.checked=false; renderTable(); updateStats(); }
 
 function renderTable(){
   var srch=(document.getElementById('srch').value||'').toLowerCase();
   var sf=document.getElementById('sfilt').value;
   var of=document.getElementById('ofilt').value;
+  var hcw=!!(document.getElementById('hideCW')||{}).checked;
   // Multi-word search: every word must appear in the code or description (AND match).
   // e.g. "OHAPP black" finds all black items in that style; part codes + colours work.
   var srchWords=srch.split(/\s+/).filter(function(w){return w!=='';});
@@ -2379,6 +2382,10 @@ function renderTable(){
       var hay=(r.code+' '+r.desc).toLowerCase();
       if(!srchWords.every(function(w){ return hay.indexOf(w)>=0; })) return false;
     }
+    // A Clockwork code is never in a status list (critical, low, OK, healthy):
+    // its stock is the stock planner's, not production's; and the tick box
+    // takes it off the table altogether (Luke, 9 Oct 2026)
+    if(r.clockwork && (hcw || sf)) return false;
     if(sf&&r.status!==sf) return false;
     if(of==='needswo'&&r.wopRec<=0) return false;
     if(of==='onwop'&&r.onWOP<=0) return false;

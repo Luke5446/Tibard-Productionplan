@@ -39,6 +39,10 @@ const dem=[
      tag:!!document.querySelector('#row-'+sid('AP0002')+' .sm-tag'), tagCJ:!!document.querySelector('#row-'+sid('OHCJSMCHESHIRE0101')+' .sm-tag'),
      crit:[...document.querySelectorAll('#statsBar .stat')].map(t=>t.textContent.replace(/\s+/g,' ')).find(t=>/Critical/.test(t)),
      sopTitle:document.querySelector('#row-'+sid('OHCJSMCHESHIRE0101')+' td:nth-child(6) span').title.split('\n'),
+     // the status filter never lists a Clockwork code; the tick box takes it off the table; Clear filters puts it back
+     shown:[...document.querySelectorAll('#tBody tr')].map(tr=>tr.dataset.code).join(','),
+     critList:(function(){ document.getElementById('sfilt').value='critical'; renderTable(); var c=[...document.querySelectorAll('#tBody tr')].map(tr=>tr.dataset.code).join(','); document.getElementById('sfilt').value=''; return c; })(),
+     hidden:(function(){ document.getElementById('hideCW').checked=true; renderTable(); var c=[...document.querySelectorAll('#tBody tr')].map(tr=>tr.dataset.code).join(','); clearFilt(); return c+'|'+document.getElementById('hideCW').checked+'|'+document.querySelectorAll('#tBody tr').length; })(),
      snap:bufSnaps[bufSnaps.length-1] }; });
  // a works order for 20 of OHCJSMCHESHIRE0101: the oldest order's 10 come from the 10 in stock, this one is for the 5 and the 8
  await p.evaluate(()=>{ toggleIncl('OHCJSMCHESHIRE0101',true); setWop('OHCJSMCHESHIRE0101','20'); showCreateWO(); document.getElementById('createStart').value='2026-10-09'; document.getElementById('createDue').value='2026-10-20'; doCreateWOs(); });
@@ -66,7 +70,8 @@ const dem=[
  const out={s1,s2,s3,s4,s5,s6};
  console.log(JSON.stringify(out,null,1));
  const pass = s1.n===3 && s1.demand===4 && s1.cw===true && s1.cwRec===0 && s1.cjRec>0 && s1.cwStatus==='critical'
-   && s1.sku==='2 SKUs | 50% Good · 1 Clockwork not counted' && s1.tag && !s1.tagCJ && /days\)10 on a WOP/.test(s1.crit)
+   && s1.sku==='3 SKUs | 50% Good · on 2 scored, 1 Clockwork not counted' && s1.tag && !s1.tagCJ
+   && s1.shown==='AP0002,OHCJSMCHESHIRE0101,HT0003' && s1.critList==='OHCJSMCHESHIRE0101' && s1.hidden==='OHCJSMCHESHIRE0101,HT0003|false|3' && /days\)10 on a WOP/.test(s1.crit)
    && s1.sopTitle.length===3 && /^SO 116383 · 10 · Mollies Motels · due 21 Oct 2026 → 10 from stock$/.test(s1.sopTitle[0]) && /^SO 116400 · 5 · Knoops · due 28 Oct 2026 → 5 not covered$/.test(s1.sopTitle[1]) && /^SO OH4455 \(OH\) · 8 · Rick Stein · due 05 Nov 2026 → 8 not covered$/.test(s1.sopTitle[2])
    && s1.snap.skus===2 && s1.snap.clockwork===1 && s1.snap.pct===50
    && s2.covers==='116400:5,OH4455:8' && s2.all==='116383=stock:10 116400='+s2.ref+':5 OH4455='+s2.ref+':8'
