@@ -11,10 +11,10 @@
         else, fix the LIKE in 70.
      2  Search categories: which one holds the customer names the old
         sheet's "Customer(s)" column showed. 70 matches 'Customer%'.
-     3  Clockwork's supplier account(s): 70 marks a code ClockworkMade when
-        the preferred supplier is CLO003 or the name says Clockwork.
-     4  Stock-held codes with no supplier record at all: ClockworkMade is N
-        for these, so a Clockwork code set up without a supplier is missed.
+     3  Clockwork's supplier account(s), for reference: 70 now marks a code
+        ClockworkMade from the Bulk list (eve_AllLiveSOPPOPStockBULK), not this.
+     4  Stock-held codes with no supplier record at all (lead time reads 0)
+        - a Clockwork code is read off the Bulk list, so nothing is missed.
      5  The old views' definitions, so a difference 72 lists can be named.
      6  Oliver Harvey stock-held codes that are not in Tibard's stock-held
         set: today's buffer never lists them (its row set is Tibard's). The

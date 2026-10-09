@@ -833,20 +833,41 @@ function closeCreate(){ document.getElementById('createModal').classList.remove(
 function loadPaste(){
   var txt=document.getElementById('pasteTA').value.trim();
   if(!txt){ alert('Nothing pasted — click in the box then Ctrl+V.'); return; }
-  var lines=txt.split('\n'), built=[];
+  var lines=txt.split('\n'), built=[], demand=[];
   for(var i=0;i<lines.length;i++){
     var c=lines[i].split('\t');
     if(c.length<3) continue;
     var code=(c[0]||'').trim();
-    if(!code||code.toLowerCase()==='code'||code.toLowerCase()==='stock code') continue;
-    // [0]A=Code [1]B=Desc [2]M=InStock [3]O=OnSOP [4]P=OnPOP [5]T=1m [6]U=3m [7]V=6m [8]W=12m
-    built.push(mkRow(code,(c[1]||'').trim(),pn(c[2]),pn(c[3]),pn(c[4]),pn(c[5]),pn(c[6]),pn(c[7]),pn(c[8])));
+    if(!code||code.toLowerCase()==='code'||code.toLowerCase()==='stock code'||code.toLowerCase()==='stockcode'||code.toLowerCase()==='linekey') continue;
+    // A sales order line off the SOPDemand sheet (71-buffer-sop-demand.sql):
+    // its first cell is the line key, TIB- or OH- and Sage's line id. Both
+    // sheets can go in the one box, in either order.
+    if(/^(TIB|OH)-\d+$/i.test(code)){ var dl=mkDemand(c); if(dl) demand.push(dl); continue; }
+    // [0]A=Code [1]B=Desc [2]C=InStock [3]D=OnSOP [4]E=OnPOP [5]F=1m [6]G=3m [7]H=6m [8]I=12m
+    // (the old sheet's A B M O P T U V W: the same nine, in the same order)
+    var r=mkRow(code,(c[1]||'').trim(),pn(c[2]),pn(c[3]),pn(c[4]),pn(c[5]),pn(c[6]),pn(c[7]),pn(c[8]));
+    // The new sheet's columns from J on (70-buffer-live.sql): the product
+    // category, N = on the Clockwork Bulk list, the lead time, the min level.
+    if(c.length>=14){ r.cat=(c[9]||'').trim(); r.clockwork=/^y/i.test((c[13]||'').trim()); r.leadDays=pn(c[14]); r.minLevel=pn(c[15]); }
+    built.push(r);
   }
-  if(!built.length){ alert('No valid rows found.\n\nSelect your buffer sheet rows, Ctrl+C, then paste here.'); return; }
-  rows=built;
+  if(!built.length && !demand.length){ alert('No valid rows found.\n\nSelect your buffer sheet rows, Ctrl+C, then paste here.'); return; }
+  if(demand.length) sopDemand={lines:demand, pastedAt:new Date().toISOString()};
+  if(built.length) rows=built;
+  else if(!rows.length){ alert(demand.length+' sales order lines taken. Paste the Buffer sheet too: the planner needs the stock figures.'); }
   document.getElementById('pasteTA').value='';
   document.getElementById('pastePanel').classList.add('hidden');
-  recalcWOs(); recalcQtys(); snapshotBuffer(); showData(); saveState();
+  recalcWOs(); recalcQtys(); if(built.length) snapshotBuffer(); showData(); saveState();
+  if(!built.length && rows.length) alert(demand.length+' sales order lines taken for '+Object.keys(sopDemand.lines.reduce(function(a,l){ a[l.code]=1; return a; },{})).length+' codes. The works orders now name the orders they cover.');
+}
+// One sales order line off the SOPDemand sheet: A key, B company, C order,
+// D code, E outstanding, F promised, G ordered, H customer, I their order no,
+// J account, K intercompany, L line
+function mkDemand(c){
+  var qty=pn(c[4]); if(!(qty>0)) return null;
+  return { k:(c[0]||'').trim().toUpperCase(), co:(c[1]||'').trim(), so:String((c[2]||'')).trim().replace(/^0+/,''),
+    code:(c[3]||'').trim(), qty:qty, due:(c[5]||'').trim().slice(0,10), ordered:(c[6]||'').trim().slice(0,10),
+    cust:(c[7]||'').trim(), custOrder:(c[8]||'').trim(), acct:(c[9]||'').trim(), ic:/^y/i.test((c[10]||'').trim()), seq:pn(c[11]) };
 }
 
 function mkRow(code,desc,inStock,onSOP,onPOP,s1m,s3m,s6m,s12m){
@@ -912,6 +933,79 @@ function recalcPipeline(){
   });
 }
 
+// ── The sales orders behind On SOP ─────────────────────────────────────────
+// The SOPDemand sheet: every live sales order line for a stock-held code.
+// Pasted whole each time (it is a snapshot of what is open), saved and
+// published. Who covers each line is worked out afresh after every paste
+// and every change to the works orders: the stock first, oldest promised
+// date first, then the live works orders in the order they were raised.
+// Luke, 9 Oct 2026: demand 15, 10 in stock, a works order for 20 - the
+// oldest order's 10 come from stock and the works order is for the next
+// one; but every open order for the code is listed on the works order.
+var sopDemand={lines:[], pastedAt:null};
+function demandSort(a,b){ return (a.due||'9999')<(b.due||'9999')?-1:(a.due||'9999')>(b.due||'9999')?1:(a.seq||0)-(b.seq||0); }
+function demandRecalc(){
+  WOs.forEach(function(w){ w.items.forEach(function(it){ delete it.sop; }); });
+  rows.forEach(function(r){ delete r.sopLines; });
+  if(!sopDemand.lines || !sopDemand.lines.length) return;
+  var byCode={}; sopDemand.lines.forEach(function(l){ (byCode[l.code]=byCode[l.code]||[]).push(l); });
+  Object.keys(byCode).forEach(function(code){
+    var lines=byCode[code].slice().sort(demandSort);
+    var r=rows.find(function(x){ return x.code===code; });
+    var pool=r ? Math.max(0, (r.inStock||0)+(r.pipeline||0)) : 0;   // what is on the shelf covers the oldest orders first
+    // the live works orders carrying the code, oldest raised first; a special
+    // make is for its own order and takes none of these
+    var wos=[]; WOs.forEach(function(w,i){ if(w.sm) return; w.items.forEach(function(it){ if(it.code===code && it.qty>0) wos.push({w:w, it:it, left:it.qty, i:i}); }); });
+    wos.sort(function(a,b){ var ca=a.w.createdAt||'', cb=b.w.createdAt||''; return ca<cb?-1:ca>cb?1:a.i-b.i; });
+    var all=lines.map(function(l){ return {k:l.k, so:l.so, co:l.co, qty:l.qty, due:l.due, cust:l.cust, custOrder:l.custOrder, ic:l.ic, by:[]}; });
+    var wi=0;
+    all.forEach(function(a){
+      var need=a.qty;
+      if(pool>0){ var st=Math.min(pool, need); pool-=st; need-=st; a.by.push({who:'stock', qty:st}); }
+      while(need>0 && wi<wos.length){
+        var w=wos[wi], t=Math.min(w.left, need);
+        if(t>0){ w.left-=t; need-=t; a.by.push({who:w.w.ref, qty:t}); (w.it.sop=w.it.sop||{covers:[], all:[]}).covers.push({k:a.k, so:a.so, qty:t, due:a.due, cust:a.cust}); }
+        if(w.left<=0) wi++;
+      }
+      if(need>0) a.by.push({who:'short', qty:need});
+    });
+    wos.forEach(function(w){ w.it.sop=w.it.sop||{covers:[], all:[]}; w.it.sop.all=all; });
+    if(r) r.sopLines=all;
+  });
+}
+// The orders a works order covers, over its items, earliest due first
+function demandCovers(wo){
+  var out=[]; (wo.items||[]).forEach(function(it){ if(it.sop) it.sop.covers.forEach(function(c){ out.push(c); }); });
+  return out.sort(demandSort);
+}
+function demandLineText(a, ref){
+  var who=a.by.map(function(b){ return b.who==='stock' ? b.qty+' from stock' : b.who==='short' ? b.qty+' not covered' : b.qty+' on '+(b.who===ref?'this works order':b.who); }).join(', ');
+  return 'SO '+a.so+(a.co==='OLIVER HARVEY'?' (OH)':'')+' \u00b7 '+Math.round(a.qty)+' \u00b7 '+(a.cust||'')+' \u00b7 due '+(a.due?fmtD(a.due):'?')+(a.ic?' \u00b7 intercompany':'')+(who?' \u2192 '+who:'');
+}
+// On the card: the earliest order this works order covers, and how many more
+function demandCardH(wo){
+  var cv=demandCovers(wo); if(!cv.length) return '';
+  return '<div style="font-size:10px;color:#0369a1;font-weight:600;margin-top:2px" title="'+esc(cv.map(function(c){ return 'SO '+c.so+' \u00b7 '+Math.round(c.qty)+' \u00b7 '+(c.cust||'')+' \u00b7 due '+(c.due?fmtD(c.due):'?'); }).join('\n'))+'">&#128203; SO '+esc(cv[0].so)+' due '+esc(cv[0].due?fmtD(cv[0].due):'?')+(cv.length>1?' &middot; +'+(cv.length-1)+' more':'')+'</div>';
+}
+// On the panel: every open order for each code, who covers it
+function demandModalH(wo){
+  var h='';
+  (wo.items||[]).forEach(function(it){
+    if(!it.sop || !it.sop.all.length) return;
+    h+='<div style="margin-top:6px;font-size:11px"><strong style="color:#0369a1">&#128203; Sales orders for '+esc(it.code)+'</strong><ul style="margin:2px 0 0 16px;padding:0">'
+      +it.sop.all.map(function(a){ var mine=a.by.some(function(b){ return b.who===wo.ref; }); return '<li'+(mine?' style="font-weight:700"':' style="color:#4b5563"')+'>'+esc(demandLineText(a, wo.ref))+'</li>'; }).join('')+'</ul></div>';
+  });
+  return h;
+}
+// On the printed works order: a row at the top, every open order, this one's in bold
+function demandPrintRows(ref, code, e){
+  var wo=WOs.find(function(w){ return w.ref===ref; }); if(!wo) return '';
+  var it=wo.items.find(function(x){ return x.code===code; }); if(!it || !it.sop || !it.sop.all.length) return '';
+  return '<tr><th>Sales orders</th><td colspan="3" style="font-size:11px;line-height:1.35">'
+    +it.sop.all.map(function(a){ var mine=a.by.some(function(b){ return b.who===ref; }); return (mine?'<strong>':'<span style="color:#555">')+e(demandLineText(a, ref))+(mine?'</strong>':'</span>'); }).join('<br>')
+    +'</td></tr>';
+}
+
 // ── WOP recommendation ─────────────────────────────────────────────────────
 // Recommended make qty so the item does not run out over the next
 // makeDays() (4 or 12 weeks, the toolbar toggle). Stock, the pipeline, On WOP and any Sage PO that is not a
@@ -922,6 +1016,7 @@ function recalcPipeline(){
 // container counts or at the end of the four weeks, so it is read there.
 function calcQtys(r){
   if(r.dailyUsage<=0) return {wop:0};
+  if(r.clockwork) return {wop:0};        // bought in from Clockwork: the stock planner's, not production's
   var conts=(typeof contForCode==='function') ? contForCode(r.code) : [];
   var contQty=0; conts.forEach(function(c){ contQty+=c.qty; });
   // r.available already includes pipeline (completed, awaiting Sage) via recalcPipeline
@@ -960,6 +1055,7 @@ function recalcQtys(){
     r.wopRec=q.wop;
     if(!r.manAdj) r.actWop=q.wop;
   });
+  demandRecalc();     // who covers each open sales order line, now the stock and the works orders are known
 }
 
 // ── Works Orders ───────────────────────────────────────────────────────────
@@ -1425,6 +1521,7 @@ function renderWOCards(){
       +(wo.embOnly?' <span class="woc-emb" style="font-size:9px;font-weight:700;color:#fff;background:#6d28d9;border-radius:8px;padding:1px 6px;vertical-align:middle" title="Embroidery only: picked from stock'+(wo.pickCode?' ('+esc(wo.pickCode)+')':'')+', not cut or made">&#129697; EMB only</span>':'')
       +'</div>'
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
+      +demandCardH(wo)
       +'<span class="woc-wks" style="background:'+wbg+'">'+wl+'</span>'
       +'<div style="font-size:11px;color:#4b5563"><strong>'+wo.items.length+'</strong> SKUs | <strong>'+tot.toLocaleString()+'</strong> units</div>'
       +'<div style="font-size:10.5px;color:#1F3245;font-weight:700;margin-top:2px">'+esc(wo.items.slice(0,3).map(function(it){ return it.code; }).join(', ')+(wo.items.length>3?' +'+(wo.items.length-3)+' more':''))+'</div>'
@@ -1467,7 +1564,7 @@ function openWOModal(i){
   document.getElementById('woModalMeta').innerHTML=
     dateH+' &nbsp;|&nbsp; '
     +'<strong>'+wo.items.length+'</strong> SKU(s) &nbsp;|&nbsp; <strong>'+tot.toLocaleString()+'</strong> units total'
-    +(printedH?' &nbsp;|&nbsp; '+printedH:'')+splitH+smDocMeta(wo);
+    +(printedH?' &nbsp;|&nbsp; '+printedH:'')+splitH+smDocMeta(wo)+demandModalH(wo);
   var body=document.getElementById('woModalBody');
   body.innerHTML=wo.items.map(function(it){
     var r=rows.find(function(x){return x.code===it.code;});
@@ -1720,6 +1817,9 @@ function printWOP(ref, code, qty, due, sm, opts){
        and text lines entered under this garment, printed right here where the
        machinist reads Embroidery: Yes. */
     +logo.map(function(n){ var q=smNoteQty(n); return '<tr><th>'+e(smNoteLabel(n))+(q?' &middot; '+e(q):'')+'</th><td colspan="3" style="background:#FFF8E1;font-weight:700">'+e(n.desc)+'</td></tr>'; }).join('')
+    /* A stock works order raised against demand: the open sales orders for
+       the code, the ones this works order covers in bold (Luke, 9 Oct 2026) */
+    +(sm ? '' : demandPrintRows(ref, code, e))
     /* Always shown on a special make, even when Sage has left it blank - an
        empty row asks the question, a missing row hides it. */
     +(sm
@@ -2124,25 +2224,31 @@ function exportFabricWriteOff(){
 }
 
 // ── Stats / tiles ──────────────────────────────────────────────────────────
+// The rows the stock KPI is measured on: a code on the Clockwork Bulk list is
+// shown in the table but is not production's to make, so its stock is not
+// production's score (Luke, 9 Oct 2026).
+function kpiRows(){ return rows.filter(function(r){ return !r.clockwork; }); }
 function updateStats(){
+  var kr=kpiRows(), nCW=rows.length-kr.length;
   // Count SKUs in a status category that also have a WOP raised (are on a works order)
-  function withWOP(statusKey){ return rows.filter(function(r){ return r.status===statusKey && r.onWOP>0; }).length; }
+  function withWOP(statusKey){ return kr.filter(function(r){ return r.status===statusKey && r.onWOP>0; }).length; }
 
-  var nCrit=rows.filter(function(r){return r.status==='critical';}).length;
-  var nLow =rows.filter(function(r){return r.status==='low';}).length;
-  var nOk  =rows.filter(function(r){return r.status==='ok';}).length;
-  var nHea =rows.filter(function(r){return r.status==='healthy';}).length;
+  var nCrit=kr.filter(function(r){return r.status==='critical';}).length;
+  var nLow =kr.filter(function(r){return r.status==='low';}).length;
+  var nOk  =kr.filter(function(r){return r.status==='ok';}).length;
+  var nHea =kr.filter(function(r){return r.status==='healthy';}).length;
 
   // ── SKU count + OK/Healthy % (target 95%) ──
   var sc=document.getElementById('skuCount');
   if(sc){
     if(rows.length){
       var okHealthy=nOk+nHea;
-      var pct=rows.length>0?(okHealthy/rows.length*100):0;
+      var pct=kr.length>0?(okHealthy/kr.length*100):0;
       var pctCol=pct>93?'#065f46':'#b91c1c';   // green if over 93%, red if below
-      sc.innerHTML=rows.length.toLocaleString()+' SKUs'
+      sc.innerHTML=kr.length.toLocaleString()+' SKUs'
         +' &nbsp;<span style="font-weight:600;color:#4b5563">|</span>&nbsp; '
-        +'<span style="color:'+pctCol+'"><strong>'+pct.toFixed(0)+'% Good</strong></span>';
+        +'<span style="color:'+pctCol+'"><strong>'+pct.toFixed(0)+'% Good</strong></span>'
+        +(nCW?' <span style="font-size:10px;font-weight:600;color:#6b7280" title="On the Clockwork Bulk list: shown in the table, not counted here">&middot; '+nCW+' Clockwork not counted</span>':'');
     } else sc.textContent='';
   }
 
@@ -2314,7 +2420,7 @@ function rowHTML(r){
     +'<input type="text" class="wop-input" id="wop-'+id+'" value="'+r.actWop+'" onclick="event.stopPropagation()" onchange="event.stopPropagation();setWop(\''+esc(r.code)+'\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()">'
     +'<button class="inc-btn" title="+1" onclick="event.stopPropagation();adjWop(\''+esc(r.code)+'\',1)">+</button>'
     +'</div>';
-  var sopH=r.onSOP>0?'<span style="font-weight:600">'+r.onSOP.toLocaleString()+'</span>':dash();
+  var sopH=r.onSOP>0?'<span'+(r.sopLines&&r.sopLines.length?' title="'+esc(r.sopLines.map(function(a){ return demandLineText(a, ''); }).join('\n'))+'" style="font-weight:600;cursor:help;text-decoration:underline dotted"':' style="font-weight:600"')+'>'+r.onSOP.toLocaleString()+'</span>':dash();
   // Free stock: in stock less on SOP, plus the pipeline, plus what is on a
   // live works order - in blue when a works order is counted, so a healthy
   // figure that leans on work not yet made is visible as such; red when short
@@ -2333,7 +2439,7 @@ function rowHTML(r){
   var cbH='<input type="checkbox" class="inc-cb"'+(r.included?' checked':'')+' onclick="event.stopPropagation()" onchange="toggleIncl(\''+esc(r.code)+'\',this.checked)">';
   return '<tr class="'+rowCls+'" id="row-'+id+'" data-code="'+esc(r.code)+'">'
     +'<td style="text-align:center">'+cbH+'</td>'
-    +'<td>'+esc(r.code)+'</td>'
+    +'<td>'+esc(r.code)+(r.clockwork?' <span class="sm-tag" style="font-size:9px;padding:0 5px" title="On the Clockwork Bulk list: bought in on containers the stock planner tracks. Shown here, left out of the SKU count and % Good, nothing for production to make">CW</span>':'')+'</td>'
     +'<td title="'+esc(r.desc)+'" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.desc)+'</td>'
     +'<td style="text-align:right">'+r.inStock.toLocaleString()+'</td>'
     +'<td style="text-align:right">'+freeH+'</td>'
@@ -2601,7 +2707,7 @@ function pubRefreshBtn(){ var b=document.getElementById('pubSetupBtn'); if(b) b.
 function pubB64(s){ return btoa(unescape(encodeURIComponent(s))); }
 function publishState(){
   return JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,bufWeeks:bufWeeks,
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,
     savedAt:new Date().toISOString()});
 }
 function publishDownload(json, why){
@@ -3089,7 +3195,7 @@ function saveState(){
   var json='', ts=new Date().toISOString();
   try{
     json=JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,bufWeeks:bufWeeks,
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,
       savedAt:ts});
   }catch(e){ console.log('Save failed:',e); saveFailed('could not serialise'); return; }
   var behind=stateBehind(); if(behind){ saveRefused(behind); return; }
@@ -3120,6 +3226,7 @@ function applyState(s){
   try{
     stateLoadedAt=s.savedAt||'';
     bufWeeks=BUF_WEEKS_CHOICES.indexOf(+s.bufWeeks)>=0 ? +s.bufWeeks : 4; renderBufWeeks();
+    sopDemand=(s.sopDemand && s.sopDemand.lines) ? s.sopDemand : {lines:[], pastedAt:null};
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
@@ -4105,7 +4212,7 @@ function cutMetres(e){ return (e.metres!=null) ? e.metres : (e.std!=null ? e.std
 // and 5 hours on Friday with one break (285 minutes); nothing at the
 // weekend. The KPI is what was marked cut against that capacity, flagged
 // under 90%.
-var CUT_WO_MINS=25, CUT_RUN_LAYS=50, CUT_EXTRA_MINS=15, CUT_KPI_TARGET=0.9;
+var CUT_WO_MINS=25, CUT_RUN_LAYS=50, CUT_EXTRA_MINS=15, CUT_KPI_TARGET=0.85;   // the day's cut against its capacity; under this the tile goes red (Luke, 9 Oct 2026)
 var CUT_DAY_MINS={1:450, 2:450, 3:450, 4:450, 5:285, 6:0, 0:0};
 function cutDayMins(d){ return CUT_DAY_MINS[new Date(d).getDay()]||0; }
 function cutLayFor(code){
@@ -4148,7 +4255,11 @@ function cutKpi(cut, today){
   while(days.length<5 && n<30){ d.setDate(d.getDate()-1); n++; var s=d2s(d), cap=cutDayMins(s); if(cap>0) days.unshift({day:s, cap:cap, mins:(byDay[s]||{}).mins||0, wos:(byDay[s]||{}).wos||0}); }
   var cutM=0, target=0, wos=0; days.forEach(function(x){ cutM+=x.mins; target+=x.cap; wos+=x.wos; });
   var t=byDay[today]||{mins:0, wos:0};
-  return {days:days, from:days.length?days[0].day:'', to:days.length?days[days.length-1].day:'', cutMins:cutM, target:target, wos:wos, pct:target>0?cutM/target:null, under:target>0&&cutM/target<CUT_KPI_TARGET, today:{mins:t.mins, wos:t.wos, cap:cutDayMins(today)}};
+  // the day on the tile: today, or when the room is shut (Saturday, Sunday) the last day it was open
+  var dd=new Date(today), day=today, m=0; while(cutDayMins(day)<=0 && m<7){ dd.setDate(dd.getDate()-1); day=d2s(dd); m++; }
+  var td=byDay[day]||{mins:0, wos:0}, cap=cutDayMins(day), dayPct=cap>0 ? td.mins/cap : null;
+  return {days:days, from:days.length?days[0].day:'', to:days.length?days[days.length-1].day:'', cutMins:cutM, target:target, wos:wos, pct:target>0?cutM/target:null, under:target>0&&cutM/target<CUT_KPI_TARGET, today:{mins:t.mins, wos:t.wos, cap:cutDayMins(today)},
+          day:{date:day, mins:td.mins, wos:td.wos, cap:cap, pct:dayPct, under:dayPct!=null && dayPct<CUT_KPI_TARGET, isToday:day===today}};
 }
 function cutPrice(e){ var p=fabPriceFor(e.fabric); return p!=null ? p : null; }
 // WIP as at a date: fabric cut and not completed by then. Two sources: a line
@@ -4183,10 +4294,12 @@ function cutWip(asAt){
 function cutDays(from, to){
   var by={};
   cutLog.entries.forEach(function(e){ if(!e.cutAt || e.cancelledAt) return; if(from && e.cutAt<from) return; if(to && e.cutAt>to) return;
-    if(!by[e.cutAt]) by[e.cutAt]={day:e.cutAt, metres:0, lines:0, wos:0, refs:{}, fabrics:{}};
+    if(!by[e.cutAt]) by[e.cutAt]={day:e.cutAt, metres:0, lines:0, wos:0, refs:{}, fabrics:{}, mins:0, cap:cutDayMins(e.cutAt)};
     var m=cutMetres(e); by[e.cutAt].metres+=m; by[e.cutAt].lines++;
     if(!by[e.cutAt].refs[e.ref]){ by[e.cutAt].refs[e.ref]=1; by[e.cutAt].wos++; }   // a works order cut in two lines on one day is one works order
     var f=e.fabric||'(no fabric)'; by[e.cutAt].fabrics[f]=(by[e.cutAt].fabrics[f]||0)+m; });
+  var mins=cutMinsByDay(cutLog.entries.filter(function(e){ return e.cutAt && !e.cancelledAt; }));
+  Object.keys(by).forEach(function(k){ by[k].mins=(mins[k]||{}).mins||0; by[k].pct=by[k].cap>0 ? by[k].mins/by[k].cap : null; });
   return Object.keys(by).sort().reverse().map(function(k){ return by[k]; });
 }
 function cutRefresh(){ cutLoad(function(){ cutRender(); }); }
@@ -4198,7 +4311,6 @@ function cutRender(){
   var todo=live.filter(function(e){ return !e.cutAt; }), cut=live.filter(function(e){ return !!e.cutAt; });
   var todayM=0, weekM=0, wk=new Date(now()); wk.setDate(wk.getDate()-6); var wkS=d2s(wk);
   cut.forEach(function(e){ var m=cutMetres(e); if(e.cutAt===today) todayM+=m; if(e.cutAt>=wkS) weekM+=m; });
-  var wip=cutWip(today);
   var todoM=0; todo.forEach(function(e){ todoM+=e.std||0; });
   var late=todo.filter(function(e){ return e.printedAt && (new Date(today)-new Date(e.printedAt))/864e5>=CUT_LATE_DAYS; });
   var newToday=todo.filter(function(e){ return e.printedAt===today; }), todoRefs={}; todo.forEach(function(e){ todoRefs[e.ref]=1; });
@@ -4222,16 +4334,17 @@ function cutRender(){
     +'<div class="kpi-tile" title="'+esc(CUT_WO_MINS+' min a works order up to '+CUT_RUN_LAYS+' lays, +'+CUT_EXTRA_MINS+' min each further '+CUT_RUN_LAYS+'; 450 min a day Monday to Thursday, 285 on Friday')+'"><div class="l">Live works orders to cut</div><div class="v">'+Object.keys(todoRefs).length+'</div><div class="s">'
       +(est.wos ? '&asymp; <b>'+est.days+' day'+(est.days===1?'':'s')+'</b> of cutting ('+est.mins+' min) &middot; runs out '+esc(fmtD(est.runsOut)) : 'works orders with a line waiting')
       +(est.unknown ? '<br><span class="sm-tag warn" title="No lay plan for a code on these: taken as one garment per lay">'+est.unknown+' with no lay plan</span>' : '')+'</div></div>'
-    +'<div class="kpi-tile'+(kpi.under?' warn':'')+'"'+(kpi.under?' style="border-color:#dc2626;background:#fef2f2"':'')+' title="'+esc('Marked cut on the last '+kpi.days.length+' working days against the cut room\'s capacity of '+kpi.target+' min; the target is '+Math.round(CUT_KPI_TARGET*100)+'%')+'"><div class="l">Cutting target, last 5 working days</div><div class="v"'+(kpi.under?' style="color:#b91c1c"':'')+'>'+(kpi.pct==null?'&mdash;':Math.round(kpi.pct*100)+'%')+'</div><div class="s">'
-      +(kpi.under?'<b style="color:#b91c1c">&#9888; under '+Math.round(CUT_KPI_TARGET*100)+'% target</b> &middot; ':'')+kpi.cutMins+' of '+kpi.target+' min &middot; '+kpi.wos+' works order'+(kpi.wos===1?'':'s')+(kpi.from?' &middot; '+esc(fmtD(kpi.from))+' to '+esc(fmtD(kpi.to)):'')
-      +'<br>today so far '+kpi.today.mins+' min'+(kpi.today.cap?' of '+kpi.today.cap:'')+' &middot; '+kpi.today.wos+' works order'+(kpi.today.wos===1?'':'s')+'</div></div>'
+    // The day's cut against the day's capacity (450 min Monday to Thursday,
+    // 285 Friday, shut at the weekend): red under 85%. The week's figures
+    // and the day-by-day table are under Cutting KPIs (Luke, 9 Oct 2026).
+    +'<div class="kpi-tile'+(kpi.day.under?' warn':'')+'" style="cursor:pointer'+(kpi.day.under?';border-color:#dc2626;background:#fecaca':'')+'" title="'+esc((kpi.day.isToday?'Today':fmtD(kpi.day.date))+': marked cut '+kpi.day.mins+' of the day\'s '+kpi.day.cap+' min; red under '+Math.round(CUT_KPI_TARGET*100)+'%. Click for the week and the day-by-day figures')+'" onclick="cutSec=\'days\'; cutRender()"><div class="l">Cutting target'+(kpi.day.isToday?'':' &middot; '+esc(fmtD(kpi.day.date)))+'</div><div class="v"'+(kpi.day.under?' style="color:#b91c1c"':'')+'>'+(kpi.day.pct!=null?Math.round(kpi.day.pct*100)+'%':'&mdash;')+'</div><div class="s">'
+      +kpi.day.mins+' of '+kpi.day.cap+' min &middot; '+kpi.day.wos+' works order'+(kpi.day.wos===1?'':'s')+'</div></div>'
     +'<div class="kpi-tile"><div class="l">To cut</div><div class="v">'+todo.length+'</div><div class="s">'+todoM.toFixed(1)+' m standard'+(late.length?' &middot; <b style="color:#b45309">'+late.length+' waiting '+CUT_LATE_DAYS+'+ days</b>':'')+'</div></div>'
     +'<div class="kpi-tile"><div class="l">Cut today</div><div class="v">'+todayM.toFixed(1)+' m</div><div class="s">'+kpi.today.wos+' works order'+(kpi.today.wos===1?'':'s')+' &middot; '+cut.filter(function(e){ return e.cutAt===today; }).length+' lines</div></div>'
     +'<div class="kpi-tile"><div class="l">Cut, last 7 days</div><div class="v">'+weekM.toFixed(1)+' m</div><div class="s">from '+esc(fmtD(wkS))+'</div></div>'
-    +'<div class="kpi-tile"><div class="l">Live, not on the log</div><div class="v">'+wip.total.assumed+'</div><div class="s">lines taken as cut at standard &middot; WIP is on the KPIs tab</div></div>'
     +'</div>';
   var chip=function(k,l,n){ return '<button class="fab-chip'+(cutSec===k?' on':'')+'" onclick="cutSec=\''+k+'\'; cutRender()">'+l+(n!=null?'<span class="cnt">'+n+'</span>':'')+'</button>'; };
-  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',Object.keys(todoRefs).length)+chip('log','Cut log',cut.length)+chip('days','Metres per day')
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',Object.keys(todoRefs).length)+chip('log','Cut log',cut.length)+chip('days','Cutting KPIs')
     +'<input type="text" id="cutQ" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutTyping=true; cutRender()" style="margin-left:6px;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:260px"></div>';
   // To cut is the whole list, in the order the works orders were raised, and
   // the search narrows it; the cut log, like the Embroidery tab, comes up for
@@ -4280,10 +4393,15 @@ function cutRender(){
     var dfrom=cutFrom, dto=cutTo; if(!dfrom && !dto){ var d30b=new Date(now()); d30b.setDate(d30b.getDate()-30); dfrom=d2s(d30b); }
     var days=cutDays(dfrom, dto);
     h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:12px">From <input type="date" value="'+esc(dfrom)+'" onchange="cutFrom=this.value; cutRender()"> to <input type="date" value="'+esc(dto)+'" onchange="cutTo=this.value; cutRender()"><span class="sm-sub" style="margin-left:auto">'+days.reduce(function(s,d){ return s+d.metres; },0).toFixed(1)+' m over '+days.length+' day'+(days.length===1?'':'s')+'</span></div>';
+    // the week: the last five working days against the cut room's capacity
+    h+='<div class="sm-note" style="margin-bottom:8px"><strong>Last '+kpi.days.length+' working days'+(kpi.from?' ('+esc(fmtD(kpi.from))+' to '+esc(fmtD(kpi.to))+')':'')+':</strong> '
+      +(kpi.pct!=null?'<strong'+(kpi.under?' style="color:#b91c1c"':'')+'>'+Math.round(kpi.pct*100)+'%</strong> &middot; ':'')+kpi.cutMins+' of '+kpi.target+' min &middot; '+kpi.wos+' works order'+(kpi.wos===1?'':'s')
+      +' &nbsp;|&nbsp; <strong>Today so far:</strong> '+kpi.today.mins+' min'+(kpi.today.cap?' of '+kpi.today.cap:'')+' &middot; '+kpi.today.wos+' works order'+(kpi.today.wos===1?'':'s')
+      +' &nbsp;|&nbsp; '+esc(CUT_WO_MINS+' min a works order up to '+CUT_RUN_LAYS+' lays, +'+CUT_EXTRA_MINS+' min each further '+CUT_RUN_LAYS+'; 450 min Monday to Thursday, 285 Friday; target '+Math.round(CUT_KPI_TARGET*100)+'%')+'</div>';
     if(!days.length) h+='<div class="sm-empty">Nothing cut in that range.</div>';
-    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Day</th><th style="text-align:right" title="Works orders with a line marked cut that day">Works orders</th><th style="text-align:right">Lines</th><th style="text-align:right">Metres</th><th>By fabric</th></tr></thead><tbody>'
-      +days.map(function(d){ var fabs=Object.keys(d.fabrics).sort(function(a,b){ return d.fabrics[b]-d.fabrics[a]; });
-        return '<tr><td><strong>'+esc(fmtD(d.day))+'</strong></td><td style="text-align:right"><strong>'+d.wos+'</strong></td><td style="text-align:right">'+d.lines+'</td><td style="text-align:right" class="fab-num">'+d.metres.toFixed(2)+'</td><td class="sm-sub">'+fabs.map(function(f){ return '<span style="font-family:monospace;font-size:11px">'+esc(f)+'</span> '+d.fabrics[f].toFixed(2)+' m'; }).join(' &middot; ')+'</td></tr>'; }).join('')
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Day</th><th style="text-align:right" title="Works orders with a line marked cut that day">Works orders</th><th style="text-align:right">Lines</th><th style="text-align:right">Metres</th><th style="text-align:right" title="Minutes credited against the day\'s capacity">Min / capacity</th><th style="text-align:right">%</th><th>Works orders cut</th><th>By fabric</th></tr></thead><tbody>'
+      +days.map(function(d){ var fabs=Object.keys(d.fabrics).sort(function(a,b){ return d.fabrics[b]-d.fabrics[a]; }); var refs=Object.keys(d.refs).sort();
+        return '<tr><td><strong>'+esc(fmtD(d.day))+'</strong></td><td style="text-align:right"><strong>'+d.wos+'</strong></td><td style="text-align:right">'+d.lines+'</td><td style="text-align:right" class="fab-num">'+d.metres.toFixed(2)+'</td><td style="text-align:right">'+d.mins+(d.cap?' / '+d.cap:'')+'</td><td style="text-align:right"'+(d.pct!=null&&d.pct<CUT_KPI_TARGET?' style="text-align:right;color:#b91c1c;font-weight:700"':'')+'>'+(d.pct!=null?Math.round(d.pct*100)+'%':'&mdash;')+'</td><td class="sm-sub">'+refs.map(function(r){ return '<span style="font-family:monospace;font-size:11px">'+esc(r)+'</span>'; }).join(' &middot; ')+'</td><td class="sm-sub">'+fabs.map(function(f){ return '<span style="font-family:monospace;font-size:11px">'+esc(f)+'</span> '+d.fabrics[f].toFixed(2)+' m'; }).join(' &middot; ')+'</td></tr>'; }).join('')
       +'</tbody></table></div>';
   }
   el.innerHTML=h;
@@ -5179,7 +5297,8 @@ var bufSnaps=[];               // [{date, skus, critical, low, ok, healthy, pct,
 function snapshotBuffer(){
   if(!rows.length) return;
   var n={critical:0, low:0, ok:0, healthy:0}, short=0, onWOP=0, critNoWOP=0, lowNoWOP=0, sales=0, salesGood=0;
-  rows.forEach(function(r){
+  var kr=kpiRows(); if(!kr.length) return;
+  kr.forEach(function(r){
     n[r.status]=(n[r.status]||0)+1; short+=(r.wopRec||0); onWOP+=(r.onWOP||0);
     if(r.status==='critical' && !(r.onWOP>0)) critNoWOP++;
     if(r.status==='low'      && !(r.onWOP>0)) lowNoWOP++;
@@ -5187,9 +5306,9 @@ function snapshotBuffer(){
   });
   var today=d2s(now()), openUnits=0, overdue=0;
   WOs.forEach(function(w){ if(w.due && w.due<today) overdue++; w.items.forEach(function(i){ openUnits+=(i.qty||0); }); });
-  var snap={ date:today, skus:rows.length,
+  var snap={ date:today, skus:kr.length, clockwork:rows.length-kr.length,
              critical:n.critical, low:n.low, ok:n.ok, healthy:n.healthy,
-             pct: Math.round(1000*(n.ok+n.healthy)/rows.length)/10,
+             pct: Math.round(1000*(n.ok+n.healthy)/kr.length)/10,
              // the same figure on SKUs that actually sell - no-sales SKUs are
              // forced Healthy by mkRow, which flatters the headline
              pctSales: sales ? Math.round(1000*salesGood/sales)/10 : null, salesSkus:sales,
@@ -5269,9 +5388,9 @@ function kpiUnits(list){ return list.reduce(function(s,w){ return s+w.items.redu
 // The in-stock % exactly as the buffer tile computes it, for when there is no
 // snapshot yet but a buffer is loaded - so the hero is never blank on day one.
 function kpiLivePct(){
-  if(!rows.length) return null;
-  var ok=rows.filter(function(r){return r.status==='ok'||r.status==='healthy';}).length;
-  return Math.round(1000*ok/rows.length)/10;
+  var kr=kpiRows(); if(!kr.length) return null;
+  var ok=kr.filter(function(r){return r.status==='ok'||r.status==='healthy';}).length;
+  return Math.round(1000*ok/kr.length)/10;
 }
 
 function kpiCompute(){

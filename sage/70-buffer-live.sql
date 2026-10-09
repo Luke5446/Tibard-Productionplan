@@ -39,9 +39,14 @@
      K Manufacturer    the stock record's Manufacturer field
      L SupplierAcct    preferred supplier's account number (CLO003 = Clockwork)
      M SupplierName
-     N ClockworkMade   Y when the preferred supplier is Clockwork - the codes
-                       to keep OUT of the stock KPI (they are bought in on
-                       containers the stock planner tracks)
+     N ClockworkMade   Y when the code is on the Clockwork Bulk list - the
+                       eve_AllLiveSOPPOPStockBULK view the old workbook read
+                       as "03 Tibard Limited Bulk". Checked 9 Oct 2026: of its
+                       615 codes 369 are in the buffer, and 343 of those are
+                       the ones the typed Supplier Lead Times sheet marked
+                       Clockwork (344). These are shown in the planner but
+                       kept OUT of the stock KPI: bought in on containers the
+                       stock planner tracks, not production's to make
      O LeadDays        the preferred supplier's lead time on the stock record
      P MinLevel        the HOME warehouse's minimum level
      Q StockHome       Tibard HOME
@@ -167,6 +172,11 @@ custs AS (
     WHERE   cv.SearchCategoryID = (SELECT SearchCategoryID FROM cust_cat)
     GROUP BY cv.ItemID
 ),
+/* ------------------------------------------------ the Clockwork list -- */
+bulk AS (
+    SELECT DISTINCT LTRIM(RTRIM(Code)) AS Code
+    FROM   S200_LIVE.dbo.eve_AllLiveSOPPOPStockBULK
+),
 /* ------------------------------------------------- date of last sale -- */
 dols AS (
     SELECT LTRIM(RTRIM(Code)) AS Code, MAX(DateOfLastSale) AS DateOfLastSale
@@ -190,8 +200,7 @@ SELECT
     LTRIM(RTRIM(ISNULL(i.Manufacturer,'')))                             AS Manufacturer,    -- K
     ISNULL(sp.SupplierAccountNumber,'')                                 AS SupplierAcct,    -- L
     LTRIM(RTRIM(ISNULL(sp.SupplierAccountName,'')))                     AS SupplierName,    -- M
-    CASE WHEN sp.SupplierAccountNumber = 'CLO003'
-           OR sp.SupplierAccountName LIKE '%Clockwork%' THEN 'Y' ELSE 'N' END AS ClockworkMade, -- N
+    CASE WHEN bk.Code IS NOT NULL THEN 'Y' ELSE 'N' END                AS ClockworkMade,   -- N
     CAST(ISNULL(sp.LeadTime,0)                   AS int)                AS LeadDays,        -- O
     CAST(ISNULL(tw.MinLevel,0)                   AS int)                AS MinLevel,        -- P
     CAST(ISNULL(tw.StockHome,0)                  AS int)                AS StockHome,       -- Q
@@ -217,5 +226,6 @@ LEFT JOIN   sales    sa ON sa.Code   = i.Code
 LEFT JOIN   supplier sp ON sp.ItemID = i.ItemID
 LEFT JOIN   excl     ex ON ex.ItemID = i.ItemID
 LEFT JOIN   custs    cu ON cu.ItemID = i.ItemID
+LEFT JOIN   bulk     bk ON bk.Code   = i.Code
 LEFT JOIN   dols     d  ON d.Code    = i.Code
 ORDER BY    i.Code;

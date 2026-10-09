@@ -742,9 +742,18 @@ A code starting `BULK` is a garment's container stock (BULKTWAP052031P, the Book
 
 ## 4. The buffer workbook (replacing Buffer_Report_Stock_Held_Production)
 
-The Buffer_Report workbook (18 June 2026 copy) is eleven queries stitched
-together with VLOOKUPs on a 1,533-row sheet with 18 hidden columns. Three
-of its inputs are not queries at all:
+**`sage/Buffer Live.xlsx` is the workbook, built with the two queries already
+in it.** `tools/build-buffer-workbook.py` writes it from the SQL files, so a
+change to the SQL is a re-run of the script, not a hand edit in Excel. Open
+it, **Refresh All**, pick Windows credentials when asked (once), and the two
+tables fill: `Buffer` (28 columns) and `SOPDemand` (12). The ReadMe sheet in
+the workbook has the steps. Copy each table's rows without the header into
+the planner's one **Paste buffer stock data** box, in either order: the
+planner tells a demand line by its `TIB-`/`OH-` line key.
+
+The Buffer_Report workbook (18 June 2026 copy) it replaces is eleven queries
+stitched together with VLOOKUPs on a 1,533-row sheet with 18 hidden columns.
+Three of its inputs are not queries at all:
 
 - **Supplier Lead Times** (Clockwork Manufactured, Supplier Lead Time,
   Branded Stock) is a typed sheet, 1,628 rows, with no connection behind it.
@@ -755,17 +764,17 @@ of its inputs are not queries at all:
 `70-buffer-live.sql` does the lot in one query, reading the same custom
 views for sales (`bm_Tib_Sales_12_6_3_Grouped`, `bm_OH_Sales_Grouped`) so
 the numbers the planner has been showing do not move, and Sage's own tables
-for everything else. Build it the way section 2 describes, in a **new**
-workbook, with two queries:
+for everything else. Columns A to I are today's paste exactly (code, name,
+in stock, On SOP, On POP, 1M, 3M, 6M, 12M), so the planner reads the new
+sheet by the same nine columns and takes the rest from J on: the category,
+column N for a Clockwork code, the lead time and the minimum level.
 
-| Sheet | Query | Copy | Into |
-|---|---|---|---|
-| `Buffer` | `70-buffer-live.sql` | A to AB, no header | the planner's **Paste buffer stock data** box |
-| `SOPDemand` | `71-buffer-sop-demand.sql` | A to L, no header | the planner's SOP demand box (to be added) |
-
-Columns A to I of `Buffer` are today's paste exactly (code, name, in stock,
-On SOP, On POP, 1M, 3M, 6M, 12M), so the planner as it stands reads the new
-sheet before it has learned anything new, and nothing has to be hidden.
+**Which codes are Clockwork's** is read off the Bulk list, the
+`eve_AllLiveSOPPOPStockBULK` view the old workbook showed as "03 Tibard
+Limited Bulk": of its 615 codes, 369 are in the buffer and 343 of those are
+the ones the typed sheet marked Clockwork (344 in all), so the two agree
+and the view needs no typing. Sage's Manufacturer field is not used for
+this: most of these codes still say Tibard there.
 
 **Before pointing the planner at it**, paste `72-buffer-validate.sql` in
 place of 70 for one refresh. It lists every code whose In Stock, SOP or POP
@@ -778,7 +787,10 @@ the names and the old views' definitions so it can be put right.
 Untested caveat: 70 to 73 were written from the column names 10 and 60 have
 already proved against the live database (StockItem, WarehouseItem,
 StockItemSupplier, PLSupplierAccount, the SOP tables, the search category
-tables from the old Query5). Three things could not be checked from here
-and 73 confirms them: the warehouse names (HOME, and Bulk as `%BULK%`), the
-search category holding the customer names, and that CLO003 is the only
-Clockwork account.
+tables from the old Query5) and the views the old workbook reads. Two things
+could not be checked from here and 73 confirms them: the warehouse names
+(HOME, and Bulk as `%BULK%`) and the search category holding the customer
+names. The workbook itself was built by hand from the OOXML parts a real
+Excel saves and not opened in Excel: if Excel repairs it on opening, the
+queries are still in the file (Data → Queries & Connections) and `70` and
+`71` paste into a fresh connection as section 2 describes.

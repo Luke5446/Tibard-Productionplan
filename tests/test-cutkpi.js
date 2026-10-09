@@ -56,7 +56,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && r.kpi.days==='2026-09-30:450/450 2026-10-01:450/450 2026-10-02:275/285 2026-10-05:450/450 2026-10-06:50/450'
    && r.kpi.today.mins===40 && r.kpi.today.wos===1 && r.kpi.today.cap===450
    && /≈ 0.3 days of cutting \(115 min\) · runs out 07 Oct 2026 1 with no lay plan/.test(r.tiles[1])
-   && /Cutting target, last 5 working days 80% ⚠ under 90% target · 1675 of 2085 min · 67 works orders · 30 Sept 2026 to 06 Oct 2026 today so far 40 min of 450 · 1 works order/.test(r.tiles[2])
+   && /^Cutting target 9% 40 of 450 min · 1 works order$/.test(r.tiles[2])   // the day's figure: 40 of 450 min, red under 85%; the week is under Cutting KPIs
    && r.redTile===true
    && r.rows.join('|')==='WO-A 15 lays · 25 min|WO-B 52 lays · 40 min|WO-C 10 lays · 25 min no lay plan|WO-D 15 lays · 25 min'
    && r2.est.wos===44 && r2.est.mins===1115 && r2.est.days===2.8 && r2.est.runsOut==='2026-10-09'

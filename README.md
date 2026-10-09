@@ -112,6 +112,31 @@ The file is created by the first push, so nothing needs adding to the repo by
 hand. When the token expires, GitHub emails a week ahead: make a new one and
 paste it on both PCs.
 
+## The buffer sheet, the sales orders behind it, and the Clockwork codes
+
+`sage/Buffer Live.xlsx` (built by `tools/build-buffer-workbook.py` from
+`sage/70-buffer-live.sql` and `sage/71-buffer-sop-demand.sql`) replaces the
+Buffer_Report workbook: Refresh All, then both tables go into the one
+**Paste buffer stock data** box, in either order. The Buffer sheet's first
+nine columns are the old paste; from column J the planner also reads the
+category, the **Clockwork** flag (column N, the code is on the Clockwork
+Bulk list), the lead time and the minimum level. The SOPDemand sheet is
+every live sales order line for a stock-held code.
+
+- **Clockwork codes** stay on the table with a **CW** tag, have no WOP REC
+  (nothing for production to make), and are left out of the SKU count, the
+  % Good, the status tiles, the buffer snapshots and the KPI tab: their
+  stock is the stock planner's, not production's (Luke, 9 Oct 2026).
+- **Who covers each sales order** is worked out after every paste and every
+  change to the works orders: the stock on the shelf covers the oldest
+  promised date first, then the live works orders in the order they were
+  raised. Demand 15, 10 in stock, a works order for 20: the oldest order's
+  10 come from stock and the works order is for the next one. Every open
+  order for the code is listed all the same: on the card (the earliest due
+  and how many more), on the panel, as a **Sales orders** row at the top of
+  the printed works order with this one's in bold, and in the On SOP cell's
+  hover. A later paste moves the dates and drops despatched lines.
+
 ## Make for 4 weeks or 12 weeks
 
 The buffer toolbar's **Make for** toggle sets how many weeks' sales WOP REC
@@ -119,9 +144,17 @@ covers: 4 as standard, 12 when the factory is quiet and stock is to be built
 for the busy months (Luke, 9 Oct 2026). Only the recommendation changes; the
 status colours and the % Good KPI stay at 28 days so the series stays
 comparable. The choice is saved, published, and shown to viewers as text.
-The Cutting tab's Metres per day table counts the works orders cut each day.
-The new buffer sheet, the sales orders behind On SOP, and the Clockwork
-exclusion are in `docs/buffer-v2-design.md` and `sage/70-buffer-live.sql`.
+
+## Cutting KPIs
+
+The **Cutting target** tile is the day's figure: minutes credited for what
+was marked cut today against the day's capacity (450 Monday to Thursday,
+285 Friday; on a Saturday or Sunday it shows Friday), red under **85%**.
+**Cutting KPIs** on the Cutting tab (the third chip) has the week: the last
+five working days against capacity, today so far, and a day-by-day table
+with the works orders cut, the lines, the metres, the minutes against the
+day's capacity, the works order numbers and the fabrics. The "Live, not on
+the log" tile is gone; the fabric in WIP stays on the KPIs tab.
 
 ## Containers on the water
 
