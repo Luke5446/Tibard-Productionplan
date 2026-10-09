@@ -764,6 +764,13 @@ Three of its inputs are not queries at all:
   workbook, so that term has always been 0.
 - **1M Sales** is 3M ÷ 3, not the view's own 1MSales column.
 
+**The row set is the sheet as Luke copied it, not the whole table.** The old
+sheet carried two filters: Manufacturer in Tibard / Oliver Harvey / Urban
+Textiles/Tibard / MPLG, and Customer(s) not NHSP, leaving 757 of 1,533
+rows. The first refresh without them put 1,555 codes into the planner
+(9 Oct 2026); both are now in the WHERE of 70 and 71, and the Customer(s)
+value comes from the old Query1's view, `bm_LiveStockItems_NoBulk`.
+
 `70-buffer-live.sql` does the lot in one query, reading the same custom
 views for sales (`bm_Tib_Sales_12_6_3_Grouped`, `bm_OH_Sales_Grouped`) so
 the numbers the planner has been showing do not move, and Sage's own tables

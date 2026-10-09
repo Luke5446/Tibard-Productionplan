@@ -2,7 +2,8 @@
    71-buffer-sop-demand.sql  -  THE SALES ORDERS BEHIND "ON SOP"
    -------------------------------------------------------------------------
    Server TIB-SQL-002, both companies. One row per LIVE sales order line for
-   a stock-held code (the same row set as 70-buffer-live.sql), so the planner
+   a stock-held code (the same row set as 70-buffer-live.sql: stock held,
+   made here, not the NHSP range - 757 codes), so the planner
    can say which orders a works order is covering: the sales order number,
    the customer and the promised date go on the works order when it is raised
    against demand, instead of one total in the On SOP column.
@@ -30,10 +31,19 @@
      L LineSeq        the line's position on the order
    ========================================================================= */
 
-WITH stockheld AS (
-    SELECT LTRIM(RTRIM(Code)) AS Code
-    FROM   S200_LIVE.dbo.StockItem
-    WHERE  ISNULL(AnalysisCode3,'') = 'Yes' AND Code NOT LIKE 'BULK%'
+WITH custs AS (
+    SELECT  LTRIM(RTRIM(Code)) AS Code, MAX([Customer(s)]) AS Customers
+    FROM    S200_LIVE.dbo.bm_LiveStockItems_NoBulk
+    GROUP BY LTRIM(RTRIM(Code))
+),
+/* the same row set as 70-buffer-live.sql: stock held, made here, not NHSP */
+stockheld AS (
+    SELECT  LTRIM(RTRIM(si.Code)) AS Code
+    FROM    S200_LIVE.dbo.StockItem si
+    LEFT JOIN custs cu ON cu.Code = LTRIM(RTRIM(si.Code))
+    WHERE   ISNULL(si.AnalysisCode3,'') = 'Yes' AND si.Code NOT LIKE 'BULK%'
+      AND   LTRIM(RTRIM(ISNULL(si.Manufacturer,''))) IN ('Tibard','Oliver Harvey','Urban Textiles/Tibard','MPLG')
+      AND   LTRIM(RTRIM(ISNULL(cu.Customers,''))) <> 'NHSP'
 )
 SELECT
     'TIB-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20))             AS LineKey,

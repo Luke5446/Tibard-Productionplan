@@ -9,6 +9,15 @@
    same set as today: Tibard's Stock Held analysis code = Yes, BULK codes
    left out), with the Oliver Harvey figures for the same code added in.
 
+   THE ROW SET IS THE OLD SHEET AS LUKE COPIED IT, not the whole table. The
+   old sheet carried two filters (its autoFilter, read 9 Oct 2026):
+     Manufacturer  in  Tibard / Oliver Harvey / Urban Textiles/Tibard / MPLG
+     Customer(s)   not NHSP
+   which left 757 of its 1,533 rows - the garments made here, less the NHS
+   Professionals range. The first refresh without them pasted 1,555 codes
+   into the planner (Luke, 9 Oct 2026). Both filters are in the WHERE below;
+   the first refresh with them gave 758.
+
    Paste the whole file into a NEW workbook's Power Query connection (see
    sage/README.md, "The buffer workbook"), Refresh All, then copy columns
    A to AB, all rows, without the header, into the planner's buffer paste box.
@@ -58,9 +67,8 @@
      W OnPOPBulk       Sage POP landing in Bulk - NOT in E
      X DateOfLastSale  yyyy-mm-dd, blank when never sold
      Y ExcludeAutoPO   the "Exclude From Auto B2B PO" search value
-     Z Customers       the stock record's customer search values, "; " joined
-                       (73-buffer-discovery.sql names the category; set it
-                       in cust_cat below if the discovery shows another name)
+     Z Customers       the old sheet's "Customer(s)", read from the
+                       bm_LiveStockItems_NoBulk view the old Query1 used
      AA StockHeldOH    Y when OH's own record also says stock held / website
      AB Company        TIBARD - every row is a Tibard stock record
 
@@ -70,12 +78,22 @@
 
 WITH
 /* ---------------------------------------------------------- the row set -- */
+/* the old Query1's view: one row per code, with the "Customer(s)" value */
+custs AS (
+    SELECT  LTRIM(RTRIM(Code)) AS Code, MAX([Customer(s)]) AS Customers
+    FROM    S200_LIVE.dbo.bm_LiveStockItems_NoBulk
+    GROUP BY LTRIM(RTRIM(Code))
+),
 items AS (
     SELECT  si.ItemID, LTRIM(RTRIM(si.Code)) AS Code, si.Name, si.ProductGroupID,
-            si.Manufacturer
+            si.Manufacturer, cu.Customers
     FROM    S200_LIVE.dbo.StockItem si
+    LEFT JOIN custs cu ON cu.Code = LTRIM(RTRIM(si.Code))
     WHERE   ISNULL(si.AnalysisCode3,'') = 'Yes'       -- Tibard's "Stock Held"
       AND   si.Code NOT LIKE 'BULK%'                  -- container stock of a garment, never made here
+      /* the old sheet's two filters: made here, and not the NHSP range */
+      AND   LTRIM(RTRIM(ISNULL(si.Manufacturer,''))) IN ('Tibard','Oliver Harvey','Urban Textiles/Tibard','MPLG')
+      AND   LTRIM(RTRIM(ISNULL(cu.Customers,''))) <> 'NHSP'
 ),
 /* --------------------------------------------------- Tibard warehouses -- */
 tib_wh AS (
@@ -146,30 +164,12 @@ supplier AS (
     WHERE   s.rn = 1
 ),
 /* ------------------------------------------------- search categories -- */
-/* "Exclude From Auto B2B PO" is category 58146085 (the old Query5). The
-   customer category is matched by name: run 73-buffer-discovery.sql once and
-   put its exact name here if "Customer" is not it. */
-cust_cat AS (
-    SELECT TOP 1 SearchCategoryID FROM S200_LIVE.dbo.SearchCategory
-    WHERE  Name LIKE 'Customer%' ORDER BY SearchCategoryID
-),
+/* "Exclude From Auto B2B PO" is category 58146085 (the old Query5). */
 excl AS (
     SELECT  cv.ItemID, MAX(sv.Name) AS ExcludeAutoPO
     FROM    S200_LIVE.dbo.StockItemSearchCatVal cv
     JOIN    S200_LIVE.dbo.SearchValue sv ON sv.SearchValueID = cv.SearchValueID
     WHERE   cv.SearchCategoryID = 58146085
-    GROUP BY cv.ItemID
-),
-custs AS (
-    SELECT  cv.ItemID,
-            STUFF((SELECT '; ' + sv2.Name
-                   FROM   S200_LIVE.dbo.StockItemSearchCatVal cv2
-                   JOIN   S200_LIVE.dbo.SearchValue sv2 ON sv2.SearchValueID = cv2.SearchValueID
-                   WHERE  cv2.ItemID = cv.ItemID AND cv2.SearchCategoryID = (SELECT SearchCategoryID FROM cust_cat)
-                   ORDER BY sv2.Name
-                   FOR XML PATH(''), TYPE).value('.','nvarchar(max)'), 1, 2, '') AS Customers
-    FROM    S200_LIVE.dbo.StockItemSearchCatVal cv
-    WHERE   cv.SearchCategoryID = (SELECT SearchCategoryID FROM cust_cat)
     GROUP BY cv.ItemID
 ),
 /* ------------------------------------------------ the Clockwork list -- */
@@ -212,7 +212,7 @@ SELECT
     CAST(ISNULL(tw.OnPOPBulk,0)                  AS int)                AS OnPOPBulk,       -- W
     ISNULL(CONVERT(varchar(10), d.DateOfLastSale, 23), '')              AS DateOfLastSale,  -- X
     LTRIM(RTRIM(ISNULL(ex.ExcludeAutoPO,'')))                           AS ExcludeAutoPO,   -- Y
-    LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(cu.Customers,''),
+    LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(i.Customers,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))                    AS Customers,       -- Z
     ISNULL(o.StockHeldOH,'N')                                           AS StockHeldOH,     -- AA
     'TIBARD'                                                            AS Company          -- AB
@@ -225,7 +225,6 @@ LEFT JOIN   sop_oh   so ON so.Code   = i.Code
 LEFT JOIN   sales    sa ON sa.Code   = i.Code
 LEFT JOIN   supplier sp ON sp.ItemID = i.ItemID
 LEFT JOIN   excl     ex ON ex.ItemID = i.ItemID
-LEFT JOIN   custs    cu ON cu.ItemID = i.ItemID
 LEFT JOIN   cwlist   bk ON bk.Code   = i.Code
 LEFT JOIN   dols     d  ON d.Code    = i.Code
 ORDER BY    i.Code;
