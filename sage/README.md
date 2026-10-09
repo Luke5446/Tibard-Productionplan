@@ -742,12 +742,15 @@ A code starting `BULK` is a garment's container stock (BULKTWAP052031P, the Book
 
 ## 4. The buffer workbook (replacing Buffer_Report_Stock_Held_Production)
 
-**`sage/Buffer Live.xlsx` is the workbook, built with the two queries already
-in it.** `tools/build-buffer-workbook.py` writes it from the SQL files, so a
-change to the SQL is a re-run of the script, not a hand edit in Excel. Open
-it, **Refresh All**, pick Windows credentials when asked (once), and the two
-tables fill: `Buffer` (28 columns) and `SOPDemand` (12). The ReadMe sheet in
-the workbook has the steps. Copy each table's rows without the header into
+**`sage/Buffer Live.xlsx` is the workbook, with the two queries already in
+it.** `tools/build-buffer-workbook.py` writes it from the SQL files, so a
+change to the SQL is a re-run of the script, not a hand edit in Excel. The
+queries are connection-only: the first time, **Data → Queries & Connections**,
+right-click each of `Buffer` and `SOPDemand` → **Load To… → Table → New
+worksheet**, picking Windows credentials when asked. From then on **Refresh
+All** fills both. (The first build pre-bound the tables by hand and both
+sheets came up blank on 9 Oct 2026; Excel's own Load To binding is the one
+that works.) The ReadMe sheet in the workbook has the steps. Copy each table's rows without the header into
 the planner's one **Paste buffer stock data** box, in either order: the
 planner tells a demand line by its `TIB-`/`OH-` line key.
 

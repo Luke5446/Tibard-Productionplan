@@ -21,6 +21,12 @@ from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'sage', 'Buffer Live.xlsx')
+# The first build pre-bound each query to a table (connections.xml, a
+# queryTable and a table part on a sheet). Opened in Excel on 9 Oct 2026 both
+# sheets stayed blank on Refresh All: the hand-made binding did not take. So
+# the workbook now carries the queries only, and Luke loads each one once
+# with Load To (Excel makes its own binding), which Refresh All then fills.
+CONNECTION_ONLY = True
 
 def sql(name):
     return open(os.path.join(ROOT, 'sage', name), encoding='utf-8').read()
@@ -45,11 +51,13 @@ README = [
     'the Clockwork flag, supplier, lead time, category, stock by warehouse). SOPDemand is every',
     'live sales order line for a stock-held code: the orders behind On SOP.',
     '',
-    'First open:',
-    '1. Data > Refresh All. Excel asks how to connect: pick Windows > Use my current',
-    '   credentials. If a privacy-level box appears, choose Organizational for TIB-SQL-002.',
-    '2. The two tables fill. A yellow bar saying the data connections are disabled: click',
-    '   Enable Content, then Refresh All again.',
+    'First open (once):',
+    '1. Data > Queries & Connections. The pane on the right lists Buffer and SOPDemand.',
+    '2. Right-click Buffer > Load To... > Table > New worksheet > OK. Excel asks how to connect:',
+    '   pick Windows > Use my current credentials. If a privacy-level box appears, choose',
+    '   Organizational for TIB-SQL-002.',
+    '3. Right-click SOPDemand > Load To... > Table > New worksheet > OK.',
+    '4. A yellow bar saying the data connections are disabled: click Enable Content.',
     '',
     'Every time:',
     '1. Refresh All (wait for the status bar to finish - background refresh is off).',
@@ -91,15 +99,20 @@ def metadata_xml():
         names = '[' + ','.join('"%s"' % c for c in cols) + ']'
         items.append(
             '<Item><ItemLocation><ItemType>Formula</ItemType><ItemPath>Section1/%s</ItemPath></ItemLocation><StableEntries>'
-            '<Entry Type="IsPrivate" Value="l0" /><Entry Type="QueryID" Value="s%s" /><Entry Type="FillEnabled" Value="l1" />'
-            '<Entry Type="FillObjectType" Value="sTable" /><Entry Type="FillToDataModelEnabled" Value="l0" /><Entry Type="BufferNextRefresh" Value="l1" />'
-            '<Entry Type="ResultType" Value="sTable" /><Entry Type="NameUpdatedAfterFill" Value="l0" /><Entry Type="NavigationStepName" Value="sNavigation" />'
-            '<Entry Type="FillTarget" Value="s%s" /><Entry Type="FilledCompleteResultToWorksheet" Value="l1" /><Entry Type="FillErrorCount" Value="l0" />'
-            '<Entry Type="FillErrorCode" Value="sUnknown" /><Entry Type="FillColumnNames" Value="s%s" /><Entry Type="FillStatus" Value="sComplete" />'
-            '<Entry Type="FillCount" Value="l0" /><Entry Type="AddedToDataModel" Value="l0" />'
-            '</StableEntries></Item>'
+            + (('<Entry Type="IsPrivate" Value="l0" /><Entry Type="QueryID" Value="s%s" /><Entry Type="FillEnabled" Value="l0" />'
+                '<Entry Type="ResultType" Value="sTable" /><Entry Type="NavigationStepName" Value="sNavigation" />'
+                '<Entry Type="FillColumnNames" Value="s%s" /><Entry Type="AddedToDataModel" Value="l0" />'
+                % (uuid.uuid4(), xml_esc(names))) if CONNECTION_ONLY else
+               ('<Entry Type="IsPrivate" Value="l0" /><Entry Type="QueryID" Value="s%s" /><Entry Type="FillEnabled" Value="l1" />'
+                '<Entry Type="FillObjectType" Value="sTable" /><Entry Type="FillToDataModelEnabled" Value="l0" /><Entry Type="BufferNextRefresh" Value="l1" />'
+                '<Entry Type="ResultType" Value="sTable" /><Entry Type="NameUpdatedAfterFill" Value="l0" /><Entry Type="NavigationStepName" Value="sNavigation" />'
+                '<Entry Type="FillTarget" Value="s%s" /><Entry Type="FilledCompleteResultToWorksheet" Value="l1" /><Entry Type="FillErrorCount" Value="l0" />'
+                '<Entry Type="FillErrorCode" Value="sUnknown" /><Entry Type="FillColumnNames" Value="s%s" /><Entry Type="FillStatus" Value="sComplete" />'
+                '<Entry Type="FillCount" Value="l0" /><Entry Type="AddedToDataModel" Value="l0" />'
+                % (uuid.uuid4(), table, xml_esc(names))))
+            + '</StableEntries></Item>'
             '<Item><ItemLocation><ItemType>Formula</ItemType><ItemPath>Section1/%s/Source</ItemPath></ItemLocation><StableEntries /></Item>'
-            % (name, uuid.uuid4(), table, xml_esc(names), name))
+            % name)
     return ('<?xml version="1.0" encoding="utf-8"?><LocalPackageMetadataFile xmlns:xsd="http://www.w3.org/2001/XMLSchema" '
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><Items>' + ''.join(items) + '</Items></LocalPackageMetadataFile>')
 
@@ -170,13 +183,13 @@ def connections_xml():
 
 def build():
     files = {}
-    n = len(QUERIES)
-    sheets = [(q[1], i+1) for i, q in enumerate(QUERIES)] + [('ReadMe', n+1)]
+    n = 0 if CONNECTION_ONLY else len(QUERIES)
+    sheets = ([] if CONNECTION_ONLY else [(q[1], i+1) for i, q in enumerate(QUERIES)]) + [('ReadMe', n+1)]
     ct = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">',
           '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>',
           '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>',
           '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>',
-          '<Override PartName="/xl/connections.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml"/>',
+          '' if CONNECTION_ONLY else '<Override PartName="/xl/connections.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml"/>',
           '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>',
           '<Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>',
           '<Override PartName="/customXml/itemProps1.xml" ContentType="application/vnd.openxmlformats-officedocument.customXmlProperties+xml"/>']
@@ -205,7 +218,8 @@ def build():
     wb.append('</sheets><calcPr calcId="191029"/></workbook>')
     files['xl/workbook.xml'] = ''.join(wb)
     rels.append('<Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' % rid); rid += 1
-    rels.append('<Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/connections" Target="connections.xml"/>' % rid); rid += 1
+    if not CONNECTION_ONLY:
+        rels.append('<Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/connections" Target="connections.xml"/>' % rid); rid += 1
     rels.append('<Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml"/>' % rid); rid += 1
     rels.append('</Relationships>')
     files['xl/_rels/workbook.xml.rels'] = ''.join(rels)
@@ -214,8 +228,8 @@ def build():
         '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
         '<cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>'
         '<tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/></styleSheet>')
-    files['xl/connections.xml'] = connections_xml()
-    for i, (name, sheet, table, f, cols) in enumerate(QUERIES):
+    if not CONNECTION_ONLY: files['xl/connections.xml'] = connections_xml()
+    for i, (name, sheet, table, f, cols) in enumerate([] if CONNECTION_ONLY else QUERIES):
         files['xl/worksheets/sheet%d.xml' % (i+1)] = sheet_xml(cols, widths={'Name': 48, 'CustomerName': 30, 'CustomerOrderNo': 24, 'Customers': 30, 'Category': 20, 'SupplierName': 24})
         files['xl/worksheets/_rels/sheet%d.xml.rels' % (i+1)] = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
             '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/table" Target="../tables/table%d.xml"/></Relationships>' % (i+1))
