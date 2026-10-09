@@ -139,7 +139,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    && r4.join('|')==='MESHPW31401:7:1.75:2026-10-01|PC2001ECO:7:7.35:2026-10-01' && r5.lines.join('|')==='MESHPW31401:2026-10-01|PC2001ECO:2026-10-01' && r5.notPushed===0 && r5.review===0
    && s3a===1 && s3b===0 && s3.join()==='2026-10-01:1.75,2026-10-01:8' && s4.join('|')==='MESHPW31401:1.75::std|PC2001ECO:8:roll end, 0.65 m short:adj'
    && /Cut today=9.8 m/.test(s5.tiles.join()) && /Live, not on the log=0/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP'&&/Undo/.test(r[10]))
-   && s5.day.length===1 && s5.day[0][2]==='9.75' && s5.wip.length===3 && s5.wip[0][0].startsWith('PC2001ECO') && s5.wip[0][5]==='£17.12' && s5.wip[2][5]==='£21.06' && Math.abs(s5.wipCalc.total.value-21.06)<0.01
+   && s5.day.length===1 && s5.day[0][1]==='1' && s5.day[0][2]==='2' && s5.day[0][3]==='9.75' && s5.wip.length===3 && s5.wip[0][0].startsWith('PC2001ECO') && s5.wip[0][5]==='£17.12' && s5.wip[2][5]==='£21.06' && Math.abs(s5.wipCalc.total.value-21.06)<0.01
    && s6.retried===2 && s6.cut==='2026-10-01' && s6.alerts===0
    && s7.src==='pages' && s7.rows===2 && s7.n===4 && s7n===5 && s7.buttons===0 && s7.tag==='view only'
    && s8.wipNow.lines===1 && s8.wipNow.assumed===1 && Math.abs(s8.wipNow.value-4.64)<0.01 && s8.wipBefore.lines===3 && s8.wipBefore.logged===2 && Math.abs(s8.wipBefore.value-25.70)<0.01

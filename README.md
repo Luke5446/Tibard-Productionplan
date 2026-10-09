@@ -112,6 +112,17 @@ The file is created by the first push, so nothing needs adding to the repo by
 hand. When the token expires, GitHub emails a week ahead: make a new one and
 paste it on both PCs.
 
+## Make for 4 weeks or 12 weeks
+
+The buffer toolbar's **Make for** toggle sets how many weeks' sales WOP REC
+covers: 4 as standard, 12 when the factory is quiet and stock is to be built
+for the busy months (Luke, 9 Oct 2026). Only the recommendation changes; the
+status colours and the % Good KPI stay at 28 days so the series stays
+comparable. The choice is saved, published, and shown to viewers as text.
+The Cutting tab's Metres per day table counts the works orders cut each day.
+The new buffer sheet, the sales orders behind On SOP, and the Clockwork
+exclusion are in `docs/buffer-v2-design.md` and `sage/70-buffer-live.sql`.
+
 ## Containers on the water
 
 The stock planner publishes its container purchase orders, with the date each
