@@ -116,8 +116,9 @@ paste it on both PCs.
 
 `sage/Buffer Live.xlsx` (built by `tools/build-buffer-workbook.py` from
 `sage/70-buffer-live.sql` and `sage/71-buffer-sop-demand.sql`) replaces the
-Buffer_Report workbook: Refresh All, then both tables go into the one
-**Paste buffer stock data** box, in either order. The Buffer sheet's first
+Buffer_Report workbook: Refresh All, then the **Paste** sheet (both halves
+as one table, `sage/74-buffer-paste.sql`) goes into the one **Paste buffer
+stock data** box; the two halves pasted separately work too. The Buffer sheet's first
 nine columns are the old paste; from column J the planner also reads the
 category, the **Clockwork** flag (column N, the code is on the Clockwork
 Bulk list), the lead time and the minimum level. The SOPDemand sheet is

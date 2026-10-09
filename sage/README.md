@@ -20,6 +20,7 @@ Excel works order + Google Sheet step the sales office does today.
 | `51-grouping-coverage.sql` | Profit report, step 1b: whether sizes can be rolled up into a garment. Not yet run. |
 | `70-buffer-live.sql` | **The new buffer sheet.** One query in place of the Buffer_Report workbook's eleven: today's nine paste columns first, in today's order, then the Clockwork flag, supplier, lead time, product category, minimum level, stock by warehouse and the rest. Not yet run against the live server - see "The buffer workbook" below. |
 | `71-buffer-sop-demand.sql` | **The sales orders behind On SOP.** One row per live sales order line for a stock-held code: order number, promised date, customer. The second sheet of the new workbook, for the works order to name the orders it covers. |
+| `74-buffer-paste.sql` | **The one to copy.** 70 and 71 as one table: the buffer rows, then every live sales order line underneath in columns A to L. One tab, one copy, one paste; the planner tells the two apart by the first cell (Luke, 9 Oct 2026). |
 | `72-buffer-validate.sql` | **Run before switching the planner over.** Works In Stock / SOP / POP out the old sheet's way and lists the codes where 70 differs. Empty is the goal. |
 | `73-buffer-discovery.sql` | Six small checks on the names 70 takes on trust: warehouse names, the customer search category, Clockwork's account, codes with no supplier, the old views' definitions, OH-only stock codes. |
 
@@ -742,8 +743,9 @@ A code starting `BULK` is a garment's container stock (BULKTWAP052031P, the Book
 
 ## 4. The buffer workbook (replacing Buffer_Report_Stock_Held_Production)
 
-**`sage/Buffer Live.xlsx` is the workbook, with the two queries already in
-it.** `tools/build-buffer-workbook.py` writes it from the SQL files, so a
+**`sage/Buffer Live.xlsx` is the workbook, with the three queries already in
+it: `Paste` (the one to copy, 74), and `Buffer` and `SOPDemand` (70 and 71,
+the same halves with proper numbers, for reading).** `tools/build-buffer-workbook.py` writes it from the SQL files, so a
 change to the SQL is a re-run of the script, not a hand edit in Excel. The
 queries are connection-only: the first time, **Data → Queries & Connections**,
 right-click each of `Buffer` and `SOPDemand` → **Load To… → Table → New
