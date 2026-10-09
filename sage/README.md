@@ -18,6 +18,10 @@ Excel works order + Google Sheet step the sales office does today.
 | `PROFIT.md` | **Separate strand — profit per product per month.** Where it got to, what is still open, and the traps that carry over. Start there, not in the SQL. |
 | `50-profit-discovery.sql` | Profit report, step 1: what Sage records about the money on a sale. Not yet run. |
 | `51-grouping-coverage.sql` | Profit report, step 1b: whether sizes can be rolled up into a garment. Not yet run. |
+| `70-buffer-live.sql` | **The new buffer sheet.** One query in place of the Buffer_Report workbook's eleven: today's nine paste columns first, in today's order, then the Clockwork flag, supplier, lead time, product category, minimum level, stock by warehouse and the rest. Not yet run against the live server - see "The buffer workbook" below. |
+| `71-buffer-sop-demand.sql` | **The sales orders behind On SOP.** One row per live sales order line for a stock-held code: order number, promised date, customer. The second sheet of the new workbook, for the works order to name the orders it covers. |
+| `72-buffer-validate.sql` | **Run before switching the planner over.** Works In Stock / SOP / POP out the old sheet's way and lists the codes where 70 differs. Empty is the goal. |
+| `73-buffer-discovery.sql` | Six small checks on the names 70 takes on trust: warehouse names, the customer search category, Clockwork's account, codes with no supplier, the old views' definitions, OH-only stock codes. |
 
 ---
 
@@ -733,3 +737,60 @@ what the Excel connection can show.
 ## BULK codes
 
 A code starting `BULK` is a garment's container stock (BULKTWAP052031P, the Booker waterproof apron, 1,224 in the Bulk warehouse): made or bought in bulk, never cut here. Its Stock Held analysis code is not always set and its Manufacturer field often says Tibard, so the live query reads the prefix first and files the line as STOCK HELD; the app does the same with a line that still says WORKS ORDER from an older copy of the query (1 Oct 2026).
+
+---
+
+## 4. The buffer workbook (replacing Buffer_Report_Stock_Held_Production)
+
+**`sage/Buffer Live.xlsx` is the workbook, built with the two queries already
+in it.** `tools/build-buffer-workbook.py` writes it from the SQL files, so a
+change to the SQL is a re-run of the script, not a hand edit in Excel. Open
+it, **Refresh All**, pick Windows credentials when asked (once), and the two
+tables fill: `Buffer` (28 columns) and `SOPDemand` (12). The ReadMe sheet in
+the workbook has the steps. Copy each table's rows without the header into
+the planner's one **Paste buffer stock data** box, in either order: the
+planner tells a demand line by its `TIB-`/`OH-` line key.
+
+The Buffer_Report workbook (18 June 2026 copy) it replaces is eleven queries
+stitched together with VLOOKUPs on a 1,533-row sheet with 18 hidden columns.
+Three of its inputs are not queries at all:
+
+- **Supplier Lead Times** (Clockwork Manufactured, Supplier Lead Time,
+  Branded Stock) is a typed sheet, 1,628 rows, with no connection behind it.
+- The **In Stock** formula also looks up an OffSite table that is not in the
+  workbook, so that term has always been 0.
+- **1M Sales** is 3M ÷ 3, not the view's own 1MSales column.
+
+`70-buffer-live.sql` does the lot in one query, reading the same custom
+views for sales (`bm_Tib_Sales_12_6_3_Grouped`, `bm_OH_Sales_Grouped`) so
+the numbers the planner has been showing do not move, and Sage's own tables
+for everything else. Columns A to I are today's paste exactly (code, name,
+in stock, On SOP, On POP, 1M, 3M, 6M, 12M), so the planner reads the new
+sheet by the same nine columns and takes the rest from J on: the category,
+column N for a Clockwork code, the lead time and the minimum level.
+
+**Which codes are Clockwork's** is read off the Bulk list, the
+`eve_AllLiveSOPPOPStockBULK` view the old workbook showed as "03 Tibard
+Limited Bulk": of its 615 codes, 369 are in the buffer and 343 of those are
+the ones the typed sheet marked Clockwork (344 in all), so the two agree
+and the view needs no typing. Sage's Manufacturer field is not used for
+this: most of these codes still say Tibard there.
+
+**Before pointing the planner at it**, paste `72-buffer-validate.sql` in
+place of 70 for one refresh. It lists every code whose In Stock, SOP or POP
+differs from the old sheet's figure. An empty list means the new sheet is
+the old sheet plus the new columns. A short list with a reason you can name
+(Bulk counted, returns counted) is fine; a long list means a warehouse name
+or a view differs from what 70 assumes, and `73-buffer-discovery.sql` prints
+the names and the old views' definitions so it can be put right.
+
+Untested caveat: 70 to 73 were written from the column names 10 and 60 have
+already proved against the live database (StockItem, WarehouseItem,
+StockItemSupplier, PLSupplierAccount, the SOP tables, the search category
+tables from the old Query5) and the views the old workbook reads. Two things
+could not be checked from here and 73 confirms them: the warehouse names
+(HOME, and Bulk as `%BULK%`) and the search category holding the customer
+names. The workbook itself was built by hand from the OOXML parts a real
+Excel saves and not opened in Excel: if Excel repairs it on opening, the
+queries are still in the file (Data → Queries & Connections) and `70` and
+`71` paste into a fresh connection as section 2 describes.
