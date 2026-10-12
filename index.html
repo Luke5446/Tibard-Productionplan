@@ -2667,11 +2667,16 @@ function mergePublishedSnapshots(){
 // Branding spec committed to data.json (e.g. set by the office for a special)
 // fills in a works order whose local copy has none. A placement already held
 // locally is kept - the editor's own edit is the truth. Returns how many filled.
+// A marker corrected in data.json by hand (markerSetAt stamped on the record,
+// as for the MTC coats' 1 m placeholders on 12 Oct 2026) replaces the local
+// one unless the local record was imported or edited after that day.
 function absorbBranding(pubEdits){
   var n=0;
   Object.keys(pubEdits||{}).forEach(function(code){
     var p=pubEdits[code], l=styleEdits[code];
     if(!p || !l) return;
+    if(p.markerSetAt && p.markerLen>0 && p.markerSetAt>(l.markerSetAt||l.editedAt||l.importedAt||'') && (p.markerLen!==l.markerLen || p.markerMain!==l.markerMain)){
+      l.markerMain=p.markerMain; l.markerLen=p.markerLen; l.markerSetAt=p.markerSetAt; n++; }
     if(!(p.brandPlace && !l.brandPlace) && !(p.placeImg && !l.placeImg) && !(p.logo2Img && !l.logo2Img)) return;
     if(p.brandPlace && !l.brandPlace) l.brandPlace=p.brandPlace;
     if(p.brandType && (!l.brandType || l.brandType==='None')) l.brandType=p.brandType;
