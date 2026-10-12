@@ -27,9 +27,17 @@ const published={rows:[{code:'A1',desc:'x',inStock:50,onSOP:0,onPOP:0,s1m:1,s3m:
  const r3=await e.evaluate(pub=>{ bufSnaps=[{date:'2026-08-25',pct:90,critical:1,low:1,ok:1,healthy:1,skus:4,unitsShort:0,onWOP:0},{date:'2026-09-03',pct:92,critical:1,low:1,ok:1,healthy:1,skus:4,unitsShort:0,onWOP:0}];
    const added=absorbSnapshots(pub.bufSnaps); return {added, dates:bufSnaps.map(x=>x.date+':'+x.pct)}; }, published);
  console.log('editor absorb    ->', JSON.stringify(r3));
+ // a marker corrected in data.json (markerSetAt) replaces the editor's 1 m placeholder, but not a record imported after the correction
+ const r4=await e.evaluate(()=>{ styleEdits.M1={code:'M1',markerMain:'MK1',markerLen:1,layQty:1,importedAt:'2026-10-07',editedAt:'2026-10-07',fabrics:[['CLOTH','PC1','A1',1.84]]};
+   styleEdits.M2={code:'M2',markerMain:'MK2',markerLen:1,layQty:1,importedAt:'2026-10-13',editedAt:'2026-10-13',fabrics:[['CLOTH','PC1','A1',1.84]]};
+   const n=absorbBranding({M1:{code:'M1',markerMain:'MK1',markerLen:1.76,markerSetAt:'2026-10-12'},M2:{code:'M2',markerMain:'MK2',markerLen:2.08,markerSetAt:'2026-10-12'}});
+   const again=absorbBranding({M1:{code:'M1',markerMain:'MK1',markerLen:1.76,markerSetAt:'2026-10-12'}});
+   return {n, again, m1:styleEdits.M1.markerLen, m1At:styleEdits.M1.markerSetAt, m2:styleEdits.M2.markerLen, use:fabricUsageFor('M1').metres, src:fabricUsageFor('M1').source}; });
+ console.log('marker absorb    ->', JSON.stringify(r4));
  await e.close();
  const pass = r1.rows===1 && r1.smMade===1 && r1.smDropped===1 && r1.smParts==='{"OH|1":1}' && r1.styleEdits===1 && r1.snaps===2 && r1.docs===1
    && r2.hero==='93.9%' && r2.aug.snapDays===2 && r2.aug.avgPct===94.2 && r2.aug.smRaised===1 && r2.aug.smDone===1
+   && r4.n===1 && r4.again===0 && r4.m1===1.76 && r4.m1At==='2026-10-12' && r4.m2===1 && r4.use===1.76 && r4.src==='marker MK1'
    && r3.added===1 && r3.dates.join()==='2026-08-24:94.5,2026-08-25:90,2026-09-03:92';
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

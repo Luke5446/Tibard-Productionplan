@@ -120,6 +120,18 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    setTimeout(()=>{ splitWO(WOs.findIndex(w=>w.ref==='S-T5')); const kid2=WOs[WOs.length-1]; markWOPrinted(WOs.length-1);
      setTimeout(()=>r({kid:kid.ref, kidFrom:kid.splitFrom, kidQty:kid.items[0].qty, parentQty:WOs.find(w=>w.ref==='S-T3').items[0].qty, kid2:kid2.ref, kid2From:kid2.splitFrom, review:cutReviewLines().map(l=>l.wo.ref).join(), notPushed:cutNotPushed().map(w=>w.ref).join()}), 2600); }, 800); }, 800)); });
  const spLog=entries().filter(e=>['S-T3','S-T5',sp.kid,sp.kid2].includes(e.ref)).map(e=>e.ref+':'+e.code+':'+e.qty+':'+e.std+':'+(e.cutAt?'cut':(e.cancelledAt?'withdrawn':'waiting'))).sort();
+ // 7. back-dating. S-T5 (printed 2 Oct) is cut on Friday 2 Oct and marked on Monday 5 Oct: the date box opens on the 5th and caps there;
+ //    the 6th and the 1st are refused; the 2nd is taken, flagged as back-dated on the log, and the undo clears it
+ const bd=await p.evaluate(()=>{ window.now=()=>new Date('2026-10-05T10:00:00'); window.__alerts=[]; cutSec='todo'; cutQ='S-T5'; cutRender();
+   const box=document.querySelector('input[data-cutd="S-T5|APP300503|PC2003ECO"]'), out={def:box.value, max:box.max, min:box.min, beside:!!box.nextElementSibling && /Cut/.test(box.nextElementSibling.textContent)};
+   box.value='2026-10-06'; cutMark('S-T5|APP300503|PC2003ECO'); out.ahead=window.__alerts.length;
+   box.value='2026-10-01'; cutMark('S-T5|APP300503|PC2003ECO'); out.early=window.__alerts.length; out.earlyMsg=window.__alerts[1]||'';
+   box.value='2026-10-02'; cutMark('S-T5|APP300503|PC2003ECO');
+   return new Promise(r=>setTimeout(()=>{ const e=cutLog.entries.find(x=>x.k==='S-T5|APP300503|PC2003ECO'); out.cutAt=e.cutAt; out.backdated=e.backdated; out.at=(e.at||'').slice(0,10);
+     cutSec='log'; cutRender(); const row=[...document.querySelectorAll('#cutBody .cut-tbl tbody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ')).find(t=>/S-T5/.test(t))||''; out.row=row.slice(0,80); out.tag=/02 Oct 2026 back-dated/.test(row);
+     const tiles=[...document.querySelectorAll('#cutBody .kpi-tile')].map(t=>t.querySelector('.l').textContent+'='+t.querySelector('.v').textContent.replace(/\s+/g,' ')); out.today=tiles.find(t=>/^Cut today/.test(t));
+     cutUnmark('S-T5|APP300503|PC2003ECO'); setTimeout(()=>{ const e2=cutLog.entries.find(x=>x.k==='S-T5|APP300503|PC2003ECO'); out.undone=!e2.cutAt && !('backdated' in e2); r(out); },600); },600)); });
+ console.log('back-date ->', JSON.stringify(bd));
  console.log('splits    ->', JSON.stringify(sp), JSON.stringify(spLog));
  console.log('printed   ->', JSON.stringify(s1), JSON.stringify(s1b), JSON.stringify(s1c));
  console.log('review    ->', JSON.stringify(r1), JSON.stringify(r2), JSON.stringify(r3a), JSON.stringify(r3)); console.log('cut, edit ->', JSON.stringify(r4), JSON.stringify(r5));
@@ -132,7 +144,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    && r2.join()==='12:6:waiting' && r3a.log===0 && /^no metres on file for PC2003ECO: type the metres/.test(r3a.why) && /no usage on file .*PC2003ECO.*type the metres for the line/.test(r3a.hint)
    && r3.log.join()==='PC2003ECO:6:5' && r3.review.n===0 && r3.review.badge==='none' && /Nothing to review/.test(r3.review.empty)
    && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===3 && s1c.prompt==='' && /mark cuts/.test(s1c.tag)
-   && s2.src==='api' && s2.rows===3 && s2.order==='S-T1,S-T1,S-T3' && s2.head==='Works orderPrinted ▲DueProductQtyFabricStd mCut m · comment' && s2.flipped==='S-T3,S-T1,S-T1' && s2.todo==='3' && s2.boxAfterChips && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.cutAll && sq.polling
+   && s2.src==='api' && s2.rows===3 && s2.order==='S-T1,S-T1,S-T3' && s2.head==='Works orderPrinted ▲DueProductQtyFabricStd mCut m · comment · cut on' && s2.flipped==='S-T3,S-T1,S-T1' && s2.todo==='3' && s2.boxAfterChips && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.cutAll && sq.polling
    && s7.logPrompt && s7.todoRows===1
    && s2c.tiles.join()==='New today=1,Live works orders to cut=2' && s2c.byPrinted==='S-T3,S-T1' && s2c.byDue==='S-T3,S-T1' && s2c.dueHead==='Due ▲' && s2c.byDueDesc==='S-T1,S-T3'
    && s2c.newOnly==='S-T1' && s2c.note && s2c.back==='S-T1,S-T3'
@@ -148,6 +160,8 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    && s8.rec.actual===8 && s8.rec.std===7.35 && /cut log/.test(s8.rec.source) && s8.rec.note==='roll end, 0.65 m short' && s8.rec.meshActual===undefined && s8.rec.meshStd===1.75
    && sp.kidFrom==='S-T3' && sp.kidQty===2 && sp.parentQty===3 && sp.kid2From==='S-T5' && sp.review==='' && sp.notPushed===''
    && spLog.join('|')===['S-T3:ZZNOUSAGE:5:6:cut','S-T5:APP300503:2:1:waiting',sp.kid2+':APP300503:2:1:waiting'].sort().join('|')
+   && bd.def==='2026-10-05' && bd.max==='2026-10-05' && bd.min==='2026-10-02' && bd.beside && bd.ahead===1 && bd.early===2 && /printed on 02 Oct 2026/.test(bd.earlyMsg)
+   && bd.cutAt==='2026-10-02' && bd.backdated==='2026-10-05' && bd.tag && /Cut today=0\.0 m/.test(bd.today) && bd.undone
    && s8.ledger.metres===9.75 && s8.ledger.varPct===8.8 && s8.ledger.note==='roll end, 0.65 m short' && s8.rowHasNote;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

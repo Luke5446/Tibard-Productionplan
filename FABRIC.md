@@ -127,6 +127,15 @@ mesh, and a contrast marker's cloth is the style's second non-mesh fabric.
 Mesh and contrast go on the write-off as their own lines, standard only; the
 cutting room's actual is for the main cloth.
 
+A marker on the works order data outranks the style's fabric rating, so a
+costing-app placeholder (1 m, as on the MTC coats in sizes 100, 116 and 132
+imported on 7 Oct 2026) reaches the cutting room as 1 m a garment. The
+editor's own copy is the truth and the published `data.json` is only a copy
+of it, so a figure corrected in `data.json` by hand carries `markerSetAt`
+(the day of the correction): the editor takes the published marker number
+and length over its own unless its record was imported or edited after
+that day, saves, and the waiting cut log lines follow.
+
 Rules applied when the sheets are read (all in the generator's docstring):
 the Notes column labels the mesh block on the same row, so a note starting
 MESH is not a note on the main marker; a marker is the mesh one when its
