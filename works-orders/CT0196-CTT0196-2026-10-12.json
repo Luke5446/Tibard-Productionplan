@@ -1,0 +1,528 @@
+{
+ "styles": [
+  {
+   "code": "CT0196--03",
+   "name": "Tibard chef trousers, elasticated waist — regular length, black",
+   "desc": "Chefs trousers · Full elasticated waist · Zip fasten · One patch pocket on back RHSAW · Hemmed trouser · Regular length · Black",
+   "lectra": "CT0196 — variant CT0196 for sizes XS to XXL; 0196BIG — variant 0196BIG for sizes 48\" to 70\" — regular length",
+   "chart": "CT0196-MEAS",
+   "fabrics": [
+    [
+     "Black 65% recycled polyester / 35% organic cotton X133ECO-AM125 (Tiajo) — rating 1.30 m on 60\" wide fabric, size M or L",
+     "PC2003ECO",
+     "B14",
+     1.3,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     150,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Zip",
+     "6\" nylon lightweight zip — black",
+     1,
+     "",
+     null
+    ],
+    [
+     "Elastic",
+     "1\" (25 mm) wide white elastic. Cut to size: XS 25\" (63.5 cm) · S 27\" (68.5 cm) · M 29\" (74 cm) · L 31\" (79 cm) · XL 33\" (84 cm) · XXL 35\" (89 cm, also for the 44\" and 46\" waists) · 48\" waist 37\" (94 cm) · 50\" 39\" (99 cm) · 52\" 41\" (104 cm) · 54\" 43\" (109 cm) · 56\" 45\" (114 cm) · 58\" 47\" (119 cm) · 60\" 49\" (124.5 cm).",
+     1,
+     "",
+     null
+    ],
+    [
+     "Wash label",
+     "Wash instructions label: 60° wash · two dot iron · no bleach · low tumble dry · P dry clean. Set to the inside back seam, 12 cm down from the cut edge, to finish 8 cm inside the back seam.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Tibard tax tab",
+     "Tibard tax tab set to the outside edge under the pocket hem (outside leg side of the pocket, level with the pocket hem stitching).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Pocket hem double turned 1 cm + 1.5 cm and topstitched 1.5 cm. Pocket edge stitched on three sides. Tibard tax tab set to the outside leg side of the pocket, level with the pocket hem stitching.",
+    "Pocket set to back right leg as worn. Set centrally and parallel with the outside leg edge. Top of the pocket set level with the notch. Pocket to finish 10 cm down from the finished waist.",
+    "Fly front 21 cm long with a curve around the bottom. 8 cm of topstitching from the top of the trouser down. Ensure this stitching is back-tacked at the fly top / waistband to secure.",
+    "Wash label set to the inside back seam, 12 cm down from the cut edge, to finish 8 cm inside the back seam.",
+    "Cut the elastic at the required size (see the Elastic trim line) and overlap the ends by 2.5 cm (1\"). Overlock to neaten the top edge of the waist. Turn the waistband over 3.5 cm and insert the elastic. Set two rows of stitching at the waist to secure the elastic.",
+    "Bottom hem overlocked and turned up 1.5 cm, stitched on the overlock and NOT on chain stitch.",
+    "Make-up sheet available."
+   ],
+   "fin": [
+    "Bar tack the patch pocket mouth with vertical bartacks, and a vertical bartack at the bottom of the fly.",
+    "Trim and fold, showing the pocket on the top."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Waist ± 2 cm · Thigh ± 2 cm · Length +2 cm",
+   "variant": "CT0196",
+   "note": "Stock works order CT0196--03 (work order 1325, Gail, issued 24/9/26 for 45 x CT0196LL03; created YL 12.5.14, measurements JH 4/1/18, set to stock YL 20/3/18, model and variant corrected JH 9/4/26). Rating 1.30 m on 60\" wide fabric at size M or L; All Costings carries 1.25 m. Document: works-orders/CT0196-03-Stock.xlsx."
+  },
+  {
+   "code": "CTT0196--03",
+   "name": "Tibard chef trousers, elasticated waist — tall length, black",
+   "desc": "Chefs trousers · Full elasticated waist · Zip fasten · One patch pocket on back RHSAW · Hemmed trouser · Tall length · Black",
+   "lectra": "CTT0196 — tall length",
+   "chart": "CTT0196-MEAS",
+   "fabrics": [
+    [
+     "Black 65% recycled polyester / 35% organic cotton X133ECO-AM125 (Tiajo) — rating 1.30 m on 60\" wide fabric, size M or L",
+     "PC2003ECO",
+     "B14",
+     1.3,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     150,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Zip",
+     "6\" nylon lightweight zip — black",
+     1,
+     "",
+     null
+    ],
+    [
+     "Elastic",
+     "1\" (25 mm) wide white elastic. Cut to size: XS 25\" (63.5 cm) · S 27\" (68.5 cm) · M 29\" (74 cm) · L 31\" (79 cm) · XL 33\" (84 cm) · XXL 35\" (89 cm, also for the 44\" and 46\" waists) · 48\" waist 37\" (94 cm) · 50\" 39\" (99 cm) · 52\" 41\" (104 cm) · 54\" 43\" (109 cm) · 56\" 45\" (114 cm) · 58\" 47\" (119 cm) · 60\" 49\" (124.5 cm).",
+     1,
+     "",
+     null
+    ],
+    [
+     "Wash label",
+     "Wash instructions label: 60° wash · two dot iron · no bleach · low tumble dry · P dry clean. Set to the inside back seam, 12 cm down from the cut edge, to finish 8 cm inside the back seam.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Tibard tax tab",
+     "Tibard tax tab set to the outside edge under the pocket hem (outside leg side of the pocket, level with the pocket hem stitching).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Pocket hem double turned 1 cm + 1.5 cm and topstitched 1.5 cm. Pocket edge stitched on three sides. Tibard tax tab set to the outside leg side of the pocket, level with the pocket hem stitching.",
+    "Pocket set to back right leg as worn. Set centrally and parallel with the outside leg edge. Top of the pocket set level with the notch. Pocket to finish 10 cm down from the finished waist.",
+    "Fly front 21 cm long with a curve around the bottom. 8 cm of topstitching from the top of the trouser down. Ensure this stitching is back-tacked at the fly top / waistband to secure.",
+    "Wash label set to the inside back seam, 12 cm down from the cut edge, to finish 8 cm inside the back seam.",
+    "Cut the elastic at the required size (see the Elastic trim line) and overlap the ends by 2.5 cm (1\"). Overlock to neaten the top edge of the waist. Turn the waistband over 3.5 cm and insert the elastic. Set two rows of stitching at the waist to secure the elastic.",
+    "Bottom hem overlocked and turned up 1.5 cm, stitched on the overlock and NOT on chain stitch.",
+    "Make-up sheet available."
+   ],
+   "fin": [
+    "Bar tack the patch pocket mouth with vertical bartacks, and a vertical bartack at the bottom of the fly.",
+    "Trim and fold, showing the pocket on the top."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Waist ± 2 cm · Thigh ± 2 cm · Length +2 cm",
+   "variant": "CTT0196",
+   "note": "Stock works order CTT0196--03, tall length (Gail; created YL 12.5.14, measurements JH 4/1/18, set to tall leg YL 28/3/18, 60\" elastic YL 16/7/18). The sheet still names the old black PC2003 (P&R, B11): the ECO cloth and its B14 location are taken from the regular-length sheet of 24/9/26. Document: works-orders/CTT0196-03-Stock.xlsx."
+  },
+  {
+   "code": "CT0196--26",
+   "name": "Tibard chef trousers, elasticated waist — regular length, blue/white gingham check",
+   "desc": "Chefs trousers · Full elasticated waist · Zip fasten · One patch pocket on back RHSAW · Hemmed trouser · Regular length · Blue/white gingham check",
+   "lectra": "CT0196 — variant CT0196 for sizes XS to XXL; 0196BIG — variant 0196BIG for sizes 48\" to 70\" — regular length",
+   "chart": "CT0196-MEAS",
+   "fabrics": [
+    [
+     "Blue/white gingham check poly-cotton 190 gsm 150 cm (P&R) — rating 1.30 m as the black",
+     "PC2026",
+     "",
+     1.3,
+     2.7
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre",
+     150,
+     "CMP-THR-PC075-32109-01",
+     0.0005055
+    ],
+    [
+     "Zip",
+     "6\" nylon lightweight zip — white",
+     1,
+     "",
+     null
+    ],
+    [
+     "Elastic",
+     "1\" (25 mm) wide white elastic. Cut to size: XS 25\" (63.5 cm) · S 27\" (68.5 cm) · M 29\" (74 cm) · L 31\" (79 cm) · XL 33\" (84 cm) · XXL 35\" (89 cm, also for the 44\" and 46\" waists) · 48\" waist 37\" (94 cm) · 50\" 39\" (99 cm) · 52\" 41\" (104 cm) · 54\" 43\" (109 cm) · 56\" 45\" (114 cm) · 58\" 47\" (119 cm) · 60\" 49\" (124.5 cm).",
+     1,
+     "",
+     null
+    ],
+    [
+     "Wash label",
+     "Wash instructions label: 60° wash · two dot iron · no bleach · low tumble dry · P dry clean. Set to the inside back seam, 12 cm down from the cut edge, to finish 8 cm inside the back seam.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Tibard tax tab",
+     "Tibard tax tab set to the outside edge under the pocket hem (outside leg side of the pocket, level with the pocket hem stitching).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Pocket hem double turned 1 cm + 1.5 cm and topstitched 1.5 cm. Pocket edge stitched on three sides. Tibard tax tab set to the outside leg side of the pocket, level with the pocket hem stitching.",
+    "Pocket set to back right leg as worn. Set centrally and parallel with the outside leg edge. Top of the pocket set level with the notch. Pocket to finish 10 cm down from the finished waist.",
+    "Fly front 21 cm long with a curve around the bottom. 8 cm of topstitching from the top of the trouser down. Ensure this stitching is back-tacked at the fly top / waistband to secure.",
+    "Wash label set to the inside back seam, 12 cm down from the cut edge, to finish 8 cm inside the back seam.",
+    "Cut the elastic at the required size (see the Elastic trim line) and overlap the ends by 2.5 cm (1\"). Overlock to neaten the top edge of the waist. Turn the waistband over 3.5 cm and insert the elastic. Set two rows of stitching at the waist to secure the elastic.",
+    "Bottom hem overlocked and turned up 1.5 cm, stitched on the overlock and NOT on chain stitch.",
+    "Make-up sheet available."
+   ],
+   "fin": [
+    "Bar tack the patch pocket mouth with vertical bartacks, and a vertical bartack at the bottom of the fly.",
+    "Trim and fold, showing the pocket on the top."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Waist ± 2 cm · Thigh ± 2 cm · Length +2 cm",
+   "variant": "CT0196",
+   "note": "Blue/white gingham colourway derived from the black works order CT0196--03: no blue/white gingham works order has been seen. Fabric PC2026 is what All Costings and Sage give the blue/white gingham codes; thread and zip colour to be confirmed. Document: works-orders/CT0196-03-Stock.xlsx."
+  },
+  {
+   "code": "CT0196--28",
+   "name": "Tibard chef trousers, elasticated waist — regular length, black/white gingham check",
+   "desc": "Chefs trousers · Full elasticated waist · Zip fasten · One patch pocket on back RHSAW · Hemmed trouser · Regular length · Black/white gingham check",
+   "lectra": "CT0196 — variant CT0196 for sizes XS to XXL; 0196BIG — variant 0196BIG for sizes 48\" to 70\" — regular length",
+   "chart": "CT0196-MEAS",
+   "fabrics": [
+    [
+     "Black/white gingham check poly-cotton 190 gsm 150 cm (P&R) — rating 1.30 m as the black",
+     "PC2028",
+     "",
+     1.3,
+     2.7
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     150,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Zip",
+     "6\" nylon lightweight zip — black",
+     1,
+     "",
+     null
+    ],
+    [
+     "Elastic",
+     "1\" (25 mm) wide white elastic. Cut to size: XS 25\" (63.5 cm) · S 27\" (68.5 cm) · M 29\" (74 cm) · L 31\" (79 cm) · XL 33\" (84 cm) · XXL 35\" (89 cm, also for the 44\" and 46\" waists) · 48\" waist 37\" (94 cm) · 50\" 39\" (99 cm) · 52\" 41\" (104 cm) · 54\" 43\" (109 cm) · 56\" 45\" (114 cm) · 58\" 47\" (119 cm) · 60\" 49\" (124.5 cm).",
+     1,
+     "",
+     null
+    ],
+    [
+     "Wash label",
+     "Wash instructions label: 60° wash · two dot iron · no bleach · low tumble dry · P dry clean. Set to the inside back seam, 12 cm down from the cut edge, to finish 8 cm inside the back seam.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Tibard tax tab",
+     "Tibard tax tab set to the outside edge under the pocket hem (outside leg side of the pocket, level with the pocket hem stitching).",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Pocket hem double turned 1 cm + 1.5 cm and topstitched 1.5 cm. Pocket edge stitched on three sides. Tibard tax tab set to the outside leg side of the pocket, level with the pocket hem stitching.",
+    "Pocket set to back right leg as worn. Set centrally and parallel with the outside leg edge. Top of the pocket set level with the notch. Pocket to finish 10 cm down from the finished waist.",
+    "Fly front 21 cm long with a curve around the bottom. 8 cm of topstitching from the top of the trouser down. Ensure this stitching is back-tacked at the fly top / waistband to secure.",
+    "Wash label set to the inside back seam, 12 cm down from the cut edge, to finish 8 cm inside the back seam.",
+    "Cut the elastic at the required size (see the Elastic trim line) and overlap the ends by 2.5 cm (1\"). Overlock to neaten the top edge of the waist. Turn the waistband over 3.5 cm and insert the elastic. Set two rows of stitching at the waist to secure the elastic.",
+    "Bottom hem overlocked and turned up 1.5 cm, stitched on the overlock and NOT on chain stitch.",
+    "Make-up sheet available."
+   ],
+   "fin": [
+    "Bar tack the patch pocket mouth with vertical bartacks, and a vertical bartack at the bottom of the fly.",
+    "Trim and fold, showing the pocket on the top."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Waist ± 2 cm · Thigh ± 2 cm · Length +2 cm",
+   "variant": "CT0196",
+   "note": "Black/white gingham colourway derived from the black works order CT0196--03: no black/white gingham works order has been seen. Fabric PC2028 is what All Costings and Sage give the black/white gingham codes; thread and zip colour to be confirmed. Document: works-orders/CT0196-03-Stock.xlsx."
+  }
+ ],
+ "charts": {
+  "CT0196-MEAS": [
+   [
+    "XS",
+    "24–26\"",
+    "61 cm",
+    "87 cm",
+    "66 cm",
+    "79 cm"
+   ],
+   [
+    "S",
+    "28–30\"",
+    "66 cm",
+    "93 cm",
+    "68.5 cm",
+    "79 cm"
+   ],
+   [
+    "M",
+    "32–34\"",
+    "71 cm",
+    "98 cm",
+    "70 cm",
+    "79 cm"
+   ],
+   [
+    "L",
+    "36–38\"",
+    "76 cm",
+    "103 cm",
+    "73 cm",
+    "79 cm"
+   ],
+   [
+    "XL",
+    "40–42\"",
+    "81 cm",
+    "108 cm",
+    "77 cm",
+    "79 cm"
+   ],
+   [
+    "XXL",
+    "44–46\"",
+    "86.5 cm",
+    "119 cm",
+    "81 cm",
+    "79 cm"
+   ],
+   [
+    "48\"",
+    "48\"",
+    "91.5 cm",
+    "132 cm",
+    "94 cm",
+    "81.5 cm"
+   ],
+   [
+    "50\"",
+    "50\"",
+    "96.5 cm",
+    "137 cm",
+    "96.5 cm",
+    "81.5 cm"
+   ],
+   [
+    "52\"",
+    "52\"",
+    "101.5 cm",
+    "142 cm",
+    "99 cm",
+    "81.5 cm"
+   ],
+   [
+    "54\"",
+    "54\"",
+    "107 cm",
+    "147 cm",
+    "101.5 cm",
+    "81.5 cm"
+   ],
+   [
+    "56\"",
+    "56\"",
+    "112 cm",
+    "152 cm",
+    "104 cm",
+    "81.5 cm"
+   ],
+   [
+    "58\"",
+    "58\"",
+    "117 cm",
+    "157 cm",
+    "106.5 cm",
+    "81.5 cm"
+   ],
+   [
+    "60\"",
+    "60\"",
+    "122 cm",
+    "162 cm",
+    "109 cm",
+    "81.5 cm"
+   ]
+  ],
+  "CTT0196-MEAS": [
+   [
+    "XS",
+    "24–26\"",
+    "61 cm",
+    "87 cm",
+    "66 cm",
+    "86.5 cm"
+   ],
+   [
+    "S",
+    "28–30\"",
+    "66 cm",
+    "93 cm",
+    "68.5 cm",
+    "86.5 cm"
+   ],
+   [
+    "M",
+    "32–34\"",
+    "71 cm",
+    "98 cm",
+    "70 cm",
+    "86.5 cm"
+   ],
+   [
+    "L",
+    "36–38\"",
+    "76 cm",
+    "103 cm",
+    "73 cm",
+    "86.5 cm"
+   ],
+   [
+    "XL",
+    "40–42\"",
+    "81 cm",
+    "108 cm",
+    "77 cm",
+    "86.5 cm"
+   ],
+   [
+    "XXL",
+    "44–46\"",
+    "86.5 cm",
+    "119 cm",
+    "81 cm",
+    "86.5 cm"
+   ],
+   [
+    "48\"",
+    "48\"",
+    "91.5 cm",
+    "132 cm",
+    "94 cm",
+    "86.5 cm"
+   ],
+   [
+    "50\"",
+    "50\"",
+    "96.5 cm",
+    "137 cm",
+    "96.5 cm",
+    "86.5 cm"
+   ],
+   [
+    "52\"",
+    "52\"",
+    "101.5 cm",
+    "142 cm",
+    "99 cm",
+    "86.5 cm"
+   ],
+   [
+    "54\"",
+    "54\"",
+    "107 cm",
+    "147 cm",
+    "101.5 cm",
+    "86.5 cm"
+   ],
+   [
+    "56\"",
+    "56\"",
+    "112 cm",
+    "152 cm",
+    "104 cm",
+    "86.5 cm"
+   ],
+   [
+    "58\"",
+    "58\"",
+    "117 cm",
+    "157 cm",
+    "106.5 cm",
+    "86.5 cm"
+   ],
+   [
+    "60\"",
+    "60\"",
+    "122 cm",
+    "162 cm",
+    "109 cm",
+    "86.5 cm"
+   ]
+  ]
+ },
+ "chartCols": {
+  "CT0196-MEAS": [
+   "Size",
+   "To fit waist",
+   "Waist relaxed",
+   "Waist stretched",
+   "Thigh",
+   "Regular length"
+  ],
+  "CTT0196-MEAS": [
+   "Size",
+   "To fit waist",
+   "Waist relaxed",
+   "Waist stretched",
+   "Thigh",
+   "Tall length"
+  ]
+ }
+}

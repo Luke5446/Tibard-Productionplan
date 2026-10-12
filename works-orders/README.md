@@ -69,6 +69,9 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `APP063103PCS-Star.xlsx` | Works order for APP063103PCS, the black waist apron with wide centre-divide pocket and self fabric ties with the Carl's Jr star logo for BRG Star (JH 2025), artwork and placement sketch included. In the app as style APP063103PCS with the logo as its own branding. |
 | `APP063103PCS-2026-10-01.json` | That record for the costing app, with OHAPP061268's logo wording moved to the bottom left corner in line with the knee. |
 | `OHAPP061268-2026-09-28.json` | The OHAPP061268 record in the same format, with the logo and sketch images. |
+| `CT0196-03-Stock.xlsx` | Stock works order for CT0196--03, the Tibard black elasticated-waist chef trousers, regular length (work order 1325, Gail 24/9/26; YL 2014, measurements JH 2018, model and variant corrected JH 9/4/26). In the app as style CT0196--03, with the blue/white (26) and black/white (28) gingham check colourways Sage sells derived from it. |
+| `CTT0196-03-Stock.xlsx` | Stock works order for CTT0196--03, the same trousers in the tall length (YL 2014, set to tall leg 28/3/18). In the app as style CTT0196--03. |
+| `CT0196-CTT0196-2026-10-12.json` | Those four records, with the regular and tall size charts, for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards
