@@ -15,9 +15,15 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
   five or more days ago is flagged. Each works order on the list shows its
   lays and cutting minutes (see "Cutting time" below); one with a code that
   has no lay plan is tagged **no lay plan**. The cutting room PC marks a line, or a
-  whole works order, cut: the mark is dated that day. Each line has a metres
-  box, started at the standard, and a comment box; a figure that differs from
-  the standard needs the comment.
+  whole works order, cut: the mark is dated that day unless the date box
+  beside the Cut button is put back (a works order cut on Friday and only
+  marked on Monday goes to Friday's KPI, not Monday's). The box opens on
+  today and cannot go ahead of it, or before the day the works order was
+  printed; **Cut all** takes the date on the works order's first line. Each
+  line has a metres box, started at the standard, and a comment box; a
+  figure that differs from the standard needs the comment.
+- A back-dated mark is tagged **back-dated** on the cut log, with the day it
+  was marked in the hover.
 - **Cut log**: what was cut and when. Like the Embroidery tab, the lines come
   up for what is typed in the search box (a works order number, a product
   code or a fabric), with the completion date or "in WIP". **Undo** puts a
