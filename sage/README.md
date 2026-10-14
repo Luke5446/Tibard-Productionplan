@@ -788,6 +788,19 @@ the ones the typed sheet marked Clockwork (344 in all), so the two agree
 and the view needs no typing. Sage's Manufacturer field is not used for
 this: most of these codes still say Tibard there.
 
+**A garment's container stock is a separate Sage item**, `BULK` + the code
+(BULKCJ0193MM01 for CJ0193MM01), with its own stock and its own purchase
+orders. 70, 71 and 74 fold the BULK item into its base code: its stock is in
+In Stock (and shown on its own in StockBulk), its on-order in On POP (and
+OnPOPBulk), its sales order lines under the base code. Luke, 14 Oct 2026:
+CJ0193MM01 read 0 in stock on the first refresh against 438 on the old
+sheet. Oliver Harvey's figures for the same code come from the
+`OliverHarveyLive` database the same way (StockOH, OnSOPOH).
+
+`74-buffer-paste.sql` is generated from 70 and 71 by
+`tools/build-paste-sql.py`; run it after changing either, then
+`tools/build-buffer-workbook.py`.
+
 **Before pointing the planner at it**, paste `72-buffer-validate.sql` in
 place of 70 for one refresh. It lists every code whose In Stock, SOP or POP
 differs from the old sheet's figure. An empty list means the new sheet is

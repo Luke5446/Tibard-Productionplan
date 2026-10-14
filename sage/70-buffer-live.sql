@@ -29,15 +29,17 @@
      F Sales1M      G Sales3M H Sales6M    I Sales12M
 
    What each is, against the old sheet:
-     C InStock  = Tibard stock in every warehouse EXCEPT Bulk + OH stock
-                  (the old M: "01 No SP" + "02 OH" + "04 Consignment"; the
-                  old formula also looked up an OffSite table that is not in
-                  the workbook, so it always added 0)
-     D OnSOP    = outstanding quantity on live sales orders, both companies
+     C InStock  = Tibard stock in every warehouse + the BULK item's stock
+                  + OH stock. A garment's container stock is a SEPARATE Sage
+                  item, BULK + the code (BULKCJ0193MM01 for CJ0193MM01), so
+                  the BULK item is folded into its base code here (Luke,
+                  14 Oct 2026: 438 on the old sheet, 0 on the first refresh)
+     D OnSOP    = outstanding quantity on live sales orders, both companies,
+                  the BULK item's orders counted under the base code
                   (line quantity less despatched, orders only, not returns)
-     E OnPOP    = Sage's on-purchase-order figure for every warehouse except
-                  Bulk, both companies (WarehouseItem.QuantityOnPOPOrder,
-                  the figure the fabric sheet already uses)
+     E OnPOP    = Sage's on-purchase-order figure, both companies, the BULK
+                  item's included: that is where a container PO sits
+                  (WarehouseItem.QuantityOnPOPOrder, as the fabric sheet)
      F Sales1M  = Sales3M / 3, as the old sheet worked it (the planner
                   stores it and shows nothing from it)
      G-I        = the existing bm_ sales views, Tibard + Oliver Harvey
@@ -58,13 +60,13 @@
                        stock planner tracks, not production's to make
      O LeadDays        the preferred supplier's lead time on the stock record
      P MinLevel        the HOME warehouse's minimum level
-     Q StockHome       Tibard HOME
-     R StockOther      Tibard, every other warehouse except Bulk (consignment)
-     S StockBulk       Tibard Bulk - NOT in C, shown so it is not invisible
-     T StockOH         Oliver Harvey, every warehouse
+     Q StockHome       Tibard HOME, the base code
+     R StockOther      Tibard, every other warehouse, the base code
+     S StockBulk       the BULK item's stock, every warehouse - IN C
+     T StockOH         Oliver Harvey, every warehouse, base and BULK items
      U OnSOPTib        D split by company
      V OnSOPOH
-     W OnPOPBulk       Sage POP landing in Bulk - NOT in E
+     W OnPOPBulk       the BULK item's on-order - IN E
      X DateOfLastSale  yyyy-mm-dd, blank when never sold
      Y ExcludeAutoPO   the "Exclude From Auto B2B PO" search value
      Z Customers       the old sheet's "Customer(s)", read from the
@@ -98,46 +100,56 @@ items AS (
 /* --------------------------------------------------- Tibard warehouses -- */
 tib_wh AS (
     SELECT  wi.ItemID,
-            SUM(CASE WHEN w.Name = 'HOME'           THEN wi.ConfirmedQtyInStock ELSE 0 END) AS StockHome,
-            SUM(CASE WHEN w.Name LIKE '%BULK%'      THEN wi.ConfirmedQtyInStock ELSE 0 END) AS StockBulk,
-            SUM(CASE WHEN w.Name <> 'HOME'
-                      AND w.Name NOT LIKE '%BULK%'  THEN wi.ConfirmedQtyInStock ELSE 0 END) AS StockOther,
-            SUM(CASE WHEN w.Name NOT LIKE '%BULK%'  THEN ISNULL(wi.QuantityOnPOPOrder,0) ELSE 0 END) AS OnPOP,
-            SUM(CASE WHEN w.Name LIKE '%BULK%'      THEN ISNULL(wi.QuantityOnPOPOrder,0) ELSE 0 END) AS OnPOPBulk,
-            MAX(CASE WHEN w.Name = 'HOME'           THEN wi.MinimumLevel END)                 AS MinLevel
+            SUM(CASE WHEN w.Name = 'HOME'  THEN wi.ConfirmedQtyInStock ELSE 0 END) AS StockHome,
+            SUM(CASE WHEN w.Name <> 'HOME' THEN wi.ConfirmedQtyInStock ELSE 0 END) AS StockOther,
+            SUM(ISNULL(wi.QuantityOnPOPOrder,0))                                  AS OnPOP,
+            MAX(CASE WHEN w.Name = 'HOME'  THEN wi.MinimumLevel END)              AS MinLevel
     FROM    S200_LIVE.dbo.WarehouseItem wi
     JOIN    S200_LIVE.dbo.Warehouse     w ON w.WarehouseID = wi.WarehouseID
     GROUP BY wi.ItemID
 ),
+/* -------------------------------------- the BULK item, by its base code -- */
+/* BULKCJ0193MM01 is CJ0193MM01's container stock: its own Sage item, with
+   its own stock and its own purchase orders (the container PO is raised on
+   it). Folded into the base code. */
+bulk_item AS (
+    SELECT  SUBSTRING(LTRIM(RTRIM(si.Code)), 5, 200)  AS Code,
+            SUM(ISNULL(wi.ConfirmedQtyInStock,0))     AS StockBulk,
+            SUM(ISNULL(wi.QuantityOnPOPOrder,0))      AS OnPOPBulk
+    FROM    S200_LIVE.dbo.StockItem si
+    LEFT JOIN S200_LIVE.dbo.WarehouseItem wi ON wi.ItemID = si.ItemID
+    WHERE   si.Code LIKE 'BULK%'
+    GROUP BY SUBSTRING(LTRIM(RTRIM(si.Code)), 5, 200)
+),
 /* -------------------------------------------- Oliver Harvey, same code -- */
-oh AS (
-    SELECT  LTRIM(RTRIM(si.Code)) AS Code,
+oh AS (   -- OH's BULK items folded into their base code the same way
+    SELECT  CASE WHEN LTRIM(RTRIM(si.Code)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(si.Code)), 5, 200) ELSE LTRIM(RTRIM(si.Code)) END AS Code,
             SUM(wi.ConfirmedQtyInStock)               AS StockOH,
             SUM(ISNULL(wi.QuantityOnPOPOrder,0))      AS OnPOPOH,
             MAX(CASE WHEN ISNULL(si.AnalysisCode3,'') = 'Yes'
                        OR ISNULL(si.AnalysisCode7,'') = 'Yes' THEN 'Y' ELSE 'N' END) AS StockHeldOH
     FROM    OliverHarveyLive.dbo.StockItem     si
     LEFT JOIN OliverHarveyLive.dbo.WarehouseItem wi ON wi.ItemID = si.ItemID
-    GROUP BY LTRIM(RTRIM(si.Code))
+    GROUP BY CASE WHEN LTRIM(RTRIM(si.Code)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(si.Code)), 5, 200) ELSE LTRIM(RTRIM(si.Code)) END
 ),
 /* --------------------------------- outstanding on live sales orders -- */
-sop_tib AS (
-    SELECT  LTRIM(RTRIM(sorl.ItemCode)) AS Code,
+sop_tib AS (   -- an order on the BULK item counts under the base code
+    SELECT  CASE WHEN LTRIM(RTRIM(sorl.ItemCode)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(sorl.ItemCode)), 5, 200) ELSE LTRIM(RTRIM(sorl.ItemCode)) END AS Code,
             SUM(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) AS OnSOP
     FROM    S200_LIVE.dbo.SOPOrderReturn     sor
     JOIN    S200_LIVE.dbo.SOPOrderReturnLine sorl ON sorl.SOPOrderReturnID = sor.SOPOrderReturnID
     WHERE   sor.DocumentTypeID = 0 AND sor.DocumentStatusID = 0 AND sorl.LineTypeID = 0
       AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
-    GROUP BY LTRIM(RTRIM(sorl.ItemCode))
+    GROUP BY CASE WHEN LTRIM(RTRIM(sorl.ItemCode)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(sorl.ItemCode)), 5, 200) ELSE LTRIM(RTRIM(sorl.ItemCode)) END
 ),
 sop_oh AS (
-    SELECT  LTRIM(RTRIM(sorl.ItemCode)) AS Code,
+    SELECT  CASE WHEN LTRIM(RTRIM(sorl.ItemCode)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(sorl.ItemCode)), 5, 200) ELSE LTRIM(RTRIM(sorl.ItemCode)) END AS Code,
             SUM(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) AS OnSOP
     FROM    OliverHarveyLive.dbo.SOPOrderReturn     sor
     JOIN    OliverHarveyLive.dbo.SOPOrderReturnLine sorl ON sorl.SOPOrderReturnID = sor.SOPOrderReturnID
     WHERE   sor.DocumentTypeID = 0 AND sor.DocumentStatusID = 0 AND sorl.LineTypeID = 0
       AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
-    GROUP BY LTRIM(RTRIM(sorl.ItemCode))
+    GROUP BY CASE WHEN LTRIM(RTRIM(sorl.ItemCode)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(sorl.ItemCode)), 5, 200) ELSE LTRIM(RTRIM(sorl.ItemCode)) END
 ),
 /* ------------------------------------------- sales, the existing views -- */
 sales AS (
@@ -189,9 +201,10 @@ SELECT
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(i.Name,''),
         CHAR(9),' '), CHAR(13),' '), CHAR(10),' ')))                    AS Name,            -- B
     CAST(ISNULL(tw.StockHome,0) + ISNULL(tw.StockOther,0)
-         + ISNULL(o.StockOH,0)                   AS int)                AS InStock,         -- C
+         + ISNULL(bi.StockBulk,0) + ISNULL(o.StockOH,0) AS int)         AS InStock,         -- C
     CAST(ISNULL(st.OnSOP,0) + ISNULL(so.OnSOP,0) AS int)                AS OnSOP,           -- D
-    CAST(ISNULL(tw.OnPOP,0) + ISNULL(o.OnPOPOH,0) AS int)               AS OnPOP,           -- E
+    CAST(ISNULL(tw.OnPOP,0) + ISNULL(bi.OnPOPBulk,0)
+         + ISNULL(o.OnPOPOH,0)                   AS int)                AS OnPOP,           -- E
     CAST(ROUND(ISNULL(sa.S3,0) / 3.0, 0)         AS int)                AS Sales1M,         -- F
     CAST(ISNULL(sa.S3,0)                         AS int)                AS Sales3M,         -- G
     CAST(ISNULL(sa.S6,0)                         AS int)                AS Sales6M,         -- H
@@ -205,11 +218,11 @@ SELECT
     CAST(ISNULL(tw.MinLevel,0)                   AS int)                AS MinLevel,        -- P
     CAST(ISNULL(tw.StockHome,0)                  AS int)                AS StockHome,       -- Q
     CAST(ISNULL(tw.StockOther,0)                 AS int)                AS StockOther,      -- R
-    CAST(ISNULL(tw.StockBulk,0)                  AS int)                AS StockBulk,       -- S
+    CAST(ISNULL(bi.StockBulk,0)                  AS int)                AS StockBulk,       -- S
     CAST(ISNULL(o.StockOH,0)                     AS int)                AS StockOH,         -- T
     CAST(ISNULL(st.OnSOP,0)                      AS int)                AS OnSOPTib,        -- U
     CAST(ISNULL(so.OnSOP,0)                      AS int)                AS OnSOPOH,         -- V
-    CAST(ISNULL(tw.OnPOPBulk,0)                  AS int)                AS OnPOPBulk,       -- W
+    CAST(ISNULL(bi.OnPOPBulk,0)                  AS int)                AS OnPOPBulk,       -- W
     ISNULL(CONVERT(varchar(10), d.DateOfLastSale, 23), '')              AS DateOfLastSale,  -- X
     LTRIM(RTRIM(ISNULL(ex.ExcludeAutoPO,'')))                           AS ExcludeAutoPO,   -- Y
     LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(ISNULL(i.Customers,''),
@@ -219,6 +232,7 @@ SELECT
 FROM        items i
 LEFT JOIN   S200_LIVE.dbo.ProductGroup pg ON pg.ProductGroupID = i.ProductGroupID
 LEFT JOIN   tib_wh   tw ON tw.ItemID = i.ItemID
+LEFT JOIN   bulk_item bi ON bi.Code  = i.Code
 LEFT JOIN   oh       o  ON o.Code    = i.Code
 LEFT JOIN   sop_tib  st ON st.Code   = i.Code
 LEFT JOIN   sop_oh   so ON so.Code   = i.Code
