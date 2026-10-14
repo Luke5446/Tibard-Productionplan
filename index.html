@@ -259,6 +259,7 @@ body.planner-mode .planner-wrap{display:block}
 .sm-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.4px;padding:1px 6px;border-radius:9px;background:#eef2ff;color:#3730a3;margin-left:6px;vertical-align:1px}
 .sm-tag.oh{background:#dcfce7;color:#14532d}
 .sm-tag.warn{background:#fee2e2;color:#991b1b}
+.fab-st.backdated{background:#fef3c7;color:#92400e}
 .sm-tag.ok{background:#d1fae5;color:#065f46}
 .sm-meta{font-size:11px;color:#6b7280;margin-top:2px}
 .sm-desc{font-size:12.5px;margin-top:5px}
@@ -1292,6 +1293,7 @@ function recordCompleted(wo, it, day){
     start: wo.start || '',
     due: wo.due || '',
     completed: day||d2s(now()),
+    bookedAt: (day && day<d2s(now())) ? d2s(now()) : undefined,   // back-dated: the day it was really booked
     // The day it was raised, the day it was printed, and for a special make the
     // day its line first arrived from Sage. Without these the history could
     // only ever say WHEN a job finished, never how long it took.
@@ -2112,7 +2114,7 @@ function renderCompleted(){
   function compRow(c){
     var realIdx=completedWOs.indexOf(c);
     return '<tr>'
-      +'<td style="font-weight:600">'+fmtD(c.completed)+'</td>'
+      +'<td style="font-weight:600">'+fmtD(c.completed)+(c.bookedAt?'<div><span class="fab-st backdated" title="completed on '+esc(fmtD(c.completed))+', booked on '+esc(fmtD(c.bookedAt))+'">back-dated &middot; booked '+esc(fmtD(c.bookedAt))+'</span></div>':'')+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+esc(c.ref)+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+esc(c.code)+'</td>'
       +'<td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(c.desc)+'">'+esc(c.desc)+'</td>'
@@ -5391,12 +5393,19 @@ function fabricCellFor(i, it){
              : '<div style="font-size:10px;color:#b45309">'+(it.fabricCode ? 'no usage on file &middot; cloth <b>'+esc(it.fabricCode)+'</b>' : 'no usage on file')+editLink
                +(IS_EDITOR ? (it.metresActual!=null ? ' &middot; <span style="color:#065f46">'+it.metresActual+' m typed: the cutting room cuts to this</span>' : ' &middot; type the metres for the line: the cutting room cuts to them') : '')+'</div>';
   var wo=WOs[i], cf=(wo && u) ? cutFigureFor(wo.ref, it.code, it.fabricCode||u.code) : null;
+  if(it.fabricExportedAt) hint+='<div style="font-size:10px;color:#6b7280" title="'+esc(it.fabricExportFile||'')+'">written off in Sage '+esc(fmtD(it.fabricExportedAt))+(it.fabricExportFile?' &middot; '+esc(it.fabricExportFile):'')+' - the line completes as Exported'+(IS_EDITOR?' <a href="#" onclick="woUndoExportMark('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\');return false" title="Only if Sage does not show the write-off: the line then completes as open and goes in the next file">undo</a>':'')+'</div>';
   if(cf) hint+='<div style="font-size:10px;color:'+(cf.adjusted?'#b45309':'#065f46')+'">&#9986; cut '+esc(fmtD(cf.cutAt))+(cf.adjusted?' &middot; cutting room: <b>'+cf.metres+' m</b>'+(cf.note?' &middot; '+esc(cf.note):'')+(it.metresActual==null?' (used as the actual)':''):' at standard')+'</div>';
   if(!IS_EDITOR) return (it.metresActual!=null ? it.metresActual+' m' : (cf&&cf.adjusted ? cf.metres+' m' : (std!=null ? std+' m' : '&mdash;')))+hint;
   return '<input type="number" step="0.01" min="0" value="'+(it.metresActual!=null?it.metresActual:'')+'" placeholder="'+(cf&&cf.adjusted?cf.metres:(std!=null?std:''))+'" '
     +'onchange="setMetresActual('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\',this.value)" '
     +'style="width:78px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px">'+hint;
 }
+// A live line the cutting sheet catch-up marked as written off, where Sage
+// shows no such write-off (Luke, 14 Oct 2026: S868175): clear the mark so
+// the line completes as open and goes in the next write-off file.
+function woUndoExportMark(i, code){ if(!IS_EDITOR) return; var wo=WOs[i]; if(!wo) return; var it=wo.items.find(function(x){ return x.code===code; }); if(!it || !it.fabricExportedAt) return;
+  if(!confirm('Only if Sage does NOT show this write-off ('+(it.fabricExportFile||'')+', '+fmtD(it.fabricExportedAt)+').\n\nClear the mark on '+code+' ('+wo.ref+')? It will then be written off from here when the works order is completed.')) return;
+  delete it.fabricExportedAt; delete it.fabricExportFile; saveState(); refreshWOModal(); }
 function setMetresActual(i, code, val){
   var wo=WOs[i]; if(!wo) return;
   var it=wo.items.find(function(x){ return x.code===code; }); if(!it) return;
@@ -6535,9 +6544,9 @@ function fabRender(){
   var lines=fabLines().filter(function(l){ return fabMatches(l,q) && !(fabOpen.hideDone && l.state!=='open'); });
   var byMon={}; lines.forEach(function(l){ var m=l.date.slice(0,7); (byMon[m]=byMon[m]||[]).push(l); });
   var mkeys=Object.keys(byMon).sort().reverse();
-  function stats(list){ var open=0, dis=0, m=0, c=0; list.forEach(function(l){ if(l.state==='dismissed') dis++; else { m+=l.metres||0; c+=l.cost||0; if(l.state==='open') open++; } });
+  function stats(list){ var open=0, dis=0, m=0, c=0, bd=0; list.forEach(function(l){ if(l.c.bookedAt) bd++; if(l.state==='dismissed') dis++; else { m+=l.metres||0; c+=l.cost||0; if(l.state==='open') open++; } });
     return '<span style="color:#6b7280;font-weight:400">'+list.length+' line'+(list.length===1?'':'s')+(dis<list.length ? ' &middot; '+fabM(m,1)+' m &middot; '+fabGBP(c,0) : '')+'</span>'
-      +(open?' <span class="fab-st open">'+open+' open</span>':'')+(dis?' <span class="fab-st dismissed">'+dis+' dismissed</span>':''); }
+      +(open?' <span class="fab-st open">'+open+' open</span>':'')+(dis?' <span class="fab-st dismissed">'+dis+' dismissed</span>':'')+(bd?' <span class="fab-st backdated" title="completed on this day, booked later">'+bd+' back-dated</span>':''); }
   function groupTick(prefix, list){ if(!ed) return ''; var ex=list.filter(function(l){return l.exportable;}); if(!ex.length) return '<span style="width:15px;display:inline-block"></span>';
     var all=ex.every(function(l){ return fabIsTicked(l.c); });
     return '<input type="checkbox" title="tick every open line in this group" onclick="event.stopPropagation()" onchange="fabTickGroup(\''+prefix+'\',this.checked)"'+(all?' checked':'')+'>'; }
@@ -6560,7 +6569,7 @@ function fabRender(){
     var stCell='<span class="fab-st '+st+'">'+stLbl+'</span>'+(l.state==='exported'?'<div class="sm-sub" title="'+esc(l.c.fabricExportFile||'')+'">'+fmtD(l.c.fabricExportedAt)+(l.c.fabricExportFile?' &middot; '+esc(l.c.fabricExportFile.replace(/^Fabric_WriteOff_/,'').replace(/\.csv$/,'')):'')+'</div>':'')+(l.state==='dismissed'?'<div class="sm-sub">'+fmtD(l.c.fabricDismissedAt)+'</div>':'');
     return '<tr'+(l.state!=='open'?' class="fab-done"':'')+'>'
       +(ed?'<td style="text-align:center">'+(l.exportable?'<input type="checkbox" onchange="fabTick('+l.idx+',this.checked)"'+(fabIsTicked(l.c)?' checked':'')+'>':'')+'</td>':'')
-      +'<td><span class="sm-ref-s'+(l.sm?' oh':'')+'">'+esc(l.ref)+'</span></td>'
+      +'<td><span class="sm-ref-s'+(l.sm?' oh':'')+'">'+esc(l.ref)+'</span>'+(l.c.bookedAt?'<div><span class="fab-st backdated" title="completed on '+esc(fmtD(l.date))+', booked on '+esc(fmtD(l.c.bookedAt))+'">back-dated &middot; booked '+esc(fmtD(l.c.bookedAt))+'</span></div>':'')+'</td>'
       +'<td><span style="font-family:monospace;font-size:11px">'+esc(l.code)+'</span><div class="sm-sub" style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(l.desc)+'">'+esc(l.desc)+'</div></td>'
       +'<td class="fab-num">'+kpiN(l.qty)+'</td>'
       +'<td>'+fab+'</td>'
