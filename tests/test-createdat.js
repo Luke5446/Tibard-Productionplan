@@ -63,7 +63,35 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  const r7=await p.evaluate(()=>({ live:WOs.filter(w=>w.createdAt).length+'/'+WOs.length, sm:WOs.filter(w=>w.sm).every(w=>w.sm.seenAt), made:smMade.every(m=>m.seenAt&&m.raisedAt) }));
  console.log('after reload     ->', JSON.stringify(r7));
 
- const pass = r1.createdAt==='2026-09-04' && r2.every(x=>x.endsWith('2026-09-04')) && r3.seenAt.every(x=>x==='2026-09-04')
+ // route 8: the date box beside Complete books a missed order on the day it
+ // really finished - never ahead of today, never before the works order was raised
+ const r8=await p.evaluate(()=>{ window.now=()=>new Date('2026-09-04T10:00:00'); window.confirm=()=>true;
+   const mk=(ref)=>{ document.getElementById('woRef').value=ref; document.getElementById('woStart').value='2026-09-04'; document.getElementById('woDue').value='2026-09-18'; document.getElementById('woTA').value='APP300503\t3'; saveWO(); };
+   mk('S-BACK'); mk('S-AHEAD'); mk('S-EARLY'); mk('S-LINE'); window.now=()=>new Date('2026-09-20T10:00:00'); renderWOCards();
+   const box=i=>document.getElementById('woc-done-'+i), o={};
+   let i=WOs.findIndex(w=>w.ref==='S-BACK'); o.def=box(i).value+'|'+box(i).max+'|'+box(i).min; box(i).value='2026-09-15'; completeWholeWO(i); o.back=completedWOs.find(c=>c.ref==='S-BACK').completed;
+   i=WOs.findIndex(w=>w.ref==='S-AHEAD'); box(i).value='2026-09-25'; completeWholeWO(i); o.ahead=completedWOs.find(c=>c.ref==='S-AHEAD').completed;
+   i=WOs.findIndex(w=>w.ref==='S-EARLY'); box(i).value='2026-08-01'; completeWholeWO(i); o.early=completedWOs.find(c=>c.ref==='S-EARLY').completed;
+   i=WOs.findIndex(w=>w.ref==='S-LINE'); openWOModal(i); const md=document.getElementById('woModalDoneDay'); o.modalDef=md.value+'|'+md.max; md.value='2026-09-17'; delWOItem(i,'APP300503'); o.line=completedWOs.find(c=>c.ref==='S-LINE').completed;
+   return o; });
+ console.log('back-dated       ->', JSON.stringify(r8));
+ // the back-dated line says so: booked-on stamp on the record, a tag on the Fabric tab's ledger line and the
+ // history table, a count on the folder; a live line already marked written off can have the mark cleared
+ const r9=await p.evaluate(()=>{ const o={}, c=completedWOs.find(x=>x.ref==='S-BACK'), t=completedWOs.find(x=>x.ref==='S-AHEAD');
+   o.booked=c.bookedAt+'|'+t.bookedAt; renderCompleted(); if(![...document.querySelectorAll('#completedBody tr')].some(tr=>/S-BACK/.test(tr.textContent))) toggleMonth('comp-2026-09'); o.hist=[...document.querySelectorAll('#completedBody tr')].filter(tr=>/S-BACK/.test(tr.textContent)).map(tr=>tr.children[0].textContent.replace(/\s+/g,' ').trim())[0];
+   smShowTab('fabric'); document.getElementById('fabSearch').value='S-BACK'; fabRender();
+   const row=[...document.querySelectorAll('#fabBody .sm-tbl tbody tr')].find(tr=>/S-BACK/.test(tr.textContent)); o.row=row?row.querySelector('.fab-st.backdated').textContent:'none';
+   o.folder=[...document.querySelectorAll('#fabBody .sm-mon-h .fab-st.backdated')].map(e=>e.textContent).join('|'); document.getElementById('fabSearch').value=''; fabRender();
+   // a live line carrying the cutting-sheet mark
+   smShowTab('buffer'); document.getElementById('woRef').value='S-MARK'; document.getElementById('woStart').value='2026-09-04'; document.getElementById('woDue').value='2026-09-18'; document.getElementById('woTA').value='APP300503\t2'; saveWO(); const i=WOs.findIndex(w=>w.ref==='S-MARK'); WOs[i].items[0].fabricExportedAt='2026-08-20'; WOs[i].items[0].fabricExportFile='Sage - cutting sheet';
+   openWOModal(i); o.panel=/written off in Sage 20 Aug 2026 · Sage - cutting sheet/.test(document.getElementById('woModalBody').textContent); o.undoLink=!!document.querySelector('#woModalBody a[onclick^="woUndoExportMark"]');
+   woUndoExportMark(i,'APP300503'); o.cleared=!WOs[i].items[0].fabricExportedAt && !WOs[i].items[0].fabricExportFile; o.panelAfter=/written off in Sage/.test(document.getElementById('woModalBody').textContent);
+   completeWholeWO(i); o.state=fabLines().find(l=>l.ref==='S-MARK').state; return o; });
+ console.log('shown as such    ->', JSON.stringify(r9));
+
+ const pass = r9.booked==='2026-09-20|undefined' && /back-dated · booked 20 Sept? 2026/.test(r9.hist) && /^back-dated · booked 20 Sept? 2026$/.test(r9.row) && r9.folder==='1 back-dated' && r9.panel && r9.undoLink && r9.cleared && !r9.panelAfter && r9.state==='open'
+   && r8.def==='2026-09-20|2026-09-20|2026-09-04' && r8.back==='2026-09-15' && r8.ahead==='2026-09-20' && r8.early==='2026-09-04' && r8.modalDef==='2026-09-20|2026-09-20' && r8.line==='2026-09-17'
+   && r1.createdAt==='2026-09-04' && r2.every(x=>x.endsWith('2026-09-04')) && r3.seenAt.every(x=>x==='2026-09-04')
    && r4.sameDay && r5 && r5.createdAt==='2026-09-04' && r5.printedAt==='2026-09-10' && r5.leadDays===8
    && r6.reopened==='2026-09-04' && r6.legacy===undefined && r7.sm && r7.made;
  console.log(pass?'PASS':'FAIL');
