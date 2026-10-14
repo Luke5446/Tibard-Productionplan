@@ -5725,9 +5725,22 @@ function fabLoadStockPaste(){
 }
 // Metres of each fabric the LIVE works orders will take: the cutting room's
 // figure where typed, the standard otherwise, secondary fabrics at standard.
+// Whether a live line's cloth has left the shelf: CUT on the cutting log (with
+// the day), taken as cut (BEFORE the log began, or cut with the works order
+// it was split from - the same reading as the WIP figure), or WAITING to be
+// cut. Luke, 14 Oct 2026: the cutting room needs to see what should be on
+// the shelf now, so the two halves of Live WO are told apart.
+function fabCutStatus(wo, it, fab){
+  var cf=cutFigureFor(wo.ref, it.code, fab); if(cf) return {state:'cut', cutAt:cf.cutAt};
+  if(wo.printed && !cutInScope(wo)) return {state:'before', cutAt:''};
+  if(cutCutWithParent(wo, it.code)) return {state:'parent', cutAt:''};
+  return {state:'waiting', cutAt:''};
+}
 function fabLiveDemand(){
   var by={}, noUsage=0;
-  function add(code,m,ref,line){ code=(code||'').toUpperCase(); if(!code||!(m>0)) return; var d=by[code]||(by[code]={metres:0, refs:{}, lines:[]}); d.metres+=m; d.refs[ref]=1; d.lines.push(Object.assign({metres:m}, line)); }
+  function add(code,m,ref,line){ code=(code||'').toUpperCase(); if(!code||!(m>0)) return; var d=by[code]||(by[code]={metres:0, waiting:0, cutLive:0, refs:{}, lines:[]}); d.metres+=m; d.refs[ref]=1;
+    var cs=fabCutStatus(WOs[line.woIdx], {code:line.code}, code); if(cs.state==='waiting') d.waiting+=m; else d.cutLive+=m;
+    d.lines.push(Object.assign({metres:m, cutState:cs.state, cutAt:cs.cutAt}, line)); }
   WOs.forEach(function(wo,wi){ wo.items.forEach(function(it){
     var f=fabricRecordFor(it); if(!f||!f.code){ if(f===null) noUsage++; return; }
     var line={ref:wo.ref, woIdx:wi, code:it.code, qty:it.qty, due:wo.due||'', created:wo.createdAt||wo.start||'', source:f.source||'', edited:!!f.edited};
@@ -5757,8 +5770,13 @@ function fabStockCompute(){
     l.extras.forEach(function(x){ if(x.code && x.metres>0) cutOpen[x.code]=(cutOpen[x.code]||0)+x.metres; }); });
   var codes={}; Object.keys(fabStock.rows).forEach(function(c){codes[c]=1;}); Object.keys(demand.by).forEach(function(c){codes[c]=1;}); Object.keys(cutOpen).forEach(function(c){codes[c]=1;}); if(fabStock.pastedAt) Object.keys(FAB_MIN_LEVELS).forEach(function(c){codes[c]=1;});   // a monitored fabric missing from a pasted sheet is worth a row; before any paste it is just noise
   var out=Object.keys(codes).map(function(c){
-    var r=fabStock.rows[c]||null, d=demand.by[c]||{metres:0,refs:{},lines:[]}, mn=fabMinFor(c, r);
+    var r=fabStock.rows[c]||null, d=demand.by[c]||{metres:0,waiting:0,cutLive:0,refs:{},lines:[]}, mn=fabMinFor(c, r);
     var inSage=r?r.inStock:null, cut=cutOpen[c]||0, com=d.metres, oo=r?r.onOrder:0, min=mn.m;
+    // To hand is what the cutting room should find on the shelf now: Sage's
+    // figure less the cloth already cut - on live works orders, and on
+    // completed ones not yet written off. Free Stock is that less what is
+    // still waiting to be cut.
+    var toHand=(inSage==null)?null:inSage-cut-d.cutLive;
     // Free Stock is what is in Sage less the live works orders and the cut
     // lines not yet written off - what could still be cut today. What is on
     // PO is not in the building, so the state is judged on Free Stock; the
@@ -5770,7 +5788,7 @@ function fabStockCompute(){
     // rounded up to 10 m, never less than the supplier's usual quantity
     var gap=(after==null) ? 0 : Math.max(0, min-after, -after);
     var order=gap>0 ? Math.max(fabRound(gap,10), r&&r.reorderQty>0?r.reorderQty:0) : 0;
-    return { code:c, row:r, name:r?r.desc:(FABRIC_NAMES[c]||''), supAcc:r?r.supAcc:'', supName:r?r.supName:'', inSage:inSage, cut:cut, committed:com, refs:Object.keys(d.refs).length, lines:d.lines||[], onOrder:oo, min:min, minSrc:mn.src, monitored:min>0,
+    return { code:c, row:r, name:r?r.desc:(FABRIC_NAMES[c]||''), supAcc:r?r.supAcc:'', supName:r?r.supName:'', inSage:inSage, cut:cut, committed:com, waiting:d.waiting, cutLive:d.cutLive, toHand:toHand, refs:Object.keys(d.refs).length, lines:d.lines||[], onOrder:oo, min:min, minSrc:mn.src, monitored:min>0,
              free:free, after:after, state:st, covered:covered, order:order };
   });
   var rank={short:0, low:1, unknown:2, ok:3};
@@ -5948,7 +5966,7 @@ function fabStockHtml(q){
       +(k.short.length?' &middot; '+k.short.length+' short':'')+(k.low.length?' &middot; '+k.low.length+' below min':'')+'</span>',
       ed?'<button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="fabTogglePaste()">&#9998; Paste fabric stock</button>':'');
   if(!fabOpen.sec.stock) return h;
-  h+='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div class="sub">Free Stock = in stock less live works orders less completed-not-written-off &middot; what is on PO is not counted as stock, but the suggested order allows for it'
+  h+='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div class="sub">To hand = in stock less what is already cut (live works orders cut, and completed-not-written-off) - what the cutting room should find on the shelf &middot; Free Stock = To hand less what is waiting to be cut &middot; what is on PO is not counted as stock, but the suggested order allows for it'
     +(k.noUsage?' &middot; <span style="color:#b45309">'+k.noUsage+' live line(s) with no usage on file are not in the demand</span>':'')+'</div>';
   // the supplier, one drop-down, All suppliers by default; then a search box for one fabric
   var sups={}; k.monitored.forEach(function(x){ if(x.supAcc) sups[x.supAcc]=x.supName||x.supAcc; });
@@ -5976,17 +5994,21 @@ function fabStockHtml(q){
   h+='<div style="font-size:11px;color:#4b5563;margin:6px 0"><span class="fab-st short">'+k.short.length+' short</span> <span class="fab-st low">'+k.low.length+' below min</span>'+(k.unknown.length?' <span class="fab-st nofab">'+k.unknown.length+' not on the Sage sheet</span>':'')+' <span style="color:#9ca3af">of the '+k.monitored.length+' monitored</span></div>';
   if(!list.length) return h+'<div class="sm-empty" style="padding:14px">'+(sq?'Nothing matches.':(fabOpen.need?'Nothing needs ordering.':'Nothing short or below minimum.'))+'</div></div>';
   var T='stock', SH=function(key,l,r,t){ return fabSortHead(T,key,l,r,t); };
-  list=fabSorted(T, list, {code:function(x){return x.code;}, sup:function(x){return x.supName||'';}, inSage:function(x){return x.inSage;}, committed:function(x){return x.committed;}, cut:function(x){return x.cut;}, free:function(x){return x.free;}, onOrder:function(x){return x.onOrder;}, after:function(x){return x.after;}, min:function(x){return x.min;}, state:function(x){return -FAB_STATE_RANK[x.state];}});
+  list=fabSorted(T, list, {code:function(x){return x.code;}, sup:function(x){return x.supName||'';}, inSage:function(x){return x.inSage;}, committed:function(x){return x.committed;}, waiting:function(x){return x.waiting;}, cut:function(x){return x.cut;}, toHand:function(x){return x.toHand;}, free:function(x){return x.free;}, onOrder:function(x){return x.onOrder;}, after:function(x){return x.after;}, min:function(x){return x.min;}, state:function(x){return -FAB_STATE_RANK[x.state];}});
   h+='<div class="sm-tblwrap"><table class="fab-stk"><thead><tr>'+SH('code','Fabric')+SH('sup','Supplier')+SH('inSage','In Stock',1)
-    +SH('committed','Live WO',1,'metres on live works orders not yet completed')+SH('cut','Not written off',1,'cut and completed, not yet in a Sage write-off file - Sage still counts it as stock')
-    +SH('free','Free Stock',1,'in stock less live WO less not written off')+SH('onOrder','On PO',1)+SH('after','Free + PO',1,'Free Stock plus what is on PO - the figure the suggestion works from')+SH('min','Min',1)+SH('state','State')+'</tr></thead><tbody>'
+    +SH('committed','Live WO',1,'metres on live works orders not yet completed - cut or not')+SH('waiting','Waiting to cut',1,'metres on live works orders not yet marked cut on the cutting log')
+    +SH('cut','Not written off',1,'cut and completed, not yet in a Sage write-off file - Sage still counts it as stock')
+    +SH('toHand','To hand',1,'what should be on the shelf now: in stock less what is cut on live works orders less completed-not-written-off')
+    +SH('free','Free Stock',1,'To hand less what is waiting to be cut - what is left once every live works order is cut')+SH('onOrder','On PO',1)+SH('after','Free + PO',1,'Free Stock plus what is on PO - the figure the suggestion works from')+SH('min','Min',1)+SH('state','State')+'</tr></thead><tbody>'
     +list.map(function(x){ var lbl={short:'Short',low:'Below min',unknown:'Not on sheet',ok:'OK'}[x.state];
       return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(x.code)+'</span><div class="sm-sub" style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(x.name)+'">'+esc(x.name)+'</div></td>'
         +'<td>'+(x.row&&x.row.supName ? esc(x.row.supName)+(function(){ var ld=fabLeadFor(x.row); return '<div class="sm-sub">'+(ld.days?ld.days+' working day'+(ld.days===1?'':'s')+(ld.src==='app'?' <span title="set here, not in Sage">&#9998;</span>':''):'<span style="color:#b45309">no lead time</span>')
               +(ed?' <a href="#" onclick="fabSetLead(\''+esc(x.row.supAcc)+'\',\''+esc(x.row.supName).replace(/'/g,"\\'")+'\');return false" title="Set the lead time for this supplier">edit</a>':'')+'</div>'; })() : '<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.inSage,1))+'</td>'
         +'<td class="fab-num">'+(x.committed?fabM(x.committed,1)+'<div class="sm-sub"><a href="#" onclick="fabDrill(\''+esc(x.code)+'\');return false" title="the works orders behind this figure">'+x.refs+' WO'+(x.refs===1?'':'s')+' '+(fabOpen.drill[x.code]?'&#9652;':'&#9662;')+'</a></div>':'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num"'+(x.waiting?' style="color:#b45309;font-weight:700"':'')+'>'+(x.waiting?fabM(x.waiting,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num">'+(x.cut?fabM(x.cut,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+        +'<td class="fab-num" style="font-weight:700;'+(x.toHand!=null&&x.toHand<0?'color:#8a2222':'')+'">'+(x.toHand==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.toHand,1))+'</td>'
         +'<td class="fab-num" style="font-weight:700;'+(x.free!=null&&x.free<0?'color:#8a2222':'')+'">'+(x.free==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.free,1))+'</td>'
         +'<td class="fab-num">'+(x.onOrder?fabM(x.onOrder,1):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td class="fab-num" style="font-weight:700;'+(x.after!=null&&(x.after<0||(x.min>0&&x.after<x.min))?'color:#8a2222':'')+'">'+(x.after==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(x.after,1))+'</td>'
@@ -6005,19 +6027,18 @@ function fabStockHtml(q){
 function fabDrillHtml(x){
   var ed=IS_EDITOR;
   if(!cutLog.loadedAt && !cutLog.error && !cutLog.busy) cutLoad(function(){ fabRender(); });   // the cut dates come off the log
-  var lines=x.lines.map(function(l){ var cf=cutFigureFor(l.ref, l.code, x.code); return Object.assign({}, l, {cutAt:cf?cf.cutAt:''}); })
-    .sort(function(a,b){ if(!a.cutAt!==!b.cutAt) return a.cutAt?1:-1; if(!a.cutAt) return (a.created||'').localeCompare(b.created||'') || b.metres-a.metres; return a.cutAt.localeCompare(b.cutAt) || b.metres-a.metres; });
-  var cut=lines.filter(function(l){ return l.cutAt; }).length, wait=lines.length-cut;
-  var waitM=0; lines.forEach(function(l){ if(!l.cutAt) waitM+=l.metres; });
+  var lines=x.lines.slice().sort(function(a,b){ var aw=a.cutState==='waiting', bw=b.cutState==='waiting'; if(aw!==bw) return aw?-1:1; if(aw) return (a.created||'').localeCompare(b.created||'') || b.metres-a.metres; return (a.cutAt||'').localeCompare(b.cutAt||'') || b.metres-a.metres; });
+  var wait=lines.filter(function(l){ return l.cutState==='waiting'; }).length, cut=lines.length-wait;
+  var waitM=0; lines.forEach(function(l){ if(l.cutState==='waiting') waitM+=l.metres; });
   var logNote=cutLog.loadedAt ? (cut+' cut on the cutting log, <b>'+wait+' waiting to be cut</b> ('+fabM(waitM,1)+' m)') : (cutLog.error ? '<span style="color:#b45309">cutting log: '+esc(cutLog.error)+'</span>' : 'reading the cutting log&hellip;');
-  return '<tr class="fab-drill"><td colspan="10"><div class="sm-sub" style="margin-bottom:4px">'+x.lines.length+' line'+(x.lines.length===1?'':'s')+' on '+x.refs+' live works order'+(x.refs===1?'':'s')+' take <b>'+esc(x.code)+'</b> &middot; '+logNote+(ed?' &middot; &#9998; changes the cloth on that line, and can correct the product for every works order from now on':'')+'</div>'
+  return '<tr class="fab-drill"><td colspan="12"><div class="sm-sub" style="margin-bottom:4px">'+x.lines.length+' line'+(x.lines.length===1?'':'s')+' on '+x.refs+' live works order'+(x.refs===1?'':'s')+' take <b>'+esc(x.code)+'</b> &middot; '+logNote+(ed?' &middot; &#9998; changes the cloth on that line, and can correct the product for every works order from now on':'')+'</div>'
     +'<table class="fab-stk" style="width:auto;min-width:520px"><thead><tr><th>Works order</th><th>Product</th><th style="text-align:right">Qty</th><th style="text-align:right">Metres</th><th title="the day the works order was raised">Created</th><th>Due</th><th title="the day the cutting room marked the line cut">Cut</th><th>From</th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
-    +lines.map(function(l){ return '<tr'+(l.cutAt?'':' class="fab-wait"')+'><td><a href="#" class="sm-ref-s" onclick="openWOModal('+l.woIdx+');return false">'+esc(l.ref)+'</a></td>'
+    +lines.map(function(l){ return '<tr'+(l.cutState==='waiting'?' class="fab-wait"':'')+'><td><a href="#" class="sm-ref-s" onclick="openWOModal('+l.woIdx+');return false">'+esc(l.ref)+'</a></td>'
         +'<td><span style="font-family:monospace;font-size:11px">'+esc(l.code)+'</span>'+(l.mesh?' <span class="sm-sub" style="display:inline">mesh</span>':'')+'</td>'
         +'<td class="fab-num">'+kpiN(l.qty)+'</td><td class="fab-num">'+fabM(l.metres)+'</td>'
         +'<td>'+(l.created?fmtD(l.created):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
         +'<td>'+(l.due?fmtD(l.due):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
-        +'<td>'+(l.cutAt?fmtD(l.cutAt):'<span class="sm-tag warn" title="not marked cut on the cutting log">waiting to be cut</span>')+'</td>'
+        +'<td>'+(l.cutAt?fmtD(l.cutAt):l.cutState==='before'?'<span class="sm-sub" title="printed before the cutting log began, so taken as cut">before the log</span>':l.cutState==='parent'?'<span class="sm-sub" title="cut with the works order it was split from">with parent</span>':'<span class="sm-tag warn" title="not marked cut on the cutting log">waiting to be cut</span>')+'</td>'
         +'<td class="sm-sub">'+esc(l.source)+(l.edited?' &#9998;':'')+'</td>'
         +(ed && !l.mesh ? '<td><a href="#" onclick="setFabricCode('+l.woIdx+',\''+esc(l.code).replace(/'/g,"\\'")+'\');return false" title="Put this line on a different cloth">&#9998; fabric</a></td>' : (ed?'<td></td>':''))+'</tr>'; }).join('')
     +'</tbody></table></td></tr>';
