@@ -38,7 +38,7 @@ const buf=T(['APP300503','BLACK BIB APRON','40','120','0','30','90','160','300']
  console.log('no token ->', JSON.stringify(s1), JSON.stringify(s1b)); console.log('token    ->', JSON.stringify(s2), JSON.stringify(s2b)); console.log('refused  ->', JSON.stringify(s3));
  const pass = s1.btn==='⚙ Set up this PC' && s1.dl===1 && s1.alert==='data.json downloaded.' && s1b.puts===0 && s1b.auth===''
    && s2.btn==='⚙ Token' && s2.dl===1 && s2.ind==='✓ Published' && s2.lu==='Published:' && s2.pbtn==='📤 Publish for team' && s2.alerts===1
-   && s2b.puts===2 && s2b.auth==='Bearer tok-prod' && s2b.msg==='Production plan published' && s2b.rows===1 && s2b.wos && s2b.savedAt && s2b.keys===17
+   && s2b.puts===2 && s2b.auth==='Bearer tok-prod' && s2b.msg==='Production plan published' && s2b.rows===1 && s2b.wos && s2b.savedAt && s2b.keys===20
    && s3.dl===2 && /^GitHub did not take the publish \(GitHub said 401 \(token refused\)\)/.test(s3.alert) && s3.pbtn==='📤 Publish for team'
    && errs.length===0;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();

@@ -320,6 +320,16 @@ value are what the cutting room took off the roll (Luke, 14 Oct 2026):
 - Lines completed, cut at standard, or written off before 14 Oct 2026 keep
   the figure they had. A line still waiting on the cutting log is brought to
   the new standard by the next sync, as any change to a waiting line is.
+- Where the cutting room has no lay plan for a code and its works order
+  data carries no marker, the PM can **set the lay** (garments per ply): the
+  *✎ lay* link beside the standard on the works order panel, or *set lay* on
+  the Cutting tab's "no lay plan" tag. Every works order of the product takes
+  it from then on, for the plies behind the wastage and for the cutting time;
+  the printed works order shows it as *Lay (set in the planner)*. One entry
+  covers every size the works order record carries (it is kept against the
+  record's code). The lays set are listed on the Fabric tab with a remove link, and go
+  out with publish like the corrected fabrics. A lay plan the cutting room
+  adds later wins over it.
 - The allowance is one constant, `CUT_WASTAGE_M` (0.03 m).
 
 ## Cut figures that do not look right

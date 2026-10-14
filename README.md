@@ -47,7 +47,9 @@ part) adds **15 minutes**, as the set-up is done and the fabric is laid. The
 lays of a line are its quantity over the garments per lay of the default
 marker on the lay plan (an apron at 4 per lay: 60 aprons are 15 lays), or
 the marker on the works order data; a code with no lay plan is taken at one
-garment per lay and flagged. The cut room works 8 hours Monday to Thursday
+garment per lay and flagged, until the PM sets its lay (**set lay** on the
+tag, or **✎ lay** on the works order panel), which every works order of the
+product then uses. The cut room works 8 hours Monday to Thursday
 including two paid 15-minute breaks (450 minutes, 18 works orders) and 5
 hours on Friday including one break (285 minutes); nothing at the weekend.
 

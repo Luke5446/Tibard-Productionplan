@@ -97,7 +97,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  await open(true,'tok-editor');
  await p.waitForTimeout(500);
  const s9=await p.evaluate(()=>{ const i=WOs.findIndex(w=>w.ref==='S-T1'); openWOModal(i); const cell=fabricCellFor(i, WOs[i].items[0]).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
-   return {loadedAtStartup:!!cutLog.loadedAt, cell:cell.slice(0,200), placeholder:(fabricCellFor(i, WOs[i].items[0]).match(/placeholder="([^"]*)"/)||[])[1]}; });
+   return {loadedAtStartup:!!cutLog.loadedAt, cell:cell.slice(0,260), placeholder:(fabricCellFor(i, WOs[i].items[0]).match(/placeholder="([^"]*)"/)||[])[1]}; });
  // S-T1 is cut: a quantity change, then a fabric change, on the works order leave its cut lines as they are and add nothing
  await p.evaluate(()=>{ WOs.find(w=>w.ref==='S-T1').items[0].qty=8; saveState(); }); await p.waitForTimeout(2400);
  const r4=[...new Set(entries().filter(e=>e.ref==='S-T1').map(e=>e.fabric+':'+e.qty+':'+e.std+':'+(e.cutAt||'waiting')))].sort();   // (the file still holds the doubled line from step 3 until something is saved)

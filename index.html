@@ -1696,6 +1696,14 @@ function layWastageTxt(plies, total){
   if(!(plies>0)) return '';
   return ', plus '+Math.round(CUT_WASTAGE_M*100)+' cm wastage per ply = '+(total+plies*CUT_WASTAGE_M).toFixed(2)+' m to cut';
 }
+// The lay the PM set in the planner, on the print where the cutting room has
+// no lay plan for the code and the record carries no marker.
+function layOverrideRow(code, qty){
+  var lf=cutLayFor(code); if(lf.src!=='set in the planner') return '';
+  var plies=cutPliesFor(code, qty, lf.lay);
+  return '<tr><th>Lay (set in the planner)</th><td colspan="3" style="font-weight:700">'+lf.lay+' garment'+(lf.lay===1?'':'s')+' per ply'
+    +(qty>0 ? ' &mdash; '+plies+' pl'+(plies===1?'y':'ies')+' for '+qty+', plus 3 cm wastage per ply = '+(plies*CUT_WASTAGE_M).toFixed(2)+' m' : '')+'</td></tr>';
+}
 function layPlanMarkerTxt(r){
   var t=r.m||'';
   // lay is a number for a garment marker; interlining carries the sheet's
@@ -1891,6 +1899,7 @@ function printWOP(ref, code, qty, due, sm, opts){
     +((st.markerLen&&st.layQty&&qty>0)?'<tr><th>Lay plan (qty '+qty+')</th><td colspan="3" style="font-weight:700">'+Math.ceil(qty/st.layQty)+' pl'+(Math.ceil(qty/st.layQty)===1?'y':'ies')+' of '+st.markerLen+' m &mdash; total '+(Math.ceil(qty/st.layQty)*st.markerLen).toFixed(2)+' m'+layWastageTxt(cutPliesFor(code, qty, st.layQty), Math.ceil(qty/st.layQty)*st.markerLen)+'</td></tr>':'')
     +(st.markerCon?'<tr><th>Contrast marker</th><td colspan="3" style="font-weight:700">'+e(st.markerCon)+(st.conFab?' <span style="font-weight:400">('+e(st.conFab)+')</span>':'')+(st.conLen?' &mdash; '+st.conLen+' m'+(st.conLay?', '+st.conLay+' per lay ('+(+(st.conLen/st.conLay).toFixed(3))+' m per garment)':''):'')+'</td></tr>':'')
     +layPlanRows(st, code, qty, e)
+    +layOverrideRow(code, qty)
     +'</table>'
     +'<div class="band">FABRIC</div><table><tr><th style="width:50%">Fabric</th><th>Code</th><th>Location</th><th style="width:14%;text-align:right">Per unit</th></tr>';
   woFabrics(cw?{fabrics:cw.fabrics}:st).forEach(function(f){ if(f[0]||f[1]) h+='<tr><td>'+e(f[0])+'</td><td><strong>'+e(f[1])+'</strong></td><td><strong>'+e(f[2])+'</strong></td><td style="text-align:right">'+((f[3]===''||f[3]==null)?'':e(String(f[3])))+'</td></tr>'; });
@@ -2669,7 +2678,7 @@ function fetchShared(cb){
       smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{};
       smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{};
       styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{};
-      bufSnaps=s.bufSnaps||[]; fabStock=s.fabStock||{rows:{},pastedAt:''}; fabricOverrides=s.fabricOverrides||{};
+      bufSnaps=s.bufSnaps||[]; fabStock=s.fabStock||{rows:{},pastedAt:''}; fabricOverrides=s.fabricOverrides||{}; layOverrides=s.layOverrides||{};
       fabFixMesh(); threadApplyStdAll(); trimFixSetsAll();
       var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
       var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+sa;
@@ -2753,7 +2762,7 @@ function pubRefreshBtn(){ var b=document.getElementById('pubSetupBtn'); if(b) b.
 function pubB64(s){ return btoa(unescape(encodeURIComponent(s))); }
 function publishState(){
   return JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,layOverrides:layOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,
     savedAt:new Date().toISOString()});
 }
 function publishDownload(json, why){
@@ -3241,7 +3250,7 @@ function saveState(){
   var json='', ts=new Date().toISOString();
   try{
     json=JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,layOverrides:layOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,
       savedAt:ts});
   }catch(e){ console.log('Save failed:',e); saveFailed('could not serialise'); return; }
   var behind=stateBehind(); if(behind){ saveRefused(behind); return; }
@@ -3276,7 +3285,7 @@ function applyState(s){
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
-    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; bufSnaps=s.bufSnaps||[]; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{}; fabStock=s.fabStock||{rows:{},pastedAt:''}; fabricOverrides=s.fabricOverrides||{};
+    smPending=s.smPending||[]; smDropped=s.smDropped||[]; smMade=s.smMade||[]; smDocs=s.smDocs||{}; bufSnaps=s.bufSnaps||[]; styleEdits=s.styleEdits||{}; chartEdits=s.chartEdits||{}; chartColEdits=s.chartColEdits||{}; fabStock=s.fabStock||{rows:{},pastedAt:''}; fabricOverrides=s.fabricOverrides||{}; layOverrides=s.layOverrides||{};
     // Anything left in the old review list becomes a queue item needing a decision.
     (s.smReview||[]).forEach(function(o){
       if(!smSeen[o.key] && !smPending.some(function(p){return p.key===o.key;})) smPending.push(o);
@@ -3337,7 +3346,7 @@ function clearAll(){ if(!IS_EDITOR) return;
     localStorage.removeItem('tibard_production'); try{ localStorage.removeItem(AT_KEY); }catch(e){}
     try{ idbOpen(function(db){ if(!db) return; try{ db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).delete('state'); }catch(e){} }); }catch(e){}
     rows=[];WOs=[];completedWOs=[];
-    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};fabStock={rows:{},pastedAt:''};fabricOverrides={};
+    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};fabStock={rows:{},pastedAt:''};fabricOverrides={};layOverrides={};
     document.getElementById('dataWrap').classList.add('hidden');
     document.getElementById('uzone').classList.remove('hidden');
     document.getElementById('lastUpdated').textContent='';
@@ -4274,6 +4283,7 @@ function cutLayFor(code){
   var lp=null; try{ lp=layPlanFor(code); }catch(e){ lp=null; }
   if(lp && lp.main && lp.main.length){ var m=lp.main.filter(function(x){ return x.d; })[0]||lp.main[0]; if(m.lay>0) return {lay:m.lay, src:'lay plan '+(m.m||'')}; }
   try{ var h=styleForCode(code); if(h && h.style && h.style.layQty>0) return {lay:h.style.layQty, src:'works order data'}; }catch(e){}
+  var o=layOverrideFor(code); if(o) return {lay:o.lay, src:'set in the planner'};
   return {lay:1, src:''};
 }
 function cutWoMins(lays){ return CUT_WO_MINS + CUT_EXTRA_MINS*Math.max(0, Math.ceil((lays||0)/CUT_RUN_LAYS)-1); }
@@ -4419,7 +4429,7 @@ function cutRender(){
     else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Sort by the date printed" onclick="cutSortBy(\'printed\')">Printed'+arrow('printed')+'</th><th style="cursor:pointer" title="Sort by the due date" onclick="cutSortBy(\'due\')">Due'+arrow('due')+'</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th>'+(can?'Cut m &middot; comment &middot; cut on':'')+'</th></tr></thead><tbody>'
       +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
         return es.map(function(e,i){
-          return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(function(){ var pl=cutWoPlan(es); return '<div class="sm-sub" title="'+esc(pl.lays+' lays: '+CUT_WO_MINS+' min up to '+CUT_RUN_LAYS+', +'+CUT_EXTRA_MINS+' min each further '+CUT_RUN_LAYS)+'">'+pl.lays+' lay'+(pl.lays===1?'':'s')+' &middot; '+pl.mins+' min'+(pl.unknown.length?' <span class="sm-tag warn" title="No lay plan for '+esc(pl.unknown.join(', '))+': taken as one garment per lay">no lay plan</span>':'')+'</div>'; })()+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')" title="Mark every line cut, on the date in the first line\'s date box">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
+          return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(function(){ var pl=cutWoPlan(es); return '<div class="sm-sub" title="'+esc(pl.lays+' lays: '+CUT_WO_MINS+' min up to '+CUT_RUN_LAYS+', +'+CUT_EXTRA_MINS+' min each further '+CUT_RUN_LAYS)+'">'+pl.lays+' lay'+(pl.lays===1?'':'s')+' &middot; '+pl.mins+' min'+(pl.unknown.length?' <span class="sm-tag warn" title="No lay plan for '+esc(pl.unknown.join(', '))+': taken as one garment per lay">no lay plan</span>'+(IS_EDITOR ? pl.unknown.map(function(c){ return ' <a href="#" onclick="layOverrideSet(\''+esc(c).replace(/'/g,"\\'")+'\');return false" title="Set the garments per ply for '+esc(c)+'">set lay</a>'; }).join('') : ''):'')+'</div>'; })()+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')" title="Mark every line cut, on the date in the first line\'s date box">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
             +'<td>'+(i===0?esc(fmtD(first.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':''):'')+'</td><td>'+(i===0?esc(fmtD(first.due)):'')+'</td>'
             +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
             +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
@@ -4973,6 +4983,26 @@ function ohMeshConflicts(){ var out=[]; if(typeof FABRIC_MARKERS==='undefined') 
 // Only the cloth changes; the metres per garment stay as the usage table has
 // them. A line's own fabricCode still wins over this for that one line.
 var fabricOverrides={};
+// The lay - garments per ply - the PM sets for a product the cutting room
+// has no lay plan for and whose works order data carries no marker. Every
+// works order of the product takes it from then on: the plies behind the
+// 3 cm wastage in the standard metres, and the cutting time. Keyed by the
+// works order record's code where the product resolves to one (one entry
+// covers every size the record carries), else by the product code. Goes out with
+// publish, like the corrected fabrics. Luke, 14 Oct 2026.
+var layOverrides={};
+function layKeyFor(code){ var c=(code||'').trim().toUpperCase(); try{ var h=styleForCode(c); if(h && h.style && h.style.code) return h.style.code.toUpperCase(); }catch(e){} return c; }
+function layOverrideFor(code){ var o=layOverrides[layKeyFor(code)]; return (o && o.lay>0) ? o : null; }
+function layOverrideSet(code){ if(!IS_EDITOR) return; code=(code||'').trim().toUpperCase(); var k=layKeyFor(code), cur=layOverrides[k];
+  var v=prompt('Garments per ply for '+code+(k!==code?' (every size of '+k+')':'')+'.\n\nThe cutting room has no lay plan for it, so it is taken at one garment per ply. Every works order of the product from now on takes the lay typed here: for the plies behind the 3 cm wastage in the standard metres, and the cutting time. 0 takes it off again.', cur ? cur.lay : '');
+  if(v===null) return; var n=parseInt(v,10); if(isNaN(n) || n<0){ alert('Whole garments per ply, please.'); return; }
+  if(n>0) layOverrides[k]={lay:n, setAt:d2s(now())}; else delete layOverrides[k];
+  layOverrideAfter(); }
+function layOverrideClear(k){ if(!IS_EDITOR) return; delete layOverrides[(k||'').toUpperCase()]; layOverrideAfter(); }
+function layOverrideAfter(){ saveState(); renderWOCards(); refreshWOModal();
+  var fv=document.getElementById('fabView'); if(fv && !fv.classList.contains('hidden')) fabRender();
+  var tc=document.getElementById('tabCut'); if(tc && tc.classList.contains('on')) cutRender();
+  cutSyncSoon(); }   // waiting lines on the cutting log take the new standard
 function fabricOverrideSet(product, code){ if(!IS_EDITOR) return; product=(product||'').toUpperCase(); if(!product) return; if(code) fabricOverrides[product]=code.toUpperCase(); else delete fabricOverrides[product]; }
 function fabricOverrideClear(product){ if(!IS_EDITOR) return; delete fabricOverrides[(product||'').toUpperCase()]; saveState(); fabRender(); renderWOCards(); refreshWOModal(); }
 function fabricUsageFor(code){
@@ -5134,9 +5164,11 @@ function fabricRecordFor(it, wo){
 function fabricCellFor(i, it){
   var u=fabricUsageFor(it.code), std=u ? fabricStd(u.metres, it.qty, u.lay, it.code) : null, plies=(u&&u.lay>0) ? cutPliesFor(it.code, it.qty, u.lay) : 0;
   var editLink=IS_EDITOR ? ' <a href="#" onclick="setFabricCode('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\');return false" title="Put this line on a different cloth">&#9998; fabric</a>' : '';
+  var lf=cutLayFor(it.code), layLink=IS_EDITOR ? ' <a href="#" onclick="layOverrideSet(\''+esc(it.code).replace(/'/g,"\\'")+'\');return false" title="Set the garments per ply for this product: every works order of it from now on">&#9998; lay</a>' : '';
+  var layTxt=lf.src==='set in the planner' ? ' &middot; <b>'+lf.lay+' per ply</b> (set here)'+layLink : (!lf.src ? ' &middot; <span style="color:#b45309" title="no lay plan: taken as one garment per ply">no lay plan</span>'+layLink : '');
   var hint=u ? '<div style="font-size:10px;color:#6b7280">std '+std+' m'+(plies?' <span title="'+plies+' pl'+(plies===1?'y':'ies')+' x 3 cm wastage, in the standard">(incl. wastage)</span>':'')+' &middot; '+(it.fabricCode ? '<b title="changed from '+esc(u.code||'?')+'">'+esc(it.fabricCode)+'</b>' : esc(u.code||'?'))
                +(u.extras&&u.extras.length ? u.extras.map(function(x){ return ' + '+fabricStd(x.metres, it.qty, x.lay, it.code)+' m '+esc(x.code||'mesh'); }).join('') : '')
-               +(/^marker/.test(u.source) ? ' <span title="per-size marker from the lay plan sheet">&#9998;</span>' : '')+editLink+'</div>'
+               +(/^marker/.test(u.source) ? ' <span title="per-size marker from the lay plan sheet">&#9998;</span>' : '')+editLink+layTxt+'</div>'
              : '<div style="font-size:10px;color:#b45309">'+(it.fabricCode ? 'no usage on file &middot; cloth <b>'+esc(it.fabricCode)+'</b>' : 'no usage on file')+editLink
                +(IS_EDITOR ? (it.metresActual!=null ? ' &middot; <span style="color:#065f46">'+it.metresActual+' m typed: the cutting room cuts to this</span>' : ' &middot; type the metres for the line: the cutting room cuts to them') : '')+'</div>';
   var wo=WOs[i], cf=(wo && u) ? cutFigureFor(wo.ref, it.code, it.fabricCode||u.code) : null;
@@ -6016,6 +6048,9 @@ function fabStockHtml(q){
   var ov=Object.keys(fabricOverrides||{}).sort();
   if(ov.length) h+='<div style="font-size:11px;color:#4b5563;margin:2px 0 8px"><b>Corrected fabrics</b> <span style="color:#6b7280">- every works order of the product uses this cloth; goes out with publish</span>: '
     +ov.map(function(pc){ var u=fabricUsageBase(pc); return '<span style="white-space:nowrap;margin-right:10px"><span style="font-family:monospace">'+esc(pc)+'</span> &rarr; <b style="font-family:monospace">'+esc(fabricOverrides[pc])+'</b>'+(u&&u.code?' <span style="color:#9ca3af">(was '+esc(u.code)+')</span>':'')+(ed?' <a href="#" onclick="fabricOverrideClear(\''+esc(pc)+'\');return false" title="back to the usage table">remove</a>':'')+'</span>'; }).join('')+'</div>';
+  var lo=Object.keys(layOverrides||{}).sort();
+  if(lo.length) h+='<div style="font-size:11px;color:#4b5563;margin:2px 0 8px"><b>Lays set in the planner</b> <span style="color:#6b7280">- garments per ply for products the cutting room has no lay plan for; every works order of the product uses it; goes out with publish</span>: '
+    +lo.map(function(pc){ return '<span style="white-space:nowrap;margin-right:10px"><span style="font-family:monospace">'+esc(pc)+'</span> &rarr; <b>'+layOverrides[pc].lay+' per ply</b>'+(ed?' <a href="#" onclick="layOverrideClear(\''+esc(pc)+'\');return false" title="back to one garment per ply">remove</a>':'')+'</span>'; }).join('')+'</div>';
   if(fabOpen.supplier && sups[fabOpen.supplier]) h+=fabOrderHtml(fabOpen.supplier, sups[fabOpen.supplier]);
   var list=k.list.filter(function(x){ return !sq || smMatch(x.code+' '+x.name+' '+x.supName, sq); });
   // "needs ordering" is the whole flag, monitored or not - a fabric with no
