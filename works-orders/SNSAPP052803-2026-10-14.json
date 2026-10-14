@@ -1,0 +1,93 @@
+{
+ "styles": [
+  {
+   "code": "SNSAPP052803",
+   "name": "Black wide waist apron with pocket right side as worn, cut-out centre front split with facing, self fabric ties \u2014 London Linen, no Tibard branding",
+   "desc": "WIDE WAIST APRON \u00b7 Pocket 16 x 16 cm, right side as worn \u00b7 Cut-out centre front split with facing, stay tape across the top of the split \u00b7 Self fabric waist ties \u00b7 No Tibard branding \u00b7 No embroidery",
+   "lectra": "AP0528, variant APP0528PKT \u2014 marker APP0528PKT",
+   "variant": "APP0528PKT",
+   "chart": "SNSAPP052803-MEAS",
+   "fabrics": [
+    [
+     "Black 65% polyester / 35% cotton 195 gsm (P and R) \u2014 rating 1.10 m; the sheet names PC2003 at B11, All Costings has the sustainable PC2003ECO at 1.10 m",
+     "PC2003ECO",
+     "B1",
+     1.1,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD \u2014 COATS EPIC 80'S BLACK 09700 \u2014 cost per metre",
+     30,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Tibard printed care label",
+     "65% polyester / 35% cotton \u00b7 60\u00b0 wash \u00b7 no bleach \u00b7 2 dot iron \u00b7 tumble dry \u00b7 P dry clean. Set 4 cm down from the finished right side seam as worn. Printed at Tibard on the 25 mm nylon label tape.",
+     0.05,
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Stay tape",
+     "Cut at 2.5 cm, set with the stitching across the top of the split to secure it. No Sage code on the sheet.",
+     1,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Make the waist ties: fold in half and enclose the raw edges, box one end and edgestitch the long edge.",
+    "Double turn the side seams and topstitch 1 cm.",
+    "Double turn the top of the apron and topstitch 2 cm. Insert the waist ties; backtack the stitching of the waist ties to secure.",
+    "Set the facing to the split. Trim into the corners and turn through. Set the stay tape (cut at 2.5 cm) with the stitching across the top of the split to secure. Split 1 cm wide at the top.",
+    "Edgestitch the split opening.",
+    "Turn in to neaten the facing edge and topstitch down to form a 12 mm topstitch of the split all round.",
+    "Double turn the hem and topstitch 1 cm.",
+    "Set the pocket hem: double turn 1 + 2 cm and topstitch at 2 cm.",
+    "Set the pocket to the right side as worn: top of the pocket 35 cm in from the finished side seam and 22 cm down from the finished top edge. No triangle tack, as the pocket is bartacked."
+   ],
+   "fin": [
+    "Bartack the top of the split to secure: 1 long horizontal bartack (or 2 short bartacks) across the top of the split.",
+    "Bartack the waist ties x 2.",
+    "Bartack the top of the pocket x 2.",
+    "Check, trim and fold in tens."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance \u00b1 1.5 cm",
+   "oneSize": true,
+   "customer": "London Linen",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order S851569 for SNSAPP052803, London Linen, issued by Lara 22/1/26, required 20/2/26 for 250 (JH created for SR1119; amended for SR1124 JH 24/5/23; created for bulk 15/6/23 JH; corrected to a 1 cm hem as the sample was approved jh 22/6/23; marker details updated re AC jh 20/6/24). No Tibard branding and no embroidery. Rating 1.10 m, the same as All Costings on PC2003ECO; the sheet names the marker APP0528PKT but the cutting room's lay plan has no entry for it. The sheet's sketch is in works-orders/SNSAPP052803-LondonLinen.xlsx."
+  }
+ ],
+ "charts": {
+  "SNSAPP052803-MEAS": [
+   [
+    "Width of skirt",
+    "129 cm (\u00b1 1.5)"
+   ],
+   [
+    "Pocket, width x depth",
+    "16 cm x 16 cm (\u00b1 1.5)"
+   ],
+   [
+    "Length from waist to hem",
+    "94.5 cm (\u00b1 1.5)"
+   ]
+  ]
+ },
+ "chartCols": {
+  "SNSAPP052803-MEAS": [
+   "Measurement",
+   "Value"
+  ]
+ }
+}
