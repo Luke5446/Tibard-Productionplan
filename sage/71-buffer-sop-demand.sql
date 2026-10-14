@@ -15,7 +15,8 @@
      A LineKey        TIB- / OH- prefix + Sage's permanent line id (dedupe key)
      B Company        TIBARD or OLIVER HARVEY
      C SalesOrderNo
-     D ProductCode
+     D ProductCode    the base code: an order on the BULK item (BULKCJ0193MM01)
+                      is listed under CJ0193MM01, as 70 counts it
      E Qty            outstanding: ordered less despatched
      F PromisedDate   yyyy-mm-dd; the ORDER's promised date first, then the
                       line's, then requested - the order the sales office
@@ -49,7 +50,7 @@ SELECT
     'TIB-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20))             AS LineKey,
     'TIBARD'                                                            AS Company,
     sor.DocumentNo                                                      AS SalesOrderNo,
-    LTRIM(RTRIM(sorl.ItemCode))                                         AS ProductCode,
+    CASE WHEN LTRIM(RTRIM(sorl.ItemCode)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(sorl.ItemCode)), 5, 200) ELSE LTRIM(RTRIM(sorl.ItemCode)) END AS ProductCode,
     CAST(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0) AS int) AS Qty,
     CONVERT(varchar(10), COALESCE(sor.PromisedDeliveryDate, sorl.PromisedDeliveryDate,
                                   sor.RequestedDeliveryDate, sorl.RequestedDeliveryDate), 23) AS PromisedDate,
@@ -67,7 +68,7 @@ SELECT
     sorl.PrintSequenceNumber                                            AS LineSeq
 FROM        S200_LIVE.dbo.SOPOrderReturn      sor
 INNER JOIN  S200_LIVE.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
-INNER JOIN  stockheld                         sh   ON sh.Code                  = LTRIM(RTRIM(sorl.ItemCode))
+INNER JOIN  stockheld                         sh   ON sh.Code                  = CASE WHEN LTRIM(RTRIM(sorl.ItemCode)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(sorl.ItemCode)), 5, 200) ELSE LTRIM(RTRIM(sorl.ItemCode)) END
 LEFT  JOIN  S200_LIVE.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
 WHERE   sor.DocumentTypeID = 0 AND sor.DocumentStatusID = 0 AND sorl.LineTypeID = 0
   AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
@@ -78,7 +79,7 @@ SELECT
     'OH-' + CAST(sorl.SOPOrderReturnLineID AS varchar(20)),
     'OLIVER HARVEY',
     sor.DocumentNo,
-    LTRIM(RTRIM(sorl.ItemCode)),
+    CASE WHEN LTRIM(RTRIM(sorl.ItemCode)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(sorl.ItemCode)), 5, 200) ELSE LTRIM(RTRIM(sorl.ItemCode)) END,
     CAST(sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0) AS int),
     CONVERT(varchar(10), COALESCE(sor.PromisedDeliveryDate, sorl.PromisedDeliveryDate,
                                   sor.RequestedDeliveryDate, sorl.RequestedDeliveryDate), 23),
@@ -96,7 +97,7 @@ SELECT
     sorl.PrintSequenceNumber
 FROM        OliverHarveyLive.dbo.SOPOrderReturn      sor
 INNER JOIN  OliverHarveyLive.dbo.SOPOrderReturnLine  sorl ON sorl.SOPOrderReturnID    = sor.SOPOrderReturnID
-INNER JOIN  stockheld                                sh   ON sh.Code                  = LTRIM(RTRIM(sorl.ItemCode))
+INNER JOIN  stockheld                                sh   ON sh.Code                  = CASE WHEN LTRIM(RTRIM(sorl.ItemCode)) LIKE 'BULK%' THEN SUBSTRING(LTRIM(RTRIM(sorl.ItemCode)), 5, 200) ELSE LTRIM(RTRIM(sorl.ItemCode)) END
 LEFT  JOIN  OliverHarveyLive.dbo.SLCustomerAccount   cust ON cust.SLCustomerAccountID = sor.CustomerID
 WHERE   sor.DocumentTypeID = 0 AND sor.DocumentStatusID = 0 AND sorl.LineTypeID = 0
   AND  (sorl.LineQuantity - ISNULL(sorl.DespatchReceiptQuantity,0)) > 0
