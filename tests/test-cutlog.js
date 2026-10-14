@@ -74,7 +74,8 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
  // the main cloth gave more: 8 m with no comment is refused, with a comment it is taken; the mesh stays at standard
  const s3a=await p.evaluate(()=>{ document.querySelector('input[data-cutm="S-T1|CICJM0193XXS01|PC2001ECO"]').value='8'; cutMarkWO('S-T1'); return window.__alerts.length; });
  await p.waitForTimeout(300); const s3b=entries().filter(e=>e.ref==='S-T1'&&e.cutAt).length;
- await p.evaluate(()=>{ document.querySelector('input[data-cutn="S-T1|CICJM0193XXS01|PC2001ECO"]').value='roll end, 0.65 m short'; cutMarkWO('S-T1'); }); await p.waitForTimeout(600);
+ await p.evaluate(()=>{ document.querySelector('input[data-cutn="S-T1|CICJM0193XXS01|PC2001ECO"]').value='roll end, 0.65 m short'; document.querySelector('input[data-cutq="S-T1|CICJM0193XXS01|PC2001ECO"]').value='6'; cutMarkWO('S-T1'); }); await p.waitForTimeout(600);
+ const s4q=entries().filter(e=>e.ref==='S-T1').map(e=>e.fabric+':'+(e.qtyCut==null?'-':e.qtyCut)).sort().join('|');
  const s3=entries().filter(e=>e.ref==='S-T1').map(e=>e.cutAt+':'+e.metres).sort();
  const s4=entries().filter(e=>e.ref==='S-T1').map(e=>e.fabric+':'+e.metres+':'+(e.note||'')+':'+(e.adjustedAt?'adj':'std')).sort();
  const s5=await p.evaluate(()=>{ cutSec='log'; cutRender(); const tiles=[...document.querySelectorAll('#cutBody .kpi-tile')].map(t=>t.querySelector('.l').textContent+'='+t.querySelector('.v').textContent.replace(/\s+/g,' '));
@@ -111,7 +112,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
      const c=completedWOs.find(x=>x.ref==='S-T1'&&x.code==='CICJM0193XXS01'); const l=fabLines().find(x=>x.ref==='S-T1'&&x.code==='CICJM0193XXS01');
      smShowTab('fabric'); fabOpen.mon['2026-10']=true; fabOpen.day['2026-10-02']=true; fabRender(); const row=[...document.querySelectorAll('#fabBody .sm-tbl tbody tr, #fabBody .fab-stk tbody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ')).find(t=>/S-T1/.test(t))||'';
      r({wipNow:cutWip('2026-10-02').total, wipBefore:cutWip('2026-10-01').total, done, kpiBefore, rowsBefore, kpiNow, assumedNow,
-        rec:{actual:c.fabric.actual, std:c.fabric.std, source:c.fabric.source, note:c.fabric.cutNote, meshActual:c.fabric.extras[0].actual, meshStd:c.fabric.extras[0].std}, ledger:{metres:l.metres, varPct:Math.round(l.varPct*10)/10, note:l.cutNote}, rowHasNote:/roll end, 0.65 m short/.test(row)}); },600)); });
+        rec:{actual:c.fabric.actual, std:c.fabric.std, source:c.fabric.source, note:c.fabric.cutNote, cutQty:c.fabric.cutQty, meshActual:c.fabric.extras[0].actual, meshStd:c.fabric.extras[0].std}, ledger:{metres:l.metres, varPct:Math.round(l.varPct*10)/10, note:l.cutNote}, rowHasNote:/roll end, 0.65 m short/.test(row), rowHasQty:/cut for 6 of 7/.test(row)}); },600)); });
  // 6. splits. S-T3 is marked cut, then split for an urgent two: the new works order, printed, asks the cutting room for
  //    nothing and is not on review. S-T5 is split while it still waits: the new one gets its own line and S-T5's follows.
  const sp=await p.evaluate(()=>{ window.now=()=>new Date('2026-10-02T10:00:00'); window.__alerts=[]; cutMark('S-T3|ZZNOUSAGE|PC2003ECO'); return new Promise(r=>setTimeout(()=>{
@@ -144,19 +145,19 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    && r2.join()==='12:6:waiting' && r3a.log===0 && /^no metres on file for PC2003ECO: type the metres/.test(r3a.why) && /no usage on file .*PC2003ECO.*type the metres for the line/.test(r3a.hint)
    && r3.log.join()==='PC2003ECO:6:5' && r3.review.n===0 && r3.review.badge==='none' && /Nothing to review/.test(r3.review.empty)
    && s1b.join()==='2026-10-01' && s1c.notPushed===0 && !entries().some(e=>e.ref==='S-OLD') && s1c.rows===3 && s1c.prompt==='' && /mark cuts/.test(s1c.tag)
-   && s2.src==='api' && s2.rows===3 && s2.order==='S-T1,S-T1,S-T3' && s2.head==='Works orderPrinted ▲DueProductQtyFabricStd mCut m · comment · cut on' && s2.flipped==='S-T3,S-T1,S-T1' && s2.todo==='3' && s2.boxAfterChips && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.cutAll && sq.polling
+   && s2.src==='api' && s2.rows===3 && s2.order==='S-T1,S-T1,S-T3' && s2.head==='Works orderPrinted ▲DueProductQtyFabricStd mCut mQty cutCommentCut on' && s2.flipped==='S-T3,S-T1,S-T1' && s2.todo==='3' && s2.boxAfterChips && sq.q==='S-T1' && sq.val==='S-T1' && sq.focused && sq.rows===2 && sq.cutAll && sq.polling
    && s7.logPrompt && s7.todoRows===1
    && s2c.tiles.join()==='New today=1,Live works orders to cut=2' && s2c.byPrinted==='S-T3,S-T1' && s2c.byDue==='S-T3,S-T1' && s2c.dueHead==='Due ▲' && s2c.byDueDesc==='S-T1,S-T3'
    && s2c.newOnly==='S-T1' && s2c.note && s2c.back==='S-T1,S-T3'
    && r4.join('|')==='MESHPW31401:7:1.75:2026-10-01|PC2001ECO:7:7.35:2026-10-01' && r5.lines.join('|')==='MESHPW31401:2026-10-01|PC2001ECO:2026-10-01' && r5.notPushed===0 && r5.review===0
    && s3a===1 && s3b===0 && s3.join()==='2026-10-01:1.75,2026-10-01:8' && s4.join('|')==='MESHPW31401:1.75::std|PC2001ECO:8:roll end, 0.65 m short:adj'
-   && /Cut today=9.8 m/.test(s5.tiles.join()) && /Cutting target=6%/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP'&&/Undo/.test(r[10]))
+   && /Cut today=9.8 m/.test(s5.tiles.join()) && /Cutting target=6%/.test(s5.tiles.join()) && s5.logRows.length===2 && s5.logRows.some(r=>r[0]==='01 Oct 2026'&&r[4]==='7cut 6'&&r[7].startsWith('8.00')&&r[8]==='roll end, 0.65 m short'&&r[9]==='in WIP'&&/Undo/.test(r[10])) && s4q==='MESHPW31401:-|PC2001ECO:6'
    && s5.day.length===1 && s5.day[0][1]==='1' && s5.day[0][2]==='2' && s5.day[0][3]==='9.75' && s5.wip.length===3 && s5.wip[0][0].startsWith('PC2001ECO') && s5.wip[0][5]==='£17.12' && s5.wip[2][5]==='£21.06' && Math.abs(s5.wipCalc.total.value-21.06)<0.01
    && s6.retried===2 && s6.cut==='2026-10-01' && s6.alerts===0
    && s7.src==='pages' && s7.rows===2 && s7.n===4 && s7n===5 && s7.buttons===0 && s7.tag==='view only'
    && s8.wipNow.lines===1 && s8.wipNow.assumed===1 && Math.abs(s8.wipNow.value-4.64)<0.01 && s8.wipBefore.lines===3 && s8.wipBefore.logged===2 && Math.abs(s8.wipBefore.value-25.70)<0.01
    && s8.done.join()==='02 Oct 2026,02 Oct 2026' && s8.kpiBefore==='£25.70' && s8.rowsBefore===4 && s8.kpiNow==='£4.64' && s8.assumedNow.join('|')==='2.00 m taken as cut|'
-   && s9.loadedAtStartup && /cut 01 Oct 2026 .middot; cutting room: 8 m .middot; roll end, 0.65 m short \(used as the actual\)/.test(s9.cell) && s9.placeholder==='8'
+   && s9.loadedAtStartup && /cut 01 Oct 2026 .middot; cutting room: 8 m .middot; roll end, 0.65 m short \(used as the actual\)/.test(s9.cell) && s9.placeholder==='8' && /cut for 6 of 7/.test(s9.cell) && s8.rowHasQty && s8.rec.cutQty===6
    && s8.rec.actual===8 && s8.rec.std===7.35 && /cut log/.test(s8.rec.source) && s8.rec.note==='roll end, 0.65 m short' && s8.rec.meshActual===undefined && s8.rec.meshStd===1.75
    && sp.kidFrom==='S-T3' && sp.kidQty===2 && sp.parentQty===3 && sp.kid2From==='S-T5' && sp.review==='' && sp.notPushed===''
    && spLog.join('|')===['S-T3:ZZNOUSAGE:5:6:cut','S-T5:APP300503:2:1:waiting',sp.kid2+':APP300503:2:1:waiting'].sort().join('|')
