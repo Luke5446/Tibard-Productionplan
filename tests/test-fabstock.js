@@ -44,6 +44,12 @@ const sheet=[
    fabDrill('PC14001'); const d=document.querySelector('#fabBody .fab-stk tr.fab-drill'); o.drill=d?d.textContent.replace(/\s+/g,' ').trim():'none'; o.link=!!(d&&d.querySelector('a[onclick^="setFabricCode"]')); o.woLink=!!(d&&d.querySelector('a[onclick^="openWOModal"]'));
    fabDrill('PC14001'); o.closed=!document.querySelector('#fabBody .fab-stk tr.fab-drill'); return o; });
  console.log('stock view   ->', JSON.stringify(t1b));
+ // the drill-down carries the day each works order was raised and, off the cutting log, the day it was
+ // cut: S-LIVE2 marked cut on 22 Sep, S-LIVE1 still waiting (first, highlighted) - what is waiting to be cut
+ const t1c=await p.evaluate(()=>{ cutLog.loadedAt=new Date(); cutLog.error=''; cutLog.busy=false; cutLog.entries=[{k:cutKey('S-LIVE2','OHCJMCHESHIRE3201','PC14001'), ref:'S-LIVE2', code:'OHCJMCHESHIRE3201', fabric:'PC14001', std:7.05, cutAt:'2026-09-22'}];
+   const o={}; fabDrill('PC14001'); let d=document.querySelector('#fabBody .fab-stk tr.fab-drill'); o.heads=[...d.querySelectorAll('th')].map(t=>t.textContent).join('|'); o.cut=[...d.querySelector('table').querySelectorAll('tbody td')].map(t=>t.textContent.trim()).join('|'); o.note=d.querySelector('.sm-sub').textContent.replace(/\s+/g,' ').trim(); o.cutWait=d.querySelectorAll('tr.fab-wait').length; fabDrill('PC14001');
+   fabDrill('CO5014DEN'); d=document.querySelector('#fabBody .fab-stk tr.fab-drill'); o.wait=[...d.querySelector('table').querySelectorAll('tbody td')].map(t=>t.textContent.trim()).join('|'); o.waitNote=d.querySelector('.sm-sub').textContent.replace(/\s+/g,' ').trim(); o.waitRows=d.querySelectorAll('tr.fab-wait').length; fabDrill('CO5014DEN'); cutLog.entries=[]; return o; });
+ console.log('drill dates  ->', JSON.stringify(t1c));
  // show-all reveals the fine ones; a reload keeps the sheet; a viewer sees the same table; write-off of the cut line frees nothing (Sage will fall instead)
  const t2=await p.evaluate(()=>{ fabOpen.showAll=true; fabRender(); return document.querySelectorAll('#fabBody .fab-stk tbody tr').length; });
  // the Tiajo order: one monitored Tiajo fabric, suggested 50; top up spreads the rest; a typed figure sticks; reset returns to the suggestion
@@ -90,6 +96,8 @@ const sheet=[
  console.log('show all', t2, '| reload', JSON.stringify(t3), '| viewer', JSON.stringify(t4));
  const pass = t1b.def==='' && /^All suppliers\|/.test(t1b.opts) && /Tiajo Comercio/.test(t1b.opts) && t1b.order && t1b.kept==='TIA001EU' && t1b.found==='PC14001' && t1b.focus==='fabStockQ'
    && /1 line on 1 live works order take PC14001/.test(t1b.drill) && /S-LIVE2/.test(t1b.drill) && /OHCJMCHESHIRE3201/.test(t1b.drill) && /7\.05/.test(t1b.drill) && t1b.link && t1b.woLink && t1b.closed
+   && t1c.heads==='Works order|Product|Qty|Metres|Created|Due|Cut|From|' && /^S-LIVE2\|OHCJMCHESHIRE3201\|5\|7\.05\|21 Sept? 2026\|30 Sept? 2026\|22 Sept? 2026\|marker OH2001\|✎ fabric$/.test(t1c.cut) && /1 cut on the cutting log, 0 waiting to be cut \(0\.0 m\)/.test(t1c.note) && t1c.cutWait===0
+   && /^S-LIVE1\|OHAPP0534GD\|15\|9\.00\|21 Sept? 2026\|30 Sept? 2026\|waiting to be cut\|All Costings\|✎ fabric$/.test(t1c.wait) && /0 cut on the cutting log, 1 waiting to be cut \(9\.0 m\)/.test(t1c.waitNote) && t1c.waitRows===1
    && t0.n===0 && /CO5014DEN:unknown:9.00:6/.test(t0.list) && /PC14001:unknown:7.05:0/.test(t0.list) && /MESH2290901:unknown:0.55:0/.test(t0.list) && t0.tile===1
    && /3 fabric\(s\) loaded/.test(t1.alert) && /1 short against live works orders, 1 under the minimum level/.test(t1.alert) && t1.pastedAt==='2026-09-21' && t1.n===3
    && t1.rows[0]==='PC14001:short:5:0:-2.05:7.05:20:17.95:500:490' && t1.rows[1]==='CO5014DEN:low:20:6:5:9:0:5:10:50' && t1.rows[2]==='MESH2290901:unknown::0::0.55:0:-999:500:0'
