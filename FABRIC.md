@@ -150,7 +150,11 @@ with the same heading wins on the apron tabs.
 The LECTRA PATTERN band prints the variant, the default marker with its
 length and lay ("OH7006 — 2.36 m, 2 per lay (1.18 m per garment)"), an
 alternative default where the sheet marks one, the lay plan for the quantity
-(plies of the two-up marker plus a single for the remainder), the mesh
+(plies of the two-up marker plus a single for the remainder, with the 3 cm
+of wastage the cutting room adds to every ply: "5 plies of 2.36 m (OH7006)
+— total 11.80 m, plus 3 cm wastage per ply = 11.95 m to cut", from the GT,
+14 Oct 2026; the standard metres costed and written off are not changed by
+it), the mesh
 marker, interlining with the sheet's own lay wording, any other markers with
 their notes (NARROW MARKERS, damaged cloth), and the blockout fronts. For the
 Stratford the blockout line carries the cutting room's wording, **Blocks -

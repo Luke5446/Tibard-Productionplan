@@ -132,12 +132,12 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && r.f0544==='CO5001ECO:1 CO5003ECO:1 CO5015ECO:1 CO5173ECO:1 CO5241ECO:1 CO5083ECO:1'
    && r.denim==='0597/0597001/2.57/4/0597A/1/6/0.6425/0.1667'
    && /Variant \(cutting room\)\|OH7LSLV\|/.test(r.stratford) && /Marker number \(default\)\|OH7006\| - 2\.36 m, 2 per lay \(1\.18 m per garment\)/.test(r.stratford)
-   && /Lay plan \(qty 10\)\|5 plies of 2\.36 m \(OH7006\) - total 11\.80 m/.test(r.stratford)
+   && /Lay plan \(qty 10\)\|5 plies of 2\.36 m \(OH7006\) - total 11\.80 m, plus 3 cm wastage per ply = 11\.95 m to cut/.test(r.stratford)
    && /Blockout fronts\|OH740RF, OH740LF\| - \|Blocks - Face Up, left block is bigger than the right/.test(r.stratford)
-   && /Lay plan \(qty 11\)\|5 plies of 2\.38 m \(OH8065\) \+ 1 ply of 1\.31 m \(OH8055\) - total 13\.21 m/.test(r.hampshire)
+   && /Lay plan \(qty 11\)\|5 plies of 2\.38 m \(OH8065\) \+ 1 ply of 1\.31 m \(OH8055\) - total 13\.21 m, plus 3 cm wastage per ply = 13\.39 m to cut/.test(r.hampshire)
    && /Marker number \(mesh\)\|OH8100A - 0\.45 m, 16\.5 per lay \(0\.027 m per garment\)/.test(r.hampshire)
    && /Interlining marker\|OH8A - 0\.47 m, lay \(6\/2\),\(8\/2\)/.test(r.hampshire) && /Blockout fronts\|OH8RFRT16, OH8LFRT16\|/.test(r.hampshire) && !/left block is bigger/.test(r.hampshire)
-   && /Variant \(cutting room\)\|0597\|Marker number\|0597001\|Marker length\|2\.57 m\|Lay qty\|4 garments per lay\|Lay plan \(qty 10\)\|3 plies of 2\.57 m - total 7\.71 m\|Contrast marker\|0597A - 1 m, 6 per lay \(0\.167 m per garment\)\|$/.test(r.denimPrint)
+   && /Variant \(cutting room\)\|0597\|Marker number\|0597001\|Marker length\|2\.57 m\|Lay qty\|4 garments per lay\|Lay plan \(qty 10\)\|3 plies of 2\.57 m - total 7\.71 m, plus 3 cm wastage per ply = 7\.80 m to cut\|Contrast marker\|0597A - 1 m, 6 per lay \(0\.167 m per garment\)\|$/.test(r.denimPrint)
    && (r.denimPrint.match(/Contrast marker/g)||[]).length===1 && !/Marker number \(default\)/.test(r.denimPrint)
    && /Type\|Embroidery\|Placement \/ spec\|Rick Stein logo — top right-hand corner of the bib as worn, embroidered in white/.test(r.rsBrand)
    && /Marker number \(default\)\|OXFORD042\| - 1\.31 m, 1 per lay \(1\.31 m per garment\) · 158cm\|/.test(r.navyPrint) && /Marker number \(mesh\)\|OXFORD100A - 0\.5 m, 15 per lay/.test(r.navyPrint) && /Other marker\|OXFORD103 - 1\.5 m.*NARROW MARKERS/.test(r.navyPrint) && /Lay plan note\|Navy Oxford/.test(r.navyPrint);
