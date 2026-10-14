@@ -80,6 +80,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `SHROUD01-Shroud.xlsx` | Works order for SHROUD01, the Respect white shroud: one 5 thread joined seam, selvedge and cut edges left unfinished, three separate 1.60 m ties, Respect FFMA printed label in the seam, bagged with the CV-19 sticker (JH 2020), cut diagram, label and sticker included. In the app as style SHROUD01 on PC2001ECO at 3.70 m. |
 | `wo-templates-2026-10-14.json` | That record and the other five Wagamama hat colours (WAGHTM016001 white, 03 black, 15 navy, 24 bottle, 64 grey) derived from the red sheet, for the costing app. |
 | `wo-templates-2026-10-13.json` | Those five records for the costing app. |
+| `SNSAPP052803-LondonLinen.xlsx` | Works order S851569 for SNSAPP052803, the London Linen black wide waist apron on AP0528 variant APP0528PKT: pocket right side as worn, cut-out centre front split with facing and stay tape, self fabric ties, no Tibard branding (JH 2023, marker 2024; Lara, 22/1/26 for 250), sketch included. In the app as style SNSAPP052803 on PC2003ECO at 1.10 m. |
+| `SNSAPP052803-2026-10-14.json` | That record for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards

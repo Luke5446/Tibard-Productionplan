@@ -10,6 +10,7 @@
 // Wagamama hat colours were derived from the red sheet and the Respect shroud
 // (SHROUD01) added: the colour records take All Costings' cloth with a matching
 // mesh and thread, the shroud its 3.7 m rating and the Perma Core white thread.
+// Later that day the London Linen wide waist apron SNSAPP052803 (order S851569).
 const { chromium } = require('playwright');
 const path = require('path');
 (async()=>{
@@ -37,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('328 styles in the master', r.count===328, r.count);
+ ck('329 styles in the master', r.count===329, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -88,6 +89,13 @@ const path = require('path');
  ck('bottle hat print: PC2024 and the bottle mesh, the red chart and the logo', d.text.includes('PC2024')&&d.text.includes('MESHPW31424')&&d.text.includes('60 cm (TOL ± 1)')&&d.text.includes('2.2 cm up from the bottom edge')&&d.imgs>=2, d.imgs);
  d=await printOf('SHROUD01',10);
  ck('shroud print: the cut instruction, 3.7 m, the label wording, the fold and the sticker; no branding band', d.text.includes('cut 2 at 1.43 m width')&&/PC2001ECO B2 3\.7/.test(d.text)&&d.text.includes('Company ID 000282')&&d.text.includes('selvedge to selvedge')&&d.text.includes('UH 1.08 kg')&&d.text.includes('2.85 m x 1.85 m')&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,200));
+
+
+ const r3=await p.evaluate(()=>{ const h=styleForCode('SNSAPP052803'), s=h&&h.style, u=fabricUsageFor('SNSAPP052803');
+   return s?[s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.customer, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&u.code+'/'+u.metres+'/'+u.source, s.trims.map(t=>t[3]).join('+'), garmentKind('SNSAPP052803',s), s.trims[0][2], s.mfg.length, s.fin.length, (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, smIsStockStyle('SNSAPP052803')?'stock':'own'].join('|'):null; });
+ ck('London Linen apron: one size, PC2003ECO at B1 1.1 m (All Costings agrees), black thread at the waist apron 30 and the label tape coded, stay tape not, no branding, a stock style', r3==='SNSAPP052803||onesize|APP0528PKT|London Linen|PC2003ECO:B1:1.1|PC2003ECO/1.1/All Costings|CMP-THR-EP80-09700-03+CMP-LBL-NYL-25-01+|APW|30|9|4|3||stock', r3);
+ d=await printOf('SNSAPP052803',250);
+ ck('London Linen print: the 0528 variant and marker, the split and stay tape, the 129 cm chart, no branding band', d.text.includes('APP0528PKT')&&/PC2003ECO B1 1\.1/.test(d.text)&&d.text.includes('stay tape (cut at 2.5 cm)')&&d.text.includes('129 cm (± 1.5)')&&d.text.includes('35 cm in from the finished side seam')&&d.text.includes('fold in tens')&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,200));
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
