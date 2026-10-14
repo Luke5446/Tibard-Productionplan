@@ -330,6 +330,9 @@ value are what the cutting room took off the roll (Luke, 14 Oct 2026):
   record's code). The lays set are listed on the Fabric tab with a remove link, and go
   out with publish like the corrected fabrics. A lay plan the cutting room
   adds later wins over it.
+- The OH detachable tabs (OHTAB codes) are cut by hand with scissors, so
+  they have no lay, no plies and no allowance; their cutting time is 35
+  seconds a tab (`CUT_HAND_SECS`), and the print says so.
 - The allowance is one constant, `CUT_WASTAGE_M` (0.03 m).
 
 ## Cut figures that do not look right

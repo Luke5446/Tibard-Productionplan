@@ -1713,7 +1713,9 @@ function layWastageTxt(plies, total){
 // The lay the PM set in the planner, on the print where the cutting room has
 // no lay plan for the code and the record carries no marker.
 function layOverrideRow(code, qty){
-  var lf=cutLayFor(code); if(lf.src!=='set in the planner') return '';
+  var lf=cutLayFor(code);
+  if(lf.hand) return '<tr><th>Cutting</th><td colspan="3" style="font-weight:700">Cut by hand with scissors: no marker, no lay, no wastage allowance'+(qty>0 ? ' &mdash; '+qty+' tab'+(qty===1?'':'s')+' at '+CUT_HAND_SECS+' seconds = '+(Math.round(qty*CUT_HAND_SECS/60*10)/10)+' min' : '')+'</td></tr>';
+  if(lf.src!=='set in the planner') return '';
   var plies=cutPliesFor(code, qty, lf.lay);
   return '<tr><th>Lay (set in the planner)</th><td colspan="3" style="font-weight:700">'+lf.lay+' garment'+(lf.lay===1?'':'s')+' per ply'
     +(qty>0 ? ' &mdash; '+plies+' pl'+(plies===1?'y':'ies')+' for '+qty+', plus 3 cm wastage per ply = '+(plies*CUT_WASTAGE_M).toFixed(2)+' m' : '')+'</td></tr>';
@@ -4296,7 +4298,13 @@ function cutMetres(e){ return (e.metres!=null) ? e.metres : (e.std!=null ? e.std
 var CUT_WO_MINS=25, CUT_RUN_LAYS=50, CUT_EXTRA_MINS=15, CUT_KPI_TARGET=0.85;   // the day's cut against its capacity; under this the tile goes red (Luke, 9 Oct 2026)
 var CUT_DAY_MINS={1:450, 2:450, 3:450, 4:450, 5:285, 6:0, 0:0};
 function cutDayMins(d){ return CUT_DAY_MINS[new Date(d).getDay()]||0; }
+// The OH detachable tabs (OHTAB) are cut by hand with scissors: no marker,
+// no lay, no plies - so no 3 cm wastage - and 35 seconds a tab in the
+// cutting time instead of a works order's set-up (Luke, 14 Oct 2026).
+var CUT_HAND_SECS=35;
+function cutByHand(code){ return /^OHTAB/.test((code||'').trim().toUpperCase()); }
 function cutLayFor(code){
+  if(cutByHand(code)) return {lay:null, src:'cut by hand', hand:true};
   var lp=null; try{ lp=layPlanFor(code); }catch(e){ lp=null; }
   if(lp && lp.main && lp.main.length){ var m=lp.main.filter(function(x){ return x.d; })[0]||lp.main[0]; if(m.lay>0) return {lay:m.lay, src:'lay plan '+(m.m||'')}; }
   try{ var h=styleForCode(code); if(h && h.style && h.style.layQty>0) return {lay:h.style.layQty, src:'works order data'}; }catch(e){}
@@ -4308,10 +4316,14 @@ function cutWoMins(lays){ return CUT_WO_MINS + CUT_EXTRA_MINS*Math.max(0, Math.c
 // lines (an extra - mesh, contrast - is cut in the same run), the minutes,
 // and the codes with no lay plan.
 function cutWoPlan(lines){
-  var lays=0, unknown=[], seen={};
-  lines.forEach(function(e){ if(e.extra || seen[e.code]) return; seen[e.code]=1; var l=cutLayFor(e.code); lays+=Math.ceil((e.qty||0)/l.lay); if(!l.src) unknown.push(e.code); });
-  return {lays:lays, mins:cutWoMins(lays), unknown:unknown};
+  var lays=0, hand=0, unknown=[], seen={};
+  lines.forEach(function(e){ if(e.extra || seen[e.code]) return; seen[e.code]=1; var l=cutLayFor(e.code);
+    if(l.hand){ hand+=(e.qty||0); return; }   // tabs: cut by hand, no lays
+    lays+=Math.ceil((e.qty||0)/l.lay); if(!l.src) unknown.push(e.code); });
+  var mins=(lays>0 ? cutWoMins(lays) : 0) + hand*CUT_HAND_SECS/60;
+  return {lays:lays, hand:hand, mins:Math.round(mins*10)/10, unknown:unknown};
 }
+function cutPlanTxt(pl){ return (pl.lays ? pl.lays+' lay'+(pl.lays===1?'':'s') : '')+(pl.hand ? (pl.lays?' + ':'')+pl.hand+' tab'+(pl.hand===1?'':'s')+' cut by hand' : ''); }
 function cutGroupByRef(lines){ var by={}; lines.forEach(function(e){ (by[e.ref]=by[e.ref]||[]).push(e); }); return by; }
 // The queue in cutting time: minutes over the works orders waiting, the
 // working days that is from today, and the day the work runs out.
@@ -4320,13 +4332,13 @@ function cutQueueEstimate(todo){
   Object.keys(by).forEach(function(r){ var pl=cutWoPlan(by[r]); mins+=pl.mins; wos++; if(pl.unknown.length) unknown++; });
   var left=mins, days=0, d=new Date(d2s(now())), runsOut='', n=0;
   while(left>0 && n<400){ var cap=cutDayMins(d); if(cap>0){ if(left<=cap){ days+=left/cap; left=0; runsOut=d2s(d); break; } left-=cap; days+=1; } d.setDate(d.getDate()+1); n++; }
-  return {wos:wos, mins:mins, days:Math.round(days*10)/10, runsOut:runsOut, unknown:unknown};
+  return {wos:wos, mins:Math.round(mins*10)/10, days:Math.round(days*10)/10, runsOut:runsOut, unknown:unknown};
 }
 // Minutes credited for the lines marked cut, by the day they were cut: each
 // works order's lines cut on one day count as one run of that works order.
 function cutMinsByDay(cut){
   var by={}; cut.forEach(function(e){ if(!e.cutAt) return; (by[e.cutAt]=by[e.cutAt]||{})[e.ref]=(by[e.cutAt][e.ref]||[]).concat([e]); });
-  var out={}; Object.keys(by).forEach(function(day){ var m=0, w=0; Object.keys(by[day]).forEach(function(r){ m+=cutWoPlan(by[day][r]).mins; w++; }); out[day]={mins:m, wos:w}; });
+  var out={}; Object.keys(by).forEach(function(day){ var m=0, w=0; Object.keys(by[day]).forEach(function(r){ m+=cutWoPlan(by[day][r]).mins; w++; }); out[day]={mins:Math.round(m*10)/10, wos:w}; });
   return out;
 }
 // The KPI: the last five working days before today (a full week's 2,085
@@ -4335,7 +4347,7 @@ function cutMinsByDay(cut){
 function cutKpi(cut, today){
   var byDay=cutMinsByDay(cut), days=[], d=new Date(today), n=0;
   while(days.length<5 && n<30){ d.setDate(d.getDate()-1); n++; var s=d2s(d), cap=cutDayMins(s); if(cap>0) days.unshift({day:s, cap:cap, mins:(byDay[s]||{}).mins||0, wos:(byDay[s]||{}).wos||0}); }
-  var cutM=0, target=0, wos=0; days.forEach(function(x){ cutM+=x.mins; target+=x.cap; wos+=x.wos; });
+  var cutM=0, target=0, wos=0; days.forEach(function(x){ cutM+=x.mins; target+=x.cap; wos+=x.wos; }); cutM=Math.round(cutM*10)/10;
   var t=byDay[today]||{mins:0, wos:0};
   // the day on the tile: today, or when the room is shut (Saturday, Sunday) the last day it was open
   var dd=new Date(today), day=today, m=0; while(cutDayMins(day)<=0 && m<7){ dd.setDate(dd.getDate()-1); day=d2s(dd); m++; }
@@ -4446,7 +4458,7 @@ function cutRender(){
     else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Sort by the date printed" onclick="cutSortBy(\'printed\')">Printed'+arrow('printed')+'</th><th style="cursor:pointer" title="Sort by the due date" onclick="cutSortBy(\'due\')">Due'+arrow('due')+'</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th>'+(can?'<th style="text-align:right">Cut m</th><th style="text-align:right" title="how many garments the cloth was cut for - a note for the PM, the works order itself is not changed">Qty cut</th><th>Comment</th><th>Cut on</th><th></th>':'<th></th>')+'</tr></thead><tbody>'
       +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
         return es.map(function(e,i){
-          return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(function(){ var pl=cutWoPlan(es); return '<div class="sm-sub" title="'+esc(pl.lays+' lays: '+CUT_WO_MINS+' min up to '+CUT_RUN_LAYS+', +'+CUT_EXTRA_MINS+' min each further '+CUT_RUN_LAYS)+'">'+pl.lays+' lay'+(pl.lays===1?'':'s')+' &middot; '+pl.mins+' min'+(pl.unknown.length?' <span class="sm-tag warn" title="No lay plan for '+esc(pl.unknown.join(', '))+': taken as one garment per lay">no lay plan</span>'+(IS_EDITOR ? pl.unknown.map(function(c){ return ' <a href="#" onclick="layOverrideSet(\''+esc(c).replace(/'/g,"\\'")+'\');return false" title="Set the garments per ply for '+esc(c)+'">set lay</a>'; }).join('') : ''):'')+'</div>'; })()+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')" title="Mark every line cut, on the date in the first line\'s date box">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
+          return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(function(){ var pl=cutWoPlan(es); return '<div class="sm-sub" title="'+esc(pl.lays+' lays: '+CUT_WO_MINS+' min up to '+CUT_RUN_LAYS+', +'+CUT_EXTRA_MINS+' min each further '+CUT_RUN_LAYS+(pl.hand?'; '+pl.hand+' tab(s) cut by hand with scissors at '+CUT_HAND_SECS+' s each':''))+'">'+cutPlanTxt(pl)+' &middot; '+pl.mins+' min'+(pl.unknown.length?' <span class="sm-tag warn" title="No lay plan for '+esc(pl.unknown.join(', '))+': taken as one garment per lay">no lay plan</span>'+(IS_EDITOR ? pl.unknown.map(function(c){ return ' <a href="#" onclick="layOverrideSet(\''+esc(c).replace(/'/g,"\\'")+'\');return false" title="Set the garments per ply for '+esc(c)+'">set lay</a>'; }).join('') : ''):'')+'</div>'; })()+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')" title="Mark every line cut, on the date in the first line\'s date box">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
             +'<td>'+(i===0?esc(fmtD(first.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':''):'')+'</td><td>'+(i===0?esc(fmtD(first.due)):'')+'</td>'
             +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
             +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
@@ -5457,7 +5469,7 @@ function fabricCellFor(i, it){
   var u=fabricUsageFor(it.code), std=u ? fabricStd(u.metres, it.qty, u.lay, it.code) : null, plies=(u&&u.lay>0) ? cutPliesFor(it.code, it.qty, u.lay) : 0;
   var editLink=IS_EDITOR ? ' <a href="#" onclick="setFabricCode('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\');return false" title="Put this line on a different cloth">&#9998; fabric</a>' : '';
   var lf=cutLayFor(it.code), layLink=IS_EDITOR ? ' <a href="#" onclick="layOverrideSet(\''+esc(it.code).replace(/'/g,"\\'")+'\');return false" title="Set the garments per ply for this product: every works order of it from now on">&#9998; lay</a>' : '';
-  var layTxt=lf.src==='set in the planner' ? ' &middot; <b>'+lf.lay+' per ply</b> (set here)'+layLink : (!lf.src ? ' &middot; <span style="color:#b45309" title="no lay plan: taken as one garment per ply">no lay plan</span>'+layLink : '');
+  var layTxt=lf.hand ? ' &middot; cut by hand, no wastage' : lf.src==='set in the planner' ? ' &middot; <b>'+lf.lay+' per ply</b> (set here)'+layLink : (!lf.src ? ' &middot; <span style="color:#b45309" title="no lay plan: taken as one garment per ply">no lay plan</span>'+layLink : '');
   var hint=u ? '<div style="font-size:10px;color:#6b7280">std '+std+' m'+(plies?' <span title="'+plies+' pl'+(plies===1?'y':'ies')+' x 3 cm wastage, in the standard">(incl. wastage)</span>':'')+' &middot; '+(it.fabricCode ? '<b title="changed from '+esc(u.code||'?')+'">'+esc(it.fabricCode)+'</b>' : esc(u.code||'?'))
                +(u.extras&&u.extras.length ? u.extras.map(function(x){ return ' + '+fabricStd(x.metres, it.qty, x.lay, it.code)+' m '+esc(x.code||'mesh'); }).join('') : '')
                +(/^marker/.test(u.source) ? ' <span title="per-size marker from the lay plan sheet">&#9998;</span>' : '')+editLink+layTxt+'</div>'

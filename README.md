@@ -49,7 +49,8 @@ marker on the lay plan (an apron at 4 per lay: 60 aprons are 15 lays), or
 the marker on the works order data; a code with no lay plan is taken at one
 garment per lay and flagged, until the PM sets its lay (**set lay** on the
 tag, or **✎ lay** on the works order panel), which every works order of the
-product then uses. The cut room works 8 hours Monday to Thursday
+product then uses. The OH detachable tabs (OHTAB codes) are cut by hand
+with scissors: no lay, and **35 seconds a tab** instead of the set-up. The cut room works 8 hours Monday to Thursday
 including two paid 15-minute breaks (450 minutes, 18 works orders) and 5
 hours on Friday including one break (285 minutes); nothing at the weekend.
 

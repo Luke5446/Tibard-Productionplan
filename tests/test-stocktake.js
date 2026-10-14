@@ -146,7 +146,7 @@ print(s1.count('<row '), s2.count('<row '), 'Counted on' in s1, 'two rolls short
  console.log('viewer ->', JSON.stringify(v), 'puts', puts-putsBefore);
 
  const unzOk=unz.stdout.trim().split('\n');
- const pass = /^1500:1000:5\.48:494\.5\d:true$/.test(s0) && c1.held==='CO5014DEN,PC14001,POPLAZA03' && c1.picks.length===2 && c1.picks.every(x=>/^2026-10-14:/.test(x)) && c1.rows===2 && /Stock take2$/.test(c1.chip) && c1.same && c1.fri===0
+ const pass = /^1500:1000:5\.57:494\.43\d*:true$/.test(s0) && c1.held==='CO5014DEN,PC14001,POPLAZA03' && c1.picks.length===2 && c1.picks.every(x=>/^2026-10-14:/.test(x)) && c1.rows===2 && /Stock take2$/.test(c1.chip) && c1.same && c1.fri===0
    && c2.pending===0 && c2.counts.length===3 && c2.counts.some(x=>/:pick:.*:-20:/.test(x)) && c2.counts.some(x=>/:pick:.*:5:/.test(x)) && c2.counts.some(x=>new RegExp('^'+third+':adhoc:.*:0:').test(x)) && c2.recent===3 && c2.adhocDone==='true' && ah===1
    && r1.badge==='3' && r1.onList==='' && x3.onList==='2 on the cutting room\'s list, oldest from 15 Oct 2026' && r1.rows===3 && /=write off 20.0 m/.test(r1.adjust) && /=add 5.0 m/.test(r1.adjust) && /=matches/.test(r1.adjust) && /Adjust Sage by\|Cutting room\|PM comment/.test(r1.heads)
    && r2.open===2 && /^recount:.*:check the back shelf$/.test(r2.pending) && r2.note==='WO-ST-101' && r2.ok===1
