@@ -4118,7 +4118,7 @@ function cutReviewLines(){
   });
   return out;
 }
-function cutRevBadge(){ var el=document.getElementById('cutRevCount'); if(!el) return; var n=0; try{ n=cutReviewLines().length; }catch(e){} el.textContent=n; el.style.display=n?'':'none'; }
+function cutRevBadge(){ var el=document.getElementById('cutRevCount'); if(!el) return; var n=0; try{ n=cutReviewLines().length; }catch(e){} try{ if(stLog.loadedAt) n+=stOpenCounts().length; }catch(e){} el.textContent=n; el.style.display=n?'':'none'; }
 // What the log should hold for these works orders against what it does. A
 // line already cut, or withdrawn, is left as it is whatever the works order
 // says now (Luke: "if it's already been cut, just ignore"). A line waiting
@@ -4366,7 +4366,7 @@ function cutRender(){
     +'<div class="kpi-tile"><div class="l">Cut, last 7 days</div><div class="v">'+weekM.toFixed(1)+' m</div><div class="s">from '+esc(fmtD(wkS))+'</div></div>'
     +'</div>';
   var chip=function(k,l,n){ return '<button class="fab-chip'+(cutSec===k?' on':'')+'" onclick="cutSec=\''+k+'\'; cutRender()">'+l+(n!=null?'<span class="cnt">'+n+'</span>':'')+'</button>'; };
-  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',Object.keys(todoRefs).length)+chip('log','Cut log',cut.length)+chip('days','Cutting KPIs')
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'+chip('todo','To cut',Object.keys(todoRefs).length)+chip('log','Cut log',cut.length)+chip('days','Cutting KPIs')+chip('stock','Stock take',stLog.loadedAt?stPending().length:null)
     +'<input type="text" id="cutQ" value="'+esc(cutQ)+'" placeholder="&#128269; works order, product or fabric" oninput="cutQ=this.value; cutTyping=true; cutRender()" style="margin-left:6px;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:260px"></div>';
   // To cut is the whole list, in the order the works orders were raised, and
   // the search narrows it; the cut log, like the Embroidery tab, comes up for
@@ -4427,8 +4427,10 @@ function cutRender(){
         return '<tr><td><strong>'+esc(fmtD(d.day))+'</strong></td><td style="text-align:right"><strong>'+d.wos+'</strong></td><td style="text-align:right">'+d.lines+'</td><td style="text-align:right" class="fab-num">'+d.metres.toFixed(2)+'</td><td style="text-align:right">'+d.mins+(d.cap?' / '+d.cap:'')+'</td><td style="text-align:right"'+(d.pct!=null&&d.pct<CUT_KPI_TARGET?' style="text-align:right;color:#b91c1c;font-weight:700"':'')+'>'+(d.pct!=null?Math.round(d.pct*100)+'%':'&mdash;')+'</td><td class="sm-sub">'+refs.map(function(r){ return '<span style="font-family:monospace;font-size:11px">'+esc(r)+'</span>'; }).join(' &middot; ')+'</td><td class="sm-sub">'+fabs.map(function(f){ return '<span style="font-family:monospace;font-size:11px">'+esc(f)+'</span> '+d.fabrics[f].toFixed(2)+' m'; }).join(' &middot; ')+'</td></tr>'; }).join('')
       +'</tbody></table></div>';
   }
+  if(cutSec==='stock') h+=stCutHtml(can);
   el.innerHTML=h;
   if(cutTyping){ cutTyping=false; var inp=document.getElementById('cutQ'); if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }
+  if(stTyping){ stTyping=false; var sq=document.getElementById('stQ'); if(sq){ sq.focus(); sq.setSelectionRange(sq.value.length, sq.value.length); } }
 }
 // Two cutting room PCs: each reads the log again every minute while the tab
 // is open, so a mark made on the other shows up without a click. A save
@@ -4454,7 +4456,7 @@ function cutRevRender(){
     +(IS_EDITOR && pending.length ? '<span class="sm-sub" style="font-size:11px">'+pending.length+' works order'+(pending.length===1?'':'s')+' with changes not on the cutting log</span> '+(can?'<button class="btn btn-p" style="font-size:11px;padding:3px 9px" onclick="cutSync(null, cutRevAfter)">&#8679; Push to cutting</button>':'<span class="sm-tag">set up this PC on the Cutting tab to push</span>'):'')
     +'</div>'
     +'<div class="sub">Printed works orders whose lines have no fabric or no metres on file, so the cutting room has not got them. Open the works order: put the fabric right with &#9998; fabric on the line, and where there is no usage on file type the metres for the whole line in Metres cut (it saves as you leave the box); the line goes across to the Cutting tab on its own. A works order changed before it is cut replaces its lines on the cutting room\'s list; one already cut is left as cut.</div></div>';
-  if(!lines.length){ h+='<div class="sm-empty" style="padding:18px">Nothing to review: every printed works order has a fabric and metres on file.</div>'; el.innerHTML=h; return; }
+  if(!lines.length){ h+='<div class="sm-empty" style="padding:18px">Nothing to review: every printed works order has a fabric and metres on file.</div>'+stRevHtml(); el.innerHTML=h; return; }
   var byRef={}, order=[];
   lines.forEach(function(l){ if(!byRef[l.wo.ref]){ byRef[l.wo.ref]=[]; order.push(l.wo.ref); } byRef[l.wo.ref].push(l); });
   order.sort(function(a,b){ return (byRef[a][0].wo.due||'').localeCompare(byRef[b][0].wo.due||'') || a.localeCompare(b); });
@@ -4468,7 +4470,278 @@ function cutRevRender(){
           +'<td><span class="sm-tag warn">'+esc(l.why)+'</span></td>'
           +'<td style="white-space:nowrap">'+(IS_EDITOR?'<button class="btn" style="font-size:11px;padding:2px 8px" onclick="openWOModal('+l.i+')">Open</button> <button class="btn" style="font-size:11px;padding:2px 8px" onclick="setFabricCode('+l.i+',\''+esc(l.it.code).replace(/'/g,"\\'")+'\')">&#9998; fabric</button>':'')+'</td></tr>'; }).join(''); }).join('')
     +'</tbody></table></div>';
+  h+=stRevHtml();
   el.innerHTML=h;
+}
+
+// ── Stock take: the cutting room's rolling count of the cloth on the shelf ─
+// Two fabrics a day, Monday to Thursday, drawn from the fabrics Sage holds
+// stock of, the way a UK cycle count is run: ABC by value cut in the last
+// twelve months (A = the fabrics making up the top 80% of value, B the next
+// 15%, C the rest), with A counted most often and C least, and every fabric
+// coming round more than once a year. The draw is random but weighted by
+// how overdue each fabric is against its class's interval, and is seeded by
+// the day so every PC draws the same two. The cutting room counts against
+// the To hand figure (Sage less what is already cut), saves, and the count
+// goes to the PM on the Cutting review tab: a comment (the Sage reference),
+// a tick that it is right to adjust, a recount back to the cutting room if
+// not. The export writes the write-off file (short) or the add-stock file
+// (over) in the layouts the Sage routines already read, and closes the
+// counts it carried. Everything lives in stocktake.json in the cutting
+// log's repo, read and written like the other two logs. Luke, 14 Oct 2026.
+var STLOG_FILE='stocktake.json';
+var stLog={entries:[], savedAt:'', sha:null, loadedAt:null, error:'', source:'', busy:false, file:STLOG_FILE};
+var ST_PER_DAY=2, ST_DAYS={1:1,2:1,3:1,4:1};            // Monday to Thursday
+var ST_INTERVAL={A:30, B:60, C:120};                    // days between counts, by class
+var ST_REF1='Stock Take', ST_ADD_LOCATION='Home';       // the write-off keeps WRITEOFF_LOCATION / WRITEOFF_CAT
+var stSec='todo', stQ='', stTyping=false, stOpen={mon:{}, sched:false};
+try{ var _so=JSON.parse(localStorage.getItem('tibard_st_view')||'null'); if(_so){ stOpen.mon=_so.mon||{}; stOpen.sched=!!_so.sched; } }catch(e){}
+function stSavePrefs(){ try{ localStorage.setItem('tibard_st_view', JSON.stringify(stOpen)); }catch(e){} }
+function stLoad(cb){ ghLoad(stLog, cb); }
+function stSave(message, mutate, cb){ ghSave(stLog, message, mutate, cb); }
+function stViews(){ var tc=document.getElementById('tabCut'); if(tc && tc.classList.contains('on')) cutRender(); var tr=document.getElementById('tabCutRev'); if(tr && tr.classList.contains('on')) cutRevRender(); cutRevBadge(); }
+function stAfter(ok, err){ if(!ok && err && err!=='no token') alert('The stock take could not be saved: '+err+'\n\nNothing was lost - try again in a moment.'); stViews(); }
+function stReady(cb){ if(stLog.loadedAt || stLog.error) return true; if(!stLog.busy) stLoad(cb); return false; }
+function stDays(a, b){ return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5); }
+function stHash(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return (((h>>>0)%999983)+1)/1000000; }   // 0..1, the same on every PC
+// The fabrics we hold stock of: Sage's sheet, in stock above nil.
+function stHeld(){ return Object.keys(fabStock.rows||{}).filter(function(c){ return fabStock.rows[c].inStock>0; }).sort().map(function(c){ return fabStock.rows[c]; }); }
+// Value cut in the last twelve months: the completed lines' cloth, plus
+// what the cutting log holds cut on works orders not yet completed.
+function stUsage12m(){
+  var from=new Date(now()); from.setDate(from.getDate()-365); var fs=d2s(from), by={};
+  var add=function(code,m){ code=(code||'').toUpperCase(); if(!code||!(m>0)) return; by[code]=(by[code]||0)+m; };
+  completedWOs.forEach(function(c){ if(!c.fabric||!c.completed||c.completed<fs) return; var f=c.fabric; add(f.code,(f.actual!=null)?f.actual:f.std); (f.extras||[]).forEach(function(x){ add(x.code,(x.actual!=null)?x.actual:x.std); }); });
+  cutLog.entries.forEach(function(e){ if(!e.cutAt||e.cancelledAt||e.cutAt<fs||cutCompletedOn(e)) return; add(e.fabric, cutMetres(e)); });
+  return by;
+}
+function stClasses(){
+  var use=stUsage12m(), codes=Object.keys(use), priced=[];
+  codes.forEach(function(c){ var p=fabPriceFor(c); if(p!=null) priced.push(p); });
+  var avg=priced.length ? priced.reduce(function(a,b){ return a+b; },0)/priced.length : 1;   // an unpriced fabric is valued at the average, not at nil
+  var vals=codes.map(function(c){ var p=fabPriceFor(c); return {code:c, metres:use[c], value:use[c]*(p!=null?p:avg)}; }).sort(function(a,b){ return b.value-a.value; });
+  var total=vals.reduce(function(t,v){ return t+v.value; },0), run=0, out={};
+  vals.forEach(function(v){ var before=total>0?run/total:1; run+=v.value; out[v.code]={abc: before<0.8?'A': before<0.95?'B':'C', metres:v.metres, value:v.value}; });
+  return out;
+}
+function stCounts(){ return stLog.entries.filter(function(e){ return e.kind==='count' && !e.cancelledAt; }); }
+function stFirstDay(){ var d=''; stLog.entries.forEach(function(e){ var x=e.day||(e.at||'').slice(0,10); if(x && (!d || x<d)) d=x; }); return d||d2s(now()); }
+// Every held fabric with its class, its last count and how overdue it is.
+function stPlan(){
+  var cls=stClasses(), today=d2s(now()), from=stFirstDay(), last={}, n12={}, y=new Date(now()); y.setDate(y.getDate()-365); var ys=d2s(y);
+  stCounts().forEach(function(e){ if(!last[e.code]||e.day>last[e.code]) last[e.code]=e.day; if(e.day>=ys) n12[e.code]=(n12[e.code]||0)+1; });
+  return stHeld().map(function(r){ var k=cls[r.code]||{}, c=k.abc||'C', iv=ST_INTERVAL[c], l=last[r.code]||'';
+    var since=l ? stDays(l,today) : stDays(from,today)+iv;   // never counted: due from the first day
+    return {code:r.code, name:r.desc, supName:r.supName, inStock:r.inStock, abc:c, metres12m:k.metres||0, value12m:k.value||0, last:l, counts12m:n12[r.code]||0, interval:iv, ratio:since/iv}; });
+}
+// What the cutting room has on its list: the day's picks not yet counted
+// (earlier days' carry over), ad hoc checks asked for, and recounts.
+function stPending(){
+  var out=[];
+  stLog.entries.forEach(function(e){ if(e.cancelledAt) return;
+    if(e.kind==='pick' && !e.countedK) out.push({k:e.k, kind:'pick', code:e.code, abc:e.abc, day:e.day});
+    if(e.kind==='adhoc' && !e.doneK) out.push({k:e.k, kind:'adhoc', code:e.code, day:(e.at||'').slice(0,10), note:e.note||''});
+    if(e.kind==='count' && e.recountAt && !e.recountedBy) out.push({k:e.k, kind:'recount', code:e.code, abc:e.abc, day:e.recountAt.slice(0,10), note:e.recountNote||'', counted:e.counted}); });
+  return out.sort(function(a,b){ return (a.day||'').localeCompare(b.day||'') || a.code.localeCompare(b.code); });
+}
+// The day's draw: weighted random, the same on every PC. A fabric already on
+// the list is not drawn again.
+function stDraw(day){
+  if(!ST_DAYS[new Date(day+'T00:00:00').getDay()]) return [];
+  var on={}; stPending().forEach(function(p){ on[p.code]=1; }); stLog.entries.forEach(function(e){ if(e.kind==='pick' && e.day===day) on[e.code]=1; });
+  var plan=stPlan().filter(function(p){ return !on[p.code]; });
+  plan.forEach(function(p){ p.key=Math.pow(stHash(day+'|'+p.code), 1/Math.max(p.ratio,0.01)); });   // weighted sampling: the more overdue, the likelier
+  plan.sort(function(a,b){ return b.key-a.key; });
+  return plan.slice(0, ST_PER_DAY);
+}
+function stPicksSaved(day){ return stLog.entries.some(function(e){ return e.kind==='pick' && e.day===day; }); }
+// Today's two go into the log the first time a PC that can write looks, so
+// the list is the same all day whatever else changes.
+function stEnsurePicks(){
+  var day=d2s(now()); if(!cutCanWrite() || !stLog.loadedAt || stLog.busy || stPicksSaved(day) || !stHeld().length) return;
+  var draw=stDraw(day); if(!draw.length) return;
+  stSave('Stock take: '+day+' '+draw.map(function(p){ return p.code; }).join(', '), function(d){ if(d.entries.some(function(e){ return e.kind==='pick' && e.day===day; })) return false;
+    draw.forEach(function(p){ d.entries.push({k:'pick|'+day+'|'+p.code, kind:'pick', day:day, code:p.code, abc:p.abc, at:new Date().toISOString()}); }); return true; }, function(ok){ stLog.loadedAt=stLog.loadedAt||new Date(); stViews(); });
+}
+// What the count is set against, frozen on the record when it is saved.
+function stExpected(code){
+  var x=fabStockCompute().list.filter(function(r){ return r.code===code; })[0]||{};
+  return {inSage:x.inSage!=null?x.inSage:null, cutLive:x.cutLive||0, notWrittenOff:x.cut||0, waiting:x.waiting||0, toHand:x.toHand!=null?Math.round(x.toHand*100)/100:null, sageAt:fabStock.pastedAt||''};
+}
+function stAdhoc(code){ if(!cutCanWrite()) return; code=(code||'').toUpperCase(); if(!code) return;
+  if(stPending().some(function(p){ return p.code===code; })){ alert(code+' is already on the list.'); return; }
+  stSave('Stock take: ad hoc '+code, function(d){ if(d.entries.some(function(e){ return e.kind==='adhoc' && e.code===code && !e.doneK; })) return false; d.entries.push({k:'adhoc|'+code+'|'+new Date().toISOString(), kind:'adhoc', code:code, at:new Date().toISOString()}); return true; }, stAfter); }
+function stCount(key){ if(!cutCanWrite()) return;
+  var pend=stPending().filter(function(p){ return p.k===key; })[0]; if(!pend) return;
+  var inp=document.querySelector('[data-stm="'+key+'"]'), nt=document.querySelector('[data-stn="'+key+'"]');
+  var m=parseFloat(inp?inp.value:''); if(isNaN(m)||m<0){ alert('Type the metres counted for '+pend.code+'.'); return; }
+  var r=fabStock.rows[pend.code]||{}, exp=stExpected(pend.code), cls=(stClasses()[pend.code]||{}).abc||'C', at=new Date().toISOString();
+  var rec={k:'count|'+pend.code+'|'+at, kind:'count', code:pend.code, name:r.desc||fabricNameFor(pend.code), supName:r.supName||'', day:d2s(now()), at:at, counted:Math.round(m*100)/100, note:(nt?nt.value:'').trim(),
+           why:pend.kind, listedOn:pend.day||'', abc:pend.abc||cls, expected:exp, diff:exp.toHand==null?null:Math.round((m-exp.toHand)*100)/100, recountOf:pend.kind==='recount'?pend.k:undefined};
+  stSave('Stock take: '+pend.code+' '+rec.counted+' m', function(d){ var src=d.entries.filter(function(x){ return x.k===key; })[0]; if(!src) return false;
+    if(pend.kind==='pick'){ if(src.countedK) return false; src.countedK=rec.k; } else if(pend.kind==='adhoc'){ if(src.doneK) return false; src.doneK=rec.k; } else { if(src.recountedBy) return false; src.recountedBy=rec.k; }
+    d.entries.push(rec); return true; }, stAfter); }
+// ── the PM's side ──
+function stOpenCounts(){ return stCounts().filter(function(e){ return !e.closedAt && !e.recountAt; }); }
+function stSetField(key, field, value, msg){ if(!IS_EDITOR || !cutCanWrite()) return;
+  stSave(msg||('Stock take: '+key.split('|')[1]), function(d){ var e=d.entries.filter(function(x){ return x.k===key; })[0]; if(!e || e[field]===value) return false; e[field]=value; e.pmAt=new Date().toISOString(); return true; }, function(ok, err){ if(!ok && err && err!=='no token' && err!=='nothing to do') alert('The stock take could not be saved: '+err); cutRevBadge(); }); }
+function stPmNote(key, v){ stSetField(key, 'pmNote', (v||'').trim(), 'Stock take: note on '+key.split('|')[1]); }
+function stPmOk(key, on){ stSetField(key, 'pmOk', !!on, 'Stock take: '+(on?'OK ':'not OK ')+key.split('|')[1]); }
+function stRecount(key){ if(!IS_EDITOR || !cutCanWrite()) return; var e=stLog.entries.filter(function(x){ return x.k===key; })[0]; if(!e) return;
+  var n=prompt('Send '+e.code+' back to the cutting room for a recount. A note for them:', ''); if(n===null) return;
+  stSave('Stock take: recount '+e.code, function(d){ var x=d.entries.filter(function(y){ return y.k===key; })[0]; if(!x || x.recountAt || x.closedAt) return false; x.recountAt=new Date().toISOString(); x.recountNote=n.trim(); return true; }, stAfter); }
+function stClose(key){ if(!IS_EDITOR || !cutCanWrite()) return;
+  stSave('Stock take: closed '+key.split('|')[1], function(d){ var x=d.entries.filter(function(y){ return y.k===key; })[0]; if(!x || x.closedAt) return false; x.closedAt=new Date().toISOString(); x.closedHow='matched'; return true; }, stAfter); }
+function stCancelAdhoc(key){ if(!cutCanWrite()) return; stSave('Stock take: ad hoc withdrawn', function(d){ var x=d.entries.filter(function(y){ return y.k===key; })[0]; if(!x || x.doneK || x.cancelledAt) return false; x.cancelledAt=new Date().toISOString(); return true; }, stAfter); }
+// The exports: the ticked counts short of the To hand figure go to the
+// write-off file, those over it to the add-stock file, in the layouts the
+// Sage routines read (see fabricWriteOffRows and embBookFiles). Ticked
+// counts with nothing to adjust close with the same press. Each count is
+// stamped with the file it went in, so a file can never carry it twice.
+function stFileName(kind){ var t=now(); return 'StockTake_'+kind+'_'+d2s(t)+'_'+String(t.getHours()).padStart(2,'0')+String(t.getMinutes()).padStart(2,'0')+'.csv'; }
+function stExport(kind){ if(!IS_EDITOR){ alert('View-only mode.'); return; } if(!cutCanWrite()){ alert('This PC cannot write the stock take log - set the token first.'); return; }
+  var neg=kind==='WriteOff', ticked=stOpenCounts().filter(function(e){ return e.pmOk && e.diff!=null; });
+  var todo=ticked.filter(function(e){ return neg ? e.diff<0 : e.diff>0; }), zero=ticked.filter(function(e){ return e.diff===0; });
+  if(!todo.length){ alert(zero.length ? 'Nothing to '+(neg?'write off':'add')+' - '+zero.length+' ticked count(s) match and will be closed.' : 'Tick the counts that are right to '+(neg?'write off':'add to Sage')+' first.'); if(!zero.length) return; }
+  var date=ukDate(d2s(now())), fname=stFileName(kind), rows;
+  if(neg) rows=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat']].concat(todo.map(function(e){ return [e.code, WRITEOFF_LOCATION, '', Math.round(-e.diff*100)/100, ST_REF1, e.pmNote||'', date, WRITEOFF_CAT]; }));
+  else rows=[['StockCode','Location','Bin','Qty','StockExported','Reference1']].concat(todo.map(function(e){ return [e.code, ST_ADD_LOCATION, '', Math.round(e.diff*100)/100, '', (ST_REF1+' '+(e.pmNote||'')).trim()]; }));
+  var keys={}; todo.forEach(function(e){ keys[e.k]=neg?'writeoff':'addstock'; }); zero.forEach(function(e){ keys[e.k]='matched'; });
+  var stamp=new Date().toISOString();
+  stSave('Stock take: '+fname, function(d){ var n=0; d.entries.forEach(function(e){ if(keys[e.k] && !e.closedAt){ e.closedAt=stamp; e.closedHow=keys[e.k]; if(keys[e.k]!=='matched'){ e.exportedAt=stamp; e.exportFile=fname; } n++; } }); return n>0; },
+    function(ok, err){ if(!ok){ alert('The stock take could not be saved: '+(err||'')+'\n\nNo file was made - try again in a moment.'); return; }
+      if(todo.length) downloadCsv(fname, rows.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n')+'\r\n');
+      stViews();
+      alert((todo.length ? todo.length+' line(s) in '+fname+' - save it to the shared folder for the Sage routine.' : 'No file made.')+(zero.length?'\n'+zero.length+' matching count(s) closed.':'')); }); }
+// ── the audit report: every count, as an Excel workbook ──
+function stReport(){
+  var head=['Counted on','Time','Fabric','Description','Supplier','Class','Reason','Listed on','Sage in stock','Sage sheet date','Cut on live works orders','Completed, not written off','Expected to hand','Counted','Difference','Cutting room comment','PM comment','PM OK','Status','Export file','Exported on','Recount note','Recount of'];
+  var why={pick:'Daily check', adhoc:'Ad hoc', recount:'Recount'};
+  var rows=stCounts().slice().sort(function(a,b){ return (a.at||'').localeCompare(b.at||''); }).map(function(e){ var x=e.expected||{};
+    var status=e.recountAt ? 'Sent for recount' : e.closedAt ? ({writeoff:'Written off', addstock:'Added to Sage', matched:'Matched'}[e.closedHow]||'Closed') : 'Awaiting PM';
+    return [e.day, (e.at||'').slice(11,16), e.code, e.name||'', e.supName||'', e.abc||'', why[e.why]||e.why||'', e.listedOn||'', x.inSage, x.sageAt||'', x.cutLive, x.notWrittenOff, x.toHand, e.counted, e.diff, e.note||'', e.pmNote||'', e.pmOk?'Yes':'', status, e.exportFile||'', (e.exportedAt||'').slice(0,10), e.recountNote||'', e.recountOf?e.recountOf.split('|').slice(1).join(' '):'']; });
+  var plan=stPlan(), sched=[['Fabric','Description','Supplier','In stock (Sage)','Class','Metres cut, 12 months','Value cut, 12 months','Interval (days)','Last counted','Counts, 12 months']]
+    .concat(plan.map(function(p){ return [p.code, p.name||'', p.supName||'', p.inStock, p.abc, Math.round(p.metres12m*100)/100, Math.round(p.value12m*100)/100, p.interval, p.last||'', p.counts12m]; }));
+  var name='StockTake_Audit_'+d2s(now())+'.xlsx';
+  xlsxDownload(name, [{name:'Counts', rows:[head].concat(rows)}, {name:'Schedule', rows:sched}]);
+  return {name:name, counts:rows.length, fabrics:plan.length};
+}
+// A minimal .xlsx writer: the workbook is a zip of a few XML parts, stored
+// uncompressed, which Excel opens as it would any other. No library.
+function xlsxDownload(name, sheets){ var bytes=xlsxBuild(sheets); var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})); a.download=name; a.click(); }
+function xlsxBuild(sheets){
+  var X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  var col=function(n){ var s=''; n++; while(n>0){ var r=(n-1)%26; s=String.fromCharCode(65+r)+s; n=Math.floor((n-1)/26); } return s; };
+  var cell=function(ri, ci, v){ if(v==null || v==='') return ''; var ref=col(ci)+(ri+1); if(typeof v==='number' && isFinite(v)) return '<c r="'+ref+'"><v>'+v+'</v></c>'; return '<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+esc(String(v))+'</t></is></c>'; };
+  var files=[['[Content_Types].xml', X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+sheets.map(function(s,i){ return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'; }).join('')+'</Types>'],
+    ['_rels/.rels', X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ['xl/workbook.xml', X+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+sheets.map(function(s,i){ return '<sheet name="'+esc(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>'; }).join('')+'</sheets></workbook>'],
+    ['xl/_rels/workbook.xml.rels', X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map(function(s,i){ return '<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>'; }).join('')+'</Relationships>']];
+  sheets.forEach(function(s,i){ files.push(['xl/worksheets/sheet'+(i+1)+'.xml', X+'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+s.rows.map(function(r,ri){ return '<row r="'+(ri+1)+'">'+r.map(function(v,ci){ return cell(ri,ci,v); }).join('')+'</row>'; }).join('')+'</sheetData></worksheet>']); });
+  return zipStore(files);
+}
+var CRC_T=(function(){ var t=[]; for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1); t[n]=c>>>0; } return t; })();
+function crc32(b){ var c=0xFFFFFFFF; for(var i=0;i<b.length;i++) c=CRC_T[(c^b[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipStore(files){
+  var enc=new TextEncoder(), parts=[], cd=[], off=0, now_=now();
+  var dt=((now_.getHours()<<11)|(now_.getMinutes()<<5)|(now_.getSeconds()>>1))&0xFFFF, dd=(((now_.getFullYear()-1980)<<9)|((now_.getMonth()+1)<<5)|now_.getDate())&0xFFFF;
+  var u16=function(v){ return [v&255,(v>>>8)&255]; }, u32=function(v){ return [v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255]; };
+  files.forEach(function(f){ var nm=enc.encode(f[0]), data=enc.encode(f[1]), crc=crc32(data);
+    var loc=new Uint8Array([].concat(u32(0x04034b50), u16(20), u16(0), u16(0), u16(dt), u16(dd), u32(crc), u32(data.length), u32(data.length), u16(nm.length), u16(0)));
+    parts.push(loc, nm, data);
+    cd.push(new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(dt), u16(dd), u32(crc), u32(data.length), u32(data.length), u16(nm.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(off))), nm);
+    off+=loc.length+nm.length+data.length; });
+  var cdLen=cd.reduce(function(t,p){ return t+p.length; },0);
+  var eocd=new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(cdLen), u32(off), u16(0)));
+  var all=parts.concat(cd, [eocd]), total=all.reduce(function(t,p){ return t+p.length; },0), out=new Uint8Array(total), pos=0;
+  all.forEach(function(p){ out.set(p, pos); pos+=p.length; });
+  return out;
+}
+// ── the cutting room's view ──
+function stReason(p){ return p.kind==='pick' ? 'Daily check &middot; listed '+esc(fmtD(p.day)) : p.kind==='adhoc' ? 'Ad hoc &middot; asked '+esc(fmtD(p.day)) : '<b style="color:#b91c1c">Recount</b> &middot; counted '+fabM(p.counted,1)+' m'+(p.note?' &middot; PM: '+esc(p.note):''); }
+function stCutHtml(can){
+  var today=d2s(now()), h='';
+  if(!stReady(function(){ stViews(); })) return '<div class="sm-empty">Reading the stock take log&hellip;</div>';
+  if(!stHeld().length) return '<div class="sm-empty" style="padding:18px">No Sage fabric stock has been published yet, so there is nothing to count. The production manager pastes the Sage sheet on the Fabric tab and publishes.</div>';
+  stEnsurePicks();
+  var pend=stPending(), drawn=!stPicksSaved(today) ? stDraw(today) : [];
+  h+='<div class="sub" style="margin-bottom:8px">Two fabrics a day, Monday to Thursday, drawn at random with the fast movers coming round more often, plus any ad hoc check and any recount the PM has asked for. <b>To hand</b> is what should be on the shelf: Sage\'s stock less what is already cut. Count the rolls, type the metres and save - the PM sees the count on the Cutting review tab and sorts out Sage.'
+    +(stLog.error?' <span style="color:#b91c1c;font-weight:700">&#9888; stock take log: '+esc(stLog.error)+'</span>':'')+'</div>';
+  var list=pend.slice(); drawn.forEach(function(p){ list.push({k:'', kind:'pick', code:p.code, abc:p.abc, day:today, unsaved:true}); });
+  if(!list.length) h+='<div class="sm-empty">Nothing to count'+(ST_DAYS[new Date(today+'T00:00:00').getDay()]?'':' - the daily draw runs Monday to Thursday')+'.</div>';
+  else { var fs=fabStockCompute(), byCode={}; fs.list.forEach(function(x){ byCode[x.code]=x; });
+    h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Fabric</th><th>Why</th><th style="text-align:right" title="what should be on the shelf: Sage less what is already cut">To hand</th><th>Count</th></tr></thead><tbody>'
+      +list.map(function(p){ var x=byCode[p.code]||{}, r=fabStock.rows[p.code]||{};
+        return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(p.code)+'</span> <span class="sm-tag" title="'+(p.abc==='A'?'fast moving':p.abc==='B'?'medium':'slow moving')+'">'+esc(p.abc||'')+'</span><div class="sm-sub">'+esc(r.desc||fabricNameFor(p.code))+(r.supName?' &middot; '+esc(r.supName):'')+'</div></td>'
+          +'<td class="sm-sub">'+stReason(p)+'</td>'
+          +'<td class="fab-num" style="font-weight:700">'+(x.toHand!=null?fabM(x.toHand,1)+' m':'&mdash;')+'<div class="sm-sub" style="font-weight:400">'+(x.inSage!=null?'Sage '+fabM(x.inSage,1)+' &middot; cut '+fabM((x.cutLive||0)+(x.cut||0),1):'not on the Sage sheet')+'</div></td>'
+          +'<td style="white-space:nowrap">'+(can && !p.unsaved ? '<input type="number" step="0.1" min="0" data-stm="'+esc(p.k)+'" placeholder="metres" style="width:80px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px"> m '
+              +'<input type="text" data-stn="'+esc(p.k)+'" placeholder="comment, if anything to say" style="width:200px;font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px"> '
+              +'<button class="btn btn-p" style="font-size:11px;padding:2px 9px" onclick="stCount(\''+esc(p.k)+'\')">&#10003; Save</button>'
+              +(p.kind==='adhoc'?' <button class="btn" style="font-size:10px;padding:1px 7px" onclick="stCancelAdhoc(\''+esc(p.k)+'\')" title="Take this ad hoc check off the list">&#10005;</button>':'')
+            : (p.unsaved ? '<span class="sm-sub">today\'s draw - a PC with the token saves it</span>' : '<span class="sm-tag">view only</span>'))+'</td></tr>'; }).join('')
+      +'</tbody></table></div>'; }
+  // ad hoc: a fabric the cutting room doubts, found by code or name and put on the list
+  h+='<div class="kpi-sec" style="margin-top:12px"><h3 style="margin:0 0 4px">Ad hoc stock check</h3><div class="sub">Noticed the cloth to hand is not what it should be? Find the fabric and tick it for a stock check: it joins the list above.</div>'
+    +'<input type="text" id="stQ" value="'+esc(stQ)+'" placeholder="&#128269; fabric code or name" oninput="stQ=this.value; stTyping=true; cutRender()" style="margin:6px 0;padding:5px 9px;border:1px solid #c8d0df;border-radius:6px;font-size:12px;min-width:260px">';
+  if(stQ.trim()){ var on={}; pend.forEach(function(p){ on[p.code]=1; }); var hits=stHeld().filter(function(r){ return smMatch(r.code+' '+r.desc+' '+r.supName, stQ); }).slice(0,12);
+    h+=hits.length ? '<table class="fab-stk cut-tbl" style="width:auto;min-width:420px"><tbody>'+hits.map(function(r){ return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(r.code)+'</span><div class="sm-sub">'+esc(r.desc)+'</div></td><td class="sm-sub">'+esc(r.supName)+'</td><td>'+(on[r.code]?'<span class="sm-tag">on the list</span>':(can?'<button class="btn" style="font-size:11px;padding:2px 9px" onclick="stAdhoc(\''+esc(r.code)+'\')">&#9745; Stock check</button>':'<span class="sm-tag">view only</span>'))+'</td></tr>'; }).join('')+'</tbody></table>'
+      : '<div class="sm-sub">Nothing we hold stock of matches "'+esc(stQ)+'".</div>'; }
+  h+='</div>';
+  // the last few counts, so the cutting room can see what happened to them
+  var recent=stCounts().sort(function(a,b){ return (b.at||'').localeCompare(a.at||''); }).slice(0,8);
+  if(recent.length) h+='<div class="kpi-sec" style="margin-top:12px"><h3 style="margin:0 0 4px">Recent counts</h3><table class="fab-stk cut-tbl" style="width:auto;min-width:520px"><thead><tr><th>Counted</th><th>Fabric</th><th style="text-align:right">To hand</th><th style="text-align:right">Counted</th><th style="text-align:right">Difference</th><th>Status</th></tr></thead><tbody>'
+    +recent.map(function(e){ return '<tr><td>'+esc(fmtD(e.day))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span></td><td class="fab-num">'+(e.expected&&e.expected.toHand!=null?fabM(e.expected.toHand,1):'&mdash;')+'</td><td class="fab-num">'+fabM(e.counted,1)+'</td><td class="fab-num">'+stDiffHtml(e)+'</td><td>'+stStatusHtml(e)+'</td></tr>'; }).join('')+'</tbody></table></div>';
+  return h;
+}
+function stDiffHtml(e){ if(e.diff==null) return '<span class="sm-sub">no Sage figure</span>'; if(e.diff===0) return '<span class="sm-tag ok">matches</span>'; return '<span style="color:'+(e.diff<0?'#b91c1c':'#1d4ed8')+';font-weight:700">'+(e.diff>0?'+':'')+fabM(e.diff,1)+'</span>'; }
+function stStatusHtml(e){ if(e.recountAt) return '<span class="sm-tag warn">recount asked</span>'; if(e.closedAt) return '<span class="sm-tag ok">'+({writeoff:'written off', addstock:'added to Sage', matched:'matched'}[e.closedHow]||'closed')+'</span>'+(e.exportFile?'<div class="sm-sub">'+esc(e.exportFile)+'</div>':''); return '<span class="sm-tag">with the PM</span>'; }
+// ── the PM's view, on the Cutting review tab ──
+function stRevHtml(){
+  var ed=IS_EDITOR && cutCanWrite(), h='';
+  if(!stReady(function(){ stViews(); })) return '<div class="kpi-sec" style="margin-top:12px"><h3 style="margin:0">&#128203; Stock take</h3><div class="sub">Reading the stock take log&hellip;</div></div>';
+  var open=stOpenCounts().sort(function(a,b){ return (a.at||'').localeCompare(b.at||''); }), ticked=open.filter(function(e){ return e.pmOk && e.diff!=null; });
+  var nOff=ticked.filter(function(e){ return e.diff<0; }).length, nAdd=ticked.filter(function(e){ return e.diff>0; }).length;
+  h+='<div class="kpi-sec" style="margin-top:12px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">&#128203; Stock take</h3>'
+    +'<span class="sm-sub" style="font-size:11px">'+open.length+' count'+(open.length===1?'':'s')+' to check'+(function(){ var pend=stPending(); return pend.length ? ' &middot; '+pend.length+' on the cutting room\'s list, oldest from '+esc(fmtD(pend[0].day)) : ''; })()+(stLog.error?' &middot; <span style="color:#b91c1c;font-weight:700">&#9888; '+esc(stLog.error)+'</span>':'')+'</span><span style="flex:1"></span>'
+    +(IS_EDITOR?'<button class="btn btn-p" style="font-size:11px;padding:3px 9px" onclick="stExport(\'WriteOff\')" title="The ticked counts that are short: a write-off file for the Sage routine, in the fabric write-off layout">&#8681; Write-off file'+(nOff?' <span class="cnt">'+nOff+'</span>':'')+'</button> '
+      +'<button class="btn btn-p" style="font-size:11px;padding:3px 9px" onclick="stExport(\'AddStock\')" title="The ticked counts that are over: an add-stock file for the Sage routine, in the TIB_Add_Stock layout">&#8679; Add-stock file'+(nAdd?' <span class="cnt">'+nAdd+'</span>':'')+'</button> '
+      +'<button class="btn" style="font-size:11px;padding:3px 9px" onclick="stReport()" title="Every count ever made, with the figures it was set against, plus the count schedule - an Excel workbook for the auditors">&#128196; Audit report (.xlsx)</button>':'')+'</div>'
+    +'<div class="sub">The cutting room\'s counts against the To hand figure. The difference is what Sage needs adjusting by - not the whole gap to Sage\'s stock, because the cloth already cut will come off at completion. Put the Sage reference in the comment, tick when it is right to adjust, then the file buttons write the ticked counts out and close them. Not happy with a count? Recount sends it back to the cutting room with a note.</div>';
+  if(!open.length) h+='<div class="sm-empty" style="padding:14px">No counts waiting.</div>';
+  else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Counted</th><th>Fabric</th><th>Why</th><th style="text-align:right" title="Sage\'s stock on the sheet the count was set against">Sage</th><th style="text-align:right" title="cut on live works orders, plus completed lines not yet written off">Already cut</th><th style="text-align:right">To hand</th><th style="text-align:right">Counted</th><th style="text-align:right">Adjust Sage by</th><th>Cutting room</th><th>PM comment (Sage ref)</th><th title="right to adjust Sage">OK</th><th></th></tr></thead><tbody>'
+    +open.map(function(e){ var x=e.expected||{}, why={pick:'Daily check', adhoc:'Ad hoc', recount:'Recount'}[e.why]||'';
+      return '<tr><td>'+esc(fmtD(e.day))+'<div class="sm-sub">'+(e.at||'').slice(11,16)+'</div></td>'
+        +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span> <span class="sm-tag">'+esc(e.abc||'')+'</span><div class="sm-sub">'+esc(e.name||'')+'</div></td>'
+        +'<td class="sm-sub">'+why+(e.recountOf?'<div>of an earlier count</div>':'')+'</td>'
+        +'<td class="fab-num">'+(x.inSage!=null?fabM(x.inSage,1):'&mdash;')+(x.sageAt?'<div class="sm-sub">'+esc(fmtD(x.sageAt))+'</div>':'')+'</td>'
+        +'<td class="fab-num">'+fabM((x.cutLive||0)+(x.notWrittenOff||0),1)+'<div class="sm-sub">'+fabM(x.cutLive||0,1)+' live &middot; '+fabM(x.notWrittenOff||0,1)+' done</div></td>'
+        +'<td class="fab-num" style="font-weight:700">'+(x.toHand!=null?fabM(x.toHand,1):'&mdash;')+'</td>'
+        +'<td class="fab-num" style="font-weight:700">'+fabM(e.counted,1)+'</td>'
+        +'<td class="fab-num">'+(e.diff==null?'<span class="sm-sub">no Sage figure</span>':e.diff===0?'<span class="sm-tag ok">matches</span>':e.diff<0?'<span style="color:#b91c1c;font-weight:700">write off '+fabM(-e.diff,1)+' m</span>':'<span style="color:#1d4ed8;font-weight:700">add '+fabM(e.diff,1)+' m</span>')+'</td>'
+        +'<td class="sm-sub">'+esc(e.note||'')+'</td>'
+        +'<td>'+(ed?'<input type="text" value="'+esc(e.pmNote||'')+'" placeholder="Sage ref" onchange="stPmNote(\''+esc(e.k)+'\', this.value)" style="width:150px;font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px">':esc(e.pmNote||''))+'</td>'
+        +'<td style="text-align:center">'+(ed?'<input type="checkbox"'+(e.pmOk?' checked':'')+(e.diff==null?' disabled title="no Sage figure to adjust"':'')+' onchange="stPmOk(\''+esc(e.k)+'\', this.checked)">':(e.pmOk?'&#10003;':''))+'</td>'
+        +'<td style="white-space:nowrap">'+(ed?'<button class="btn" style="font-size:10px;padding:1px 7px" onclick="stRecount(\''+esc(e.k)+'\')" title="Back to the cutting room with a note">&#8634; Recount</button>'+(e.diff===0?' <button class="btn" style="font-size:10px;padding:1px 7px" onclick="stClose(\''+esc(e.k)+'\')" title="Matches: nothing to adjust, close it">&#10003; Close</button>':''):'')+'</td></tr>'; }).join('')
+    +'</tbody></table></div>';
+  // the history, a folder a month, newest first
+  var all=stCounts().sort(function(a,b){ return (b.at||'').localeCompare(a.at||''); }), byMon={}, mons=[];
+  all.forEach(function(e){ var m=(e.day||'').slice(0,7); if(!byMon[m]){ byMon[m]=[]; mons.push(m); } byMon[m].push(e); });
+  h+='<h3 style="margin:14px 0 4px">Stock take history</h3>';
+  if(!mons.length) h+='<div class="sm-sub">No counts yet.</div>';
+  mons.forEach(function(m){ var es=byMon[m], on=!!stOpen.mon[m], lbl=new Date(m+'-01T00:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    h+='<div class="sm-bh'+(on?'':' shut')+'" onclick="stOpen.mon[\''+m+'\']=!stOpen.mon[\''+m+'\']; stSavePrefs(); cutRevRender()"><span class="cv">'+(on?'&#9662;':'&#9656;')+'</span><span class="ttl">'+esc(lbl)+'</span><span class="sm-sub" style="margin-left:8px">'+es.length+' count'+(es.length===1?'':'s')+'</span></div>';
+    if(on) h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Counted</th><th>Fabric</th><th>Why</th><th style="text-align:right">To hand</th><th style="text-align:right">Counted</th><th style="text-align:right">Difference</th><th>Cutting room</th><th>PM</th><th>Status</th></tr></thead><tbody>'
+      +es.map(function(e){ var x=e.expected||{}; return '<tr><td>'+esc(fmtD(e.day))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span> <span class="sm-tag">'+esc(e.abc||'')+'</span><div class="sm-sub">'+esc(e.name||'')+'</div></td><td class="sm-sub">'+({pick:'Daily check', adhoc:'Ad hoc', recount:'Recount'}[e.why]||'')+'</td>'
+        +'<td class="fab-num">'+(x.toHand!=null?fabM(x.toHand,1):'&mdash;')+'</td><td class="fab-num">'+fabM(e.counted,1)+'</td><td class="fab-num">'+stDiffHtml(e)+'</td><td class="sm-sub">'+esc(e.note||'')+'</td><td class="sm-sub">'+esc(e.pmNote||'')+(e.recountNote?'<div>recount: '+esc(e.recountNote)+'</div>':'')+'</td><td>'+stStatusHtml(e)+'</td></tr>'; }).join('')
+      +'</tbody></table></div>'; });
+  // the schedule: every held fabric, its class and when it last came round
+  var plan=stPlan(), nA=plan.filter(function(p){ return p.abc==='A'; }).length, nB=plan.filter(function(p){ return p.abc==='B'; }).length;
+  h+='<div class="sm-bh'+(stOpen.sched?'':' shut')+'" style="margin-top:10px" onclick="stOpen.sched=!stOpen.sched; stSavePrefs(); cutRevRender()"><span class="cv">'+(stOpen.sched?'&#9662;':'&#9656;')+'</span><span class="ttl">Count schedule</span><span class="sm-sub" style="margin-left:8px">'+plan.length+' fabrics in stock &middot; '+nA+' A every '+ST_INTERVAL.A+' days, '+nB+' B every '+ST_INTERVAL.B+', '+(plan.length-nA-nB)+' C every '+ST_INTERVAL.C+'</span></div>';
+  if(stOpen.sched) h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Fabric</th><th>Supplier</th><th style="text-align:right">In stock</th><th>Class</th><th style="text-align:right" title="metres cut in the last 12 months">Cut, 12 m</th><th style="text-align:right" title="at the fabric price">Value</th><th>Last counted</th><th style="text-align:right">Counts, 12 m</th><th style="text-align:right" title="how far through its interval: over 100% is due">Due</th></tr></thead><tbody>'
+    +plan.slice().sort(function(a,b){ return b.ratio-a.ratio; }).map(function(p){ return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(p.code)+'</span><div class="sm-sub">'+esc(p.name||'')+'</div></td><td class="sm-sub">'+esc(p.supName||'')+'</td><td class="fab-num">'+fabM(p.inStock,1)+'</td><td><span class="sm-tag">'+p.abc+'</span></td><td class="fab-num">'+fabM(p.metres12m,1)+'</td><td class="fab-num">&pound;'+fabM(p.value12m,0)+'</td><td>'+(p.last?esc(fmtD(p.last)):'<span class="sm-sub">never</span>')+'</td><td class="fab-num">'+p.counts12m+'</td><td class="fab-num"'+(p.ratio>=1?' style="color:#b45309;font-weight:700"':'')+'>'+Math.round(p.ratio*100)+'%</td></tr>'; }).join('')
+    +'</tbody></table></div>';
+  return h+'</div>';
 }
 
 // ── review queue helpers: tick + editable quantity, mirroring the buffer ───
@@ -5742,7 +6015,7 @@ function fabLiveDemand(){
     var cs=fabCutStatus(WOs[line.woIdx], {code:line.code}, code); if(cs.state==='waiting') d.waiting+=m; else d.cutLive+=m;
     d.lines.push(Object.assign({metres:m, cutState:cs.state, cutAt:cs.cutAt}, line)); }
   WOs.forEach(function(wo,wi){ wo.items.forEach(function(it){
-    var f=fabricRecordFor(it); if(!f||!f.code){ if(f===null) noUsage++; return; }
+    var f=fabricRecordFor(it, wo); if(!f||!f.code){ if(f===null) noUsage++; return; }   // with the works order, so the cutting room's adjusted metres count
     var line={ref:wo.ref, woIdx:wi, code:it.code, qty:it.qty, due:wo.due||'', created:wo.createdAt||wo.start||'', source:f.source||'', edited:!!f.edited};
     add(f.code, (f.actual!=null)?f.actual:f.std, wo.ref, line);
     (f.extras||[]).forEach(function(x){ add(x.code, x.std, wo.ref, Object.assign({}, line, {mesh:true})); });
