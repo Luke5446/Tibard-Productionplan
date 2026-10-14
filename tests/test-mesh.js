@@ -3,6 +3,7 @@
 //   OHLCJ, OHCJS, OHCJ    no M                                   -> no mesh
 //   OHL?CJS?HAMPSHIRE     the stated exception: mesh at 0.0273 m on the sheet, 0.03 rounded up for wastage -> mesh
 //   OHHTM / WAGHTM, aprons, straps   outside the rule            -> keep whatever they are given
+//   (the Wagamama hat's works order data rates its mesh crown at 0.04 m since 14 Oct 2026, so that rides along as an extra)
 // Checks the rule, the usage lookup, a works order completed now, the repair
 // that amends lines not yet written off (strip what should not be there,
 // re-rate a figure frozen from a corrected rate) while leaving a written-off
@@ -51,7 +52,7 @@ const R=(ref,style,qty,code,m)=>['22/09/2026','OH',ref,'C/JKTS',style,String(qty
    fabTickAll(true); exportFabricWriteOff(); return (await blob.text()).split('\r\n').filter(Boolean).slice(1).sort().join(' | '); });
  console.log('write-off  ->', r6);
  const pass = r1==='OHCJMCHESHIRE3201:1 OHCJSMCHESHIRE3201:1 OHCJMDEVON4801:1 OHCJSMSTRATFORD4401:1 OHCJSCUMBRIA4201:0 OHCJCUMBRIA4201:0 OHCJSUFFOLK4401:0 OHCJSSUFFOLK4201:0 OHLCJSDERBYSHIRE1401:0 OHLCJYORK0801:0 OHLCJ40084293:0 OHLCJHAMPSHIRE1201:1 OHLCJSHAMPSHIRE1601:1 OHHTM0160248:1 WAGHTM016024:1 OHAPP0534GD:1 OHTAB82:1'
-   && r2==='OHCJMCHESHIRE3201=1.41/MESH2290901:0.11 OHCJSMDEVON5601=1.26/MESH2290901:0.36 OHLCJHAMPSHIRE1201=1.075/MESH2290901:0.03 OHLCJSHAMPSHIRE1601=1.05/MESH2290901:0.03 OHLCJSDERBYSHIRE1401=1.19/none WAGHTM016024=0.12/none'
+   && r2==='OHCJMCHESHIRE3201=1.41/MESH2290901:0.11 OHCJSMDEVON5601=1.26/MESH2290901:0.36 OHLCJHAMPSHIRE1201=1.075/MESH2290901:0.03 OHLCJSHAMPSHIRE1601=1.05/MESH2290901:0.03 OHLCJSDERBYSHIRE1401=1.19/none WAGHTM016024=0.12/MESHPW31424:0.04'
    && r3==='none'
    && r4==='S-PLAIN=PC2001ECO/9.52/none S-MESH=PC14001/14.1/MESH2290901:1.1 S-HAMP=PC14001/6.3/MESH2290901:0.18'
    && r5.n.lines===1 && r5.n.metres===15 && r5.n.rerated===1 && r5.n.reratedMetres===14.82
