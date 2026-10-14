@@ -21,7 +21,9 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
   today and cannot go ahead of it, or before the day the works order was
   printed; **Cut all** takes the date on the works order's first line. Each
   line has a metres box, started at the standard, and a comment box; a
-  figure that differs from the standard needs the comment.
+  figure that differs from the standard needs the comment. The standard
+  includes the 3 cm of wastage the cutting room adds to every ply laid
+  (the GT, 14 Oct 2026; see FABRIC.md, "The 3 cm per ply").
 - A back-dated mark is tagged **back-dated** on the cut log, with the day it
   was marked in the hover.
 - **Cut log**: what was cut and when. Like the Embroidery tab, the lines come

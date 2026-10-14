@@ -46,12 +46,12 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  const f=rec.find(r=>r.code==='OHAPP0534GD').fabric, g=rec.find(r=>r.code==='ZZNOUSAGE').fabric;
 
  const pass = u.burgundy.code==='PC2X13306' && /BURGUNDY/.test(u.burgundy.name) && u.khaki.code==='PC2X133153' && u.cumbria && u.cumbria.metres===0.6 && u.cumbria.code==='CO5014DEN' && u.cumbria.source==='All Costings' && u.cumbria.code && u.none===null && u.count>8000
-   && panel.header.includes('Metres cut') && panel.placeholders[0]==='9' && /no usage on file/.test(panel.cells[1])
+   && panel.header.includes('Metres cut') && panel.placeholders[0]==='9.45' && /no usage on file/.test(panel.cells[1])
    && kept.join()==='OHAPP0534GD:9.9,ZZNOUSAGE:undefined'
-   && f && f.std===9 && f.actual===9.9 && f.perGarment===0.6 && f.source==='All Costings' && g===null
+   && f && f.std===9.45 && f.plies===15 && f.actual===9.9 && f.perGarment===0.6 && f.source==='All Costings' && g===null
    && csvLines.length===2 && csvLines[0]==='StockCode,Location,Bin,Qty,Reference1,Reference2,ActivityDate,WriteOffCat'
    && csvLines[1]==='CO5014DEN,HOME,,9.9,Cutting,S-FAB1,08/09/2026,Manual Reduction' && (wo.text||'').indexOf('\r\n')>0 && wo.marked===1 && wo.dl==='Fabric_WriteOff_2026-09-08_1000.csv'
    && /1 write-off line\(s\) from 1 completed line\(s\), 10 m/.test(wo.first[0]) && /Tick the lines/.test(wo.second[0]) && wo.file==='Fabric_WriteOff_2026-09-08_1000.csv'
-   && k.fabStd===9 && k.fabAct===9.9 && Math.abs(k.fabVar-10)<0.1 && k.fabLines===1 && k.fabMissing===1 && k.heads[2]==='Fabric m' && k.cells[2].startsWith('9') && k.cells[3]==='+10.0%';
+   && k.fabStd===9.45 && k.fabAct===9.9 && Math.abs(k.fabVar-4.76)<0.1 && k.fabLines===1 && k.fabMissing===1 && k.heads[2]==='Fabric m' && k.cells[2].startsWith('9') && k.cells[3]==='+4.8%';
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

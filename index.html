@@ -1668,6 +1668,30 @@ function layPlanBlockNote(code){ return /STRATFORD/.test((code||'').toUpperCase(
 // cloth, two plies of it 3.26 m. The lay plan line on the printed works order
 // says so, ply by ply; the costing's standard metres are left as they are.
 var CUT_WASTAGE_M=0.03;
+// Plies for a quantity: the main marker's lay, with the lay plan's single
+// marker (1 per lay) taking the remainder where the sheet lists one - the
+// same arithmetic as the lay plan line on the print.
+function cutPliesFor(code, qty, lay){
+  if(!(qty>0)) return 0; lay=lay>0?lay:1;
+  var d=null; try{ d=layPlanDefault(code); }catch(e){ d=null; }
+  if(d && d.main && d.main.lay===lay){
+    var single=(d.plan.main||[]).filter(function(r){ return r.d && r.lay===1 && r!==d.main; })[0];
+    if(single){ var full=Math.floor(qty/lay); return full+(qty-full*lay); }
+  }
+  return Math.ceil(qty/lay);
+}
+// The standard metres for a works order line: the usage per garment times
+// the quantity, plus 3 cm for every ply laid. The main cloth always gets the
+// allowance (a code with no lay plan is taken at one garment per ply, as the
+// cutting time is); an extra - mesh inserts, a contrast - only where its own
+// marker's lay is known. This is the figure pushed to the cutting log,
+// pre-filled as Metres cut, frozen on the completed record, written off and
+// valued in WIP (Luke, 14 Oct 2026).
+function fabricStd(perGarment, qty, lay, code){
+  if(perGarment==null || !(qty>0)) return null;
+  var m=perGarment*qty; if(lay>0) m+=cutPliesFor(code, qty, lay)*CUT_WASTAGE_M;
+  return Math.round(m*100)/100;
+}
 function layWastageTxt(plies, total){
   if(!(plies>0)) return '';
   return ', plus '+Math.round(CUT_WASTAGE_M*100)+' cm wastage per ply = '+(total+plies*CUT_WASTAGE_M).toFixed(2)+' m to cut';
@@ -1701,7 +1725,7 @@ function layPlanRows(st, code, qty, e){
       if(full>0) parts.push(full+' pl'+(full===1?'y':'ies')+' of '+d.main.len+' m ('+e(d.main.m)+')');
       var total=full*d.main.len;
       if(rem>0){ if(single){ parts.push(rem+' pl'+(rem===1?'y':'ies')+' of '+single.len+' m ('+e(single.m)+')'); total+=rem*single.len; } else { parts.push('1 ply of '+d.main.len+' m ('+e(d.main.m)+') for the last '+rem); total+=d.main.len; } }
-      h+=row('Lay plan (qty '+qty+')', parts.join(' + ')+' &mdash; total '+total.toFixed(2)+' m'+layWastageTxt(full+(rem>0?(single?rem:1):0), total), true);
+      h+=row('Lay plan (qty '+qty+')', parts.join(' + ')+' &mdash; total '+total.toFixed(2)+' m'+layWastageTxt(cutPliesFor(code, qty, d.main.lay), total), true);
     }
     (lp.mesh||[]).forEach(function(r){ if(r.d) h+=row('Marker number (mesh)', e(layPlanMarkerTxt(r)), true); });
     others.forEach(function(r){ h+=row('Other marker', e(layPlanMarkerTxt(r))); });
@@ -1864,7 +1888,7 @@ function printWOP(ref, code, qty, due, sm, opts){
     +(st.markerMesh?'<tr><th>Marker number (mesh)</th><td colspan="3" style="font-weight:700">'+e(st.markerMesh)+'</td></tr>':'')
     +(st.markerLen?'<tr><th>Marker length</th><td colspan="3" style="font-weight:700">'+st.markerLen+' m</td></tr>':'')
     +(st.layQty?'<tr><th>Lay qty</th><td colspan="3" style="font-weight:700">'+st.layQty+' garment'+(st.layQty===1?'':'s')+' per lay</td></tr>':'')
-    +((st.markerLen&&st.layQty&&qty>0)?'<tr><th>Lay plan (qty '+qty+')</th><td colspan="3" style="font-weight:700">'+Math.ceil(qty/st.layQty)+' pl'+(Math.ceil(qty/st.layQty)===1?'y':'ies')+' of '+st.markerLen+' m &mdash; total '+(Math.ceil(qty/st.layQty)*st.markerLen).toFixed(2)+' m'+layWastageTxt(Math.ceil(qty/st.layQty), Math.ceil(qty/st.layQty)*st.markerLen)+'</td></tr>':'')
+    +((st.markerLen&&st.layQty&&qty>0)?'<tr><th>Lay plan (qty '+qty+')</th><td colspan="3" style="font-weight:700">'+Math.ceil(qty/st.layQty)+' pl'+(Math.ceil(qty/st.layQty)===1?'y':'ies')+' of '+st.markerLen+' m &mdash; total '+(Math.ceil(qty/st.layQty)*st.markerLen).toFixed(2)+' m'+layWastageTxt(cutPliesFor(code, qty, st.layQty), Math.ceil(qty/st.layQty)*st.markerLen)+'</td></tr>':'')
     +(st.markerCon?'<tr><th>Contrast marker</th><td colspan="3" style="font-weight:700">'+e(st.markerCon)+(st.conFab?' <span style="font-weight:400">('+e(st.conFab)+')</span>':'')+(st.conLen?' &mdash; '+st.conLen+' m'+(st.conLay?', '+st.conLay+' per lay ('+(+(st.conLen/st.conLay).toFixed(3))+' m per garment)':''):'')+'</td></tr>':'')
     +layPlanRows(st, code, qty, e)
     +'</table>'
@@ -4971,7 +4995,7 @@ function fabricUsageBase(code){
     // whichever of the style's fabrics is a mesh.
     var main = (u && u[0]) ? {code:u[0], name:FABRIC_NAMES[u[0]]||''}
              : (styleFabrics[0] ? {code:styleFabrics[0][1]||'', name:styleFabrics[0][0]||''} : {code:'', name:''});
-    var out={code:main.code, name:main.name, metres:mk[0], source:'marker '+(mk[2]||''), extras:[]};
+    var out={code:main.code, name:main.name, metres:mk[0], source:'marker '+(mk[2]||''), lay:cutLayFor(c).lay, extras:[]};
     if(mk[1]>0 && ohHasMesh(c)){
       var mesh=styleFabrics.filter(function(f){ return /^MESH/i.test(f[1]||''); })[0];
       out.extras.push({code:mesh?mesh[1]:'', name:mesh?mesh[0]:'mesh inserts (no Sage code in works order data)', metres:mk[1]});
@@ -4985,17 +5009,17 @@ function fabricUsageBase(code){
   if(own){
     var main3 = (u && u[0]) ? {code:u[0], name:FABRIC_NAMES[u[0]]||''}
               : (styleFabrics[0] ? {code:styleFabrics[0][1]||'', name:styleFabrics[0][0]||''} : {code:'', name:''});
-    var out3={code:main3.code, name:main3.name, metres:Math.round(own.markerLen/own.layQty*10000)/10000, source:'marker '+own.markerMain, extras:[]};
+    var out3={code:main3.code, name:main3.name, metres:Math.round(own.markerLen/own.layQty*10000)/10000, source:'marker '+own.markerMain, lay:own.layQty, extras:[]};
     if(own.meshLen>0 && own.meshLay>0 && ohHasMesh(c)){
       var mesh3=styleFabrics.filter(function(f){ return /^MESH/i.test(f[1]||''); })[0];
-      out3.extras.push({code:mesh3?mesh3[1]:'', name:mesh3?mesh3[0]:'mesh inserts (no Sage code in works order data)', metres:meshRound(own.meshLen/own.meshLay)});
+      out3.extras.push({code:mesh3?mesh3[1]:'', name:mesh3?mesh3[0]:'mesh inserts (no Sage code in works order data)', metres:meshRound(own.meshLen/own.meshLay), lay:own.meshLay});
     }
     if(own.markerCon){
       // the contrast cloth: the marker's length over its lay when the sheet
       // gives both, else the record's own rating for its second fabric
       var con3=styleFabrics.filter(function(f,i){ return i>0 && !/^MESH/i.test(f[1]||''); })[0];
       var cm=(own.conLen>0 && own.conLay>0) ? Math.round(own.conLen/own.conLay*10000)/10000 : (con3 && parseFloat(con3[3])>0 ? parseFloat(con3[3]) : 0);
-      if(cm>0) out3.extras.push({code:con3?con3[1]:'', name:con3?con3[0]:'contrast ('+own.markerCon+')', metres:cm});
+      if(cm>0) out3.extras.push({code:con3?con3[1]:'', name:con3?con3[0]:'contrast ('+own.markerCon+')', metres:cm, lay:(own.conLen>0 && own.conLay>0)?own.conLay:null});
     }
     return out3;
   }
@@ -5005,15 +5029,15 @@ function fabricUsageBase(code){
   if(lpd && lpd.main){
     var main2 = (u && u[0]) ? {code:u[0], name:FABRIC_NAMES[u[0]]||''}
               : (styleFabrics[0] ? {code:styleFabrics[0][1]||'', name:styleFabrics[0][0]||''} : {code:'', name:''});
-    var out2={code:main2.code, name:main2.name, metres:lpd.main.use, source:'lay plan '+lpd.main.m, extras:[]};
+    var out2={code:main2.code, name:main2.name, metres:lpd.main.use, source:'lay plan '+lpd.main.m, lay:lpd.main.lay, extras:[]};
     if(lpd.mesh && ohHasMesh(c)){
       var mesh2=styleFabrics.filter(function(f){ return /^MESH/i.test(f[1]||''); })[0];
-      out2.extras.push({code:mesh2?mesh2[1]:'', name:mesh2?mesh2[0]:'mesh inserts (no Sage code in works order data)', metres:meshRound(lpd.mesh.use)});
+      out2.extras.push({code:mesh2?mesh2[1]:'', name:mesh2?mesh2[0]:'mesh inserts (no Sage code in works order data)', metres:meshRound(lpd.mesh.use), lay:lpd.mesh.lay>0?lpd.mesh.lay:null});
     }
     if(lpd.con){
       // the contrast cloth is the style's second non-mesh fabric, where it has one
       var con2=styleFabrics.filter(function(f,i){ return i>0 && !/^MESH/i.test(f[1]||''); })[0];
-      out2.extras.push({code:con2?con2[1]:'', name:con2?con2[0]:'contrast ('+lpd.con.m+')', metres:lpd.con.use});
+      out2.extras.push({code:con2?con2[1]:'', name:con2?con2[0]:'contrast ('+lpd.con.m+')', metres:lpd.con.use, lay:lpd.con.lay>0?lpd.con.lay:null});
     }
     return out2;
   }
@@ -5021,8 +5045,8 @@ function fabricUsageBase(code){
   // mesh back, a contrast) still count: All Costings rates the main cloth only.
   var more=function(skip){ var ex=[]; styleFabrics.forEach(function(f,i){ var m=parseFloat(f[3]); if(i!==skip && m>0 && (f[1]||'')) ex.push({code:f[1], name:f[0]||'', metres:m}); }); return ex; };
   if(u && u[1]>0){ var mainIx=-1; styleFabrics.forEach(function(f,i){ if(mainIx<0 && (f[1]||'').toUpperCase()===(u[0]||'').toUpperCase()) mainIx=i; }); if(mainIx<0 && styleFabrics.length) mainIx=0;
-    return {code:u[0]||'', name:(FABRIC_NAMES[u[0]]||''), metres:u[1], source:'All Costings', extras:more(mainIx)}; }
-  for(var i=0;i<styleFabrics.length;i++){ var m=parseFloat(styleFabrics[i][3]); if(m>0) return {code:styleFabrics[i][1]||'', name:styleFabrics[i][0]||'', metres:m, source:'works order data', extras:more(i)}; }
+    return {code:u[0]||'', name:(FABRIC_NAMES[u[0]]||''), metres:u[1], source:'All Costings', lay:cutLayFor(c).lay, extras:more(mainIx)}; }
+  for(var i=0;i<styleFabrics.length;i++){ var m=parseFloat(styleFabrics[i][3]); if(m>0) return {code:styleFabrics[i][1]||'', name:styleFabrics[i][0]||'', metres:m, source:'works order data', lay:cutLayFor(c).lay, extras:more(i)}; }
   return null;
 }
 // What a completed line consumed. Standard = usage x quantity; actual = what
@@ -5097,21 +5121,21 @@ function fabricRecordFor(it, wo){
   var cf=(wo && actual==null && code) ? cutFigureFor(wo.ref, it.code, code) : null, fromLog=!!(cf && cf.adjusted);
   if(fromLog) actual=cf.metres;
   return { code:code, name:edited ? fabricNameFor(code) : (u?u.name:''), perGarment:u?u.metres:null,
-           std:u ? Math.round(u.metres*it.qty*100)/100 : null, actual:actual, source:(u?u.source:'')+(edited?' · edited':'')+(fromLog?' · cut log':''), edited:edited||undefined,
+           std:u ? fabricStd(u.metres, it.qty, u.lay, it.code) : null, plies:(u&&u.lay>0) ? cutPliesFor(it.code, it.qty, u.lay) : undefined, actual:actual, source:(u?u.source:'')+(edited?' · edited':'')+(fromLog?' · cut log':''), edited:edited||undefined,
            cutNote:fromLog&&cf.note ? cf.note : undefined, cutAt:cf ? cf.cutAt : undefined,
            price:code ? fabPriceFor(code) : null,
            // secondary fabrics - mesh inserts - at standard, unless the
            // cutting room adjusted that line on the log
-           extras:(u&&u.extras&&u.extras.length) ? u.extras.map(function(x){ var xc=wo ? cutFigureFor(wo.ref, it.code, x.code) : null; return {code:x.code, name:x.name, perGarment:x.metres, std:Math.round(x.metres*it.qty*100)/100, actual:(xc&&xc.adjusted)?xc.metres:undefined, price:fabPriceFor(x.code)}; }) : undefined };
+           extras:(u&&u.extras&&u.extras.length) ? u.extras.map(function(x){ var xc=wo ? cutFigureFor(wo.ref, it.code, x.code) : null; return {code:x.code, name:x.name, perGarment:x.metres, std:fabricStd(x.metres, it.qty, x.lay, it.code), actual:(xc&&xc.adjusted)?xc.metres:undefined, price:fabPriceFor(x.code)}; }) : undefined };
 }
 // The cutting room's number on the works order panel. Pre-filled with the
 // standard so the common case is to leave it alone; a typed figure is the
 // actual and is what gets written off.
 function fabricCellFor(i, it){
-  var u=fabricUsageFor(it.code), std=u ? Math.round(u.metres*it.qty*100)/100 : null;
+  var u=fabricUsageFor(it.code), std=u ? fabricStd(u.metres, it.qty, u.lay, it.code) : null, plies=(u&&u.lay>0) ? cutPliesFor(it.code, it.qty, u.lay) : 0;
   var editLink=IS_EDITOR ? ' <a href="#" onclick="setFabricCode('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\');return false" title="Put this line on a different cloth">&#9998; fabric</a>' : '';
-  var hint=u ? '<div style="font-size:10px;color:#6b7280">std '+std+' m &middot; '+(it.fabricCode ? '<b title="changed from '+esc(u.code||'?')+'">'+esc(it.fabricCode)+'</b>' : esc(u.code||'?'))
-               +(u.extras&&u.extras.length ? u.extras.map(function(x){ return ' + '+Math.round(x.metres*it.qty*100)/100+' m '+esc(x.code||'mesh'); }).join('') : '')
+  var hint=u ? '<div style="font-size:10px;color:#6b7280">std '+std+' m'+(plies?' <span title="'+plies+' pl'+(plies===1?'y':'ies')+' x 3 cm wastage, in the standard">(incl. wastage)</span>':'')+' &middot; '+(it.fabricCode ? '<b title="changed from '+esc(u.code||'?')+'">'+esc(it.fabricCode)+'</b>' : esc(u.code||'?'))
+               +(u.extras&&u.extras.length ? u.extras.map(function(x){ return ' + '+fabricStd(x.metres, it.qty, x.lay, it.code)+' m '+esc(x.code||'mesh'); }).join('') : '')
                +(/^marker/.test(u.source) ? ' <span title="per-size marker from the lay plan sheet">&#9998;</span>' : '')+editLink+'</div>'
              : '<div style="font-size:10px;color:#b45309">'+(it.fabricCode ? 'no usage on file &middot; cloth <b>'+esc(it.fabricCode)+'</b>' : 'no usage on file')+editLink
                +(IS_EDITOR ? (it.metresActual!=null ? ' &middot; <span style="color:#065f46">'+it.metresActual+' m typed: the cutting room cuts to this</span>' : ' &middot; type the metres for the line: the cutting room cuts to them') : '')+'</div>';
@@ -6081,8 +6105,8 @@ function fabFixMesh(){
       if(!/^MESH/i.test(x.code||'') || x.actual!=null) return;
       var now=(u.extras||[]).filter(function(y){ return (y.code||'').toUpperCase()===(x.code||'').toUpperCase(); })[0];
       if(!now || !(now.metres>0) || x.perGarment===now.metres) return;
-      rm+=((x.std||0)-Math.round(now.metres*c.qty*100)/100); rr++;
-      x.perGarment=now.metres; x.std=Math.round(now.metres*c.qty*100)/100;
+      rm+=((x.std||0)-fabricStd(now.metres, c.qty, now.lay, c.code)); rr++;
+      x.perGarment=now.metres; x.std=fabricStd(now.metres, c.qty, now.lay, c.code);
     });
   });
   if(rr) console.log(rr+' mesh figure(s) re-rated on lines not yet written off, '+Math.round(rm*100)/100+' m less.');

@@ -292,6 +292,36 @@ The PM owns the garments (the quantity booked in), the cutting room the
 cloth. The cutting sheet import this replaced (October 2026) is gone with the
 Google sheet it read.
 
+## The 3 cm per ply
+
+The cutting room lays every marker 3 cm longer than its length, for wastage
+(the GT, 14 Oct 2026): a 1.6 m marker for 2 aprons is 1.63 m of cloth, two
+plies of it 3.26 m. From 14 Oct 2026 that allowance is inside the **standard
+metres** everywhere the app uses them, so the cloth written off and the WIP
+value are what the cutting room took off the roll (Luke, 14 Oct 2026):
+
+- The standard for a works order line is the usage per garment times the
+  quantity, **plus 3 cm for every ply laid**. The plies are the quantity over
+  the garments per lay of the default marker, with the lay plan's single
+  marker taking the remainder where the sheet lists one, the same arithmetic
+  as the lay plan line on the printed works order. A code with no lay plan
+  and no marker on its works order data is taken at one garment per ply, as
+  the cutting time is, so its allowance is 3 cm a garment.
+- The main cloth always gets the allowance. An extra (mesh inserts, a
+  contrast) gets it only where its own marker's lay is known from the lay
+  plan or the works order data; a second cloth rated on the record alone (a
+  hat's mesh crown at 0.04 m) does not.
+- That figure is what is pushed to the cutting log, pre-filled as *Metres
+  cut* on the works order panel (*std 7.04 m (incl. wastage)*, with the ply
+  count in the hover), frozen on the completed record (with the ply count,
+  `plies`), written off to Sage and valued in WIP. The usage **per garment**
+  on the record, the ledger and the Fabric tab is unchanged: the allowance is
+  per ply, not per garment.
+- Lines completed, cut at standard, or written off before 14 Oct 2026 keep
+  the figure they had. A line still waiting on the cutting log is brought to
+  the new standard by the next sync, as any change to a waiting line is.
+- The allowance is one constant, `CUT_WASTAGE_M` (0.03 m).
+
 ## Cut figures that do not look right
 
 A row on the cutting sheet is sometimes the whole **lay** — the length the
