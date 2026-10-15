@@ -21,7 +21,9 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
   today and cannot go ahead of it, or before the day the works order was
   printed; **Cut all** takes the date on the works order's first line. Each
   line has a metres box, started at the standard, and a comment box; a
-  figure that differs from the standard needs the comment.
+  figure that differs from the standard needs the comment. The standard
+  includes the 3 cm of wastage the cutting room adds to every ply laid
+  (the GT, 14 Oct 2026; see FABRIC.md, "The 3 cm per ply").
 - A back-dated mark is tagged **back-dated** on the cut log, with the day it
   was marked in the hover.
 - **Cut log**: what was cut and when. Like the Embroidery tab, the lines come
@@ -45,7 +47,10 @@ part) adds **15 minutes**, as the set-up is done and the fabric is laid. The
 lays of a line are its quantity over the garments per lay of the default
 marker on the lay plan (an apron at 4 per lay: 60 aprons are 15 lays), or
 the marker on the works order data; a code with no lay plan is taken at one
-garment per lay and flagged. The cut room works 8 hours Monday to Thursday
+garment per lay and flagged, until the PM sets its lay (**set lay** on the
+tag, or **✎ lay** on the works order panel), which every works order of the
+product then uses. The OH detachable tabs (OHTAB codes) are cut by hand
+with scissors: no lay, and **35 seconds a tab** instead of the set-up. The cut room works 8 hours Monday to Thursday
 including two paid 15-minute breaks (450 minutes, 18 works orders) and 5
 hours on Friday including one break (285 minutes); nothing at the weekend.
 

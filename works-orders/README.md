@@ -82,6 +82,9 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `wo-templates-2026-10-13.json` | Those five records for the costing app. |
 | `SNSAPP052803-LondonLinen.xlsx` | Works order S851569 for SNSAPP052803, the London Linen black wide waist apron on AP0528 variant APP0528PKT: pocket right side as worn, cut-out centre front split with facing and stay tape, self fabric ties, no Tibard branding (JH 2023, marker 2024; Lara, 22/1/26 for 250), sketch included. In the app as style SNSAPP052803 on PC2003ECO at 1.10 m. |
 | `SNSAPP052803-2026-10-14.json` | That record for the costing app. |
+| `OHAP060501-FatDuck.xlsx` | Works order for OHAP060501, the Fat Duck white organic cotton bib apron on AP0532 variant 0605: the Mandarin Oriental bib size, concealed stud adjustable neck strap (5 cm longer, extra stud) through a cloth loop, self fabric ties, no pocket, two logos in black (JH 2016 to 2018, cloth 2025), logos and sketch included. In the app as style OHAP060501 with the logos as its own branding; All Costings' PC6001 corrected to the sheet's CO5001ECO. |
+| `OHAP060501-FatDuck-photo.jpg` | Luke's photo of the finished apron with both logos (15 Oct 2026), on the record as the placement photo. |
+| `OHAP060501-2026-10-15.json` | That record for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards

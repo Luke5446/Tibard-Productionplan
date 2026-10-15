@@ -57,12 +57,12 @@ const { chromium } = require('playwright');
  console.log('undo    ->', undo);
  const order=await p.evaluate(()=>{ smShowTab('fabric'); fabRender(); return [...document.querySelectorAll('#fabBody .sm-bh .ttl')].map(e=>e.textContent.trim().slice(0,14)).join('|'); });   // the reload above left the tab unshown
  console.log('banners ->', order);
- const pass = corr.set==='CO5003DEN' && corr.newWO==='CO5003DEN/2.4/All Costings · corrected' && corr.demand==='CO5003DEN=2.4' && corr.listed && corr.boxDefault && corr.prod==='OHAPP0534GD'
+ const pass = corr.set==='CO5003DEN' && corr.newWO==='CO5003DEN/2.52/All Costings · corrected' && corr.demand==='CO5003DEN=2.52' && corr.listed && corr.boxDefault && corr.prod==='OHAPP0534GD'
    && corr.lineOnly==='PC2X13306/CO5003DEN' && corr.cleared && persist.after==='CO5003DEN' && persist.published==='CO5003DEN'
-   && live.before==='CO5014DEN' && live.code==='PC2X13306' && /BURGUNDY/.test(live.name) && live.std===6 && /edited$/.test(live.source) && /PC2X13306/.test(live.cell) && /fabric/.test(live.cell) && live.pick.open && live.pick.hits.join()==='PC2X13306' && live.pick.closed
+   && live.before==='CO5014DEN' && live.code==='PC2X13306' && /BURGUNDY/.test(live.name) && live.std===6.3 && /edited$/.test(live.source) && /PC2X13306/.test(live.cell) && /fabric/.test(live.cell) && live.pick.open && live.pick.hits.join()==='PC2X13306' && live.pick.closed
    && unk==='PC2X13306|true||PC2X13306'
-   && done.code==='PC2X13306' && done.edited===true && done.std===6 && /PC2X13306/.test(done.cell) && /edit fabric/.test(done.cell)
-   && edit.code==='CO5003DEN' && /MURRAY BLACK DENIM/.test(edit.name) && edit.line==='CO5003DEN,HOME,,6,Cutting,S-E1,21/09/2026,Manual Reduction' && edit.still==='CO5003DEN' && edit.locked
+   && done.code==='PC2X13306' && done.edited===true && done.std===6.3 && /PC2X13306/.test(done.cell) && /edit fabric/.test(done.cell)
+   && edit.code==='CO5003DEN' && /MURRAY BLACK DENIM/.test(edit.name) && edit.line==='CO5003DEN,HOME,,6.3,Cutting,S-E1,21/09/2026,Manual Reduction' && edit.still==='CO5003DEN' && edit.locked
    && undo==='CO5003DEN' && /Booked fab.*\|.*Fabric sto.*\|.*Fabric usag/.test(order);
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

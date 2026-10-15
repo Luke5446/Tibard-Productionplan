@@ -28,9 +28,9 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  console.log('kpi     ->', JSON.stringify(k));
  const pass = u.small.metres===1.41 && u.large.metres===1.73 && u.large.code==='PC14001' && /^marker/.test(u.large.source) && u.large.extras.length===1 && u.large.extras[0].code==='MESH2290901' && Math.abs(u.large.extras[0].metres-0.11)<0.001
    && u.flat[1]===1.45 && u.twoUp.metres===1.13 && u.apron.source==='All Costings'
-   && /std 6.92 m · PC14001 \+ 0.44 m MESH2290901/.test(panel)
-   && rec.std===6.92 && rec.extras.length===1 && rec.extras[0].std===0.44 && rec.extras[0].code==='MESH2290901'
-   && wo.length===3 && wo[1]==='PC14001,HOME,,6.92,Cutting,S-MK1,07/09/2026,Manual Reduction' && wo[2]==='MESH2290901,HOME,,0.44,Cutting,S-MK1,07/09/2026,Manual Reduction'
-   && Math.abs(k.fabStd-7.36)<0.001;
+   && /std 7.04 m \(incl. wastage\) · PC14001 \+ 0.44 m MESH2290901/.test(panel)
+   && rec.std===7.04 && rec.plies===4 && rec.extras.length===1 && rec.extras[0].std===0.44 && rec.extras[0].code==='MESH2290901'
+   && wo.length===3 && wo[1]==='PC14001,HOME,,7.04,Cutting,S-MK1,07/09/2026,Manual Reduction' && wo[2]==='MESH2290901,HOME,,0.44,Cutting,S-MK1,07/09/2026,Manual Reduction'
+   && Math.abs(k.fabStd-7.48)<0.001;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

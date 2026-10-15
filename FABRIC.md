@@ -150,7 +150,11 @@ with the same heading wins on the apron tabs.
 The LECTRA PATTERN band prints the variant, the default marker with its
 length and lay ("OH7006 — 2.36 m, 2 per lay (1.18 m per garment)"), an
 alternative default where the sheet marks one, the lay plan for the quantity
-(plies of the two-up marker plus a single for the remainder), the mesh
+(plies of the two-up marker plus a single for the remainder, with the 3 cm
+of wastage the cutting room adds to every ply: "5 plies of 2.36 m (OH7006)
+— total 11.80 m, plus 3 cm wastage per ply = 11.95 m to cut", from the GT,
+14 Oct 2026; the standard metres costed and written off are not changed by
+it), the mesh
 marker, interlining with the sheet's own lay wording, any other markers with
 their notes (NARROW MARKERS, damaged cloth), and the blockout fronts. For the
 Stratford the blockout line carries the cutting room's wording, **Blocks -
@@ -207,6 +211,7 @@ does not bring them back:
 | HTM0152SS55 | PC2064ECO storm grey | PC2055 royal blue |
 | HTM0152SS248 | PC2055 royal blue | PC2064ECO storm grey |
 | CJM01936001 | PC2003ECO black | PC2001ECO white |
+| OHAP060501 | PC6001 white poly cotton | CO5001ECO white organic cotton (the works order, JW 10/9/25; 15 Oct 2026) |
 
 Not changed, worth a look: OHAPP0630478HP1 is on CO5368 amber, and
 TB0201SS51 / the KIDSBIB 07 codes are on PC2X13307, whose colour could not
@@ -287,6 +292,49 @@ and reaches the ledger on its own:
 The PM owns the garments (the quantity booked in), the cutting room the
 cloth. The cutting sheet import this replaced (October 2026) is gone with the
 Google sheet it read.
+
+## The 3 cm per ply
+
+The cutting room lays every marker 3 cm longer than its length, for wastage
+(the GT, 14 Oct 2026): a 1.6 m marker for 2 aprons is 1.63 m of cloth, two
+plies of it 3.26 m. From 14 Oct 2026 that allowance is inside the **standard
+metres** everywhere the app uses them, so the cloth written off and the WIP
+value are what the cutting room took off the roll (Luke, 14 Oct 2026):
+
+- The standard for a works order line is the usage per garment times the
+  quantity, **plus 3 cm for every ply laid**. The plies are the quantity over
+  the garments per lay of the default marker, with the lay plan's single
+  marker taking the remainder where the sheet lists one, the same arithmetic
+  as the lay plan line on the printed works order. A code with no lay plan
+  and no marker on its works order data is taken at one garment per ply, as
+  the cutting time is, so its allowance is 3 cm a garment.
+- The main cloth always gets the allowance. An extra (mesh inserts, a
+  contrast) gets it only where its own marker's lay is known from the lay
+  plan or the works order data; a second cloth rated on the record alone (a
+  hat's mesh crown at 0.04 m) does not.
+- That figure is what is pushed to the cutting log, pre-filled as *Metres
+  cut* on the works order panel (*std 7.04 m (incl. wastage)*, with the ply
+  count in the hover), frozen on the completed record (with the ply count,
+  `plies`), written off to Sage and valued in WIP. The usage **per garment**
+  on the record, the ledger and the Fabric tab is unchanged: the allowance is
+  per ply, not per garment.
+- Lines completed, cut at standard, or written off before 14 Oct 2026 keep
+  the figure they had. A line still waiting on the cutting log is brought to
+  the new standard by the next sync, as any change to a waiting line is.
+- Where the cutting room has no lay plan for a code and its works order
+  data carries no marker, the PM can **set the lay** (garments per ply): the
+  *✎ lay* link beside the standard on the works order panel, or *set lay* on
+  the Cutting tab's "no lay plan" tag. Every works order of the product takes
+  it from then on, for the plies behind the wastage and for the cutting time;
+  the printed works order shows it as *Lay (set in the planner)*. One entry
+  covers every size the works order record carries (it is kept against the
+  record's code). The lays set are listed on the Fabric tab with a remove link, and go
+  out with publish like the corrected fabrics. A lay plan the cutting room
+  adds later wins over it.
+- The OH detachable tabs (OHTAB codes) are cut by hand with scissors, so
+  they have no lay, no plies and no allowance; their cutting time is 35
+  seconds a tab (`CUT_HAND_SECS`), and the print says so.
+- The allowance is one constant, `CUT_WASTAGE_M` (0.03 m).
 
 ## Cut figures that do not look right
 
