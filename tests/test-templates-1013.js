@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('330 styles in the master', r.count===330, r.count);
+ ck('331 styles in the master', r.count===331, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -103,6 +103,13 @@ const path = require('path');
  ck('Fat Duck apron: one size on CO5001ECO at A6 0.9 m, the marker AP0605001 at 2 per lay (0.875 m) is the usage, All Costings corrected from PC6001; thread, labels and both stud parts coded; two logos and the photo as its own branding', r6==='OHAP060501||onesize|0605|Fat Duck|CO5001ECO:A6:0.9|CO5001ECO/0.875/marker AP0605001/2|CMP-THR-PC075-32109-01+LABELOH5771+CMP-STD-SOC-032B-677+CMP-STD-DUO-032B-677+CMP-OH-LBL-WASH-01|APB|70|11|2|1|Width (skirt),Across bib,Neck strap,Length from bib to hem|Embroidery|data:image/jpeg|data:image/jpeg|data:image/jpeg|own|CO5001ECO:0.9', r6);
  d=await printOf('OHAP060501',20);
  ck('Fat Duck print: AP0532 variant 0605, the marker and lay plan line with wastage, both logos and the photo, the 4-column chart, the stud note', d.text.includes('variant 0605')&&d.text.includes('AP0605001')&&/CO5001ECO A6 0\.9/.test(d.text)&&d.text.includes('10 plies of 1.75 m (AP0605001) - total 17.50 m, plus 3 cm wastage per ply = 17.80 m to cut'.replace(' - ',' — '))&&d.text.includes('Second logo')&&d.text.includes('Placement photo')&&d.text.includes('feathers logo to the bottom corner')&&d.text.includes('Neck strap')&&d.text.includes('OHAP0605 stud marker')&&d.imgs>=3, [d.imgs, d.text.match(/plies of 1\.75.{0,90}/)]);
+
+
+ const r7=await p.evaluate(()=>{ const h=styleForCode('HT016064'), s=h&&h.style, u=fabricUsageFor('HT016064');
+   return s?[s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source].join('/'), s.trims.map(t=>t[3]).join('+'), s.trims[2][2], s.mfg.length, (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, s.logoImg?'logo':'nologo', smIsStockStyle('HT016064')?'stock':'own'].join('|'):null; });
+ ck('stock storm grey hat HT016064: one size on PC2064ECO at 0.12 m (All Costings 0.2 wins), velcro, thread, Tibard tax tab and label tape coded, no branding, a stock style', r7==='HT016064||onesize|HT0160NEW|PC2064ECO:A3:0.12|PC2064ECO/0.2/All Costings|CMP-VEL-HOOK-16-03++CMP-THR-EP80-09963-64+TAXTABTIB01+CMP-LBL-NYL-25-01|70|8|2||nologo|stock', r7);
+ d=await printOf('HT016064',20);
+ ck('stock hat print: HT0160NEW, the tax tab, 57 cm chart, no branding band', d.text.includes('HT0160NEW')&&d.text.includes('TAXTABTIB01')&&d.text.includes('57 cm (TOL ± 1)')&&/PC2064ECO A3 0\.12/.test(d.text)&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,200));
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');

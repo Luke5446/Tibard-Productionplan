@@ -1,0 +1,100 @@
+{
+ "styles": [
+  {
+   "code": "HT016064",
+   "name": "Tibard storm grey velcro fasten skull cap, revised fit \u2014 stock",
+   "desc": "SKULL HAT \u00b7 Revised fit, revised band depth \u00b7 Velcro fastened tab at centre back for adjustment, revised cut length of hook velcro \u00b7 Tibard tax tab right side of the hat as worn \u00b7 No embroidery",
+   "lectra": "HT0160, variant HT0160NEW",
+   "variant": "HT0160NEW",
+   "chart": "HT016064-MEAS",
+   "fabrics": [
+    [
+     "Storm grey 65% recycled polyester / 35% BCI cotton 200 gsm (Tiajo) \u2014 rating 0.12 m on the sheet; All Costings carries 0.20 m",
+     "PC2064ECO",
+     "A3",
+     0.12,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Velcro \u2014 hook",
+     "Black 16 mm hook velcro, cut at 10 cm (set to the back of the hat, end level with the back split).",
+     0.1,
+     "CMP-VEL-HOOK-16-03",
+     0.0832
+    ],
+    [
+     "Velcro \u2014 loop",
+     "Black 16 mm loop velcro, cut at 6 cm (on the tab). Sage holds the hook only; no code for the loop yet.",
+     0.06,
+     "",
+     null
+    ],
+    [
+     "Thread",
+     "THREAD \u2014 COATS EPIC 80'S STORM GREY 09963 \u2014 cost per metre",
+     70,
+     "CMP-THR-EP80-09963-64",
+     0.000714
+    ],
+    [
+     "Tibard tax tab",
+     "Tibard tax tab set to the right side of the hat as worn. Stitch in white thread on top and spool in thread to match the hat. Set with the green check of the label to the top. Set the edge of the label to the bottom edge of the hat and 1 cm from the secured end of the tab. Fold in one side of the label to neaten. Edgestitch all round.",
+     1,
+     "TAXTABTIB01",
+     0.01891
+    ],
+    [
+     "Care label",
+     "Tibard printed care label, set into the centre back crown: main 65% recycled polyester 35% BCI cotton \u00b7 60\u00b0 wash \u00b7 2 dot iron \u00b7 tumble dry \u00b7 do not bleach \u00b7 P dry clean. Printed at Tibard on the 25 mm nylon label tape.",
+     0.05,
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ]
+   ],
+   "mfg": [
+    "Make the velcro tab. Set the loop velcro 12 mm from the end of the tab edge, level with the centre fold of the tab. Edgestitch the loop velcro to the tab. Bag out both ends. Edgestitch the lower edge of the tab to close the tab.",
+    "Join the centre back seam panel and notch into the end of the seam. Bag out the slits.",
+    "Stitch along the top edge to secure the plies together and set the care label / batch label.",
+    "5 thread join the crown to the panel.",
+    "Set the velcro tab to the back of the hat, right side as worn. Set the tab so there is a 3.5 cm gap between the end of the loop velcro and the base of the hat split, to allow for adjustment. Edgestitch all round the tab to secure it to the hat.",
+    "Edgestitch the back split.",
+    "Set the hook velcro to the back of the hat. End of the velcro to be level with the back split. Edgestitch all round the velcro.",
+    "Set the Tibard tax tab: white thread on top, spool to match the hat, green check to the top of the label, edge of the label to the bottom edge of the hat and 1 cm from the secured end of the tab. Fold in the side of the label to neaten. Edgestitch all round."
+   ],
+   "fin": [
+    "Bartack horizontal at the top of the split.",
+    "Check, trim and fold."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance \u00b1 1 cm",
+   "oneSize": true,
+   "customer": "",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Stock works order HT016064, the Tibard storm grey velcro fasten skull cap on the revised HT0160NEW fit, issued 21/5/26 (JH created 19/4/22 new fit: side panel deeper, hook velcro 6 to 10 cm, velcro 20 to 16 mm, label added; label positioning amended JH 12/4/23; eco fabric, supplier and code YL 30/10/24). No embroidery: the Ciao Bella hat CBHT016064PG is this hat with the logo and no tax tab. Rating 0.12 m on the sheet; All Costings carries 0.20 m for every HT0160 colour and that is what the planner cuts and writes off at until All Costings is put right. The sheet's sketch is in works-orders/HT016064-Stock.xlsx."
+  }
+ ],
+ "charts": {
+  "HT016064-MEAS": [
+   [
+    "All around cap, centre back to centre back, tab flat",
+    "57 cm (TOL \u00b1 1)"
+   ],
+   [
+    "Depth of band",
+    "8 cm (TOL \u00b1 1)"
+   ]
+  ]
+ },
+ "chartCols": {
+  "HT016064-MEAS": [
+   "Measurement",
+   "Value"
+  ]
+ }
+}

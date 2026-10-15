@@ -85,6 +85,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `OHAP060501-FatDuck.xlsx` | Works order for OHAP060501, the Fat Duck white organic cotton bib apron on AP0532 variant 0605: the Mandarin Oriental bib size, concealed stud adjustable neck strap (5 cm longer, extra stud) through a cloth loop, self fabric ties, no pocket, two logos in black (JH 2016 to 2018, cloth 2025), logos and sketch included. In the app as style OHAP060501 with the logos as its own branding; All Costings' PC6001 corrected to the sheet's CO5001ECO. |
 | `OHAP060501-FatDuck-photo.jpg` | Luke's photo of the finished apron with both logos (15 Oct 2026), on the record as the placement photo. |
 | `OHAP060501-2026-10-15.json` | That record for the costing app. |
+| `HT016064-Stock.xlsx` | Stock works order for HT016064, the Tibard storm grey velcro fasten skull cap on the revised HT0160NEW fit, Tibard tax tab, no embroidery (JH 2022, label 2023, eco fabric 2024; issued 21/5/26), sketch included. In the app as style HT016064; the sheet rates it 0.12 m, All Costings 0.20 m. |
+| `HT016064-2026-10-15.json` | That record for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards
