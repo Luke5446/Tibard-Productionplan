@@ -1,0 +1,139 @@
+{
+ "styles": [
+  {
+   "code": "AP0776128",
+   "name": "Charcoal bib apron with eyelet at the bib top for the self fabric neck tie and self fabric waist ties — Tibard, Gaucho",
+   "desc": "BIB APRON · Eyelet detail at the bib top: the self fabric neck tie adjusts through the antique brass eyelet · Self fabric waist ties edgestitched both sides · No pocket · Tibard printed care label, no logo",
+   "lectra": "OHAP0776, variant OHAP0776 — cut even number bundles and no piece outs: the right and wrong sides of the fabric are very similar",
+   "variant": "OHAP0776",
+   "chart": "AP0776128-MEAS",
+   "fabrics": [
+    [
+     "Charcoal Panama PC260-520-L--160, 65% recycled polyester / 35% organic cotton (Carringtons) — rating 0.60 m",
+     "PCECO520128",
+     "B3",
+     0.6,
+     3.87
+    ],
+    [
+     "Maroon 3110 100% cotton 255 gsm (P and R) — listed on the works order as a contrast for the waist tie, no rating; the ties are self fabric, so most likely left over from the template",
+     "CO5005",
+     "A5",
+     0,
+     3.35
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S STORM GREY 09963 — cost per metre",
+     70,
+     "CMP-THR-EP80-09963-64",
+     0.000714
+    ],
+    [
+     "Thread — contrast",
+     "THREAD — COATS EPIC 80'S MAROON 03912 — listed on the works order for the contrast ties; the ties are self fabric, so most likely left over from the template",
+     0,
+     "CMP-THR-EP80-03912-05",
+     0.000714
+    ],
+    [
+     "Care label",
+     "Printed care label (at Tibard): 65% recycled polyester / 35% organic cotton · 60° wash reduced cycle · no bleach · 2 dot iron · tumble dry low · do not dry clean. Set 4 cm down from the finished right side seam as worn.",
+     1,
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Bronze large studs — male",
+     "Listed on the works order: set to the strap, 2 male and 2 female at each end, use the marker, 4 studs in all. The neck tie on this apron adjusts through the eyelet and the sketch shows no studs, so most likely left over from the template: check with the GT before setting.",
+     2,
+     "CMP-STD-PST-9B-287",
+     0.05124
+    ],
+    [
+     "Bronze large studs — female",
+     "The female part of the studs listed above, 2 per apron if they are set.",
+     2,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Eyelet — antique brass 30 mm",
+     "30 mm eyelet and ring, antique brass (30 mm E/R AB), 1 per apron. Set to the top of the bib, right side as worn: centre of the eyelet 3 cm from the top of the bib and 3 cm in from the side of the bib.",
+     1,
+     "CMP-30ED-28-931",
+     0.14985
+    ],
+    [
+     "Eyelet ring — antique brass 30 mm",
+     "The ring for the 30 mm eyelet, 1 per apron.",
+     1,
+     "CMP-30RD-28-931",
+     0.1321308
+    ]
+   ],
+   "mfg": [
+    "Make the neck strap: bag out one end, fold in half and enclose the raw edges, edgestitch both long edges.",
+    "Make the waist ties: bag out one end, enclose the raw edges and edgestitch both long edges.",
+    "Set the bib facing and insert the neck strap to the left side as worn.",
+    "Top of the bib topstitched 6 mm.",
+    "Bib facing: fold in 10 mm to neaten the lower edge. Edgestitch the lower edge of the facing, which forms the 5.5 cm topstitching on the front.",
+    "Armholes: double turned and topstitched to finish 6 mm from the edge. Neaten the armholes before the side seams are neatened.",
+    "Hem: double turned and topstitched to finish 12 mm from the edge.",
+    "Sides: double turned and topstitched to finish 12 mm from the edge. Insert the waist tie. Insert the label right side as worn, 4 cm down from the top edge.",
+    "Fold the waist tie back on itself to fall away from the garment and edgestitch down to the width of the strap to secure."
+   ],
+   "fin": [
+    "Set the eyelet to the bib top, right side as worn: centre of the eyelet 3 cm in from the side of the bib and 3 cm down from the top edge of the bib.",
+    "Check, trim and press.",
+    "Fold and set into a bag. Product sticker set to the bottom right hand corner."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1.5 cm",
+   "oneSize": true,
+   "customer": "Gaucho",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order AP0776128 for Gaucho, Tibard (JH created 5/9/23; created for bulk and amended to a Tibard product JH 2/10/23; YL 13/8/24 added the cutting note: cut even number bundles and no piece outs, the fabric's right and wrong sides are very similar). Rating 0.60 m on the sheet and in All Costings; no lay plan marker for OHAP0776. The maroon contrast cloth, the maroon thread and the bronze studs are listed on the sheet with no rating, left from the template this works order was made from: the ties and neck tie are self fabric and the neck tie adjusts through the eyelet. The sheet's sketch of the apron is in works-orders/AP0776128-Gaucho.xlsx."
+  }
+ ],
+ "charts": {
+  "AP0776128-MEAS": [
+   [
+    "Width of skirt",
+    "70 cm"
+   ],
+   [
+    "Bib width",
+    "29 cm"
+   ],
+   [
+    "Length from bib top to hem",
+    "86 cm"
+   ],
+   [
+    "Length of side seam",
+    "59 cm"
+   ],
+   [
+    "Waist ties",
+    "2.5 cm x 91 cm"
+   ],
+   [
+    "Neck strap",
+    "2.5 cm x 76 cm"
+   ]
+  ]
+ },
+ "chartCols": {
+  "AP0776128-MEAS": [
+   "Measurement",
+   "Value"
+  ]
+ }
+}

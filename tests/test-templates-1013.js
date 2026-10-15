@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('331 styles in the master', r.count===331, r.count);
+ ck('334 styles in the master', r.count===334, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -110,6 +110,21 @@ const path = require('path');
  ck('stock storm grey hat HT016064: one size on PC2064ECO at 0.12 m (All Costings 0.2 wins), velcro, thread, Tibard tax tab and label tape coded, no branding, a stock style', r7==='HT016064||onesize|HT0160NEW|PC2064ECO:A3:0.12|PC2064ECO/0.2/All Costings|CMP-VEL-HOOK-16-03++CMP-THR-EP80-09963-64+TAXTABTIB01+CMP-LBL-NYL-25-01|70|8|2||nologo|stock', r7);
  d=await printOf('HT016064',20);
  ck('stock hat print: HT0160NEW, the tax tab, 57 cm chart, no branding band', d.text.includes('HT0160NEW')&&d.text.includes('TAXTABTIB01')&&d.text.includes('57 cm (TOL ± 1)')&&/PC2064ECO A3 0\.12/.test(d.text)&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,200));
+
+ // ── the three bib aprons of 15 Oct 2026 ──
+ const r8=await p.evaluate(()=>{ const one=c=>{ const h=styleForCode(c), s=h&&h.style, u=fabricUsageFor(c); if(!s) return null;
+     const thr=s.trims.filter(t=>/^Thread$/.test(t[0]))[0];
+     return [s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source].join('/'), s.trims.map(t=>t[3]).join('+'), thr&&thr[2], garmentKind(c,s), s.mfg.length+'/'+s.fin.length, (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, s.logoImg?'logo':'nologo', s.placeImg?'place':'noplace', smIsStockStyle(c)?'stock':'own', s.customer].join('|'); };
+   return {a:one('OHAPP0666241'), b:one('AP0776128'), c:one('OHHICAPP062703DEN/DS')}; });
+ ck('slate grey off-centre bib OHAPP0666241: CO5241ECO 0.86 m from All Costings, slate grey thread at 70, OH labels coded, the ring studs not, no branding, a stock style', r8.a==='OHAPP0666241||onesize|0666|CO5241ECO:A5:0.86|CO5241ECO/0.86/All Costings|CMP-THR-EP80-09975-241+LABELOH5771+CMP-OH-LBL-WASH-01+|70|APB|12/1|7||nologo|noplace|stock|Alpha Co Tokyo', r8.a);
+ ck('Tibard charcoal bib AP0776128: PCECO520128 0.6 m from All Costings, the maroon contrast with no rating, grey thread at 70, label tape, studs, eyelet and ring coded, no branding, a stock style', r8.b==='AP0776128||onesize|OHAP0776|PCECO520128:B3:0.6+CO5005:A5:0|PCECO520128/0.6/All Costings|CMP-THR-EP80-09963-64+CMP-THR-EP80-03912-05+CMP-LBL-NYL-25-01+CMP-STD-PST-9B-287+CMP-STD-SOC-9B-287+CMP-30ED-28-931+CMP-30RD-28-931|70|APB|9/3|6||nologo|noplace|stock|Gaucho', r8.b);
+ ck("Hickory's bib OHHICAPP062703DEN/DS: CO5003DEN 0.75 m on the record, the lay plan's marker 0627001 (0.655) is the usage, gold thread at 70, labels, tax tab, towel loop, studs, D rings, eyelets, rings and hanger tape coded, the zip and rivets not, own branding with the sketch", r8.c==="OHHICAPP062703DEN/DS||onesize|0627|CO5003DEN:B2:0.75|CO5003DEN/0.655/marker 0627001|CMP-THR-EP80-02362-79+LABELOH5771+CMP-OH-LBL-WASH-01+TAXTABOH07/01+CMP-OH-NTT-25-03+CMP-STD-PST-9B-287++CMP-DR25-931++CMP-30ED-28-931+CMP-30RD-28-931+CMP-PIP-08-03|70|APB|19/5|4|Embroidery|nologo|place|own|Hickory's", r8.c);
+ d=await printOf('OHHICAPP062703DEN/DS',30);
+ ck("Hickory's bib print: variant 0627, the marker line, the strap note, the 4-row chart, the branding band with the sketch", d.text.includes('variant 0627')&&d.text.includes('0627001')&&d.text.includes('OHSTRAP03DEN')&&d.text.includes('92 cm (± 1.5)')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('5 star logo')&&d.imgs>=1, [d.imgs, d.text.slice(0,300)]);
+ d=await printOf('OHAPP0666241',20);
+ ck('off-centre bib print: variant 0666, the one way lay note, the stud marker, the 7-row chart, no branding band', d.text.includes('variant 0666')&&d.text.includes('one way lay')&&d.text.includes('OHAPP0544')&&d.text.includes('16 cm wide x 20 cm deep')&&/CO5241ECO A5 0\.86/.test(d.text)&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
+ d=await printOf('AP0776128',20);
+ ck('Gaucho bib print: OHAP0776, the eyelet, the 6-row chart, no branding band', d.text.includes('OHAP0776')&&d.text.includes('CMP-30ED-28-931')&&d.text.includes('2.5 cm x 76 cm')&&/PCECO520128 B3 0\.6/.test(d.text)&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
