@@ -1239,6 +1239,9 @@ function saveWO(){ if(!IS_EDITOR) return;
 
 function delWO(i){ if(!IS_EDITOR) return;
   var wo=WOs[i], special=!!(wo.sm && wo.sm.lineKey);
+  // The cloth is cut: the works order is completed or split, never removed
+  for(var c=0;c<(wo.items||[]).length;c++){ var cl=cutLineFor(wo, wo.items[c].code);
+    if(cl){ alert(wo.ref+' cannot be removed: the cutting room has cut its cloth ('+wo.items[c].code+': '+cutLockNote(wo, wo.items[c], cl)+').\n\nComplete it when it is made, or split off what is not needed.'); return; } }
   if(!confirm('Remove works order "'+wo.ref+'"?'+(special?'\n\nIts sales order line comes back to Special Makes for review on the next paste.':''))) return;
   WOs.splice(i,1);
   if(special) smRelease(wo);
@@ -1300,6 +1303,9 @@ function recordCompleted(wo, it, day){
     // only ever say WHEN a job finished, never how long it took.
     createdAt: wo.createdAt,
     printedAt: wo.printedAt,
+    // the works order this one was split off, so an undo puts it back as a
+    // split and the cutting room is not asked for cloth cut with the parent
+    splitFrom: wo.splitFrom || undefined,
     fabric: wo.embOnly ? undefined : fabricRecordFor(it, wo),
     embOnly: wo.embOnly ? true : undefined, pickCode: wo.embOnly ? wo.pickCode : undefined,
     // a line put back by Undo and completed again keeps its write-off state:
@@ -2044,10 +2050,23 @@ function printWOCard(i){ if(!IS_EDITOR) return;
 // e.g. 20 on order, 4 needed urgently -> split into 4 (new WO) and 16 (this WO).
 function splitWO(i){ if(!IS_EDITOR) return;
   var wo=WOs[i]; if(!wo) return;
+  // A line already cut splits the cloth the cutting room logged, by
+  // quantity, so it has to be split from the quantity they cut: 12 cut
+  // against 10 on the works order is for the PM to settle first (Edit on the
+  // card takes the quantity up or down to what was cut, and nothing else).
+  var cuts={};
+  for(var c=0;c<wo.items.length;c++){
+    var ci=wo.items[c], cl=cutLineFor(wo, ci.code); if(!cl) continue; cuts[ci.code]=cl;
+    if(cutQtyToMatch(ci, cl)!=null){
+      alert(wo.ref+' '+ci.code+': the cutting room cut '+cl.qty+' against the '+Math.round(ci.qty)+' on the works order ('+cl.metres+' m on '+fmtD(cl.cutAt)+').\n\nBring the works order into line with what was cut first (Edit on the card, quantity '+cl.qty+'), then split it.');
+      return;
+    }
+    if(cutClothFor(wo, ci)==null){ alert(wo.ref+' '+ci.code+' has been cut ('+cutLockNote(wo, ci, cl)+') but no metres are logged for it, so the cloth cannot follow a split.'); return; }
+  }
   var moved=[];   // items for the new WO
   for(var j=0;j<wo.items.length;j++){
-    var it=wo.items[j];
-    var q=prompt('Split "'+it.code+'" (currently '+Math.round(it.qty)+' units).\n\nHow many units go to the NEW works order?\n(0 = leave all '+Math.round(it.qty)+' on '+wo.ref+')', '0');
+    var it=wo.items[j], cutH=cuts[it.code] ? '\nAlready cut ('+cutLockNote(wo, it, cuts[it.code])+'): the '+cutClothFor(wo, it)+' m of cloth follows the split, by quantity.\n' : '';
+    var q=prompt('Split "'+it.code+'" (currently '+Math.round(it.qty)+' units).\n'+cutH+'\nHow many units go to the NEW works order?\n(0 = leave all '+Math.round(it.qty)+' on '+wo.ref+')', '0');
     if(q===null) return;   // cancelled - abort the whole split
     var n=parseInt((q||'0').replace(/[^0-9]/g,''),10)||0;
     if(n<0) n=0;
@@ -2056,10 +2075,21 @@ function splitWO(i){ if(!IS_EDITOR) return;
     if(n>0) moved.push({code:it.code, qty:n});
   }
   if(!moved.length){ alert('Nothing was moved — enter a quantity above 0 to split.'); return; }
-  // Reduce this WO
+  // Reduce this WO. On a line already cut the cloth goes with the garments:
+  // each works order keeps its share of the logged metres, by quantity, as
+  // its actual (11 m cut for 10, split 5 and 5, is 5.5 m on each), so each
+  // writes off its own cloth when it is booked in and the cutting room is
+  // never asked for the new one.
+  var cloth=[];
   moved.forEach(function(m){
     var it=wo.items.find(function(x){return x.code===m.code;});
-    if(it) it.qty-=m.qty;
+    if(!it) return;
+    if(cuts[m.code]){
+      var lot=cutClothFor(wo, it), share=Math.round(lot*m.qty/it.qty*100)/100;
+      m.metresActual=share; m.cutShare=true; it.metresActual=Math.round((lot-share)*100)/100; it.cutShare=true;
+      cloth.push(m.code+': '+it.metresActual+' m stays on '+wo.ref+', '+share+' m goes with the new works order');
+    }
+    it.qty-=m.qty;
   });
   wo.items=wo.items.filter(function(x){return x.qty>0;});
   // Create the new WO (fresh auto number, same dates - edit its due date in the popup that opens)
@@ -2071,6 +2101,7 @@ function splitWO(i){ if(!IS_EDITOR) return;
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderCompleted(); saveState();
   alert('Split done.\n\n'+wo.ref+' keeps '+wo.items.map(function(x){return Math.round(x.qty)+' x '+x.code;}).join(', ')
     +'\n'+newRef+' gets '+moved.map(function(x){return Math.round(x.qty)+' x '+x.code;}).join(', ')
+    +(cloth.length ? '\n\nCloth already cut, split by quantity:\n'+cloth.join('\n') : '')
     +'\n\nThe new WO opens now — set its urgent due date and print it.');
   openWOModal(newIdx);
 }
@@ -2120,6 +2151,20 @@ function saveWODate(i){ if(!IS_EDITOR) return;
   var due=document.getElementById('woc-de-'+i).value;
   var start=document.getElementById('woc-se-'+i).value;
   if(!due){ alert('Please choose a due date.'); return; }
+  // A line the cutting room has cut keeps its quantity: the cloth for it is
+  // cut. The one change allowed is to the quantity the cutting room logged
+  // (they cut 15 of 17, or 12 against 10). Fewer wanted on this works order
+  // is a split, so the cloth follows; a line cut with its parent is the same.
+  for(var c=0;c<wo.items.length;c++){
+    var ci=wo.items[c], qel0=document.getElementById('woc-qty-'+i+'-'+c); if(!qel0) continue;
+    var q0=parseFloat(qel0.value); if(isNaN(q0)||q0<0) continue; q0=Math.round(q0); if(q0===ci.qty) continue;
+    var cl=cutLineFor(wo, ci.code); if(!cl) continue;
+    var match=cutQtyToMatch(ci, cl); if(match!=null && q0===match) continue;   // brought into line with what was cut
+    alert(wo.ref+' '+ci.code+' has been cut ('+cutLockNote(wo, ci, cl)+'), so its quantity cannot be changed'
+      +(match!=null ? ' - except to the '+match+' the cutting room logged' : '')+'.\n\n'
+      +'To make fewer on this works order, use Split WO on the works order panel: the cloth follows the split. Nothing was saved.');
+    return;
+  }
   wo.due=due; wo.start=start;
   // Save any edited quantities
   wo.items.forEach(function(it,j){
@@ -2200,14 +2245,14 @@ function undoCompleted(idx){ if(!IS_EDITOR) return;
   var existing=WOs.find(function(w){ return w.ref===c.ref; });
   // The line's fabric write-off state travels with it, so completing it again
   // cannot produce a second write-off for cloth already booked out of Sage.
-  var back={code:c.code, qty:c.qty, metresActual:(c.fabric&&c.fabric.actual!=null)?c.fabric.actual:undefined, fabricCode:(c.fabric&&c.fabric.edited)?c.fabric.code:undefined,
+  var back={code:c.code, qty:c.qty, metresActual:(c.fabric&&c.fabric.actual!=null)?c.fabric.actual:undefined, cutShare:(c.fabric&&c.fabric.cutShare)?true:undefined, fabricCode:(c.fabric&&c.fabric.edited)?c.fabric.code:undefined,
             fabricExportedAt:c.fabricExportedAt, fabricExportFile:c.fabricExportFile, fabricDismissedAt:c.fabricDismissedAt};
   if(existing){
     var it=existing.items.find(function(x){ return x.code===c.code; });
     if(it){ it.qty+=c.qty; if(c.fabricExportedAt && !it.fabricExportedAt){ it.fabricExportedAt=c.fabricExportedAt; it.fabricExportFile=c.fabricExportFile; } }
     else existing.items.push(back);
   } else {
-    WOs.push({ref:c.ref, start:c.start, due:c.due, items:[back], createdAt:c.createdAt});
+    WOs.push({ref:c.ref, start:c.start, due:c.due, items:[back], createdAt:c.createdAt, splitFrom:c.splitFrom||undefined});
   }
   completedWOs.splice(idx,1);
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
@@ -4140,10 +4185,59 @@ function cutKey(ref, code, fab){ return ref+'|'+code+'|'+(fab||''); }
 // the line is not asked for again. Luke, 6 Oct 2026: WO-1430, split for an
 // urgent two, came up as new on the cutting tab. A split made while the
 // parent still waits gets its own line, and the parent's quantity follows.
+// The works orders this one was split off, nearest first: a split of a
+// split still finds the works order whose log line holds its cloth.
+function cutSplitChain(wo){
+  var out=[], ref=wo?wo.splitFrom:null, n=0;
+  while(ref && n++<8){ out.push(ref); var p=WOs.filter(function(w){ return w.ref===ref; })[0] || completedWOs.filter(function(c){ return c.ref===ref; })[0]; ref=p ? p.splitFrom : null; }
+  return out;
+}
 function cutCutWithParent(wo, code){
   if(!wo || !wo.splitFrom) return false;
-  return cutLog.entries.some(function(e){ return e.ref===wo.splitFrom && e.code===code && (e.cutAt || e.cancelledAt); });
+  var it=(wo.items||[]).filter(function(x){ return x.code===code; })[0];
+  if(it && it.cutShare) return true;   // carries its share of the cloth cut with the parent
+  // split off before the cut, it has a line of its own: that line stands
+  if(cutLog.entries.some(function(e){ return e.ref===wo.ref && e.code===code; })) return false;
+  var chain=cutSplitChain(wo);
+  return cutLog.entries.some(function(e){ return chain.indexOf(e.ref)>=0 && e.code===code && (e.cutAt || e.cancelledAt); });
 }
+// The cut-log line the cloth for a works order line was cut on: the works
+// order's own, or - for one split off another after that was cut - the
+// parent's (viaParent). Null while the cloth is still to cut. With it, the
+// garments the cutting room cut (the figure typed beside the metres, else
+// the works order's quantity when it was cut) and the metres they logged
+// (the standard where the box was left alone).
+function cutLineFor(wo, code){
+  if(!wo || !code) return null;
+  var find=function(ref){ var e=null; cutLog.entries.forEach(function(x){ if(x.ref===ref && x.code===code && !x.extra && x.cutAt && !x.cancelledAt) e=x; }); return e; };
+  var e=find(wo.ref), viaParent=false;
+  if(!e && wo.splitFrom){ var chain=cutSplitChain(wo); for(var i=0;i<chain.length && !e;i++) e=find(chain[i]); viaParent=!!e; }
+  if(!e) return null;
+  return {e:e, ref:e.ref, viaParent:viaParent, qty:(e.qtyCut!=null)?e.qtyCut:e.qty, metres:(e.metres!=null)?e.metres:e.std, cutAt:e.cutAt};
+}
+// Once cut, the cloth a works order line stands for: the share a split left
+// on it, else the whole figure the cutting room logged, else (a line split
+// off a cut parent before shares existed) its part of the parent's figure
+// by quantity. Null while the cloth is still to cut or no metres are known.
+function cutClothFor(wo, it){
+  if(it.metresActual!=null) return it.metresActual;
+  var cl=cutLineFor(wo, it.code); if(!cl || cl.metres==null) return null;
+  if(!cl.viaParent) return cl.metres;
+  return cl.qty>0 ? Math.round(cl.metres*it.qty/cl.qty*100)/100 : null;
+}
+// Why a cut line's quantity or works order cannot be touched (Luke, 15 Oct
+// 2026: WO-1352 was cut for 17, then taken down to 4 and a new WO-1544
+// raised for the rest, so the cutting room was asked for cloth it had
+// already cut and the variance review flagged 29.9 m against 4 garments).
+function cutLockNote(wo, it, cl){
+  var when='cut '+fmtD(cl.cutAt)+(cl.viaParent?' with '+cl.ref:'');
+  if(it && it.cutShare && it.metresActual!=null) return Math.round(it.qty)+' garments, its '+it.metresActual+' m share of the '+cl.metres+' m '+when;
+  return (cl.qty!=null?cl.qty+' garments, ':'')+(cl.metres!=null?cl.metres+' m, ':'')+when;
+}
+// A cut line whose quantity the cutting room logged differently (12 cut
+// against 10): the one quantity change it allows is to theirs. A line
+// carrying a share of a split has its own quantity and allows none.
+function cutQtyToMatch(it, cl){ return (!it.cutShare && !cl.viaParent && cl.qty!=null && cl.qty!==it.qty) ? cl.qty : null; }
 function cutEntriesFor(wo){
   var out=[];
   (wo.items||[]).forEach(function(it){
@@ -5461,12 +5555,21 @@ function fabricRecordFor(it, wo){
   var u=fabricUsageFor(it.code), actual=(it.metresActual!=null) ? it.metresActual : null;
   if(!u && actual==null && !it.fabricCode) return null;
   var code=it.fabricCode || (u?u.code:''), edited=!!it.fabricCode;
-  // nothing typed on the panel: the cutting room's adjusted figure is the actual
-  var cf=(wo && actual==null && code) ? cutFigureFor(wo.ref, it.code, code) : null, fromLog=!!(cf && cf.adjusted);
+  // nothing typed on the panel: the cutting room's adjusted figure is the
+  // actual. A share left by a split of a cut line (cutShare) is the actual
+  // too, and keeps the day and comment of the cut it came from - the works
+  // order's own, or the parent's for the works order split off it.
+  var share=!!(it.cutShare && actual!=null);
+  // split off a cut parent before shares were kept (WO-1541 off WO-1487, 15
+  // Oct 2026): its part of the parent's figure, by quantity
+  if(actual==null && wo && wo.splitFrom){ var lc=cutLineFor(wo, it.code); if(lc && lc.viaParent){ var lm=cutClothFor(wo, it); if(lm!=null){ actual=lm; share=true; } } }
+  var cf=(wo && (actual==null || share) && code) ? cutFigureFor(wo.ref, it.code, code) : null, fromLog;
+  if(!cf && wo && share && code){ var chain=cutSplitChain(wo); for(var ci=0; ci<chain.length && !cf; ci++) cf=cutFigureFor(chain[ci], it.code, code); }
+  fromLog=!!(cf && cf.adjusted && !share);
   if(fromLog) actual=cf.metres;
   return { code:code, name:edited ? fabricNameFor(code) : (u?u.name:''), perGarment:u?u.metres:null,
-           std:u ? fabricStd(u.metres, it.qty, u.lay, it.code) : null, plies:(u&&u.lay>0) ? cutPliesFor(it.code, it.qty, u.lay) : undefined, actual:actual, source:(u?u.source:'')+(edited?' · edited':'')+(fromLog?' · cut log':''), edited:edited||undefined,
-           cutNote:fromLog&&cf.note ? cf.note : undefined, cutAt:cf ? cf.cutAt : undefined, cutQty:(cf && cf.qtyCut!=null) ? cf.qtyCut : undefined,
+           std:u ? fabricStd(u.metres, it.qty, u.lay, it.code) : null, plies:(u&&u.lay>0) ? cutPliesFor(it.code, it.qty, u.lay) : undefined, actual:actual, source:(u?u.source:'')+(edited?' · edited':'')+(fromLog?' · cut log':'')+(share?' · share of the cut':''), edited:edited||undefined, cutShare:share||undefined,
+           cutNote:(fromLog||share)&&cf&&cf.note ? cf.note : undefined, cutAt:cf ? cf.cutAt : undefined, cutQty:(cf && cf.qtyCut!=null && !share) ? cf.qtyCut : undefined,
            price:code ? fabPriceFor(code) : null,
            // secondary fabrics - mesh inserts - at standard, unless the
            // cutting room adjusted that line on the log
