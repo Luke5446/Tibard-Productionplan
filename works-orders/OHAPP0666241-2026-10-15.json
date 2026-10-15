@@ -1,0 +1,116 @@
+{
+ "styles": [
+  {
+   "code": "OHAPP0666241",
+   "name": "Slate grey off-centre bib apron with two pockets, stud halter adjustable neck strap and self fabric waist ties",
+   "desc": "BIB APRON · Off-centre bib apron (the longer side is the right side as worn) · Smaller pocket right side as worn, larger pocket left side as worn · Self fabric waist ties · Stud halter adjustable neck strap through a self fabric loop · Oliver Harvey labels, no tax tab",
+   "lectra": "OHAPP0666, variant 0666 — one way lay, right side of the fabric uppermost",
+   "variant": "0666",
+   "chart": "OHAPP0666241-MEAS",
+   "fabrics": [
+    [
+     "Slate grey 100% organic cotton 260 gsm X149ECO-AM308 (Tiajo) — rating 0.86 m",
+     "CO5241ECO",
+     "A5",
+     0.86,
+     2.81
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S SLATE GREY 09975 — cost per metre",
+     70,
+     "CMP-THR-EP80-09975-241",
+     0.000714
+    ],
+    [
+     "Oliver Harvey woven label",
+     "Oliver Harvey woven British button centre fold label, set into the right side seam as worn, 4 cm down from the top edge.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "Oliver Harvey care label",
+     "Oliver Harvey wash instructions set under the OH woven label, right side seam as worn: 100% organic cotton · 40° wash · low tumble dry · 2 dot iron · do not bleach · P dry clean.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "Ring studs — neck strap",
+     "Set the studs to the neck strap pre-make-up, use the stud marker as OHAPP0544: 1 male stud on the strap end and 4 female studs along the strap for the adjustment (as the 0544 adjustable neck strap). No Sage code for the apron ring stud on the trims list.",
+     5,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Make the neck strap loop: fold in half lengthways, fold in the raw edges to neaten and edgestitch one edge.",
+    "Make the neck strap: bag out one end, fold and enclose the raw edges, edgestitch both sides. Set the studs to the neck strap pre-make-up with the OHAPP0544 stud marker.",
+    "Make the waist ties: bag out one end, fold and enclose the raw edges, edgestitch both sides.",
+    "Set the bib top to the apron.",
+    "Double turn the armholes and topstitch 6 mm. Single turn the bib top to reduce bulk.",
+    "Set the loop and the neck strap to the base of the bib top. The neck strap is set to the right side of the bib as worn, studs to the underside of the strap. The loop is set as high as possible to the fold of the bib top and inserted into the end of the left side of the bib top: edgestitch the end of the bib and the top edge of the bib before stitching the loop down. The loop finishes 3 cm wide and fits the neck strap neatly.",
+    "Stitch down the bib top.",
+    "Sides: double turn and topstitch 1.2 cm. Insert the labels right side as worn, 4 cm down from the top edge.",
+    "Hem: double turn and topstitch 1.2 cm.",
+    "Set the pocket hems: double turn 1 + 2 cm.",
+    "Set the top of the pockets 14 cm down from the waist and 7 cm in from the side seam. The tops of the pockets are in line; the bottoms are out of line as the pockets are different sizes. Triangle tack the top of each pocket. No OH tax tab.",
+    "Fold the waist tie back onto the apron and edgestitch it down onto the side seam."
+   ],
+   "fin": [
+    "Check, trim, press and fold in tissue. Set the product sticker to the bottom right hand corner of the tissue."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Alpha Co Tokyo",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHAPP0666241 for Alpha Co Tokyo, Oliver Harvey (JH created for SR981; approved for bulk 19/5/21; fabric amended to Tiajo X149ECO and the care label wording changed JH 3/4/25). One way lay, right side of the fabric uppermost. Rating 0.86 m on the sheet and in All Costings; no lay plan marker for 0666. The sheet's sketch of the apron is in works-orders/OHAPP0666241-AlphaCoTokyo.xlsx."
+  }
+ ],
+ "charts": {
+  "OHAPP0666241-MEAS": [
+   [
+    "Width (skirt)",
+    "100 cm"
+   ],
+   [
+    "Across bib",
+    "24 cm"
+   ],
+   [
+    "Neck strap",
+    "66 cm"
+   ],
+   [
+    "Length from bib to hem",
+    "96 cm"
+   ],
+   [
+    "Waist ties",
+    "80 cm x 3 cm"
+   ],
+   [
+    "Right pocket as worn",
+    "15 cm wide x 18 cm deep"
+   ],
+   [
+    "Left pocket as worn",
+    "16 cm wide x 20 cm deep"
+   ]
+  ]
+ },
+ "chartCols": {
+  "OHAPP0666241-MEAS": [
+   "Measurement",
+   "Value"
+  ]
+ }
+}
