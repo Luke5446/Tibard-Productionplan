@@ -708,6 +708,7 @@ tr.fab-done td{color:#6b7280}
           <th style="text-align:right">In stock</th><th style="text-align:right">WO qty</th>
           <th style="text-align:right">Days cover on completion</th>
           <th style="text-align:right" title="Fabric cut, in metres. Pre-filled with the standard from All Costings; type over it if the cutting room measured something different.">Metres cut</th>
+          <th class="ns edit-only" style="text-align:right" title="Garments spoiled in the making: type the number before Complete whole WO. The rest are booked in as made; the cloth for all of them is still written off.">Waste</th>
           <th class="ns" style="text-align:center">Action</th>
         </tr></thead><tbody id="woModalBody"></tbody></table>
       </div>
@@ -1272,20 +1273,41 @@ function delWOItem(woIdx, code){ if(!IS_EDITOR) return;
 function woDoneDay(el){ var today=d2s(now()); if(!el || !el.value) return today; var d=el.value; return (/^\d{4}-\d{2}-\d{2}$/.test(d) && d<today) ? d : today; }
 function woDoneHint(wo, day){ var today=d2s(now()); return day<today ? '\n\nBooked as completed on '+fmtD(day)+', not today.' : ''; }
 // Complete an entire works order at once
-function completeWholeWO(woIdx, day){ if(!IS_EDITOR) return;
+// Waste typed on the works order panel, one box per line (Luke, 16 Oct
+// 2026: 200 on the works order and 10 spoiled - the 190 are booked in as
+// made, the 10 are kept on the record, and the cloth for all 200 is still
+// written off). Null when a box holds something that is not a quantity.
+function woModalWastes(wo){
+  var out=[], bad=null;
+  (wo.items||[]).forEach(function(it, j){
+    var el=document.getElementById('woModalWaste-'+j), v=el ? el.value.trim() : '';
+    if(v===''){ out[j]=0; return; }
+    var n=parseInt(v, 10);
+    if(isNaN(n) || n<0 || String(n)!==v.replace(/^0+(?=\d)/,'')) bad=it.code+': waste must be a whole number of garments.';
+    else if(n>it.qty) bad=it.code+': '+n+' waste is more than the '+Math.round(it.qty)+' on the works order.';
+    out[j]=n;
+  });
+  if(bad){ alert(bad); return null; }
+  return out;
+}
+function completeWholeWO(woIdx, day, wastes){ if(!IS_EDITOR) return;
   var wo=WOs[woIdx];
   if(!wo) return;
+  if(wastes===null) return;   // a waste box the PM has to fix first
+  wastes=wastes||[];
   day=day||woDoneDay(document.getElementById('woc-done-'+woIdx)); if(wo.createdAt && day<wo.createdAt) day=wo.createdAt;
-  if(!confirm('Mark the ENTIRE works order '+wo.ref+' as complete?\n\nAll '+wo.items.length+' SKU(s) will move to the Completed Works Orders history.'+woDoneHint(wo, day))) return;
-  wo.items.forEach(function(it){ recordCompleted(wo, it, day); });
+  var wasteH=wo.items.map(function(it, j){ return wastes[j] ? '\n'+it.code+': '+Math.round(it.qty-wastes[j])+' made, '+wastes[j]+' waste' : ''; }).join('');
+  if(!confirm('Mark the ENTIRE works order '+wo.ref+' as complete?\n\nAll '+wo.items.length+' SKU(s) will move to the Completed Works Orders history.'+(wasteH?'\n'+wasteH:'')+woDoneHint(wo, day))) return;
+  wo.items.forEach(function(it, j){ recordCompleted(wo, it, day, wastes[j]||0); });
   WOs.splice(woIdx,1);
   if(selectedWO===wo.ref) selectedWO=null;
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
 }
 
 // Record a completed line into history
-function recordCompleted(wo, it, day){
+function recordCompleted(wo, it, day, waste){
   var r=rows.find(function(x){ return x.code===it.code; });
+  waste=Math.max(0, Math.min(Math.round(waste||0), Math.round(it.qty)));
   // A special make's code is not in the buffer rows, so fall back to the
   // description that came off the sales order - otherwise it lands in the
   // completed history with a blank description and cannot be searched for.
@@ -1293,7 +1315,10 @@ function recordCompleted(wo, it, day){
     ref: wo.ref,
     code: it.code,
     desc: r ? r.desc : (wo.sm ? wo.sm.desc : ''),
-    qty: it.qty,
+    // the garments made, to book in; the spoiled ones kept beside them. The
+    // fabric record below is for every garment cut, waste included.
+    qty: it.qty-waste,
+    waste: waste||undefined,
     start: wo.start || '',
     due: wo.due || '',
     completed: day||d2s(now()),
@@ -1587,7 +1612,7 @@ function openWOModal(i){
     +'<strong>'+wo.items.length+'</strong> SKU(s) &nbsp;|&nbsp; <strong>'+tot.toLocaleString()+'</strong> units total'
     +(printedH?' &nbsp;|&nbsp; '+printedH:'')+splitH+smDocMeta(wo)+demandModalH(wo);
   var body=document.getElementById('woModalBody');
-  body.innerHTML=wo.items.map(function(it){
+  body.innerHTML=wo.items.map(function(it, j){
     var r=rows.find(function(x){return x.code===it.code;});
     var desc=r?r.desc:'(not in current stock data)';
     var inStock=r?r.inStock:0;
@@ -1602,12 +1627,13 @@ function openWOModal(i){
       +'<td style="text-align:right;font-weight:700;color:#6d28d9">'+Math.round(it.qty).toLocaleString()+'</td>'
       +'<td style="text-align:right;font-weight:700;color:'+col+'">'+dc+'</td>'
       +'<td style="text-align:right;white-space:nowrap">'+fabricCellFor(i, it)+'</td>'
+      +(IS_EDITOR ? '<td class="edit-only" style="text-align:right;white-space:nowrap"><input type="number" min="0" max="'+Math.round(it.qty)+'" step="1" id="woModalWaste-'+j+'" placeholder="0" title="Garments spoiled in the making, out of the '+Math.round(it.qty)+': the rest are booked in as made" style="width:56px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px"></td>' : '')
       +'<td style="text-align:center;white-space:nowrap"><button class="btn" style="font-size:10px;padding:2px 7px;color:#1e40af;border-color:#b6c4e8" title="Print works order document" onclick="printWOPTracked('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\','+it.qty+')">&#128424; WOP</button></td>'
       +'</tr>';
   }).join('');
   // Wire the complete-all button for this WO
   var dd=document.getElementById('woModalDoneDay'); dd.value=d2s(now()); dd.max=d2s(now()); dd.min=wo.createdAt||'';
-  document.getElementById('woModalCompleteAll').onclick=function(){ completeWholeWO(i, woDoneDay(dd)); };
+  document.getElementById('woModalCompleteAll').onclick=function(){ completeWholeWO(i, woDoneDay(dd), woModalWastes(wo)); };
   document.getElementById('woModal').classList.add('open');
 }
 
@@ -2210,7 +2236,7 @@ function renderCompleted(){
       +'<td style="font-family:monospace;font-size:11px">'+esc(c.ref)+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+esc(c.code)+'</td>'
       +'<td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(c.desc)+'">'+esc(c.desc)+'</td>'
-      +'<td style="text-align:right;font-weight:700;color:#065f46">'+Math.round(c.qty).toLocaleString()+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:#065f46">'+Math.round(c.qty).toLocaleString()+(c.waste?'<div class="sm-sub" style="color:#b45309;font-weight:400" title="spoiled in the making, out of '+Math.round(c.qty+c.waste)+' on the works order">+'+c.waste+' waste</div>':'')+'</td>'
       +'<td>'+(c.start?fmtD(c.start):'<span style="color:#e5e7eb">&mdash;</span>')+'</td>'
       +'<td>'+(c.due?fmtD(c.due):'<span style="color:#e5e7eb">&mdash;</span>')+'</td>'
       +'<td style="text-align:center"><button class="btn edit-only" style="font-size:10px;padding:2px 7px" onclick="undoCompleted('+realIdx+')" title="Put back into the tracker">&#8634; Undo</button></td>'
@@ -2247,11 +2273,11 @@ function undoCompleted(idx){ if(!IS_EDITOR) return;
   var existing=WOs.find(function(w){ return w.ref===c.ref; });
   // The line's fabric write-off state travels with it, so completing it again
   // cannot produce a second write-off for cloth already booked out of Sage.
-  var back={code:c.code, qty:c.qty, metresActual:(c.fabric&&c.fabric.actual!=null)?c.fabric.actual:undefined, cutShare:(c.fabric&&c.fabric.cutShare)?true:undefined, fabricCode:(c.fabric&&c.fabric.edited)?c.fabric.code:undefined,
+  var back={code:c.code, qty:c.qty+(c.waste||0), metresActual:(c.fabric&&c.fabric.actual!=null)?c.fabric.actual:undefined, cutShare:(c.fabric&&c.fabric.cutShare)?true:undefined, fabricCode:(c.fabric&&c.fabric.edited)?c.fabric.code:undefined,
             fabricExportedAt:c.fabricExportedAt, fabricExportFile:c.fabricExportFile, fabricDismissedAt:c.fabricDismissedAt};
   if(existing){
     var it=existing.items.find(function(x){ return x.code===c.code; });
-    if(it){ it.qty+=c.qty; if(c.fabricExportedAt && !it.fabricExportedAt){ it.fabricExportedAt=c.fabricExportedAt; it.fabricExportFile=c.fabricExportFile; } }
+    if(it){ it.qty+=c.qty+(c.waste||0); if(c.fabricExportedAt && !it.fabricExportedAt){ it.fabricExportedAt=c.fabricExportedAt; it.fabricExportFile=c.fabricExportFile; } }
     else existing.items.push(back);
   } else {
     WOs.push({ref:c.ref, start:c.start, due:c.due, items:[back], createdAt:c.createdAt, splitFrom:c.splitFrom||undefined});
@@ -6609,7 +6635,7 @@ function fabLine(c, idx){
   });
   if(main==null && !extras.length) cost=null;
   var varPct=(f && f.actual!=null && f.std>0) ? 100*(f.actual-f.std)/f.std : null;
-  return { c:c, idx:idx, state:fabState(c), date:c.completed||'', ref:c.ref||'', code:c.code||'', desc:c.desc||'', qty:c.qty||0, sm:!!c.sm, cutNote:(f&&f.cutNote)||'', cutAt:(f&&f.cutAt)||'', cutQty:(f&&f.cutQty!=null)?f.cutQty:null,
+  return { c:c, idx:idx, state:fabState(c), date:c.completed||'', ref:c.ref||'', code:c.code||'', desc:c.desc||'', qty:c.qty||0, waste:c.waste||0, sm:!!c.sm, cutNote:(f&&f.cutNote)||'', cutAt:(f&&f.cutAt)||'', cutQty:(f&&f.cutQty!=null)?f.cutQty:null,
     has:has, fabCode:has?f.code:'', fabName:has?(f.name||''):'', std:f?f.std:null, actual:f?f.actual:null, main:main, extras:extras,
     metres:metres, cost:cost, priced:priced, price:price, varPct:varPct, source:f?(f.source||''):'',
     odd:(typeof FAB_VAR_LIMIT!=='undefined') && !(f&&f.varOK) && fabVarOdd(f?f.std:null, f?f.actual:null),
@@ -6783,7 +6809,7 @@ function fabRender(){
       +(ed?'<td style="text-align:center">'+(l.exportable?'<input type="checkbox" onchange="fabTick('+l.idx+',this.checked)"'+(fabIsTicked(l.c)?' checked':'')+'>':'')+'</td>':'')
       +'<td><span class="sm-ref-s'+(l.sm?' oh':'')+'">'+esc(l.ref)+'</span>'+(l.c.bookedAt?'<div><span class="fab-st backdated" title="completed on '+esc(fmtD(l.date))+', booked on '+esc(fmtD(l.c.bookedAt))+'">back-dated &middot; booked '+esc(fmtD(l.c.bookedAt))+'</span></div>':'')+'</td>'
       +'<td><span style="font-family:monospace;font-size:11px">'+esc(l.code)+'</span><div class="sm-sub" style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(l.desc)+'">'+esc(l.desc)+'</div></td>'
-      +'<td class="fab-num">'+kpiN(l.qty)+'</td>'
+      +'<td class="fab-num">'+kpiN(l.qty)+(l.waste?'<div class="sm-sub" style="color:#b45309" title="spoiled in the making: the cloth was cut for all '+kpiN(l.qty+l.waste)+'">+'+l.waste+' waste</div>':'')+'</td>'
       +'<td>'+fab+'</td>'
       +'<td class="fab-num">'+(l.std!=null?fabM(l.std):'<span style="color:#9ca3af">&mdash;</span>')+(l.source?'<div class="sm-sub">'+esc(l.source)+'</div>':'')+'</td>'
       +'<td class="fab-num">'+actual+'</td>'
@@ -6807,7 +6833,7 @@ function fabRender(){
       +odd.slice(0,60).map(function(l){
         return '<tr><td><span class="sm-ref-s'+(l.sm?' oh':'')+'">'+esc(l.ref)+'</span></td>'
           +'<td><span style="font-family:monospace;font-size:11px">'+esc(l.code)+'</span><div class="sm-sub" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(l.desc)+'">'+esc(l.desc)+'</div></td>'
-          +'<td class="fab-num">'+kpiN(l.qty)+'</td>'
+          +'<td class="fab-num">'+kpiN(l.qty)+(l.waste?'<div class="sm-sub" style="color:#b45309" title="spoiled in the making: the cloth was cut for all '+kpiN(l.qty+l.waste)+'">+'+l.waste+' waste</div>':'')+'</td>'
           +'<td><span style="font-family:monospace;font-size:11px">'+esc(l.fabCode)+'</span></td>'
           +'<td class="fab-num">'+fabM(l.std)+'</td>'
           +'<td class="fab-num" style="font-weight:700;color:#8a2222">'+fabM(l.actual)+'</td>'
