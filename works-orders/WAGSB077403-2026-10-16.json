@@ -1,0 +1,112 @@
+{
+ "styles": [
+  {
+   "code": "WAGSB077403",
+   "name": "Wagamama staff bag, black recycled polyester \u2014 quick release buckle, Wagamama jacquard webbing strap, Wagamama tax tab",
+   "desc": "STAFF BAG \u00b7 Strap with a quick release buckle \u00b7 Pocket with a dart at the base \u00b7 Front pocket with a pen pocket stitch line \u00b7 Wagamama jacquard webbing looped through the tri glide, no loose end \u00b7 Short strap right side as worn set to the outer of the buckle, long strap left side as worn with the buckle \u00b7 Wagamama tax tab \u00b7 No embroidery \u00b7 Cut in multiples of 60",
+   "lectra": "WAGSB0774, variant WAGSB0774",
+   "variant": "WAGSB0774",
+   "chart": "WAGSB077403-MEAS",
+   "fabrics": [
+    [
+     "Black 100% recycled polyester 600RDC (Newton Textiles) \u2014 rating 0.17 m on the sheet; All Costings carries 0.20 m",
+     "PVC600D03",
+     "D7",
+     0.17,
+     2.68
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD \u2014 COATS EPIC 80'S BLACK 09700 \u2014 cost per metre",
+     30,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Care label",
+     "Tibard printed care / batch label, set to the right side seam as worn, 5 cm down from the top edge. Printed at Tibard on the 25 mm nylon label tape.",
+     0.05,
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Wagamama tax tab",
+     "Wagamama label (side seam tax tab), set to the left side as worn, 2.5 cm up from the base of the bag at the gusset seam; use the notch in the back pocket for the position.",
+     1,
+     "TAXTABWAG07/01",
+     0.095
+    ],
+    [
+     "Tri glide slider \u2014 black 25 mm",
+     "Black 25 mm nylon tri glide, Butonia 970051, 1 per bag. No Sage code on the sheet.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Quick release buckle \u2014 black 25 mm",
+     "Black recycled nylon quick release buckle, Butonia 970054, 1 per bag. No Sage code on the sheet.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Wagamama jacquard webbing \u2014 25 mm",
+     "25 mm cotton jacquard thick webbing with the Wagamama design, black (Weavabel): 1.21 m per bag, cut 1 at 14 cm and 1 at 107 cm, one end straight and one angled at 45\u00b0 on both pieces. Use the marker to cut the angle and make sure the writing is the right way up to the angled cut. No Sage code on the sheet (Sage holds plain polyurethane webbing only).",
+     1.21,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Stitch length 7 to 8 stitches per inch.",
+    "Set the pocket hem: 1 cm double turn to the back pocket.",
+    "Set the shape seams at the base of the pocket x 2.",
+    "Fold the front pocket in half, wrong sides together. Set the shape seams x 2 at the base of the folded pocket.",
+    "Set the front folded pocket to the back pocket, aligned to the notches. The folded front pocket is 3.5 cm from the top.",
+    "Set the stitch line at 13 cm from the cut edge, right side as worn. Make sure the top pocket is set 3.5 cm down from the top before setting the stitch line. The stitch line finishes 2 cm up from the base of the pocket, 13 cm long. Use the marker.",
+    "Set the pocket to the pocket base, aligned to the notches in the pocket base. Set the batch label 5 cm down from the top edge. Insert the tax tab 2.5 cm up from the gusset seam, left side as worn.",
+    "Set the short webbing to the right side as worn (use the marker). The angled cut is inserted into the bag; make sure the writing is the right way up. Fold in the seam allowance at the top of the bag and edgestitch down. Set the top of the webbing to the 2nd notch from the top and continue the edgestitch to secure the strap. Take a 1 cm seam on the webbing.",
+    "Set the long webbing. Set the slider to the long webbing: set the end to the centre of the tri glide and thread the webbing through the buckle then over the tri glide (with the writing the right way up the slider is on the right side of the machine); turn the webbing over and thread it through the buckle, through the opening closest to the prongs first, up and over and then through the slider. Set the long webbing to the left side of the bag as worn: cut the end at an angle (use the marker, writing the right way up) and insert into the bag. Fold in the seam allowance at the top of the bag and edgestitch down. Set the top of the webbing to the 2nd notch from the top and continue the edgestitch to secure the strap. Take a 1 cm seam on the webbing.",
+    "Double turn the top of the bag at the notches. Start edgestitching 1 cm below the pocket opening and stitch the side, across the top edge and down the other side to 1 cm past the pocket mouth. Edgestitch across the bottom edge. Make sure the straps finish level with the top of the bag and at an even angle on both sides.",
+    "Set the outer of the buckle to the right side as worn: double turn the ends and stitch 2 rows."
+   ],
+   "fin": [
+    "Bartack x 3: vertical at the top of the back pocket, vertical at the top of the stitch line.",
+    "Check, trim and fold. Adjust the strap to the half way adjustment. No bag."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Width and lengths \u00b1 1 cm \u00b7 Strap fully extended \u00b1 2 cm \u00b7 Pocket stitch line \u00b1 0.5 cm",
+   "oneSize": true,
+   "customer": "Wagamama",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Stock work order 1314 for WAGSB077403, Wagamama, Gail, issued 24/9/26, required 8/10/26 for 150; cut in multiples of 60 (created jh for SR1113; amended for SR1114 12/4/23; shorter webbing, new Wagamama webbing and label SR1121 10/5/23; 10 cm longer webbing and revised label SR1125; approved for bulk 14/6/23). The Wagamama logo is in the jacquard webbing and the tax tab: no embroidery. Rating 0.17 m on the sheet; All Costings carries 0.20 m and that is what the planner cuts and writes off at until All Costings is put right. No lay plan for WAGSB0774: the PM can set the lay on the works order panel. Sage also sells WAGSB077403L with longer ties; no sheet on file. The sheet's two drawings (the Tibard sketch and Wagamama's dimensioned drawing) are in works-orders/WAGSB077403-Wagamama.xlsx."
+  }
+ ],
+ "charts": {
+  "WAGSB077403-MEAS": [
+   [
+    "19 cm (\u00b1 1)",
+    "22 cm (\u00b1 1)",
+    "12 cm (\u00b1 1)",
+    "93 cm (\u00b1 2)",
+    "12 cm (\u00b1 0.5)"
+   ]
+  ]
+ },
+ "chartCols": {
+  "WAGSB077403-MEAS": [
+   "Width at top",
+   "Length from top",
+   "Short strap to end of buckle casing (from the longest slant)",
+   "Strap to straight of buckle, fully extended, excluding prongs",
+   "Pocket stitch line to right side seam as worn"
+  ]
+ }
+}

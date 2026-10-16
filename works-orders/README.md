@@ -93,6 +93,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `AP0776128-2026-10-15.json` | That record for the costing app. |
 | `OHHICAPP062703DEN-DS-Hickorys.xlsx` | Works order for OHHICAPP062703DEN/DS, the Hickory's black denim retail bib apron on OHAP0534 variant 0627: the bib version of the waist apron OHHICAPP062803DEN with the full width pocket divided into four, double pen pocket, zip pocket, eyelets and lower studs for the detachable cross-over straps (OHSTRAP03DEN, cut on their own routing card), D ring loops, hanger loop, gold topstitching and the Hickory's 5 star logo in gold (JH 2017, code 2019), sketch and hanger loop diagram included; the second tab's sketch is the two-pocket strap apron. In the app as style OHHICAPP062703DEN/DS with the sketch as its placement; the sheet rates it 0.75 m, All Costings 0.85 m, the lay plan's marker 0627001 0.655 m. |
 | `OHHICAPP062703DEN-DS-2026-10-15.json` | That record for the costing app. |
+| `WAGSB077403-Wagamama.xlsx` | Stock work order 1314 for WAGSB077403, the Wagamama staff bag in black recycled polyester: quick release buckle, Wagamama jacquard webbing strap through a tri glide, pocket with a dart, front pocket with pen pocket stitch line, Wagamama tax tab (jh 2023, bulk 14/6/23; Gail, 24/9/26 for 150), both drawings included. In the app as style WAGSB077403; the sheet rates it 0.17 m, All Costings 0.20 m. |
+| `WAGSB077403-2026-10-16.json` | That record for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards
