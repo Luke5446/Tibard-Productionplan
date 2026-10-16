@@ -86,7 +86,13 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    const odd=fabOddLines().map(l=>l.ref), led=fabLines().filter(l=>l.ref==='S-A'||l.ref===childRef).map(l=>l.ref+':'+l.metres);
    undoCompleted(completedWOs.findIndex(c=>c.ref===childRef)); const back=WOs.find(w=>w.ref===childRef).items[0];
    const legacy=fabricRecordFor({code:'APP300503', qty:3}, {ref:'S-L', splitFrom:'S-B', items:[{code:'APP300503', qty:3}]});   // 3 of the 12 cut at 12 m, no share kept
-   return {recs:recs, odd:odd, ledger:led, back:[back.qty, back.metresActual, !!back.cutShare], legacy:[legacy.actual, legacy.cutAt, !!legacy.cutShare, /share of the cut/.test(legacy.source)]}; }, childRef);
+   // WO-1552 off WO-1428: split before shares were kept, so the parent is down to 7 of the 10 cut with no share; it splits again all the same, and parent, old child and new child take their parts of the 11 m
+   const bk=WOs.find(w=>w.ref==='S-B'); const old={ref:'S-OLD', start:bk.start, due:bk.due, items:[{code:'APP300503', qty:3}], splitFrom:'S-B', createdAt:bk.createdAt, printed:true, printedAt:'2026-10-01'};
+   bk.items[0]={code:'APP300503', qty:9}; WOs.push(old);   // S-B back to a share-less 9 of the 12 cut, 3 gone to S-OLD
+   const oldRec=fabricRecordFor(old.items[0], old), bRecBefore=fabricRecordFor(bk.items[0], bk);
+   window.__alerts=[]; window.prompt=()=>'4'; const n0=WOs.length; splitWO(WOs.indexOf(bk)); const nw=WOs[WOs.length-1]; closeWOModal();
+   const again={oldPart:[oldRec.actual, !!oldRec.cutShare], bBefore:[bRecBefore.actual, !!bRecBefore.cutShare], split:WOs.length===n0+1 && !window.__alerts.some(m=>/Bring the works order/.test(m)), parent:[bk.items[0].qty, bk.items[0].metresActual], nw:[nw.splitFrom, nw.items[0].qty, nw.items[0].metresActual], oldStill:fabricRecordFor(old.items[0], old).actual};
+   return {recs:recs, odd:odd, ledger:led, back:[back.qty, back.metresActual, !!back.cutShare], legacy:[legacy.actual, legacy.cutAt, !!legacy.cutShare, /share of the cut/.test(legacy.source)], again:again}; }, childRef);
 
  // the shares survive a reload
  await open(true,'tok-editor');
@@ -107,7 +113,8 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
   out.locksLog.join()==='S-A:cut,S-B:cut,S-C:withdrawn',
   out.done.recs.map(r=>r.slice(1).join()).join('|')==='5,'+Math.round(std10/2*100)/100+','+half+',2026-10-01,true|5,'+Math.round(std10/2*100)/100+','+half+',2026-10-01,true',
   out.done.odd.length===0 && out.done.ledger.join()==='S-A:'+half+','+childRef+':'+half && out.done.back.join()==='5,'+half+',true' && out.done.legacy.join()==='3,2026-10-01,true,true',
-  out.reload.join()===half+',true,S-A,6,true',
+  out.done.again.oldPart.join()==='3,true' && out.done.again.bBefore.join()==='9,true' && out.done.again.split && out.done.again.parent.join()==='5,5' && out.done.again.nw.join()==='S-B,4,4' && out.done.again.oldStill===3,
+  out.reload.join()===half+',true,S-A,5,true',
   errs.length===0 ];
  console.log(ok.every(Boolean)?'ALL PASS':'FAIL '+ok.map((v,i)=>v?'':i).filter(x=>x!=='').join(','), errs);
  await b.close(); process.exit(ok.every(Boolean)?0:1);
