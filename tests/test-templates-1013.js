@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('335 styles in the master', r.count===335, r.count);
+ ck('336 styles in the master', r.count===336, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -127,11 +127,19 @@ const path = require('path');
  ck('Gaucho bib print: OHAP0776, the eyelet, the 6-row chart, no branding band', d.text.includes('OHAP0776')&&d.text.includes('CMP-30ED-28-931')&&d.text.includes('2.5 cm x 76 cm')&&/PCECO520128 B3 0\.6/.test(d.text)&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
 
 
- const r8=await p.evaluate(()=>{ const h=styleForCode('WAGSB077403'), s=h&&h.style, u=fabricUsageFor('WAGSB077403');
+ const r8w=await p.evaluate(()=>{ const h=styleForCode('WAGSB077403'), s=h&&h.style, u=fabricUsageFor('WAGSB077403');
    return s?[s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.customer, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source,u.lay].join('/'), s.trims.map(t=>t[3]).join('+'), s.trims[5][2], garmentKind('WAGSB077403',s), s.mfg.length, s.fin.length, (STYLE_MASTER.chartCols[s.chart]||[]).length, s.brandType, smIsStockStyle('WAGSB077403')?'stock':'own', cutLayFor('WAGSB077403').src].join('|'):null; });
- ck('Wagamama staff bag: one size on PVC600D03 at D7 0.17 m (All Costings 0.2 wins, one per ply, no lay plan), thread, label tape and the Wagamama tax tab coded, the tri glide, buckle and 1.21 m of jacquard webbing not, no branding, a stock style', r8==='WAGSB077403||onesize|WAGSB0774|Wagamama|PVC600D03:D7:0.17|PVC600D03/0.2/All Costings/1|CMP-THR-EP80-09700-03+CMP-LBL-NYL-25-01+TAXTABWAG07/01+++|1.21|||11|2|5||stock|', r8);
+ ck('Wagamama staff bag: one size on PVC600D03 at D7 0.17 m (All Costings 0.2 wins, one per ply, no lay plan), thread, label tape and the Wagamama tax tab coded, the tri glide, buckle and 1.21 m of jacquard webbing not, no branding, a stock style', r8w==='WAGSB077403||onesize|WAGSB0774|Wagamama|PVC600D03:D7:0.17|PVC600D03/0.2/All Costings/1|CMP-THR-EP80-09700-03+CMP-LBL-NYL-25-01+TAXTABWAG07/01+++|1.21||11|2|5||stock|', r8w);
  d=await printOf('WAGSB077403',150);
  ck('staff bag print: the variant, the tax tab code, Butonia parts, the webbing cut lengths, the 5-column chart, no branding band', d.text.includes('WAGSB0774')&&d.text.includes('TAXTABWAG07/01')&&d.text.includes('Butonia 970054')&&d.text.includes('cut 1 at 14 cm and 1 at 107 cm')&&d.text.includes('93 cm (± 2)')&&/PVC600D03 D7 0\.17/.test(d.text)&&d.text.includes('multiples of 60')&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,200));
+
+ // ── the Gaucho charcoal waist apron of 19 Oct 2026 ──
+ const r9=await p.evaluate(()=>{ const h=styleForCode('AP0777128'), s=h&&h.style, u=fabricUsageFor('AP0777128'); if(!s) return null;
+   const thr=s.trims.filter(t=>/^Thread$/.test(t[0]))[0];
+   return [s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source,u.lay].join('/'), s.trims.map(t=>t[3]).join('+'), thr&&thr[2], s.trims[5][2], garmentKind('AP0777128',s), s.mfg.length+'/'+s.fin.length, (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, s.logoImg?'logo':'nologo', s.placeImg?'place':'noplace', smIsStockStyle('AP0777128')?'stock':'own', s.customer, cutLayFor('AP0777128').src].join('|'); });
+ ck('Tibard charcoal waist apron AP0777128: PCECO520128 0.4 m from All Costings (one per ply, no lay plan), the maroon contrast with no rating, grey thread at 30, label tape, studs, two eyelets and rings coded, no branding, a stock style', r9==='AP0777128||onesize|OHAP0777|PCECO520128:B3:0.4|PCECO520128/0.4/All Costings/1|CMP-THR-EP80-09963-64+CMP-THR-EP80-03912-05+CMP-LBL-NYL-25-01+CMP-STD-PST-9B-287+CMP-STD-SOC-9B-287+CMP-30ED-28-931+CMP-30RD-28-931|30|2|APW|4/3|4||nologo|noplace|stock|Gaucho|', r9);
+ d=await printOf('AP0777128',20);
+ ck('Gaucho waist print: OHAP0777, the eyelet code, the 4-row chart, the 98 cm ties, no branding band', d.text.includes('OHAP0777')&&d.text.includes('CMP-30ED-28-931')&&d.text.includes('2.5 cm x 98 cm')&&d.text.includes('Length from waist to hem')&&/PCECO520128 B3 0\.4/.test(d.text)&&d.text.includes('even number bundles')&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');

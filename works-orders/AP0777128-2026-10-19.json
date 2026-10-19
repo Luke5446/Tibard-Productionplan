@@ -1,0 +1,119 @@
+{
+ "styles": [
+  {
+   "code": "AP0777128",
+   "name": "Charcoal waist apron with eyelets for the self fabric waist ties \u2014 Tibard, Gaucho",
+   "desc": "WAIST APRON \u00b7 Self fabric waist ties set through two 30 mm antique brass eyelets at the top of the waist and secured with two rows of stitching \u00b7 Waist ties edgestitched both sides \u00b7 No pocket \u00b7 Tibard printed care label, no logo",
+   "lectra": "OHAP0777, variant OHAP0777 \u2014 cut even number bundles and no piece outs: the right and wrong sides of the fabric are very similar",
+   "variant": "OHAP0777",
+   "chart": "AP0777128-MEAS",
+   "fabrics": [
+    [
+     "Charcoal Panama 260 gsm PC260-520-L--160, 65% recycled polyester / 35% organic cotton (Carringtons) \u2014 rating 0.40 m",
+     "PCECO520128",
+     "B3",
+     0.4,
+     3.87
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD \u2014 COATS EPIC 80'S STORM GREY 09963 \u2014 cost per metre",
+     30,
+     "CMP-THR-EP80-09963-64",
+     0.000714
+    ],
+    [
+     "Thread \u2014 contrast",
+     "THREAD \u2014 COATS EPIC 80'S MAROON 03912 \u2014 listed on the works order for contrast ties; the ties are self fabric, so most likely left over from the template",
+     0,
+     "CMP-THR-EP80-03912-05",
+     0.000714
+    ],
+    [
+     "Care label",
+     "Printed care label (at Tibard): 65% recycled polyester / 35% organic cotton \u00b7 60\u00b0 wash reduced cycle \u00b7 no bleach \u00b7 2 dot iron \u00b7 tumble dry low \u00b7 do not dry clean. Set 14 cm down from the finished right side seam as worn.",
+     1,
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Bronze large studs \u2014 male",
+     "Listed on the works order: set to the strap, 2 male and 2 female at each end, use the marker, 4 studs in all. A waist apron has no strap and the sketch shows no studs, so most likely left over from the bib apron template (AP0776128): check with the GT before setting.",
+     2,
+     "CMP-STD-PST-9B-287",
+     0.05124
+    ],
+    [
+     "Bronze large studs \u2014 female",
+     "The female part of the studs listed above, 2 per apron if they are set.",
+     2,
+     "CMP-STD-SOC-9B-287",
+     0.03553
+    ],
+    [
+     "Eyelet \u2014 antique brass 30 mm",
+     "30 mm eyelet and ring, antique brass (30 mm E/R AB), 2 per apron. Set to the top of the waist: centre of the eyelet 2.5 cm down from the top edge and 2.5 cm in from each side of the apron.",
+     2,
+     "CMP-30ED-28-931",
+     0.14985
+    ],
+    [
+     "Eyelet ring \u2014 antique brass 30 mm",
+     "The ring for the 30 mm eyelet, 2 per apron.",
+     2,
+     "CMP-30RD-28-931",
+     0.1321308
+    ]
+   ],
+   "mfg": [
+    "Sides and hem: double turned and topstitched to finish 12 mm from the edge. Insert the label to the right side seam as worn, 14 cm down from the finished top edge.",
+    "Top hem: double turn 1 cm + 5 cm and stitch down.",
+    "Make the waist ties: bag out both ends and edgestitch both long edges.",
+    "After the eyelets are set (finishing), set each waist tie through its eyelet and secure with two rows of stitching."
+   ],
+   "fin": [
+    "Set the eyelets to the top of the waist, one each side: centre of the eyelet 2.5 cm in from the side seam and 2.5 cm down from the top edge. The apron then goes back to the machinist for the waist ties to be set through the eyelets.",
+    "Check, trim and press.",
+    "Fold and set into a bag. Product sticker set to the bottom right hand corner."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance \u00b1 1.5 cm",
+   "oneSize": true,
+   "customer": "Gaucho",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order AP0777128 for Gaucho, Tibard (JH created 5/9/23; created for bulk and amended to a Tibard product JH 2/10/23; YL 13/8/24 added the cutting note: cut even number bundles and no piece outs, the fabric's right and wrong sides are very similar). The waist apron version of the AP0776128 bib apron: the ties are set through the eyelets after finishing, so the apron goes back to the machinist once the eyelets are in. Rating 0.40 m on the sheet and in All Costings; no lay plan marker for OHAP0777, so the PM can set the lay. The maroon contrast thread and the bronze studs are listed on the sheet with no rating, left from the bib apron template: the ties are self fabric and a waist apron has no strap. The sheet's sketch of the apron is in works-orders/AP0777128-Gaucho.xlsx."
+  }
+ ],
+ "charts": {
+  "AP0777128-MEAS": [
+   [
+    "Width of skirt",
+    "70 cm"
+   ],
+   [
+    "Length from waist to hem",
+    "50 cm"
+   ],
+   [
+    "Length of side seam",
+    "50 cm"
+   ],
+   [
+    "Waist ties",
+    "2.5 cm x 98 cm"
+   ]
+  ]
+ },
+ "chartCols": {
+  "AP0777128-MEAS": [
+   "Measurement",
+   "Value"
+  ]
+ }
+}
