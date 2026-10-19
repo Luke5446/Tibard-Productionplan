@@ -150,6 +150,14 @@ every live sales order line for a stock-held code.
   and how many more), on the panel, as a **Sales orders** row at the top of
   the printed works order with this one's in bold, and in the On SOP cell's
   hover. A later paste moves the dates and drops despatched lines.
+- **The pop-out behind On SOP** (Luke, 19 Oct 2026): a click on the row, or
+  on its On SOP figure, opens the Stock Runway pop-out with a **Sales orders
+  on SOP** table above the runway: every open line for the code, oldest
+  promised first, with the sales order, the customer and account, their
+  order number, the outstanding quantity, the ordered and promised dates (a
+  promised date that has passed in red) and who covers it - so the customer
+  and the due dates are there without going back to Sage. A code on SOP
+  with no SOPDemand paste says to paste the sheet.
 
 ## Make for 4 weeks or 12 weeks
 

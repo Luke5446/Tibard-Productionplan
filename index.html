@@ -963,7 +963,7 @@ function demandRecalc(){
     // make is for its own order and takes none of these
     var wos=[]; WOs.forEach(function(w,i){ if(w.sm) return; w.items.forEach(function(it){ if(it.code===code && it.qty>0) wos.push({w:w, it:it, left:it.qty, i:i}); }); });
     wos.sort(function(a,b){ var ca=a.w.createdAt||'', cb=b.w.createdAt||''; return ca<cb?-1:ca>cb?1:a.i-b.i; });
-    var all=lines.map(function(l){ return {k:l.k, so:l.so, co:l.co, qty:l.qty, due:l.due, cust:l.cust, custOrder:l.custOrder, ic:l.ic, by:[]}; });
+    var all=lines.map(function(l){ return {k:l.k, so:l.so, co:l.co, qty:l.qty, due:l.due, ordered:l.ordered, cust:l.cust, custOrder:l.custOrder, acct:l.acct, ic:l.ic, by:[]}; });
     var wi=0;
     all.forEach(function(a){
       var need=a.qty;
@@ -1002,6 +1002,38 @@ function demandModalH(wo){
       +it.sop.all.map(function(a){ var mine=a.by.some(function(b){ return b.who===wo.ref; }); return '<li'+(mine?' style="font-weight:700"':' style="color:#4b5563"')+'>'+esc(demandLineText(a, wo.ref))+'</li>'; }).join('')+'</ul></div>';
   });
   return h;
+}
+// On the Stock Runway pop-out (a click on the row or its On SOP figure):
+// every open sales order behind the On SOP figure, oldest promised first,
+// with the customer, their order number, the dates and who covers it -
+// so the PM need not go back to Sage for them (Luke, 19 Oct 2026)
+function demandRunwayH(r){
+  var all=r.sopLines||[];
+  if(!all.length){
+    if(!(r.onSOP>0)) return '';
+    return '<div id="rwSop" style="font-size:11px;color:#6b7280;margin-bottom:10px">&#128203; On SOP <strong>'+r.onSOP.toLocaleString()+'</strong> &middot; '
+      +(sopDemand.lines&&sopDemand.lines.length?'no open sales order line for this code on the last SOPDemand paste':'paste the SOPDemand sheet to see the sales orders, their customers and promised dates here')+'</div>';
+  }
+  var tot=all.reduce(function(t,a){ return t+a.qty; },0);
+  var who=function(a){ return a.by.map(function(b){ return b.who==='stock' ? Math.round(b.qty)+' from stock' : b.who==='short' ? '<span style="color:#b91c1c;font-weight:600">'+Math.round(b.qty)+' not covered</span>' : Math.round(b.qty)+' on '+esc(b.who); }).join(', '); };
+  return '<div id="rwSop" style="margin-bottom:12px">'
+    +'<div style="font-size:12px;font-weight:700;color:#0369a1;margin-bottom:4px">&#128203; Sales orders on SOP &middot; '+all.length+' line'+(all.length===1?'':'s')+' &middot; '+Math.round(tot).toLocaleString()+' outstanding'
+    +(sopDemand.pastedAt?' <span style="font-weight:400;color:#6b7280">(SOPDemand pasted '+esc(new Date(sopDemand.pastedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}))+')</span>':'')+'</div>'
+    +'<div style="overflow-x:auto"><table class="main" style="min-width:auto"><thead><tr>'
+    +'<th style="text-align:left">Sales order</th><th style="text-align:left">Customer</th><th style="text-align:left">Their order no</th>'
+    +'<th style="text-align:right">Outstanding</th><th style="text-align:left">Ordered</th><th style="text-align:left">Promised</th><th style="text-align:left">Covered by</th></tr></thead><tbody>'
+    +all.map(function(a){
+      var late=a.due && a.due<d2s(now());
+      return '<tr>'
+        +'<td style="font-weight:600">'+esc(a.so)+(a.co==='OLIVER HARVEY'?' <span style="font-size:10px;color:#6b7280">(OH)</span>':'')+(a.ic?' <span class="sm-tag" style="font-size:9px;padding:0 5px" title="Intercompany">IC</span>':'')+'</td>'
+        +'<td>'+esc(a.cust||'')+(a.acct?' <span style="font-size:10px;color:#6b7280">'+esc(a.acct)+'</span>':'')+'</td>'
+        +'<td>'+(a.custOrder?esc(a.custOrder):dash())+'</td>'
+        +'<td style="text-align:right;font-weight:600">'+Math.round(a.qty).toLocaleString()+'</td>'
+        +'<td>'+(a.ordered?fmtD(a.ordered):dash())+'</td>'
+        +'<td style="font-weight:600;color:'+(late?'#b91c1c':'#111827')+'"'+(late?' title="Promised date has passed"':'')+'>'+(a.due?fmtD(a.due):'?')+'</td>'
+        +'<td style="font-size:11px">'+who(a)+'</td>'
+        +'</tr>'; }).join('')
+    +'</tbody></table></div></div>';
 }
 // On the printed works order: a row at the top, every open order, this one's in bold
 function demandPrintRows(ref, code, e){
@@ -2559,7 +2591,7 @@ function rowHTML(r){
     +'<input type="text" class="wop-input" id="wop-'+id+'" value="'+r.actWop+'" onclick="event.stopPropagation()" onchange="event.stopPropagation();setWop(\''+esc(r.code)+'\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()">'
     +'<button class="inc-btn" title="+1" onclick="event.stopPropagation();adjWop(\''+esc(r.code)+'\',1)">+</button>'
     +'</div>';
-  var sopH=r.onSOP>0?'<span'+(r.sopLines&&r.sopLines.length?' title="'+esc(r.sopLines.map(function(a){ return demandLineText(a, ''); }).join('\n'))+'" style="font-weight:600;cursor:help;text-decoration:underline dotted"':' style="font-weight:600"')+'>'+r.onSOP.toLocaleString()+'</span>':dash();
+  var sopH=r.onSOP>0?'<span'+(r.sopLines&&r.sopLines.length?' title="'+esc(r.sopLines.map(function(a){ return demandLineText(a, ''); }).join('\n'))+'" style="font-weight:600;cursor:pointer;text-decoration:underline dotted"':' style="font-weight:600"')+'>'+r.onSOP.toLocaleString()+'</span>':dash();
   // Free stock: in stock less on SOP, plus the pipeline, plus what is on a
   // live works order - in blue when a works order is counted, so a healthy
   // figure that leans on work not yet made is visible as such; red when short
@@ -2669,6 +2701,7 @@ function openRWModal(code){
     +(r.onPOP>0?' &nbsp;|&nbsp; On POP: <strong>'+r.onPOP.toLocaleString()+'</strong>':'')
     +(conts.length?' &nbsp;|&nbsp; <span style="color:#1e40af">&#128230; '+conts.map(function(c){ return esc(c.ref)+' '+Math.round(c.qty).toLocaleString()+' lands '+new Date(c.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}); }).join(', ')+'</span>':'')
     +'</div>';
+  html+=demandRunwayH(r);
   html+='<div style="overflow-x:auto"><table class="main" style="min-width:auto"><thead><tr>'
     +'<th style="text-align:left">Week</th><th style="text-align:left">Date</th><th style="text-align:right">Opening</th>'
     +'<th style="text-align:left">WO completes / container lands</th><th style="text-align:right">Used</th><th style="text-align:right">Closing</th><th style="text-align:right">Days cover</th></tr></thead><tbody>';
