@@ -39,7 +39,12 @@ const dem=[
  });
  // a code with nothing on SOP: no table
  const s2=await p.evaluate(()=>{ openRWModal('HT0003'); const t=!!document.getElementById('rwSop'); document.getElementById('rwModal').classList.remove('open'); return t; });
- const out={s0,s1,s2,errs};
+ // a viewer loading the published data.json gets the lines too (they were published, but never read back)
+ const pub=await p.evaluate(()=>publishState());
+ await p.route('**/data.json*', r=>r.fulfill({status:200,contentType:'application/json',body:pub}));
+ await p.goto(url); await p.waitForTimeout(600);
+ const s3=await p.evaluate(()=>{ openRWModal('OHAPP0597224DEN'); const trs=[...document.querySelectorAll('#rwSop tbody tr')].map(tr=>tr.children[1].textContent.replace(/\s+/g,' ').trim()); document.getElementById('rwModal').classList.remove('open'); return {demand:sopDemand.lines.length, trs}; });
+ const out={s0,s1,s2,s3,errs};
  console.log(JSON.stringify(out,null,1));
  const pass = /On SOP 32 · paste the SOPDemand sheet/.test(s0)
    && s1.open && s1.cursor==='pointer'
@@ -50,6 +55,8 @@ const dem=[
    && s1.trs[1].join('|')==='116400|Knoops KNO001|PO 77|12|01 Oct 2026|28 Oct 2026|10 from stock, 2 not covered'
    && s1.trs[2].join('|')==='OH4455 (OH) IC|Rick Stein RIC001|RS-9|10|05 Oct 2026|05 Nov 2026|10 not covered'
    && s1.late[0]==='rgb(185, 28, 28)' && s1.late[1]==='rgb(17, 24, 39)'
-   && s1.runway && s2===false && errs.length===0;
+   && s1.runway && s2===false
+   && s3.demand===3 && s3.trs.join('|')==='Mollies Motels MOL001|Knoops KNO001|Rick Stein RIC001'
+   && errs.length===0;
  console.log(pass?'PASS':'FAIL'); await b.close(); process.exit(pass?0:1);
 })();
