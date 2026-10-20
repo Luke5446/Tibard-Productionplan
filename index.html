@@ -2306,6 +2306,7 @@ function undoCompleted(idx){ if(!IS_EDITOR) return;
   // The line's fabric write-off state travels with it, so completing it again
   // cannot produce a second write-off for cloth already booked out of Sage.
   var back={code:c.code, qty:c.qty+(c.waste||0), metresActual:(c.fabric&&c.fabric.actual!=null)?c.fabric.actual:undefined, cutShare:(c.fabric&&c.fabric.cutShare)?true:undefined, fabricCode:(c.fabric&&c.fabric.edited)?c.fabric.code:undefined,
+            extraFabricCodes:(function(){ var m={}; ((c.fabric&&c.fabric.extras)||[]).forEach(function(x){ if(x.edited && x.base) m[x.base]=x.code; }); return Object.keys(m).length ? m : undefined; })(),
             fabricExportedAt:c.fabricExportedAt, fabricExportFile:c.fabricExportFile, fabricDismissedAt:c.fabricDismissedAt};
   if(existing){
     var it=existing.items.find(function(x){ return x.code===c.code; });
@@ -5491,6 +5492,11 @@ function fabricOverrideClear(product){ if(!IS_EDITOR) return; delete fabricOverr
 function fabricUsageFor(code){
   var c=(code||'').trim().toUpperCase(), u=fabricUsageBase(c), o=fabricOverrides[c];
   if(u && o && o!==(u.code||'').toUpperCase()) u=Object.assign({}, u, {code:o, name:fabricNameFor(o), source:(u.source||'')+' · corrected', corrected:true});
+  // a second fabric (the contrast, a mesh) is corrected on its own, keyed
+  // PRODUCT>ITS CODE, so changing it never touches the main cloth.
+  // base keeps the usage table's code, which the line's own edits key on.
+  if(u && u.extras && u.extras.length) u=Object.assign({}, u, {extras:u.extras.map(function(x){ var b=(x.code||'').toUpperCase(), xo=b ? fabricOverrides[c+'>'+b] : null;
+    return Object.assign({}, x, {base:b}, (xo && xo!==b) ? {code:xo, name:fabricNameFor(xo), corrected:true} : {}); })});
   return u;
 }
 // Mesh per garment is rounded UP to the 0.01 m for the write-off, to include
@@ -5607,8 +5613,30 @@ function setFabricCode(i, code){ if(!IS_EDITOR) return; var wo=WOs[i]; if(!wo) r
   fabricPick(it.fabricCode||'', code+' on '+wo.ref, function(v, all){
     if(v) it.fabricCode=v; else delete it.fabricCode;
     if(all) fabricOverrideSet(code, v);   // and every works order of this product from now on
-    saveState(); refreshWOModal(); renderWOCards(); if(document.getElementById('fabView') && !document.getElementById('fabView').classList.contains('hidden')) fabRender();
-    var tr=document.getElementById('tabCutRev'); if(tr && tr.classList.contains('on')) cutRevRender(); }, code); }
+    fabEditAfter(); }, code); }
+function fabEditAfter(){ saveState(); refreshWOModal(); renderWOCards(); if(document.getElementById('fabView') && !document.getElementById('fabView').classList.contains('hidden')) fabRender();
+  var tr=document.getElementById('tabCutRev'); if(tr && tr.classList.contains('on')) cutRevRender(); }
+// A second fabric - the contrast ties, a mesh - changed on its own (Luke, 20
+// Oct 2026: S-OH117087-Pt2's contrast CO5222 to CO5222ECO went onto the main
+// cloth). base is the usage table's code for it; the line keeps
+// it.extraFabricCodes[base], the product PRODUCT>base in fabricOverrides.
+function setExtraFabricCode(i, code, base){ if(!IS_EDITOR) return; var wo=WOs[i]; if(!wo) return; var it=wo.items.find(function(x){ return x.code===code; }); if(!it) return;
+  base=(base||'').toUpperCase(); var u=fabricUsageFor(code), x=u ? (u.extras||[]).filter(function(y){ return y.base===base; })[0] : null; if(!x) return;
+  fabricPick((it.extraFabricCodes && it.extraFabricCodes[base]) || x.code, 'the second fabric '+base+' of '+code+' on '+wo.ref, function(v, all){
+    if(v===base) v='';
+    it.extraFabricCodes=it.extraFabricCodes||{}; if(v) it.extraFabricCodes[base]=v; else delete it.extraFabricCodes[base];
+    if(!Object.keys(it.extraFabricCodes).length) delete it.extraFabricCodes;
+    if(all) fabricOverrideSet(code+'>'+base, v);   // and every works order of this product from now on
+    fabEditAfter(); }, code); }
+function fabSetExtraFabric(idx, xi){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c || fabState(c)!=='open') return;
+  var x=c.fabric && c.fabric.extras && c.fabric.extras[xi]; if(!x) return; var base=(x.base||x.code||'').toUpperCase(); if(!base) return;
+  fabricPick(x.code||'', 'the second fabric '+base+' of '+c.code+' on '+c.ref, function(v, all){
+    if(v===base) v='';
+    if(all) fabricOverrideSet(c.code+'>'+base, v);   // and every works order of this product from now on
+    if(!v) v=base;
+    x.code=v; x.name=fabricNameFor(v)||x.name; x.price=fabPriceFor(v);
+    if(v!==base){ x.base=base; x.edited=true; } else { delete x.base; delete x.edited; }
+    saveState(); fabRender(); }, c.code); }
 function fabSetFabric(idx){ if(!IS_EDITOR) return; var c=completedWOs[idx]; if(!c || fabState(c)!=='open') return;
   fabricPick(c.fabric&&c.fabric.code||'', c.code+' on '+c.ref, function(v, all){
     if(all) fabricOverrideSet(c.code, v);   // and every works order of this product from now on
@@ -5648,7 +5676,8 @@ function fabricRecordFor(it, wo){
            price:code ? fabPriceFor(code) : null,
            // secondary fabrics - mesh inserts - at standard, unless the
            // cutting room adjusted that line on the log
-           extras:(u&&u.extras&&u.extras.length) ? u.extras.map(function(x){ var xc=wo ? cutFigureFor(wo.ref, it.code, x.code) : null; return {code:x.code, name:x.name, perGarment:x.metres, std:fabricStd(x.metres, it.qty, x.lay, it.code), actual:(xc&&xc.adjusted)?xc.metres:undefined, price:fabPriceFor(x.code)}; }) : undefined };
+           extras:(u&&u.extras&&u.extras.length) ? u.extras.map(function(x){ var xe=x.base && it.extraFabricCodes ? it.extraFabricCodes[x.base] : null, xcode=xe||x.code;
+             var xc=wo ? cutFigureFor(wo.ref, it.code, xcode) : null; return {code:xcode, name:xe ? fabricNameFor(xe) : x.name, base:(xcode!==x.base && x.base) ? x.base : undefined, edited:xe ? true : undefined, perGarment:x.metres, std:fabricStd(x.metres, it.qty, x.lay, it.code), actual:(xc&&xc.adjusted)?xc.metres:undefined, price:fabPriceFor(xcode)}; }) : undefined };
 }
 // The cutting room's number on the works order panel. Pre-filled with the
 // standard so the common case is to leave it alone; a typed figure is the
@@ -5659,7 +5688,9 @@ function fabricCellFor(i, it){
   var lf=cutLayFor(it.code), layLink=IS_EDITOR ? ' <a href="#" onclick="layOverrideSet(\''+esc(it.code).replace(/'/g,"\\'")+'\');return false" title="Set the garments per ply for this product: every works order of it from now on">&#9998; lay</a>' : '';
   var layTxt=lf.hand ? ' &middot; cut by hand, no wastage' : lf.src==='set in the planner' ? ' &middot; <b>'+lf.lay+' per ply</b> (set here)'+layLink : (!lf.src ? ' &middot; <span style="color:#b45309" title="no lay plan: taken as one garment per ply">no lay plan</span>'+layLink : '');
   var hint=u ? '<div style="font-size:10px;color:#6b7280">std '+std+' m'+(plies?' <span title="'+plies+' pl'+(plies===1?'y':'ies')+' x 3 cm wastage, in the standard">(incl. wastage)</span>':'')+' &middot; '+(it.fabricCode ? '<b title="changed from '+esc(u.code||'?')+'">'+esc(it.fabricCode)+'</b>' : esc(u.code||'?'))
-               +(u.extras&&u.extras.length ? u.extras.map(function(x){ return ' + '+fabricStd(x.metres, it.qty, x.lay, it.code)+' m '+esc(x.code||'mesh'); }).join('') : '')
+               +(u.extras&&u.extras.length ? u.extras.map(function(x){ var xe=x.base && it.extraFabricCodes ? it.extraFabricCodes[x.base] : null;
+                   return ' + '+fabricStd(x.metres, it.qty, x.lay, it.code)+' m '+(xe ? '<b title="changed from '+esc(x.code)+'">'+esc(xe)+'</b>' : esc(x.code||'mesh'))
+                     +(IS_EDITOR && x.base ? ' <a href="#" onclick="setExtraFabricCode('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\',\''+esc(x.base).replace(/'/g,"\\'")+'\');return false" title="Put this second fabric (the contrast) on a different cloth - the main fabric stays">&#9998;</a>' : ''); }).join('') : '')
                +(/^marker/.test(u.source) ? ' <span title="per-size marker from the lay plan sheet">&#9998;</span>' : '')+editLink+layTxt+'</div>'
              : '<div style="font-size:10px;color:#b45309">'+(it.fabricCode ? 'no usage on file &middot; cloth <b>'+esc(it.fabricCode)+'</b>' : 'no usage on file')+editLink
                +(IS_EDITOR ? (it.metresActual!=null ? ' &middot; <span style="color:#065f46">'+it.metresActual+' m typed: the cutting room cuts to this</span>' : ' &middot; type the metres for the line: the cutting room cuts to them') : '')+'</div>';
@@ -6546,7 +6577,7 @@ function fabStockHtml(q){
     +'</div>';
   var ov=Object.keys(fabricOverrides||{}).sort();
   if(ov.length) h+='<div style="font-size:11px;color:#4b5563;margin:2px 0 8px"><b>Corrected fabrics</b> <span style="color:#6b7280">- every works order of the product uses this cloth; goes out with publish</span>: '
-    +ov.map(function(pc){ var u=fabricUsageBase(pc); return '<span style="white-space:nowrap;margin-right:10px"><span style="font-family:monospace">'+esc(pc)+'</span> &rarr; <b style="font-family:monospace">'+esc(fabricOverrides[pc])+'</b>'+(u&&u.code?' <span style="color:#9ca3af">(was '+esc(u.code)+')</span>':'')+(ed?' <a href="#" onclick="fabricOverrideClear(\''+esc(pc)+'\');return false" title="back to the usage table">remove</a>':'')+'</span>'; }).join('')+'</div>';
+    +ov.map(function(pc){ var xp=pc.split('>'), u=xp.length>1 ? {code:xp[1]} : fabricUsageBase(pc); return '<span style="white-space:nowrap;margin-right:10px"><span style="font-family:monospace">'+esc(xp[0])+'</span>'+(xp.length>1?' second fabric':'')+' &rarr; <b style="font-family:monospace">'+esc(fabricOverrides[pc])+'</b>'+(u&&u.code?' <span style="color:#9ca3af">(was '+esc(u.code)+')</span>':'')+(ed?' <a href="#" onclick="fabricOverrideClear(\''+esc(pc)+'\');return false" title="back to the usage table">remove</a>':'')+'</span>'; }).join('')+'</div>';
   var lo=Object.keys(layOverrides||{}).sort();
   if(lo.length) h+='<div style="font-size:11px;color:#4b5563;margin:2px 0 8px"><b>Lays set in the planner</b> <span style="color:#6b7280">- garments per ply for products the cutting room has no lay plan for; every works order of the product uses it; goes out with publish</span>: '
     +lo.map(function(pc){ return '<span style="white-space:nowrap;margin-right:10px"><span style="font-family:monospace">'+esc(pc)+'</span> &rarr; <b>'+layOverrides[pc].lay+' per ply</b>'+(ed?' <a href="#" onclick="layOverrideClear(\''+esc(pc)+'\');return false" title="back to one garment per ply">remove</a>':'')+'</span>'; }).join('')+'</div>';
@@ -6668,7 +6699,7 @@ function fabLine(c, idx){
     var p=(x.price!=null)?x.price:fabPriceFor(x.code);
     var xm=(x.actual!=null)?x.actual:x.std;   // the sheet's figure where the catch-up set one
     if(xm!=null){ metres=(metres||0)+xm; if(p!=null) cost+=xm*p; else priced=false; }
-    return {code:x.code||'', name:x.name||'', metres:xm, std:x.std, actual:x.actual, price:p};
+    return {code:x.code||'', name:x.name||'', metres:xm, std:x.std, actual:x.actual, price:p, edited:!!x.edited};
   });
   if(main==null && !extras.length) cost=null;
   var varPct=(f && f.actual!=null && f.std>0) ? 100*(f.actual-f.std)/f.std : null;
@@ -6834,7 +6865,8 @@ function fabRender(){
     }
     var fabEdit=(ed && l.state==='open') ? '<div class="sm-sub"><a href="#" onclick="fabSetFabric('+l.idx+');return false" title="Put this line on a different cloth">edit fabric</a></div>' : '';
     var fab=l.has ? '<span style="font-family:monospace;font-size:11px">'+esc(l.fabCode)+'</span>'+(l.c.fabric&&l.c.fabric.edited?' <span title="changed by hand">&#9998;</span>':'')+(l.fabName?'<div class="sm-sub" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(l.fabName)+'">'+esc(l.fabName)+'</div>':'')
-                     +l.extras.map(function(x){ return '<div class="sm-sub">+ '+fabM(x.metres)+' m <span style="font-family:monospace">'+esc(x.code||'mesh')+'</span></div>'; }).join('')+fabEdit
+                     +l.extras.map(function(x, xi){ return '<div class="sm-sub">+ '+fabM(x.metres)+' m <span style="font-family:monospace">'+esc(x.code||'mesh')+'</span>'+(x.edited?' <span title="changed by hand">&#9998;</span>':'')
+                        +((ed && l.state==='open' && x.code) ? ' <a href="#" onclick="fabSetExtraFabric('+l.idx+','+xi+');return false" title="Put this second fabric (the contrast) on a different cloth - the main fabric stays">edit</a>' : '')+'</div>'; }).join('')+fabEdit
                    : '<span class="fab-st nofab">no usage on file</span><div class="sm-sub">add the code to All Costings, or type the metres on the works order before completing</div>'+fabEdit;
     var actual=(ed && l.state==='open' && l.has) ? '<input type="number" step="0.01" min="0" value="'+(l.actual!=null?l.actual:'')+'" placeholder="'+(l.std!=null?l.std:'')+'" onchange="fabSetActual('+l.idx+',this.value)" style="width:70px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px">'
                  : (l.actual!=null ? fabM(l.actual) : '<span style="color:#9ca3af">&mdash;</span>');
