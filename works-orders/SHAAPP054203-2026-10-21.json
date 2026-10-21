@@ -1,0 +1,95 @@
+{
+ "styles": [
+  {
+   "code": "SHAAPP054203",
+   "name": "Black 100% polyester bib apron with non tangle waist ties and a self fabric neck strap \u2014 Tibard, Shake Shack",
+   "desc": "BIB APRON \u00b7 Self fabric neck strap \u00b7 Black non tangle tape waist ties \u00b7 No pocket \u00b7 Tibard printed care label, no logo \u00b7 No embroidery",
+   "lectra": "SHAAP0542 \u2014 the sheet names the pattern SHAAP0542 at A6 and SHAPP0542 at B18; the code took its extra P on 15/3/21",
+   "variant": "SHAAP0542",
+   "chart": "SHAAPP054203-MEAS",
+   "fabrics": [
+    [
+     "Black Plaza 100% polyester 200 gsm, 1.5 m width (Rubitex) \u2014 rating 0.45 m, the same as All Costings; the sheet gives the location as B2, Sage holds the cloth at B6",
+     "POPLAZA03",
+     "B6",
+     0.45,
+     1.6
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD \u2014 COATS EPIC 80'S BLACK 09700 \u2014 cost per metre",
+     70,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Care label",
+     "Tibard printed care label, set to the right side seam as worn, 4 cm down from the finished top of the side seam: 100% polyester \u00b7 50\u00b0 wash short cycle \u00b7 no bleach \u00b7 1 dot iron \u00b7 tumble dry \u00b7 P dry clean. Printed at Tibard on the 25 mm nylon label tape.",
+     0.05,
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Waist ties",
+     "Black non tangle tape, cut 100 cm, two per apron. Sage holds black non tangle tape only as the OH-branded CMP-OH-NTT-25-03: use that code if it is the same tape.",
+     2,
+     "",
+     null
+    ]
+   ],
+   "mfg": [
+    "Make the neck strap: fold in half and enclose the raw edges. Edgestitch the long edge to close the seam, and edgestitch 2 mm neatly along the folded side of the neck strap.",
+    "Set the bib facing and insert the neck strap.",
+    "Bib facing: fold in 10 mm to neaten the lower edge. Edgestitch the lower edge of the facing, which forms a 3 cm topstitch on the front.",
+    "Top of the bib: 2 mm topstitched neatly.",
+    "Armholes: double turned and topstitched to finish 1 cm from the edge. Neaten the armholes before the side seams are neatened.",
+    "Hem: double turned and topstitched to finish 12 mm from the edge.",
+    "Sides: double turned and topstitched to finish 12 mm from the edge. Insert the waist ties. Insert the care label to the right side as worn, 4 cm down from the top edge.",
+    "Fold each waist tie back on itself to fall away from the garment and edgestitch down to the width of the strap to secure."
+   ],
+   "fin": [
+    "Bartack the base of each neck strap: horizontal, along the stitch line on the bib (2).",
+    "Bartack each waist tie: vertical, on the side seam stitches (2). 4 bartacks in all.",
+    "Check, trim and fold."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Width \u00b1 1 cm \u00b7 Across bib \u00b1 0.5 cm \u00b7 Length \u00b1 1 cm \u00b7 Neck strap \u00b1 1 cm",
+   "oneSize": true,
+   "customer": "Shake Shack",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Stock works order for SHAAPP054203, the Shake Shack black 100% polyester bib apron (original sheet Jennifer 12/6/13; updated Yvonne 10/12/20; YL added the extra P to the code and locked the sheet 15/3/21; processed by Gail). No embroidery and no logo: a plain Tibard-labelled apron. Rating 0.45 m on POPLAZA03, the same as All Costings. The black non tangle tape has no plain Sage code, so the ties are left uncoded. A sample is available. The sheet is in works-orders/SHAAPP054203-ShakeShack.xlsx."
+  }
+ ],
+ "charts": {
+  "SHAAPP054203-MEAS": [
+   [
+    "Width across skirt",
+    "71 cm (\u00b1 1)"
+   ],
+   [
+    "Across bib",
+    "21.5 cm (\u00b1 0.5)"
+   ],
+   [
+    "Length from bib to hem",
+    "80 cm (\u00b1 1)"
+   ],
+   [
+    "Neck strap length",
+    "61 cm (\u00b1 1)"
+   ]
+  ]
+ },
+ "chartCols": {
+  "SHAAPP054203-MEAS": [
+   "Measurement",
+   "Value"
+  ]
+ }
+}

@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('336 styles in the master', r.count===336, r.count);
+ ck('337 styles in the master', r.count===337, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -140,6 +140,14 @@ const path = require('path');
  ck('Tibard charcoal waist apron AP0777128: PCECO520128 0.4 m from All Costings (one per ply, no lay plan), the maroon contrast with no rating, grey thread at 30, label tape, studs, two eyelets and rings coded, no branding, a stock style', r9==='AP0777128||onesize|OHAP0777|PCECO520128:B3:0.4|PCECO520128/0.4/All Costings/1|CMP-THR-EP80-09963-64+CMP-THR-EP80-03912-05+CMP-LBL-NYL-25-01+CMP-STD-PST-9B-287+CMP-STD-SOC-9B-287+CMP-30ED-28-931+CMP-30RD-28-931|30|2|APW|4/3|4||nologo|noplace|stock|Gaucho|', r9);
  d=await printOf('AP0777128',20);
  ck('Gaucho waist print: OHAP0777, the eyelet code, the 4-row chart, the 98 cm ties, no branding band', d.text.includes('OHAP0777')&&d.text.includes('CMP-30ED-28-931')&&d.text.includes('2.5 cm x 98 cm')&&d.text.includes('Length from waist to hem')&&/PCECO520128 B3 0\.4/.test(d.text)&&d.text.includes('even number bundles')&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
+
+ // ── the Shake Shack black polyester bib apron of 21 Oct 2026 ──
+ const r10=await p.evaluate(()=>{ const h=styleForCode('SHAAPP054203'), s=h&&h.style, u=fabricUsageFor('SHAAPP054203'); if(!s) return null;
+   const thr=s.trims.filter(t=>/^Thread$/.test(t[0]))[0];
+   return [s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source,u.lay].join('/'), s.trims.map(t=>t[3]).join('+'), thr&&thr[2], s.trims[2][2], garmentKind('SHAAPP054203',s), s.mfg.length+'/'+s.fin.length, (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, s.logoImg?'logo':'nologo', smIsStockStyle('SHAAPP054203')?'stock':'own', s.customer, cutLayFor('SHAAPP054203').src].join('|'); });
+ ck('Shake Shack bib apron SHAAPP054203: POPLAZA03 at B6 0.45 m, All Costings agrees (one per ply, no lay plan), black thread at 70, label tape coded, two uncoded tape ties, no branding, a stock style', r10==='SHAAPP054203||onesize|SHAAP0542|POPLAZA03:B6:0.45|POPLAZA03/0.45/All Costings/1|CMP-THR-EP80-09700-03+CMP-LBL-NYL-25-01+|70|2|APB|8/3|4||nologo|stock|Shake Shack|', r10);
+ d=await printOf('SHAAPP054203',80);
+ ck('Shake Shack bib print: SHAAP0542, the black thread code, the 4-row chart, the 100 cm ties, no branding band', d.text.includes('SHAAP0542')&&d.text.includes('CMP-THR-EP80-09700-03')&&d.text.includes('21.5 cm (± 0.5)')&&d.text.includes('cut 100 cm')&&/POPLAZA03 B6 0\.45/.test(d.text)&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
