@@ -147,20 +147,28 @@ with the same heading wins on the apron tabs.
 
 ### On the printed works order
 
-The LECTRA PATTERN band prints the variant, the default marker with its
-length and lay ("OH7006 — 2.36 m, 2 per lay (1.18 m per garment)"), an
-alternative default where the sheet marks one, the lay plan for the quantity
-(plies of the two-up marker plus a single for the remainder, with the 3 cm
-of wastage the cutting room adds to every ply: "5 plies of 2.36 m (OH7006)
-— total 11.80 m, plus 3 cm wastage per ply = 11.95 m to cut", from the GT,
-14 Oct 2026; the standard metres costed and written off are not changed by
-it), the mesh
-marker, interlining with the sheet's own lay wording, any other markers with
-their notes (NARROW MARKERS, damaged cloth), and the blockout fronts. For the
-Stratford the blockout line carries the cutting room's wording, **Blocks -
-Face Up, left block is bigger than the right**. A works order whose own data
-carries a marker (set in the costing app) keeps it and only gains the extra
-rows.
+The LECTRA PATTERN band prints the variant, then every marker as the same
+four rows (Luke, 21 Oct 2026): **Main marker** (with the sheet's width and
+note), **Main marker length** (with the metres per garment), **Lay qty** and
+the **Lay plan** for the quantity (plies of the two-up marker plus a single
+for the remainder, with the 3 cm of wastage the cutting room adds to every
+ply: "5 plies of 2.36 m (OH7006) — total 11.80 m, plus 3 cm wastage per ply
+= 11.95 m to cut", from the GT, 14 Oct 2026; the standard metres costed and
+written off are not changed by it). A mesh marker repeats the four rows as
+**Mesh marker / Mesh marker length / Mesh lay qty / Mesh lay plan**, and a
+contrast fabric as **Contrast marker** (with its Sage fabric code) **/
+Contrast marker length / Contrast lay qty / Contrast lay plan**, each lay
+plan a straight plies × length with the 3 cm per ply. Then come an
+alternative default marker where the sheet marks one, interlining with the
+sheet's own lay wording, any other markers with their notes (NARROW
+MARKERS, damaged cloth), and the blockout fronts. For the Stratford the
+blockout line carries the cutting room's wording, **Blocks - Face Up, left
+block is bigger than the right**. A works order whose own data carries a
+marker (set in the costing app or the works order editor) keeps it, with
+its own mesh and contrast markers, lengths and lays; where the data has
+only a mesh or contrast marker's number and the sheet lists that same
+marker, the length and lay are filled from the sheet. A row whose figure is
+not known is left out rather than printed blank.
 
 ### Refreshing after the sheets change
 
