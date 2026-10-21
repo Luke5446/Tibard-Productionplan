@@ -97,6 +97,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `OHHICAPP062703DEN-DS-2026-10-15.json` | That record for the costing app. |
 | `WAGSB077403-Wagamama.xlsx` | Stock work order 1314 for WAGSB077403, the Wagamama staff bag in black recycled polyester: quick release buckle, Wagamama jacquard webbing strap through a tri glide, pocket with a dart, front pocket with pen pocket stitch line, Wagamama tax tab (jh 2023, bulk 14/6/23; Gail, 24/9/26 for 150), both drawings included. In the app as style WAGSB077403; the sheet rates it 0.17 m, All Costings 0.20 m. |
 | `WAGSB077403-2026-10-16.json` | That record for the costing app. |
+| `SHAAPP054203-ShakeShack.xlsx` | Stock works order for SHAAPP054203, the Shake Shack black 100% polyester bib apron: pattern SHAAP0542, self fabric neck strap, black non tangle tape waist ties cut 100 cm, no pocket, Tibard printed care label, no logo or embroidery (Jennifer 2013, Yvonne 2020, extra P added to the code 2021; processed by Gail). In the app as style SHAAPP054203 on POPLAZA03 at 0.45 m, the same as All Costings. |
+| `SHAAPP054203-2026-10-21.json` | That record for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards
