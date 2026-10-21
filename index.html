@@ -1795,30 +1795,95 @@ function layPlanMarkerTxt(r){
   if(r.n) t+=' \u00b7 '+String(r.n).replace(/\s*\n\s*/g,' / ');
   return t;
 }
-// Rows for the LECTRA PATTERN table on the printed works order. When the
-// works order data already carries its own marker (set in the costing app)
-// only the extra markers are added - blockout fronts, interlining, contrast -
-// otherwise the lay plan supplies the lot: variant, default marker(s), the
-// lay plan for this quantity, mesh, and the other markers the sheet lists.
+// The four rows a marker takes on the printed works order - the number,
+// its length, the garments per lay and the lay plan for this quantity - in
+// the same shape for the main cloth, the mesh inserts and a contrast fabric
+// (Luke, 21 Oct 2026). A row whose figure is not known is left out.
+//   kind   'Main' | 'Mesh' | 'Contrast' - the row labels
+//   extra  escaped text after the number (a fabric code, the sheet's width / note)
+//   o      {planTxt: the lay plan line already worded (the sheet's two-up plus
+//          a single); wPlies: plies for the wastage line when they differ}
+function markerRows(kind, m, len, lay, qty, e, extra, o){
+  m=(m||'').trim(); o=o||{};
+  if(!m && !(len>0)) return '';
+  var main=kind==='Main', h='';
+  function row(th, td, big){ return '<tr><th>'+th+'</th><td colspan="3" style="font-weight:700'+(big?';font-size:15px':'')+'">'+td+'</td></tr>'; }
+  h+=row(kind+' marker', e(m||'—')+(extra?' <span style="font-weight:400">'+extra+'</span>':''), main);
+  if(len>0) h+=row(kind+' marker length', len+' m'+(lay>0?' <span style="font-weight:400">('+(+(len/lay).toFixed(3))+' m per garment)</span>':''));
+  if(lay>0) h+=row(main?'Lay qty':kind+' lay qty', lay+' garment'+(lay===1?'':'s')+' per lay');
+  if(len>0 && lay>0 && qty>0){
+    var plies=Math.ceil(qty/lay), total=plies*len;
+    h+=row((main?'Lay plan':kind+' lay plan')+' (qty '+qty+')', o.planTxt || (plies+' pl'+(plies===1?'y':'ies')+' of '+len+' m &mdash; total '+total.toFixed(2)+' m'+layWastageTxt(o.wPlies||plies, total)));
+  }
+  return h;
+}
+// The sheet's width and note, printed after the marker number.
+function layPlanExtraTxt(r, e){
+  var t=[]; if(r.w) t.push(e(r.w)); if(r.n) t.push(e(String(r.n).replace(/\s*\n\s*/g,' / ')));
+  return t.join(' · ');
+}
+function sameMarker(a, b){ return !!a && !!b && String(a).trim().toUpperCase()===String(b).trim().toUpperCase(); }
+// The mesh marker for the print: the works order data's own, its length and
+// lay filled from the lay plan when the data has only the number and the
+// sheet lists that same marker; otherwise the sheet's default mesh marker.
+function meshMarkerFor(st, code, e){
+  var d=null; try{ d=layPlanDefault(code); }catch(x){ d=null; }
+  var sm=d&&d.mesh;
+  if(st&&st.markerMesh){
+    var len=st.meshLen>0?st.meshLen:null, lay=st.meshLay>0?st.meshLay:null, extra='';
+    if(sm && sameMarker(sm.m, st.markerMesh)){ if(!len) len=sm.len>0?sm.len:null; if(!lay) lay=sm.lay>0?sm.lay:null; extra=layPlanExtraTxt(sm, e); }
+    return {m:st.markerMesh, len:len, lay:lay, extra:extra};
+  }
+  if(sm) return {m:sm.m, len:sm.len, lay:sm.lay, extra:layPlanExtraTxt(sm, e)};
+  return null;
+}
+// The contrast markers for the print: the works order data's own (with its
+// Sage fabric code), figures filled from the sheet the same way; otherwise
+// every contrast marker the sheet lists.
+function conMarkersFor(st, code, e){
+  var lp=null; try{ lp=layPlanFor(code); }catch(x){ lp=null; }
+  var rows=(lp&&lp.con)||[];
+  if(st&&st.markerCon){
+    var len=st.conLen>0?st.conLen:null, lay=st.conLay>0?st.conLay:null, extra=st.conFab?'('+e(st.conFab)+')':'';
+    var sr=rows.filter(function(r){ return sameMarker(r.m, st.markerCon); })[0];
+    if(sr){ if(!len) len=sr.len>0?sr.len:null; if(!lay) lay=sr.lay>0?sr.lay:null; var x=layPlanExtraTxt(sr, e); if(x) extra=(extra?extra+' ':'')+x; }
+    return [{m:st.markerCon, len:len, lay:lay, extra:extra}];
+  }
+  return rows.map(function(r){ return {m:r.m, len:r.len, lay:r.lay, extra:layPlanExtraTxt(r, e)}; });
+}
+// Rows for the LECTRA PATTERN table on the printed works order: the main
+// marker, the mesh marker and the contrast marker each as their four rows
+// (number, length, lay qty, lay plan), then the sheet's other markers. When
+// the works order data carries its own main marker (set in the costing app
+// or the works order editor) that is the main cloth; otherwise the lay plan
+// supplies it: variant, default marker(s) and the lay plan for this
+// quantity, two-up plies plus a single for the remainder.
 function layPlanRows(st, code, qty, e){
-  var d=layPlanDefault(code); if(!d) return '';
-  var lp=d.plan, h='', own=!!(st&&st.markerMain);
+  var d=null; try{ d=layPlanDefault(code); }catch(x){ d=null; }
+  var lp=d?d.plan:null, h='', own=!!(st&&st.markerMain);
   function row(th, td, bold){ return '<tr><th>'+th+'</th><td colspan="3"'+(bold?' style="font-weight:700"':'')+'>'+td+'</td></tr>'; }
-  if(!own){
+  var others=[];
+  if(own){
+    h+=markerRows('Main', st.markerMain, st.markerLen, st.layQty, qty, e, '', {wPlies:cutPliesFor(code, qty, st.layQty)});
+  } else if(lp){
     if(!(st&&st.variant) && lp.v) h+=row('Variant (cutting room)', e(lp.v), true);
-    var mains=(lp.main||[]).filter(function(r){ return r.d; }), others=(lp.main||[]).filter(function(r){ return !r.d; });
-    mains.forEach(function(r,i){ h+=row(i?'Default marker (alternative)':'Marker number (default)', '<span style="font-size:15px">'+e(r.m)+'</span>'+e(layPlanMarkerTxt(r).slice((r.m||'').length)), true); });
+    var mains=(lp.main||[]).filter(function(r){ return r.d; }); others=(lp.main||[]).filter(function(r){ return !r.d; });
+    var planTxt='';
     if(d.main && d.main.lay>0 && d.main.len>0 && qty>0){
       var lay=d.main.lay, full=Math.floor(qty/lay), rem=qty-full*lay, single=mains.filter(function(r){ return r.lay===1 && r!==d.main; })[0], parts=[];
       if(full>0) parts.push(full+' pl'+(full===1?'y':'ies')+' of '+d.main.len+' m ('+e(d.main.m)+')');
       var total=full*d.main.len;
       if(rem>0){ if(single){ parts.push(rem+' pl'+(rem===1?'y':'ies')+' of '+single.len+' m ('+e(single.m)+')'); total+=rem*single.len; } else { parts.push('1 ply of '+d.main.len+' m ('+e(d.main.m)+') for the last '+rem); total+=d.main.len; } }
-      h+=row('Lay plan (qty '+qty+')', parts.join(' + ')+' &mdash; total '+total.toFixed(2)+' m'+layWastageTxt(cutPliesFor(code, qty, d.main.lay), total), true);
+      planTxt=parts.join(' + ')+' &mdash; total '+total.toFixed(2)+' m'+layWastageTxt(cutPliesFor(code, qty, d.main.lay), total);
     }
-    (lp.mesh||[]).forEach(function(r){ if(r.d) h+=row('Marker number (mesh)', e(layPlanMarkerTxt(r)), true); });
-    others.forEach(function(r){ h+=row('Other marker', e(layPlanMarkerTxt(r))); });
+    if(d.main) h+=markerRows('Main', d.main.m, d.main.len, d.main.lay, qty, e, layPlanExtraTxt(d.main, e), {planTxt:planTxt});
+    mains.forEach(function(r){ if(r!==d.main) h+=row('Alternative marker', '<span style="font-size:15px">'+e(r.m)+'</span>'+e(layPlanMarkerTxt(r).slice((r.m||'').length)), true); });
   }
-  if(!(st&&st.markerCon)) (lp.con||[]).forEach(function(r){ h+=row('Contrast marker', e(layPlanMarkerTxt(r)), true); });
+  var mesh=meshMarkerFor(st, code, e);
+  if(mesh) h+=markerRows('Mesh', mesh.m, mesh.len, mesh.lay, qty, e, mesh.extra);
+  conMarkersFor(st, code, e).forEach(function(c){ h+=markerRows('Contrast', c.m, c.len, c.lay, qty, e, c.extra); });
+  if(!lp) return h;
+  others.forEach(function(r){ h+=row('Other marker', e(layPlanMarkerTxt(r))); });
   (lp.inter||[]).forEach(function(r){ h+=row('Interlining marker', e(layPlanMarkerTxt(r))); });
   if(lp.blk){ var bn=layPlanBlockNote(code); h+=row('Blockout fronts', '<span style="font-weight:700;font-size:15px">'+e(lp.blk)+'</span>'+(bn?' &mdash; <strong>'+e(bn)+'</strong>':''), false); }
   if(lp.note) h+=row('Lay plan note', e(lp.note));
@@ -1972,12 +2037,6 @@ function printWOP(ref, code, qty, due, sm, opts){
         +'</table>'
       : '')
     +'<div class="band">LECTRA PATTERN</div><table>'+(st.variant?'<tr><th>Pattern</th><td colspan="3">'+e(st.lectra)+'</td></tr><tr><th>Variant (cutting room)</th><td colspan="3" style="font-weight:700;font-size:15px">'+e(st.variant)+'</td></tr>':'<tr><td>'+e(st.lectra)+'</td></tr>')
-    +(st.markerMain?'<tr><th>Marker number</th><td colspan="3" style="font-weight:700;font-size:15px">'+e(st.markerMain)+'</td></tr>':'')
-    +(st.markerMesh?'<tr><th>Marker number (mesh)</th><td colspan="3" style="font-weight:700">'+e(st.markerMesh)+'</td></tr>':'')
-    +(st.markerLen?'<tr><th>Marker length</th><td colspan="3" style="font-weight:700">'+st.markerLen+' m</td></tr>':'')
-    +(st.layQty?'<tr><th>Lay qty</th><td colspan="3" style="font-weight:700">'+st.layQty+' garment'+(st.layQty===1?'':'s')+' per lay</td></tr>':'')
-    +((st.markerLen&&st.layQty&&qty>0)?'<tr><th>Lay plan (qty '+qty+')</th><td colspan="3" style="font-weight:700">'+Math.ceil(qty/st.layQty)+' pl'+(Math.ceil(qty/st.layQty)===1?'y':'ies')+' of '+st.markerLen+' m &mdash; total '+(Math.ceil(qty/st.layQty)*st.markerLen).toFixed(2)+' m'+layWastageTxt(cutPliesFor(code, qty, st.layQty), Math.ceil(qty/st.layQty)*st.markerLen)+'</td></tr>':'')
-    +(st.markerCon?'<tr><th>Contrast marker</th><td colspan="3" style="font-weight:700">'+e(st.markerCon)+(st.conFab?' <span style="font-weight:400">('+e(st.conFab)+')</span>':'')+(st.conLen?' &mdash; '+st.conLen+' m'+(st.conLay?', '+st.conLay+' per lay ('+(+(st.conLen/st.conLay).toFixed(3))+' m per garment)':''):'')+'</td></tr>':'')
     +layPlanRows(st, code, qty, e)
     +layOverrideRow(code, qty)
     +'</table>'

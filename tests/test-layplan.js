@@ -5,12 +5,17 @@
 //     every colour, __ running to two or three characters)
 //   - the default marker's length / lay is the usage; mesh and contrast
 //     markers ride along as extras
-//   - the print shows variant, default marker(s), the lay plan for the
-//     quantity (two-up plies plus a single for the remainder), mesh,
-//     interlining and blockout fronts - Stratford's with the face-up wording
+//   - the print shows variant, then the main marker as four rows (Main
+//     marker, Main marker length, Lay qty, Lay plan for the quantity: two-up
+//     plies plus a single for the remainder), the same four rows again for
+//     the mesh marker and for a contrast marker, then the alternative and
+//     other markers, interlining and blockout fronts - Stratford's with the
+//     face-up wording (Luke, 21 Oct 2026)
 //   - a works order with its own marker keeps it and only gains the extras,
 //     and that marker (length / lay) is its usage - the 0597FM variant the
-//     sheet lists without a product code is only known this way
+//     sheet lists without a product code is only known this way; its own
+//     mesh / contrast marker prints with its length, lay and lay plan, the
+//     figures filled from the sheet when the data has only the number
 //   - navy short-sleeve Oxford (OHCJSMOXFORD--15), the Rick Stein apron
 //     (OHRSAPP300503PC) and the other Rick Stein records, the Oxford trims by
 //     colour, the 0544 aprons' fabric codes, the 0597 denim apron, the
@@ -87,7 +92,11 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
      hampshire:lectra('OHLCJHAMPSHIRE1601',11),
      denimPrint:lectra('OHAPP059703/153DEN',10),
      rsBrand:brand('OHRSAPP300503PC'),
-     navyPrint:lectra('OHCJSMOXFORD4215',3)
+     navyPrint:lectra('OHCJSMOXFORD4215',3),
+     // the Shake Shack hat: its own main and mesh markers with their lengths and lays (works order editor, 21 Oct 2026)
+     hat:(()=>{ styleEdits['ZZHTM016015']={code:'ZZHTM016015',name:'Hat',lectra:'HT0160',variant:'NEW0160M',markerMain:'NEW0160M',markerMesh:'NEW0160M7 ',markerLen:0.65,layQty:8,hasMesh:true,meshLen:0.21,meshLay:7,fabrics:[],trims:[],mfg:[],fin:[]}; const t=lectra('ZZHTM016015',200); delete styleEdits['ZZHTM016015']; return t; })(),
+     // a record with only the mesh marker's number: length and lay come from the sheet when it lists that marker
+     meshFill:(()=>{ styleEdits['OHCJSMOXFORD4215']={code:'OHCJSMOXFORD4215',name:'Navy Oxford',lectra:'OH5',variant:'OH5SSLV',markerMain:'OXFORD042',markerMesh:'oxford100a',markerLen:1.31,layQty:1,fabrics:[],trims:[],mfg:[],fin:[]}; const t=lectra('OHCJSMOXFORD4215',3); delete styleEdits['OHCJSMOXFORD4215']; return t; })()
    };
  });
  console.log(JSON.stringify(r,null,1));
@@ -131,15 +140,18 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    && r.cvr==="Carmel Valley Ranch|PC9068/0.83|Embroidery|CMP-THR-EP80-08569-68,LABELOH5771,CMP-OH-LBL-WASH-01,,LEATHERHIDE,CMP-DR32-N254-287,CMP-STD-PST-9B-287,CMP-STD-SOC-9B-287,CMP-30ED-28-931,CMP-30RD-28-931,PKG-OH-GPS-500X750-01|70|logo|sketch|place|THREAD — COATS EPIC 80&#39;S BISCUIT 08569 — cost per metre"
    && r.f0544==='CO5001ECO:1 CO5003ECO:1 CO5015ECO:1 CO5173ECO:1 CO5241ECO:1 CO5083ECO:1'
    && r.denim==='0597/0597001/2.57/4/0597A/1/6/0.6425/0.1667'
-   && /Variant \(cutting room\)\|OH7LSLV\|/.test(r.stratford) && /Marker number \(default\)\|OH7006\| - 2\.36 m, 2 per lay \(1\.18 m per garment\)/.test(r.stratford)
+   && /Variant \(cutting room\)\|OH7LSLV\|/.test(r.stratford) && /Main marker\|OH7006 \|157cm\|Main marker length\|2\.36 m \|\(1\.18 m per garment\)\|Lay qty\|2 garments per lay\|/.test(r.stratford)
    && /Lay plan \(qty 10\)\|5 plies of 2\.36 m \(OH7006\) - total 11\.80 m, plus 3 cm wastage per ply = 11\.95 m to cut/.test(r.stratford)
    && /Blockout fronts\|OH740RF, OH740LF\| - \|Blocks - Face Up, left block is bigger than the right/.test(r.stratford)
    && /Lay plan \(qty 11\)\|5 plies of 2\.38 m \(OH8065\) \+ 1 ply of 1\.31 m \(OH8055\) - total 13\.21 m, plus 3 cm wastage per ply = 13\.39 m to cut/.test(r.hampshire)
-   && /Marker number \(mesh\)\|OH8100A - 0\.45 m, 16\.5 per lay \(0\.027 m per garment\)/.test(r.hampshire)
+   && /Alternative marker\|OH8055\| - 1\.31 m, 1 per lay \(1\.31 m per garment\)/.test(r.hampshire)
+   && /Mesh marker\|OH8100A \|146cm · MESH INSERTS[^|]*\|Mesh marker length\|0\.45 m \|\(0\.027 m per garment\)\|Mesh lay qty\|16\.5 garments per lay\|Mesh lay plan \(qty 11\)\|1 ply of 0\.45 m - total 0\.45 m, plus 3 cm wastage per ply = 0\.48 m to cut\|/.test(r.hampshire)
    && /Interlining marker\|OH8A - 0\.47 m, lay \(6\/2\),\(8\/2\)/.test(r.hampshire) && /Blockout fronts\|OH8RFRT16, OH8LFRT16\|/.test(r.hampshire) && !/left block is bigger/.test(r.hampshire)
-   && /Variant \(cutting room\)\|0597\|Marker number\|0597001\|Marker length\|2\.57 m\|Lay qty\|4 garments per lay\|Lay plan \(qty 10\)\|3 plies of 2\.57 m - total 7\.71 m, plus 3 cm wastage per ply = 7\.80 m to cut\|Contrast marker\|0597A - 1 m, 6 per lay \(0\.167 m per garment\)\|$/.test(r.denimPrint)
-   && (r.denimPrint.match(/Contrast marker/g)||[]).length===1 && !/Marker number \(default\)/.test(r.denimPrint)
+   && /Variant \(cutting room\)\|0597\|Main marker\|0597001\|Main marker length\|2\.57 m \|\(0\.642 m per garment\)\|Lay qty\|4 garments per lay\|Lay plan \(qty 10\)\|3 plies of 2\.57 m - total 7\.71 m, plus 3 cm wastage per ply = 7\.80 m to cut\|Contrast marker\|0597A \|NKTIE \+ TIES\|Contrast marker length\|1 m \|\(0\.167 m per garment\)\|Contrast lay qty\|6 garments per lay\|Contrast lay plan \(qty 10\)\|2 plies of 1 m - total 2\.00 m, plus 3 cm wastage per ply = 2\.06 m to cut\|$/.test(r.denimPrint)
+   && (r.denimPrint.match(/Contrast marker\|/g)||[]).length===1 && !/Alternative marker/.test(r.denimPrint)
+   && /Variant \(cutting room\)\|NEW0160M\|Main marker\|NEW0160M\|Main marker length\|0\.65 m \|\(0\.081 m per garment\)\|Lay qty\|8 garments per lay\|Lay plan \(qty 200\)\|25 plies of 0\.65 m - total 16\.25 m, plus 3 cm wastage per ply = 17\.00 m to cut\|Mesh marker\|NEW0160M7\|Mesh marker length\|0\.21 m \|\(0\.03 m per garment\)\|Mesh lay qty\|7 garments per lay\|Mesh lay plan \(qty 200\)\|29 plies of 0\.21 m - total 6\.09 m, plus 3 cm wastage per ply = 6\.96 m to cut\|$/.test(r.hat)
+   && /Main marker\|OXFORD042\|Main marker length\|1\.31 m \|\(1\.31 m per garment\)\|Lay qty\|1 garment per lay\|Lay plan \(qty 3\)\|3 plies of 1\.31 m - total 3\.93 m, plus 3 cm wastage per ply = 4\.02 m to cut\|Mesh marker\|oxford100a \|148cm · MESH INSERTS \(ALL SIZES\)\|Mesh marker length\|0\.5 m \|\(0\.033 m per garment\)\|Mesh lay qty\|15 garments per lay\|Mesh lay plan \(qty 3\)\|1 ply of 0\.5 m/.test(r.meshFill) && !/Other marker/.test(r.meshFill)
    && /Type\|Embroidery\|Placement \/ spec\|Rick Stein logo — top right-hand corner of the bib as worn, embroidered in white/.test(r.rsBrand)
-   && /Marker number \(default\)\|OXFORD042\| - 1\.31 m, 1 per lay \(1\.31 m per garment\) · 158cm\|/.test(r.navyPrint) && /Marker number \(mesh\)\|OXFORD100A - 0\.5 m, 15 per lay/.test(r.navyPrint) && /Other marker\|OXFORD103 - 1\.5 m.*NARROW MARKERS/.test(r.navyPrint) && /Lay plan note\|Navy Oxford/.test(r.navyPrint);
+   && /Main marker\|OXFORD042 \|158cm\|Main marker length\|1\.31 m \|\(1\.31 m per garment\)\|Lay qty\|1 garment per lay\|/.test(r.navyPrint) && /Mesh marker\|OXFORD100A \|148cm · MESH INSERTS \(ALL SIZES\)\|Mesh marker length\|0\.5 m \|\(0\.033 m per garment\)\|Mesh lay qty\|15 garments per lay\|Mesh lay plan \(qty 3\)\|1 ply of 0\.5 m - total 0\.50 m/.test(r.navyPrint) && /Other marker\|OXFORD103 - 1\.5 m.*NARROW MARKERS/.test(r.navyPrint) && /Lay plan note\|Navy Oxford/.test(r.navyPrint);
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();
