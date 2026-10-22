@@ -75,7 +75,7 @@ const path = require('path');
 
  // ── OH heather green waist apron with kangaroo pocket (one size, its own measurement table) ──
  d=await printOf('OHAPP0631682KP',20);
- ck('apron resolves exactly and prints one size', await p.evaluate(()=>styleForCode('OHAPP0631682KP').style.code==='OHAPP0631682KP') && d.size==='One size', d.size);
+ ck('apron resolves exactly and prints no Size row (one size, dropped 22 Oct 2026)', await p.evaluate(()=>styleForCode('OHAPP0631682KP').style.code==='OHAPP0631682KP') && d.size==='', d.size);
  ck('apron fabric PC90682 with 0.6 m per unit, measurement table and rivets x 4', d.text.includes('PC90682')&&d.text.includes('0.6')&&d.text.includes('Length of waist tie including box stitch')&&/Rivets[\s\S]{0,120}no code yet[\s\S]{0,10}4/.test(d.text), d.text.match(/Rivets[\s\S]{0,140}/));
  ck('apron OH label and tax tab coded, reverse-side waist tie note printed', d.text.includes('LABELOH5771')&&d.text.includes('TAXTABOH07/01')&&d.text.includes('USE REVERSE SIDE OF FABRIC AS RIGHT SIDE'));
  ck('apron fabric usage comes from the works order rating (not in All Costings)', await p.evaluate(()=>{ const u=fabricUsageFor('OHAPP0631682KP'); return u&&u.code==='PC90682'&&u.metres===0.6&&u.source==='works order data'; }), await p.evaluate(()=>JSON.stringify(fabricUsageFor('OHAPP0631682KP'))));

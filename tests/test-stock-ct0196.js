@@ -42,7 +42,7 @@ const path = require('path');
  let d=await printOf('CT0196SS03',45);
  ck('SS prints as size S and highlights the S row', d.size==='S'&&d.hit.length===1&&d.hit[0]==='S', [d.size,d.hit]);
  ck('chart has the to-fit waist, thigh and regular length columns', d.text.includes('To fit waist')&&d.text.includes('Thigh')&&d.text.includes('Regular length')&&d.text.includes('79 cm'));
- ck('fabric PC2003ECO at B14, 1.3 m, with the black thread by its Sage code', /PC2003ECO\s+B14\s+1\.3/.test(d.text.replace(/\n/g,' '))&&d.text.includes('CMP-THR-EP80-09700-03'), d.text.match(/PC2003ECO.{0,40}/));
+ ck('fabric PC2003ECO at B14 at the All Costings 1.25 m with the costing 1.3 beside it, with the black thread by its Sage code', /PC2003ECO\s+B14\s+1\.25 m \(costing 1\.3\)/.test(d.text.replace(/\n/g,' '))&&d.text.includes('CMP-THR-EP80-09700-03'), d.text.match(/PC2003ECO.{0,40}/));
  ck('elastic cut lengths, zip and tax tab printed', d.text.includes('S 27" (68.5 cm)')&&d.text.includes('6" nylon lightweight zip')&&d.text.includes('outside edge under the pocket hem'));
  ck('Lectra models for the two size ranges and the making notes', d.text.includes('0196BIG')&&d.text.includes('Fly front 21 cm')&&d.text.includes('NOT on chain stitch'));
 
