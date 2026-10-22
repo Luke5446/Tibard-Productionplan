@@ -149,16 +149,19 @@ with the same heading wins on the apron tabs.
 
 The LECTRA PATTERN band prints the variant, then every marker as the same
 four rows (Luke, 21 Oct 2026): **Main marker** (with the sheet's width and
-note), **Main marker length** (with the metres per garment), **Lay qty** and
-the **Lay plan** for the quantity (plies of the two-up marker plus a single
-for the remainder, with the 3 cm of wastage the cutting room adds to every
-ply: "5 plies of 2.36 m (OH7006) — total 11.80 m, plus 3 cm wastage per ply
-= 11.95 m to cut", from the GT, 14 Oct 2026; the standard metres costed and
-written off are not changed by it). A mesh marker repeats the four rows as
+note), **Main marker length**, **Lay qty** and the **Lay plan** for the
+quantity. The length printed is the marker plus the 3 cm the cutting room
+lays for wastage, with the marker's own length and the metres per garment
+in the bracket: "2.39 m (2.36 m marker + 3 cm wastage · 1.195 m per
+garment)" (Luke, 22 Oct 2026). The lay plan is plies of that length, the
+two-up marker plus a single for the remainder where the sheet lists one:
+"5 plies of 2.39 m (OH7006) — total 11.95 m to cut (3 cm wastage per ply
+included)". The 3 cm is the GT's, 14 Oct 2026; the standard metres costed
+and written off already carry it. A mesh marker repeats the four rows as
 **Mesh marker / Mesh marker length / Mesh lay qty / Mesh lay plan**, and a
 contrast fabric as **Contrast marker** (with its Sage fabric code) **/
 Contrast marker length / Contrast lay qty / Contrast lay plan**, each lay
-plan a straight plies × length with the 3 cm per ply. Then come an
+plan a straight plies × length. Then come an
 alternative default marker where the sheet marks one, interlining with the
 sheet's own lay wording, any other markers with their notes (NARROW
 MARKERS, damaged cloth), and the blockout fronts. For the Stratford the

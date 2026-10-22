@@ -1770,10 +1770,6 @@ function fabricStd(perGarment, qty, lay, code){
   var m=perGarment*qty; if(lay>0) m+=cutPliesFor(code, qty, lay)*CUT_WASTAGE_M;
   return Math.round(m*100)/100;
 }
-function layWastageTxt(plies, total){
-  if(!(plies>0)) return '';
-  return ', plus '+Math.round(CUT_WASTAGE_M*100)+' cm wastage per ply = '+(total+plies*CUT_WASTAGE_M).toFixed(2)+' m to cut';
-}
 // The lay the PM set in the planner, on the print where the cutting room has
 // no lay plan for the code and the record carries no marker.
 function layOverrideRow(code, qty){
@@ -1802,18 +1798,24 @@ function layPlanMarkerTxt(r){
 //   kind   'Main' | 'Mesh' | 'Contrast' - the row labels
 //   extra  escaped text after the number (a fabric code, the sheet's width / note)
 //   o      {planTxt: the lay plan line already worded (the sheet's two-up plus
-//          a single); wPlies: plies for the wastage line when they differ}
+//          a single)}
+// The length printed is the marker plus the 3 cm the cutting room lays for
+// wastage (1.5 m marker: 1.53 m), with the marker's own length in the
+// bracket (Luke, 22 Oct 2026); the lay plan is plies of that length.
+function cutLen(len){ return Math.round((len+CUT_WASTAGE_M)*1000)/1000; }
+function cutLenTxt(len){ return cutLen(len)+' m'; }
+var CUT_WASTAGE_NOTE=' (3 cm wastage per ply included)';
 function markerRows(kind, m, len, lay, qty, e, extra, o){
   m=(m||'').trim(); o=o||{};
   if(!m && !(len>0)) return '';
   var main=kind==='Main', h='';
   function row(th, td, big){ return '<tr><th>'+th+'</th><td colspan="3" style="font-weight:700'+(big?';font-size:15px':'')+'">'+td+'</td></tr>'; }
   h+=row(kind+' marker', e(m||'—')+(extra?' <span style="font-weight:400">'+extra+'</span>':''), main);
-  if(len>0) h+=row(kind+' marker length', len+' m'+(lay>0?' <span style="font-weight:400">('+(+(len/lay).toFixed(3))+' m per garment)</span>':''));
+  if(len>0) h+=row(kind+' marker length', cutLenTxt(len)+' <span style="font-weight:400">('+len+' m marker + 3 cm wastage'+(lay>0?' \u00b7 '+(+(cutLen(len)/lay).toFixed(3))+' m per garment':'')+')</span>');
   if(lay>0) h+=row(main?'Lay qty':kind+' lay qty', lay+' garment'+(lay===1?'':'s')+' per lay');
   if(len>0 && lay>0 && qty>0){
-    var plies=Math.ceil(qty/lay), total=plies*len;
-    h+=row((main?'Lay plan':kind+' lay plan')+' (qty '+qty+')', o.planTxt || (plies+' pl'+(plies===1?'y':'ies')+' of '+len+' m &mdash; total '+total.toFixed(2)+' m'+layWastageTxt(o.wPlies||plies, total)));
+    var plies=Math.ceil(qty/lay), total=plies*cutLen(len);
+    h+=row((main?'Lay plan':kind+' lay plan')+' (qty '+qty+')', o.planTxt || (plies+' pl'+(plies===1?'y':'ies')+' of '+cutLenTxt(len)+' &mdash; total '+total.toFixed(2)+' m to cut'+CUT_WASTAGE_NOTE));
   }
   return h;
 }
@@ -1864,17 +1866,17 @@ function layPlanRows(st, code, qty, e){
   function row(th, td, bold){ return '<tr><th>'+th+'</th><td colspan="3"'+(bold?' style="font-weight:700"':'')+'>'+td+'</td></tr>'; }
   var others=[];
   if(own){
-    h+=markerRows('Main', st.markerMain, st.markerLen, st.layQty, qty, e, '', {wPlies:cutPliesFor(code, qty, st.layQty)});
+    h+=markerRows('Main', st.markerMain, st.markerLen, st.layQty, qty, e, '');
   } else if(lp){
     if(!(st&&st.variant) && lp.v) h+=row('Variant (cutting room)', e(lp.v), true);
     var mains=(lp.main||[]).filter(function(r){ return r.d; }); others=(lp.main||[]).filter(function(r){ return !r.d; });
     var planTxt='';
     if(d.main && d.main.lay>0 && d.main.len>0 && qty>0){
       var lay=d.main.lay, full=Math.floor(qty/lay), rem=qty-full*lay, single=mains.filter(function(r){ return r.lay===1 && r!==d.main; })[0], parts=[];
-      if(full>0) parts.push(full+' pl'+(full===1?'y':'ies')+' of '+d.main.len+' m ('+e(d.main.m)+')');
-      var total=full*d.main.len;
-      if(rem>0){ if(single){ parts.push(rem+' pl'+(rem===1?'y':'ies')+' of '+single.len+' m ('+e(single.m)+')'); total+=rem*single.len; } else { parts.push('1 ply of '+d.main.len+' m ('+e(d.main.m)+') for the last '+rem); total+=d.main.len; } }
-      planTxt=parts.join(' + ')+' &mdash; total '+total.toFixed(2)+' m'+layWastageTxt(cutPliesFor(code, qty, d.main.lay), total);
+      if(full>0) parts.push(full+' pl'+(full===1?'y':'ies')+' of '+cutLenTxt(d.main.len)+' ('+e(d.main.m)+')');
+      var total=full*cutLen(d.main.len);
+      if(rem>0){ if(single){ parts.push(rem+' pl'+(rem===1?'y':'ies')+' of '+cutLenTxt(single.len)+' ('+e(single.m)+')'); total+=rem*cutLen(single.len); } else { parts.push('1 ply of '+cutLenTxt(d.main.len)+' ('+e(d.main.m)+') for the last '+rem); total+=cutLen(d.main.len); } }
+      planTxt=parts.join(' + ')+' &mdash; total '+total.toFixed(2)+' m to cut'+CUT_WASTAGE_NOTE;
     }
     if(d.main) h+=markerRows('Main', d.main.m, d.main.len, d.main.lay, qty, e, layPlanExtraTxt(d.main, e), {planTxt:planTxt});
     mains.forEach(function(r){ if(r!==d.main) h+=row('Alternative marker', '<span style="font-size:15px">'+e(r.m)+'</span>'+e(layPlanMarkerTxt(r).slice((r.m||'').length)), true); });
@@ -2000,7 +2002,7 @@ function printWOP(ref, code, qty, due, sm, opts){
     +(opts.embOnly?'<tr><th style="background:#6d28d9;color:#fff">EMBROIDERY ONLY</th><td colspan="3" style="background:#EDE9FE;font-weight:700">Pick '+qty.toLocaleString()+' x '+e(opts.pickCode||'the base garment')+' from stock for the embroidery room. Nothing to cut or make.</td></tr>':'')
     +'<tr><th>Date issued</th><td>'+e(today)+'</td><th style="width:26%">Date required</th><td>'+e(dueTxt)+'</td></tr>'
     +'<tr><th>Product code</th><td>'+e(code)+'</td><th>Quantity</th><td>'+qty.toLocaleString()+'</td></tr>'
-    +'<tr><th>Size</th><td>'+e(sizeTxt)+'</td><th>Embroidery</th><td>'+(hasBrand?'Yes &mdash; see CUSTOMER BRANDING'+(emb?' and the sales order lines below':''):(emb?'<strong>Yes &mdash; from the sales order, below</strong>':'No'))+'</td></tr>'
+    +'<tr>'+(sizeTxt==='One size'?'':'<th>Size</th><td>'+e(sizeTxt)+'</td>')+'<th>Embroidery</th><td'+(sizeTxt==='One size'?' colspan="3"':'')+'>'+(hasBrand?'Yes &mdash; see CUSTOMER BRANDING'+(emb?' and the sales order lines below':''):(emb?'<strong>Yes &mdash; from the sales order, below</strong>':'No'))+'</td></tr>'
     /* A stock style's embroidery is whatever sales put on the order: the logo
        and text lines entered under this garment, printed right here where the
        machinist reads Embroidery: Yes. */

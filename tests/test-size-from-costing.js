@@ -1,5 +1,5 @@
 // A costing-app product carries its size in the record (CJ0002M is size M): the import keeps it
-// and the printed works order shows it, while a one-size product still prints "One size".
+// and the printed works order shows it, while a one-size product prints no Size row (22 Oct 2026).
 const { chromium } = require('playwright');
 const path = require('path');
 (async()=>{
@@ -19,7 +19,7 @@ const path = require('path');
    await pop.close(); return v;
  }
  ck('CJ0001M prints Size M', (await sizeOf('CJ0001M'))==='M');
- ck('a one-size product still prints One size', (await sizeOf('OHAP0009'))==='One size');
+ ck('a one-size product prints no Size row at all (dropped 22 Oct 2026)', (await sizeOf('OHAP0009'))===null);
  console.log('errors:', errs.length?errs.join(' | '):'none'); console.log(fails?('FAILED '+fails):'ALL PASSED');
  await b.close(); process.exit(fails||errs.length?1:0);
 })();
