@@ -2042,9 +2042,25 @@ function printWOP(ref, code, qty, due, sm, opts){
     +layPlanRows(st, code, qty, e)
     +layOverrideRow(code, qty)
     +'</table>'
-    +'<div class="band">FABRIC</div><table><tr><th style="width:50%">Fabric</th><th>Code</th><th>Location</th><th style="width:14%;text-align:right">Per unit</th></tr>';
-  woFabrics(cw?{fabrics:cw.fabrics}:st).forEach(function(f){ if(f[0]||f[1]) h+='<tr><td>'+e(f[0])+'</td><td><strong>'+e(f[1])+'</strong></td><td><strong>'+e(f[2])+'</strong></td><td style="text-align:right">'+((f[3]===''||f[3]==null)?'':e(String(f[3])))+'</td></tr>'; });
-  if(cwWarn) h+='<tr><td colspan="4" style="color:#C00000;font-weight:700">&#9888; Colour code not in the colourway table — confirm the fabric before cutting</td></tr>';
+    +'<div class="band">FABRIC</div><table><tr><th style="width:40%">Fabric</th><th>Code</th><th>Location</th><th style="width:16%;text-align:right">Per unit</th><th style="width:16%;text-align:right">Total (qty '+qty+')</th></tr>';
+  // Per unit is what the cutting log uses - the marker's length over its lay
+  // where there is one, before All Costings and the costing rating - and the
+  // total is the standard metres for this quantity, 3 cm per ply included.
+  // The costing rating is shown where it differs (Luke, 22 Oct 2026).
+  var fu=null; try{ fu=fabricUsageFor(code); }catch(x){ fu=null; }
+  var fuRow=function(fc){ if(!fu||!fc) return null; var F=String(fc).toUpperCase();
+    if((fu.code||'').toUpperCase()===F) return {m:fu.metres, lay:fu.lay};
+    var x=(fu.extras||[]).filter(function(y){ return (y.code||'').toUpperCase()===F || (y.base||'').toUpperCase()===F; })[0];
+    return x ? {m:x.metres, lay:x.lay} : null; };
+  var fuNote=false;
+  woFabrics(cw?{fabrics:cw.fabrics}:st).forEach(function(f){ if(!(f[0]||f[1])) return;
+    var r=fuRow(f[1]), rating=(f[3]===''||f[3]==null)?null:parseFloat(f[3]), per='', tot='';
+    if(r && r.m>0){ per='<strong>'+(+r.m.toFixed(3))+' m</strong>'; if(rating!=null && !isNaN(rating) && Math.abs(rating-r.m)>0.0005){ per+=' <span style="font-weight:400;color:#808080">(costing '+e(String(f[3]))+')</span>'; fuNote=true; }
+      var std=(qty>0)?fabricStd(r.m, qty, r.lay, code):null; if(std!=null) tot='<strong>'+std.toFixed(2)+' m</strong>'; }
+    else if(rating!=null) per=e(String(f[3]));
+    h+='<tr><td>'+e(f[0])+'</td><td><strong>'+e(f[1])+'</strong></td><td><strong>'+e(f[2])+'</strong></td><td style="text-align:right">'+per+'</td><td style="text-align:right">'+tot+'</td></tr>'; });
+  if(fu && fu.source) h+='<tr><td colspan="5" style="font-size:10px;color:#808080">Per unit from '+e(fu.source)+(fu.lay>0?' at '+fu.lay+' per lay':'')+'; the total is the standard the cutting log asks for, 3 cm wastage per ply included'+(fuNote?'; the costing rating is shown where it differs':'')+'.</td></tr>';
+  if(cwWarn) h+='<tr><td colspan="5" style="color:#C00000;font-weight:700">&#9888; Colour code not in the colourway table — confirm the fabric before cutting</td></tr>';
   h+='</table><div class="band">TRIMS &amp; LABELS</div><table><tr><th style="width:20%">Trim</th><th style="width:auto">Description</th><th style="width:22%">Sage code</th><th style="width:9%;text-align:center">Qty</th></tr>';
   woTrims(st).forEach(function(t){
     var det=(cw&&cw.thread&&/^thread$/i.test(String(t[0]).trim()))?cw.thread:trimDesc(t);

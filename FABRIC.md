@@ -173,6 +173,15 @@ only a mesh or contrast marker's number and the sheet lists that same
 marker, the length and lay are filled from the sheet. A row whose figure is
 not known is left out rather than printed blank.
 
+The FABRIC table's **Per unit** is the same usage the cutting log works
+from (`fabricUsageFor`: the per-size marker table, then the works order
+data's own marker over its lay, then the lay plan, then All Costings and
+the costing rating), with the costing rating in grey beside it where it
+differs, and **Total (qty N)** is the standard metres for the works order,
+3 cm per ply included - the figure the cutting log asks for. A fabric the
+usage does not know (a leather hide with no rating) prints its rating as
+before. A footnote names the source and the lay (Luke, 22 Oct 2026).
+
 ### Refreshing after the sheets change
 
 Save each sheet as `.xlsx` into `layplan/` under its own name, then:
