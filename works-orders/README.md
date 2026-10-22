@@ -99,6 +99,11 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `WAGSB077403-2026-10-16.json` | That record for the costing app. |
 | `SHAAPP054203-ShakeShack.xlsx` | Stock works order for SHAAPP054203, the Shake Shack black 100% polyester bib apron: pattern SHAAP0542, self fabric neck strap, black non tangle tape waist ties cut 100 cm, no pocket, Tibard printed care label, no logo or embroidery (Jennifer 2013, Yvonne 2020, extra P added to the code 2021; processed by Gail). In the app as style SHAAPP054203 on POPLAZA03 at 0.45 m, the same as All Costings. |
 | `SHAAPP054203-2026-10-21.json` | That record for the costing app. |
+| `HTM016001-Stock.xlsx` | Stock works order for HTM016001, the Tibard white skull cap with mesh crown on the revised HT0160 fit, variant NEW0160M (JH 2022, label position 2023): Tibard tax tab on the right, white velcro, no embroidery. The Tibard twin of OHHTM016001. In the app as style HTM016001. |
+| `AP300501-Stock.xlsx` | Stock works order for AP300501, the Tibard white 100% organic cotton bib apron, standard size AP3005B, with white non tangle ties and a self fabric neck strap (YL 2014, cloth 2024, Tiajo organic cotton 2026). In the app as style AP300501. |
+| `ASKAP056364-ASK.xlsx` | Works order for ASKAP056364 (sheet headed AP0563), the ASK storm grey bib apron with the Italy print at the left chest, an adjustable gilt D ring neck strap and longer black non tangle ties (JH 2013, print position 2023, rating 0.65 m 2023, eco fabric 2024). In the app as style ASKAP056364 with the print as its own branding. |
+| `OHCJSNORFOLK-07S-Red.xlsx` | Works order for OHCJSNORFOLK--07S, the red short sleeve Norfolk chef jacket, double breasted and button fastened, for Independent Catering (JH 2013, red 2014, logo removed 2021, Tiajo red X133 colour 111 and code PC2X13307 2026). In the app as style OHCJSNORFOLK--07S, matching the Sage sizes with and without the S. |
+| `templates-2026-10-22.json` | Those four records for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards

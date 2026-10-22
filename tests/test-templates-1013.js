@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('337 styles in the master', r.count===337, r.count);
+ ck('341 styles in the master', r.count===341, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -148,6 +148,29 @@ const path = require('path');
  ck('Shake Shack bib apron SHAAPP054203: POPLAZA03 at B6 0.45 m, All Costings agrees (one per ply, no lay plan), black thread at 70, label tape coded, two uncoded tape ties, no branding, a stock style', r10==='SHAAPP054203||onesize|SHAAP0542|POPLAZA03:B6:0.45|POPLAZA03/0.45/All Costings/1|CMP-THR-EP80-09700-03+CMP-LBL-NYL-25-01+|70|2|APB|8/3|4||nologo|stock|Shake Shack|', r10);
  d=await printOf('SHAAPP054203',80);
  ck('Shake Shack bib print: SHAAP0542, the black thread code, the 4-row chart, the 100 cm ties, no branding band', d.text.includes('SHAAP0542')&&d.text.includes('CMP-THR-EP80-09700-03')&&d.text.includes('21.5 cm (± 0.5)')&&d.text.includes('cut 100 cm')&&/POPLAZA03 B6 0\.45/.test(d.text)&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
+
+ // ── the four templates of 22 Oct 2026: the white mesh skull cap, the white organic cotton bib apron, the ASK printed apron, the red Norfolk ──
+ const r11=await p.evaluate(()=>{ const o={};
+   ['HTM016001','AP300501','ASKAP056364'].forEach(c=>{ const h=styleForCode(c), s=h&&h.style, u=fabricUsageFor(c); if(!s){ o[c]=null; return; }
+     const thr=s.trims.filter(t=>/^Thread$/.test(t[0]))[0];
+     o[c]=[s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source,u.lay].join('/'), s.trims.map(t=>t[3]).join('+'), thr&&thr[2], garmentKind(c,s), s.mfg.length+'/'+s.fin.length, (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, smIsStockStyle(c)?'stock':'own', s.customer].join('|'); });
+   ['OHCJSNORFOLK3407S','OHCJSNORFOLK3607','OHCJSNORFOLK--07S','OHCJSNORFOLK4001'].forEach(c=>{ const h=styleForCode(c); o[c]=h&&[h.style.code,h.size].join('|'); });
+   const n=styleForCode('OHCJSNORFOLK3807S').style, un=fabricUsageFor('OHCJSNORFOLK3807S');
+   o.norfolk=[n.variant, n.chart, n.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), un&&[un.code,un.metres,un.source].join('/'), n.trims.map(t=>t[3]).join('+'), n.trims[0][2], garmentKind('OHCJSNORFOLK3807S',n), (STYLE_MASTER.charts[n.chart]||[]).length, smIsStockStyle('OHCJSNORFOLK3807S')?'stock':'own'].join('|');
+   return o; });
+ ck('HTM016001: PC2001ECO at B2 0.12 m and the white mesh 0.04 m, All Costings agrees; white hook velcro, Perma Core thread at 70, tax tab and label tape coded, loop not; a stock hat', r11.HTM016001==='HTM016001||onesize|NEW0160M|PC2001ECO:B2:0.12+MESH2290901:B5:0.04|PC2001ECO/0.12/All Costings/1|CMP-VEL-HOOK-16-01++CMP-THR-PC075-32109-01+TAXTABTIB01+CMP-LBL-NYL-25-01|70||8/2|2||stock|', r11.HTM016001);
+ ck('AP300501: CO5001ECO at A3 0.5 m, All Costings agrees; bib apron thread at 70, label tape coded, the white tape ties not; 7-row chart; a stock apron', r11.AP300501==='AP300501||onesize|AP3005B|CO5001ECO:A3:0.5|CO5001ECO/0.5/All Costings/1|CMP-THR-PC075-32109-01+CMP-LBL-NYL-25-01+|70|APB|9/1|7||stock|', r11.AP300501);
+ ck('ASKAP056364: PC2064ECO at A5 0.65 m, All Costings agrees; grey thread at 70 and the label tape coded, ties and gilt D rings not; the print is its own branding, so not a stock style', r11.ASKAP056364==='ASKAP056364||onesize|AP0563|PC2064ECO:A5:0.65|PC2064ECO/0.65/All Costings/1|CMP-THR-EP80-09963-64+++CMP-LBL-NYL-25-01|70|APB|9/1|4|Print|own|ASK', r11.ASKAP056364);
+ ck('Red Norfolk: the Sage codes with and without the S resolve to OHCJSNORFOLK--07S at their size; the white 40 stays the white jacket', r11.OHCJSNORFOLK3407S==='OHCJSNORFOLK--07S|34'&&r11.OHCJSNORFOLK3607==='OHCJSNORFOLK--07S|36'&&r11['OHCJSNORFOLK--07S']===null&&r11.OHCJSNORFOLK4001==='OHCJSNORFOLK--01|40', r11);
+ ck('Red Norfolk: PC2X13307 at B13 1.45 m, All Costings agrees; red thread at the jacket 220, red Jones buttons, OH labels and tax tab coded; the NORFOLK-SS chart; a stock jacket', r11.norfolk==='OH6SSLV|NORFOLK-SS|PC2X13307:B13:1.45|PC2X13307/1.45/All Costings|CMP-THR-EP80-03860-07+CMP-BTN-P3536-36-07+LABELOH5771+TAXTABOH07/01+CMP-OH-LBL-WASH-01++|220|CJ|14|stock', r11.norfolk);
+ d=await printOf('HTM016001',50);
+ ck('HTM016001 print: both cloths, the variant, the white hook velcro code, the 57 cm chart, no branding band', d.text.includes('MESH2290901')&&d.text.includes('NEW0160M')&&d.text.includes('CMP-VEL-HOOK-16-01')&&d.text.includes('57 cm (TOL ± 1)')&&/PC2001ECO B2 0\.12/.test(d.text)&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
+ d=await printOf('AP300501',120);
+ ck('AP300501 print: AP3005B, the white thread code, the 7-row chart with the tie length, no branding band', d.text.includes('AP3005B')&&d.text.includes('CMP-THR-PC075-32109-01')&&d.text.includes('Length of waist tie')&&d.text.includes('94 cm (± 1.5)')&&/CO5001ECO A3 0\.5/.test(d.text)&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
+ d=await printOf('ASKAP056364',200);
+ ck('ASK print: AP0563, the grey thread code, the D rings, the branding band with the print position, the 4-row chart', d.text.includes('AP0563')&&d.text.includes('CMP-THR-EP80-09963-64')&&d.text.includes('gilt D rings')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('8.5 cm from the left side')&&d.text.includes('73.5 cm (± 1)')&&/PC2064ECO A5 0\.65/.test(d.text), d.text.slice(0,300));
+ d=await printOf('OHCJSNORFOLK3807S',30);
+ ck('Red Norfolk print: size 38, OH6SSLV, the red button code, the Norfolk chart row, no branding band', d.text.includes('OH6SSLV')&&d.text.includes('CMP-BTN-P3536-36-07')&&d.text.includes('PC2X13307')&&d.text.includes('101 cm')&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
