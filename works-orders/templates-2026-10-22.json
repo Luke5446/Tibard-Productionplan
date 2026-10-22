@@ -1,0 +1,201 @@
+{
+ "styles": [
+  {
+   "code": "HTM016001",
+   "name": "Tibard white velcro fasten skull cap with mesh crown, revised fit — stock",
+   "desc": "SKULL HAT · Revised fit, revised band depth · Mesh crown · Velcro fastened tab at centre back for adjustment, revised cut length of hook velcro · Tibard tax tab right side of the hat as worn · No embroidery",
+   "lectra": "HT0160, variant NEW0160M",
+   "variant": "NEW0160M",
+   "chart": "HTM016001-MEAS",
+   "fabrics": [
+    ["White 65% polyester / 35% cotton 195 gsm — rating 0.12 m, the same as All Costings. The sheet names the P and R cloth PC2001 at B11; Sage and All Costings carry the sustainable PC2001ECO (Tiajo) at B2", "PC2001ECO", "B2", 0.12, 2.14],
+    ["White Coolmax mesh quality 22909 (Clarkson Knitting) — crown, rating 0.04 m", "MESH2290901", "B5", 0.04, 1.1854]
+   ],
+   "trims": [
+    ["Velcro — hook", "White 16 mm hook velcro, cut at 10 cm (set to the back of the hat, end level with the back split).", 0.1, "CMP-VEL-HOOK-16-01", 0.0832],
+    ["Velcro — loop", "White 16 mm loop velcro, cut at 6 cm (on the tab). Sage holds the hook only; no code for the loop yet.", 0.06, "", null],
+    ["Thread", "THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre. The sheet says white Coats Epic 80's; Sage holds no white Epic code, so the white Perma Core the other white styles use.", 70, "CMP-THR-PC075-32109-01", 0.0005055],
+    ["Tibard tax tab", "Tibard tax tab set to the right side of the hat as worn. Stitch in white thread on top and spool in thread to match the hat. Set with the green check of the label to the top. Set the edge of the label to the bottom edge of the hat and 1 cm from the secured end of the tab. Fold in one side of the label to neaten. Edgestitch all round.", 1, "TAXTABTIB01", 0.01891],
+    ["Care label", "Tibard printed care label, set into the centre back crown: main 65% polyester 35% cotton · mesh 100% polyester · 60° wash · 2 dot iron · tumble dry · do not bleach · P dry clean. Printed at Tibard on the 25 mm nylon label tape.", 0.05, "CMP-LBL-NYL-25-01", 0.039067]
+   ],
+   "mfg": [
+    "Make the velcro tab. Set the loop velcro 12 mm from the end of the tab edge, level with the centre fold of the tab. Edgestitch the loop velcro to the tab. Bag out both ends. Edgestitch the lower edge of the tab to close the tab.",
+    "Join the centre back seam panel and notch into the end of the seam. Bag out the slits.",
+    "Stitch along the top edge to secure the plies together and set the care label / batch label.",
+    "5 thread join the mesh crown to the panel.",
+    "Set the velcro tab to the back of the hat, right side as worn. Set the tab so there is a 3.5 cm gap between the end of the loop velcro and the base of the hat split, to allow for adjustment. Edgestitch all round the tab to secure it to the hat.",
+    "Edgestitch the back split.",
+    "Set the hook velcro to the back of the hat. End of the velcro to be level with the back split. Edgestitch all round the velcro.",
+    "Set the Tibard tax tab: white thread on top, spool to match the hat, green check to the top of the label, edge of the label to the bottom edge of the hat and 1 cm from the secured end of the tab. Fold in the side of the label to neaten. Edgestitch all round."
+   ],
+   "fin": [
+    "Bartack horizontal at the top of the split.",
+    "Check, trim and fold."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Stock works order HTM016001, the Tibard white skull cap with the mesh crown on the revised HT0160 fit, variant NEW0160M (JH created 19/4/22 new fit: side panel deeper, hook velcro 6 to 10 cm, velcro 20 to 16 mm; label positioning amended JH 11/4/23). The Tibard twin of OHHTM016001: Tibard tax tab on the right side instead of the OH tab in the velcro tab, no tissue. Rating 0.12 m main and 0.04 m mesh on the sheet, the same as All Costings. The sheet's sketch is a WMF drawing the app cannot show; it is in works-orders/HTM016001-Stock.xlsx."
+  },
+  {
+   "code": "AP300501",
+   "name": "Tibard white 100% organic cotton bib apron with non tangle ties and a self fabric neck strap — stock",
+   "desc": "BIB APRON · Standard size · Self fabric neck strap · White non tangle tape waist ties · No pocket · Tibard printed care label, no logo · No embroidery",
+   "lectra": "AP3005 — standard size, model AP3005B, variant AP3005B",
+   "variant": "AP3005B",
+   "chart": "AP300501-MEAS",
+   "fabrics": [
+    ["White 100% organic cotton X149ECO AM05 260 gsm (Tiajo) — rating 0.50 m, the same as All Costings; the sheet gives the location as A6, Sage holds the cloth at A3", "CO5001ECO", "A3", 0.5, 2.58]
+   ],
+   "trims": [
+    ["Thread", "THREAD — WHITE PERMA CORE 75 20000 M CONE 32109W (Somac) — cost per metre. The sheet says white Coats Epic 80's; Sage holds no white Epic code.", 70, "CMP-THR-PC075-32109-01", 0.0005055],
+    ["Care label", "Tibard printed care label, set 4 cm down from the top of the finished right side seam as worn: 100% cotton · 40° wash · 2 dot iron · tumble dry low · no bleach · P dry clean. Printed at Tibard on the 25 mm nylon label tape.", 0.05, "CMP-LBL-NYL-25-01", 0.039067],
+    ["Waist ties", "White non tangle tape, two per apron, to finish 94 cm (± 1.5). Sage holds white non tangle tape only as the OH-branded CMP-OH-NTT-25-01: use that code if it is the same tape.", 2, "", null]
+   ],
+   "mfg": [
+    "Make the neck strap: fold in half and enclose the raw edges. Edgestitch the long edge to close the seam.",
+    "Set the bib facing and insert the neck strap. The edge of the neck strap to finish in line with the side of the bib (no step). The edgestitched side of the neck strap to the outside edge of the bib, good side of the strap to the top.",
+    "Top of the bib: 6 mm topstitched.",
+    "Bib facing: fold in 10 mm to neaten the lower edge. Edgestitch the lower edge of the facing, which forms a 5.5 cm topstitch on the front.",
+    "Armholes: double turned and topstitched to finish 6 mm from the edge. Neaten the armholes before the side seams are neatened.",
+    "Hem: double turned and topstitched to finish 12 mm from the edge.",
+    "Sides: double turned and topstitched to finish 12 mm from the edge. Insert the care label to the right side seam as worn.",
+    "Insert each waist tie neatly into the top of the side seam turning. Do not roll the tie above the apron seam.",
+    "Fold each waist tie back on itself to fall away from the garment and edgestitch down to the width of the strap to secure."
+   ],
+   "fin": [
+    "Trim, check and fold into tens."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Bib ± 0.5 cm · Width ± 1.5 cm · Length ± 1.5 cm · Neck strap length ± 1 cm, width ± 0.5 cm · Tie ± 1.5 cm",
+   "oneSize": true,
+   "customer": "",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Stock works order AP300501, the Tibard white 100% organic cotton bib apron, standard size (YL 31/1/14; old sheet corrected JH 17/6/19; cloth from 3113 CO2001 to 3110 white CO5001 JH 3/6/24; fabric form P&R to Tiajo 100% organic cotton JH 19/3/26; model and variant corrected JH 9/4/26). No embroidery and no logo. Rating 0.50 m on CO5001ECO, the same as All Costings. Sage also sells AP300501S and AP300501PC (poly cotton): no works orders seen for those. The sheet is in works-orders/AP300501-Stock.xlsx."
+  },
+  {
+   "code": "ASKAP056364",
+   "name": "Storm grey bib apron with the ASK Italian print, adjustable D ring neck strap and longer non tangle ties — Tibard, ASK",
+   "desc": "BIB APRON · Printed (Italy print, left front chest as worn, set pre make-up) · Adjustable D ring neck strap · Longer black non tangle waist ties · No pocket · Tibard printed care label",
+   "lectra": "AP0563 — the sheet is headed AP0563; the Sage code is ASKAP056364",
+   "variant": "AP0563",
+   "chart": "ASKAP056364-MEAS",
+   "fabrics": [
+    ["Storm grey 65% recycled polyester / 35% cotton 200 gsm (Tiajo) — rating 0.65 m (0.55 until the fabric width changed, JH 16/8/23), the same as All Costings; the sheet gives the location as A3, Sage holds the cloth at A5. Lay all one way up.", "PC2064ECO", "A5", 0.65, 2.32]
+   ],
+   "trims": [
+    ["Thread", "THREAD — COATS EPIC 80'S STORM GREY 09963 — cost per metre", 70, "CMP-THR-EP80-09963-64", 0.000714],
+    ["Waist ties", "Black non tangle tape, longer length, cut at 1.5 m (the sheet says 1.5 cm), two per apron. Sage holds black non tangle tape only as the OH-branded CMP-OH-NTT-25-03: use that code if it is the same tape.", 2, "", null],
+    ["D rings", "Gilt (gold colour) D rings, two per apron, on the left side of the bib as worn. Sage holds antique brass 25 mm (CMP-DR25-931) and bronze 32 mm only; no gilt code yet.", 2, "", null],
+    ["Care label", "Tibard printed care label, set to the right side seam as worn, to finish 4 cm down from the top edge of the side seam: 40° wash · 2 dot iron · no bleach · tumble dry low · P dry clean. Printed at Tibard on the 25 mm nylon label tape.", 0.05, "CMP-LBL-NYL-25-01", 0.039067]
+   ],
+   "mfg": [
+    "Print is set before make-up: see CUSTOMER BRANDING for the position on the cut work.",
+    "Make the neck strap. Fold the strap and bag out one end. Edgestitch one edge.",
+    "Set the neck tie to the bib on the right side as worn.",
+    "D ring adjustment to the left side as worn. Fold in the raw edges of the loop and edgestitch one side. Cut the loop at 5 cm (2.5 cm on the half), insert the two gilt D rings and set to the bib. The D ring loop to finish 1.5 cm high (to the fold).",
+    "Set the bib facing. Neaten the bib facing, forming the bib topstitch at 5 cm. Ensure the top of the print runs into the bib seam with no gap.",
+    "Top of the bib: 6 mm topstitched.",
+    "Armholes: double turned and topstitched 6 mm.",
+    "Set the waist ties to finish level with the top of the side seam. Pull back each waist tie and edgestitch down to secure. Longer ties, 1.5 m.",
+    "Hem and sides: double turned and topstitched 12 mm."
+   ],
+   "fin": [
+    "Check, trim and fold. Bagged in 5s."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Finished measurements ± 1 cm",
+   "oneSize": true,
+   "customer": "ASK",
+   "brandType": "Print",
+   "brandPlace": "Italy print set to the left front chest as worn, pre make-up. On the finished apron the start of the print (the first vertical line of the print, to the right of the print) finishes 6.5 cm from the left side of the top of the bib, and the print falls into the seam at the top of the bib. On the cut work: set the start of the print 8.5 cm from the left side (as worn) of the top of the bib cut work, the top of the print to the top of the bib cut work (5 mm from the top at most), parallel to the top edge.",
+   "note": "Works order ASKAP056364 for ASK (sheet headed AP0563; JH created 25/11/13 from sample SR099; rating 0.55 as markers made AC JH 10/12/13; thread to 09939 JH 4/7/17, shade replaced YL 24/1/19; print position clarified JH 27/2/23; usage 0.55 to 0.65 m for the change in fabric width JH 16/8/23; eco fabric, supplier and code YL 25/10/24; processed by Gail). The print is the apron's branding, so it is not a stock style: the sales order's logo lines are not printed on top of it. No print artwork in the sheet. The sheet is in works-orders/ASKAP056364-ASK.xlsx."
+  },
+  {
+   "code": "OHCJSNORFOLK--07S",
+   "alias": ["OHCJSNORFOLK--07"],
+   "name": "Norfolk chef jacket — short sleeve, red, double breasted, button fastened",
+   "desc": "Short sleeved with standard sleeve hem · Back darts · Button/buttonhole fastening at front · Button fastened wrap collar · Oliver Harvey logo'd hem tab",
+   "lectra": "OH6 — Norfolk — short sleeves, variant OH6SSLV",
+   "variant": "OH6SSLV",
+   "chart": "NORFOLK-SS",
+   "fabrics": [
+    ["Red 65% polyester / 35% cotton 200 gsm X133 colour 111 (Tiajo) — the sheet gives no rating; 1.45 m from All Costings, as the white Norfolk", "PC2X13307", "B13", 1.45, 1.99]
+   ],
+   "trims": [
+    ["Thread", "THREAD — COATS EPIC 80'S RED 03860 — cost per metre. The sheet says red 03822 for topstitching and 03860 for the 5 thread and overlock while stocks last.", 220, "CMP-THR-EP80-03860-07", 0.000714],
+    ["Buttons", "Jones P3536 36L buttons, red, 10 per jacket.", 10, "CMP-BTN-P3536-36-07", 0.15],
+    ["OH woven label", "Oliver Harvey woven label at the back neck.", 1, "LABELOH5771", 0.04335],
+    ["OH red tax tab", "Oliver Harvey red tax tab set to the base of the pen pocket, to the back side of the pen pocket.", 1, "TAXTABOH07/01", 0.01678],
+    ["Care label", "Oliver Harvey wash instructions: 65/35 poly cotton · 60° wash · low tumble dry · 2 dot iron · P dry clean · do not bleach. Set into the right side seam 8 cm up from the finished hem.", 1, "CMP-OH-LBL-WASH-01", 0.032],
+    ["Product code label", "Label for the garment name and the manufacturing month and year only, behind the wash label in the side seam.", 1, "", null],
+    ["OH neck tape", "White Made in Great Britain tape, set to the neck edge of the collar from facing to facing. No Sage code on the trims list for the tape.", 1, "", null]
+   ],
+   "mfg": [
+    "Pen pocket hem double turned and topstitched 2 cm.",
+    "Pen pocket set to the left sleeve as worn, to finish 9.5 cm down from the top of the sleeve seam. For this customer only the pen pocket is set centrally within the width of the sleeve. Insert the red OH tax tab to the back side of the pocket, level with the base of the pocket. Stitch down the centre of the pocket. Bartack the pen pocket.",
+    "Set the darts at the back. Using the notches take in 5 mm to nothing 1 cm past the drill hole.",
+    "5 thread join up of the body and sleeves.",
+    "Sleeve hem double turned and topstitched 2.5 cm.",
+    "Body hem double turned and topstitched 2.5 cm.",
+    "Set the Made in Great Britain tape to the lower edge of the collar.",
+    "Make and set the collar to the neck. Groove stitch to close off the collar.",
+    "Edgestitch the collar leaf edge.",
+    "6 mm topstitch the back neck edge and onto the front to the width of the front facing. The front stitching will vary through the sizes as the facing is graded.",
+    "Mark and set the buttons and buttonholes on the front and collar (use the marker). Both buttons at the hem fasten through buttonholes to secure the lower front in position."
+   ],
+   "fin": [
+    "Trimmed and pressed.",
+    "Individually wrapped in OH tissue, product sticker to the bottom right hand corner of the bag."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Chest ± 2 cm · Sleeve ± 1 cm · Back ± 1.5 cm",
+   "customer": "Independent Catering",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Works order OHCJSNORFOLK--07S, the red short sleeve Norfolk for Independent Catering (JH created 8/5/13, updated 17/6/14; red version JH 19/6/14; pen pocket set centrally within the sleeve JH 2/11/14; thread shade YL 7/1/19; S added to the code to match Sage YL 11/3/19; Independent Catering logo taken off RCR 297 JH 25/10/21; cloth from P&R red to Tiajo X133 colour 111 RCR449 JH 15/1/26; fabric code PC2007 to PC2X13307 JH 2/3/26). No logo since 2021, so a plain OH jacket. Sage carries the sizes both with and without the S (OHCJSNORFOLK3407S, OHCJSNORFOLK3607), so both spellings match. The size chart is the NORFOLK-SS chart the white jacket uses: the sheet's figures are the same. The sheet is in works-orders/OHCJSNORFOLK-07S-Red.xlsx."
+  }
+ ],
+ "charts": {
+  "HTM016001-MEAS": [
+   ["All around cap, centre back to centre back, tab flat", "57 cm (TOL ± 1)"],
+   ["Depth of band", "8 cm (TOL ± 1)"]
+  ],
+  "AP300501-MEAS": [
+   ["Width at top of bib", "27 cm (± 0.5)"],
+   ["Width at top of waist", "71 cm (± 1.5)"],
+   ["Width at hem", "71 cm (± 1.5)"],
+   ["Length from top of bib to hem", "93 cm (± 1.5)"],
+   ["Length of neck strap", "53 cm (± 1)"],
+   ["Width of neck strap", "2.6 cm (± 0.5)"],
+   ["Length of waist tie", "94 cm (± 1.5)"]
+  ],
+  "ASKAP056364-MEAS": [
+   ["Width (skirt)", "70 cm (± 1)"],
+   ["Across bib", "29 cm (± 1)"],
+   ["Neck strap", "73.5 cm (± 1)"],
+   ["Length from bib to hem", "93 cm (± 1)"]
+  ]
+ },
+ "chartCols": {
+  "HTM016001-MEAS": ["Measurement", "Value"],
+  "AP300501-MEAS": ["Measurement", "Value"],
+  "ASKAP056364-MEAS": ["Measurement", "Value"]
+ }
+}
