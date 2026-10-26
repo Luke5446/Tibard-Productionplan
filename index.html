@@ -2949,8 +2949,9 @@ function absorbSnapshots(list){
 // With a GitHub token on this PC (Set up this PC), Publish puts data.json
 // straight into the repo through the GitHub API, as the cutting log and the
 // stock planner are written: read the file's sha, put the new one back with
-// it, read again if GitHub refuses a stale sha. Without a token it downloads
-// the file for the upload-and-commit routine as before. The token is its own
+// it, read again if GitHub refuses a stale sha. Without a token nothing is
+// published: a red warning asks for one (26 Oct 2026; before that the file
+// was downloaded for the upload-and-commit routine). The token is its own
 // (tibard_prod_token): the cutting-log one can write only the Tibard-Cutlog
 // repo, which is what makes it safe on the cutting room PC. Luke, 5 Oct 2026.
 var PUB_REPO='Luke5446/Tibard-Productionplan', PUB_FILE='data.json';
@@ -2958,13 +2959,23 @@ var PUB_API='https://api.github.com/repos/'+PUB_REPO+'/contents/'+PUB_FILE;
 function pubToken(){ try{ return localStorage.getItem('tibard_prod_token')||''; }catch(e){ return ''; } }
 function pubSetup(){ if(!IS_EDITOR) return;
   var cur=pubToken();
-  var t=prompt((cur?'This PC can publish straight to GitHub. Paste a new token to replace it, or clear the box to go back to downloading data.json.':'Paste the GitHub token for publishing (a fine-grained token that can write the '+PUB_REPO+' repo, Contents: read and write). This is not the cutting-log token: that one can only write Tibard-Cutlog.'), cur?'(kept)':'');
+  var t=prompt((cur?'This PC can publish straight to GitHub. Paste a new token to replace it, or clear the box to remove it (Publish then stops until a token is added).':'Paste the GitHub token for publishing (a fine-grained token that can write the '+PUB_REPO+' repo, Contents: read and write). This is not the cutting-log token: that one can only write Tibard-Cutlog.'), cur?'(kept)':'');
   if(t===null) return;
   t=t.trim();
   try{ if(!t) localStorage.removeItem('tibard_prod_token'); else if(t!=='(kept)') localStorage.setItem('tibard_prod_token', t); }catch(e){ alert('Could not keep the token in this browser.'); }
   pubRefreshBtn();
 }
-function pubRefreshBtn(){ var b=document.getElementById('pubSetupBtn'); if(b) b.innerHTML=pubToken()?'&#9881; Token':'&#9881; Set up this PC'; var pb=document.getElementById('publishBtn'); if(pb) pb.title=pubToken()?'Puts data.json into the repo; viewers see it within a minute':'Downloads data.json to upload to the repo (Set up this PC to publish straight from here)'; }
+function pubRefreshBtn(){ var b=document.getElementById('pubSetupBtn'); if(b) b.innerHTML=pubToken()?'&#9881; Token':'&#9881; Set up this PC'; var pb=document.getElementById('publishBtn'); if(pb) pb.title=pubToken()?'Puts data.json into the repo; viewers see it within a minute':'Needs a token: click Set up this PC and paste the publishing token'; var w=document.getElementById('pubWarn'); if(w && pubToken()) w.style.display='none'; }
+// 26 Oct 2026: with no token on this PC, Publish no longer downloads
+// data.json (a download looked like a publish to anyone not expecting it).
+// It shows a red warning beside the button instead, until a token is set.
+function pubNoToken(){
+  var w=document.getElementById('pubWarn');
+  if(!w){ w=document.createElement('span'); w.id='pubWarn'; w.style.cssText='color:#fff;background:#dc2626;font-weight:700;font-size:12px;padding:3px 8px;border-radius:6px;cursor:pointer;white-space:nowrap'; w.title='Click Set up this PC and paste the publishing token'; w.onclick=pubSetup;
+    var pb=document.getElementById('publishBtn'); if(pb && pb.parentNode) pb.parentNode.insertBefore(w, pb.nextSibling); else document.body.appendChild(w); }
+  w.innerHTML='&#9888; Please add a token to publish'; w.style.display='';
+}
+
 function pubB64(s){ return btoa(unescape(encodeURIComponent(s))); }
 function publishState(){
   return JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
@@ -2984,7 +2995,7 @@ function publishData(){
   // a page that is behind another window must not publish its older copy
   var behind=stateBehind(); if(behind){ saveRefused(behind); alert('Not published: this page is behind (the planner was saved at '+staleWhen(behind)+' in another window). Reload this page and publish again.'); return; }
   var json=publishState(), tok=pubToken();
-  if(!tok){ publishDownload(json, ''); return; }
+  if(!tok){ pubNoToken(); return; }
   var pb=document.getElementById('publishBtn'), was=pb?pb.innerHTML:'';
   pubBusy=true; if(pb) pb.innerHTML='&#8987; Publishing&hellip;';
   var done=function(ok, err){ pubBusy=false; if(pb) pb.innerHTML=was;
