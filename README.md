@@ -8,7 +8,11 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 
 - **To cut** (the chip counts works orders, like the tile): printed works
   orders not yet marked cut, oldest printed first
-  (click the Printed or Due heading to sort by that date, again to flip),
+  (click the Printed or Due heading to sort by that date, again to flip;
+  **Sort by fabric** groups the list by fabric, biggest run first, with the
+  running metres down each group and a dashed line where they pass each
+  100 m, a full roll being 100 to 120 m, so the cutter sees what cuts in a
+  row off one roll; Luke, 26 Oct 2026),
   with the standard metres per line; the search box narrows the list. The
   tiles above count the works orders printed today (click it to show only those),
   the works orders with a line waiting, and the lines waiting. One printed
