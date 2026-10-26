@@ -275,8 +275,12 @@ that PC opens the tab with a token.
 **Publish for team** writes the editor's state to `data.json` in this repo,
 which the viewers and the warehouse page read. With a GitHub token on the
 editor's PC it puts the file into the repo itself, through the GitHub API,
-and the team sees it within a minute; with no token, or if GitHub refuses,
-it downloads `data.json` for the upload-and-commit routine and says why.
+and the team sees it within a minute. With no token on the PC nothing is
+published: a red **Please add a token to publish** warning appears beside
+the button until one is set up (26 Oct 2026; before that it downloaded
+`data.json` for the upload-and-commit routine, which looked like a publish
+to anyone not expecting it). If GitHub refuses the token it still downloads
+`data.json` and says why.
 
 Setting the token up, once, on the production manager's PC: on GitHub,
 **Settings → Developer settings → Personal access tokens → Fine-grained
