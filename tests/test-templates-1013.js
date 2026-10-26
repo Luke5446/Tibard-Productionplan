@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('344 styles in the master', r.count===344, r.count);
+ ck('345 styles in the master', r.count===345, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -193,6 +193,13 @@ const path = require('path');
  ck('CT3082 SS print: size S with the S row highlighted, NEW3082RL, the zip and cord codes, the elastic cut lengths, the drawstring buttonholes, no branding band', d.size==='S'&&d.hit.length===1&&d.hit[0]==='S'&&d.text.includes('NEW3082RL')&&d.text.includes('CMP-ZIP-CNC56C-150-03')&&d.text.includes('CMP-CORD-PP6-03')&&d.text.includes('S 24" (61 cm)')&&d.text.includes('buttonholes vertical for the drawstring')&&!d.text.includes('CUSTOMER BRANDING'), [d.size,d.hit]);
  d=await printOf('CT30825003',4);
  ck('CT3082 50" print: the 50" row highlighted, the 3XL pattern note and the hips column', d.hit.length===1&&d.hit[0]==='50"'&&d.text.includes('50" (3XL pattern)')&&d.text.includes('Hips 20 cm down from waist'), [d.hit]);
+
+ // ── the Fenwicks grey denim waist apron FENAPP059914DEN (26 Oct 2026, evening) ──
+ const r13=await p.evaluate(()=>{ const h=styleForCode('FENAPP059914DEN'), s=h.style, u=fabricUsageFor('FENAPP059914DEN');
+   return [s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source].join('/'), s.trims.map(t=>t[3]).join('+'), s.trims[0][2], garmentKind('FENAPP059914DEN',s), (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, smIsStockStyle('FENAPP059914DEN')?'stock':'own', (s.logoImg||'').slice(0,14), (s.placeImg||'').slice(0,14)].join('|'); });
+ ck('FENAPP059914DEN: CO5014DEN at C4 0.7 m, All Costings agrees; grey 9971 thread uncoded at the waist apron 30, label tape, eyelets and rings coded, rivets not; 2-row chart; the Fuego logo and pocket sketch are its own branding, so not a stock style', r13==='FENAPP059914DEN||onesize|0599|CO5014DEN:C4:0.7|CO5014DEN/0.7/All Costings|+CMP-LBL-NYL-25-01+CMP-30ED-28-931+CMP-30RD-28-931+|30|APW|2|Embroidery|own|data:image/png|data:image/png', r13);
+ d=await printOf('FENAPP059914DEN',30);
+ ck('Fenwicks print: variant 0599, the eyelet code, the branding band with the gold logo position, two PNG images, the 2-row chart, no tax tab', d.text.includes('0599')&&d.text.includes('CMP-30ED-28-931')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('14 cm from the right side of the pocket')&&d.text.includes('74 cm (± 1)')&&d.pngs===2&&/CO5014DEN C4 0\.7/.test(d.text)&&!d.text.includes('TAXTABOH'), [d.pngs,d.text.slice(0,300)]);
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
