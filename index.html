@@ -285,6 +285,8 @@ body.planner-mode .planner-wrap{display:block}
 .fab-stk .fab-num{font-weight:600}
 .fab-stk tr:last-child td{border-bottom:0}
 .cut-tbl tr.cut-first td{border-top:2px solid #e5e7eb}
+.cut-tbl tr.cut-fab td{background:#f3f4f6;border-top:2px solid #7A1F3D;padding:6px 8px}
+.cut-tbl tr.cut-roll td{border-top:2px dashed #b45309}
 .emb-line{padding:3px 0;border-bottom:1px dotted #e5e7eb}.emb-line:last-of-type{border-bottom:0}.emb-txt{font-size:13.5px;user-select:all;cursor:text}.emb-logos{font-size:10.5px;color:#6b7280;margin-top:5px}
 .sm-ref-s{font-weight:700;color:#7A1F3D;font-size:12px;white-space:nowrap}
 .sm-ref-s.oh{color:#1f6b4a}
@@ -4244,6 +4246,26 @@ var cutLog={entries:[], savedAt:'', sha:null, loadedAt:null, error:'', source:''
 var cutQ='', cutSec='todo', cutAsAt='', cutFrom='', cutTo='', cutDayOpen={};
 var cutSortKey='printed', cutSortDesc=false, cutNewOnly=false;   // To cut: by date printed or due, oldest first; the headers sort; the New today tile filters
 function cutSortBy(k){ if(cutSortKey===k) cutSortDesc=!cutSortDesc; else { cutSortKey=k; cutSortDesc=false; } cutRender(); }
+// Sort by fabric (Luke, 26 Oct 2026): the To cut list grouped by fabric,
+// the biggest run first, with the running metres down each group, so the
+// cutter can see which works orders cut in a row off one roll before the
+// roll has to change. A full roll is 100 to 120 m: a dashed line marks
+// where the running metres pass each 100 m.
+var CUT_ROLL_MIN=100, CUT_ROLL_MAX=120;
+function cutSortFabric(){ cutSortKey = cutSortKey==='fabric' ? 'printed' : 'fabric'; cutSortDesc=false; cutRender(); }
+function cutFabricGroups(lines){
+  var by={};
+  lines.forEach(function(e){ var f=(e.fabric||'').trim(); var g=by[f]=by[f]||{fabric:f, name:'', lines:[], metres:0, refs:{}}; g.lines.push(e); g.metres+=e.std||0; g.refs[e.ref]=1; if(!g.name && e.fabName) g.name=e.fabName; });
+  var out=Object.keys(by).map(function(f){ var g=by[f]; g.metres=Math.round(g.metres*100)/100; g.wos=Object.keys(g.refs).length;
+    g.lines.sort(function(a,b){ return (a.printedAt||'').localeCompare(b.printedAt||'') || a.ref.localeCompare(b.ref) || (a.extra?1:0)-(b.extra?1:0); });
+    // the running figures live beside the line, never on it: the log entry is what gets saved
+    var run=0; g.rows=g.lines.map(function(e){ run+=e.std||0; return {e:e, run:Math.round(run*100)/100, roll:Math.max(1, Math.ceil((run-0.005)/CUT_ROLL_MIN))}; });
+    g.rolls = g.metres<=CUT_ROLL_MIN ? 'fits on one roll' : 'about '+(g.metres/CUT_ROLL_MAX).toFixed(1)+' to '+(g.metres/CUT_ROLL_MIN).toFixed(1)+' rolls';
+    return g; });
+  // biggest run first; the lines with no fabric on file go last
+  out.sort(function(a,b){ return (a.fabric?0:1)-(b.fabric?0:1) || b.metres-a.metres || a.fabric.localeCompare(b.fabric); });
+  return out;
+}
 function cutToken(){ try{ return localStorage.getItem('tibard_cutlog_token')||''; }catch(e){ return ''; } }
 function cutCanWrite(){ return !!cutToken(); }
 function cutSetup(){
@@ -4653,6 +4675,12 @@ function cutDays(from, to){
   Object.keys(by).forEach(function(k){ by[k].mins=(mins[k]||{}).mins||0; by[k].pct=by[k].cap>0 ? by[k].mins/by[k].cap : null; });
   return Object.keys(by).sort().reverse().map(function(k){ return by[k]; });
 }
+function cutMarkCells(e, today, can){ return can?'<td style="white-space:nowrap;text-align:right"><input type="number" step="0.01" min="0" data-cutm="'+esc(e.k)+'" value="'+(e.std!=null?e.std:'')+'" title="metres cut: change it if the roll gave more or less" style="width:72px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px"> m</td>'
+    +'<td style="white-space:nowrap;text-align:right"><input type="number" step="1" min="0" data-cutq="'+esc(e.k)+'" placeholder="'+esc(String(e.qty))+'" oninput="cutQtyChanged(\''+esc(e.k)+'\')" title="how many garments the cloth was cut for, if not the '+esc(String(e.qty))+' on the works order: the metres follow at the standard per garment, and can still be changed for waste; the works order is not changed" style="width:56px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px"></td>'
+    +'<td><input type="text" data-cutn="'+esc(e.k)+'" placeholder="comment, if not the standard" title="needed when the metres differ from the standard" style="width:190px;font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px"></td>'
+    +'<td style="white-space:nowrap"><input type="date" data-cutd="'+esc(e.k)+'" value="'+today+'" max="'+today+'" min="'+esc(e.printedAt||'')+'" title="The day it was cut: today, unless it was cut earlier and not marked at the time - put the real day so it counts on that day\'s KPI" style="font-size:12px;padding:2px 4px;border:1px solid #c8d0df;border-radius:4px"> '
+    +'<button class="btn btn-p" style="font-size:11px;padding:2px 9px" onclick="cutMark(\''+esc(e.k)+'\')">&#10003; Cut</button></td>'
+    :'<td></td>'; }
 function cutRefresh(){ cutLoad(function(){ cutRender(); }); }
 function cutRender(){
   var el=document.getElementById('cutBody'); if(!el) return;
@@ -4711,7 +4739,26 @@ function cutRender(){
     order.sort(function(a,b){ var c=keyOf(a).localeCompare(keyOf(b)) || a.localeCompare(b); return cutSortDesc ? -c : c; });
     var arrow=function(k){ return cutSortKey===k ? (cutSortDesc?' &#9660;':' &#9650;') : ''; };
     if(cutNewOnly) h+='<div class="sm-note">Showing only what was printed today ('+esc(fmtD(today))+'). <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutNewOnly=false; cutRender()">Show everything waiting</button></div>';
+    var fabMode=cutSortKey==='fabric', fabGroups=fabMode?cutFabricGroups(order.reduce(function(a,r){ return a.concat(byRef[r]); },[])):[];
+    var canCols=can?'<th style="text-align:right">Cut m</th><th style="text-align:right" title="how many garments the cloth was cut for - a note for the PM, the works order itself is not changed">Qty cut</th><th>Comment</th><th>Cut on</th><th></th>':'<th></th>';
+    h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><button class="fab-chip'+(fabMode?' on':'')+'" id="cutFabBtn" onclick="cutSortFabric()" title="'+(fabMode?'Back to the list by works order, oldest printed first':'Group what is waiting by fabric, biggest run first, with the running metres so you can see what cuts in a row off one roll')+'">&#129525; Sort by fabric</button>'
+      +(fabMode?'<span class="sm-sub">'+fabGroups.length+' fabric'+(fabGroups.length===1?'':'s')+' &middot; biggest run first &middot; a full roll is '+CUT_ROLL_MIN+' to '+CUT_ROLL_MAX+' m; the dashed line is where the running metres pass each '+CUT_ROLL_MIN+' m</span>':'')+'</div>';
+    if(cutNewOnly) h+='<div class="sm-note">Showing only what was printed today ('+esc(fmtD(today))+'). <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutNewOnly=false; cutRender()">Show everything waiting</button></div>';
     if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut'+(q?' matches "'+esc(q)+'"':'')+(cutNewOnly?' was printed today':'')+'.</div>'; }
+    else if(fabMode){
+      h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl cut-byfab"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Back to sorting by the date printed" onclick="cutSortBy(\'printed\')">Printed</th><th style="cursor:pointer" title="Back to sorting by the due date" onclick="cutSortBy(\'due\')">Due</th><th>Product</th><th style="text-align:right">Qty</th><th style="text-align:right">Std m</th><th style="text-align:right" title="Standard metres so far down this fabric: where a full roll (100 to 120 m) runs out">Running m</th>'+canCols+'</tr></thead><tbody>'
+        +fabGroups.map(function(g){
+          return '<tr class="cut-fab"><td colspan="'+(can?12:8)+'"><span style="font-family:monospace;font-size:12px;font-weight:700">'+esc(g.fabric||'no fabric on file')+'</span>'+(g.name?' <span class="sm-sub">'+esc(g.name)+'</span>':'')+' &middot; '+g.wos+' works order'+(g.wos===1?'':'s')+' &middot; '+g.lines.length+' line'+(g.lines.length===1?'':'s')+' &middot; <strong>'+g.metres.toFixed(2)+' m</strong>'+(g.fabric?' &middot; <span class="sm-tag'+(g.metres>CUT_ROLL_MIN?' warn':' ok')+'" title="At '+CUT_ROLL_MIN+' to '+CUT_ROLL_MAX+' m a full roll">'+esc(g.rolls)+'</span>':'')+'</td></tr>'
+            +g.rows.map(function(r,i){ var e=r.e, prev=i?g.rows[i-1]:null, newRoll=!!(prev && r.roll>prev.roll), days=e.printedAt?Math.floor((new Date(today)-new Date(e.printedAt))/864e5):null;
+              return '<tr'+(newRoll?' class="cut-roll"':'')+'><td><strong>'+esc(e.ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+'</td>'
+                +'<td>'+esc(fmtD(e.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':'')+'</td><td>'+esc(fmtD(e.due))+'</td>'
+                +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
+                +'<td style="text-align:right">'+esc(String(e.qty))+'</td>'
+                +'<td style="text-align:right" class="fab-num">'+(e.std!=null?e.std.toFixed(2):'&mdash;')+'</td>'
+                +'<td style="text-align:right" class="fab-num">'+r.run.toFixed(2)+(newRoll?' <span class="sm-tag warn" title="The running metres pass '+((r.roll-1)*CUT_ROLL_MIN)+' m here: a fresh roll about now">roll '+r.roll+'</span>':'')+'</td>'
+                +cutMarkCells(e, today, can)+'</tr>'; }).join(''); }).join('')
+        +'</tbody></table></div>';
+    }
     else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Sort by the date printed" onclick="cutSortBy(\'printed\')">Printed'+arrow('printed')+'</th><th style="cursor:pointer" title="Sort by the due date" onclick="cutSortBy(\'due\')">Due'+arrow('due')+'</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th>'+(can?'<th style="text-align:right">Cut m</th><th style="text-align:right" title="how many garments the cloth was cut for - a note for the PM, the works order itself is not changed">Qty cut</th><th>Comment</th><th>Cut on</th><th></th>':'<th></th>')+'</tr></thead><tbody>'
       +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
         return es.map(function(e,i){
@@ -4720,12 +4767,7 @@ function cutRender(){
             +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
             +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
             +'<td style="text-align:right" class="fab-num">'+(e.std!=null?e.std.toFixed(2):'&mdash;')+'</td>'
-            +(can?'<td style="white-space:nowrap;text-align:right"><input type="number" step="0.01" min="0" data-cutm="'+esc(e.k)+'" value="'+(e.std!=null?e.std:'')+'" title="metres cut: change it if the roll gave more or less" style="width:72px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px"> m</td>'
-                +'<td style="white-space:nowrap;text-align:right"><input type="number" step="1" min="0" data-cutq="'+esc(e.k)+'" placeholder="'+esc(String(e.qty))+'" oninput="cutQtyChanged(\''+esc(e.k)+'\')" title="how many garments the cloth was cut for, if not the '+esc(String(e.qty))+' on the works order: the metres follow at the standard per garment, and can still be changed for waste; the works order is not changed" style="width:56px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px"></td>'
-                +'<td><input type="text" data-cutn="'+esc(e.k)+'" placeholder="comment, if not the standard" title="needed when the metres differ from the standard" style="width:190px;font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px"></td>'
-                +'<td style="white-space:nowrap"><input type="date" data-cutd="'+esc(e.k)+'" value="'+today+'" max="'+today+'" min="'+esc(e.printedAt||'')+'" title="The day it was cut: today, unless it was cut earlier and not marked at the time - put the real day so it counts on that day\'s KPI" style="font-size:12px;padding:2px 4px;border:1px solid #c8d0df;border-radius:4px"> '
-                +'<button class="btn btn-p" style="font-size:11px;padding:2px 9px" onclick="cutMark(\''+esc(e.k)+'\')">&#10003; Cut</button></td>'
-              :'<td></td>')+'</tr>'; }).join(''); }).join('')
+            +cutMarkCells(e, today, can)+'</tr>'; }).join(''); }).join('')
       +'</tbody></table></div>';
   }
   if(cutSec==='log' && q){
