@@ -1,0 +1,225 @@
+{
+ "styles": [
+  {
+   "code": "CTT3082--03",
+   "name": "Tibard chef trousers, elasticated waist with drawstring and back pocket — long (tall) length, black",
+   "desc": "Chefs trousers · Full elasticated waist with drawstring · Zip fly · One patch pocket on the back · Side seam pockets · Hemmed · Long (tall) length · Black",
+   "lectra": "NEW 3082 — variant NEW3082LL, long length; sizes 46\" to 60\" cut on the XXL to 5XL patterns",
+   "variant": "NEW3082LL",
+   "chart": "CTT3082-MEAS",
+   "fabrics": [
+    [
+     "Black 65% polyester / 35% cotton — the sheet gives no rating; 1.65 m from All Costings (the regular length is 1.60). The sheet names the P and R cloth PC2003 at B11; Sage and All Costings carry the sustainable PC2003ECO (Tiajo) at B1",
+     "PC2003ECO",
+     "B1",
+     1.65,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     150,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Zip",
+     "6\" (15 cm) black lightweight nylon zip.",
+     1,
+     "CMP-ZIP-CNC56C-150-03",
+     0.17047
+    ],
+    [
+     "Toggle",
+     "Black plastic oval two-hole spring toggle on the drawstring. Sage holds the black spring toggle (large); use that code if it is the same toggle.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Cord",
+     "6 mm black cord for the waist. Cut: XXS 48\" · XS 52\" · S 56\" · M 60\" · L 64\" · XL 68\" · XXL 72\" · 46\" 74\" · 48\" 76\" · 50\" 78\" · 52\" 80\". The tall sheet stops at 52\"; the regular length sheet continues 54\" 82\" · 56\" 84\" · 58\" 86\" · 60\" 88\".",
+     1,
+     "CMP-CORD-PP6-03",
+     0.0898
+    ],
+    [
+     "Elastic",
+     "48 mm white elastic with the black drawstring insert. Cut, and double stitch to secure: XS 22\" (56 cm) · S 24\" (61 cm) · M 28\" (71 cm) · L 31\" (79 cm) · XL 33\" (84 cm) · XXL 35\" (89 cm) · 46\" 36\" (91.5 cm) · 48\" 38\" (96.5 cm) · 50\" 40\" (101.5 cm) · 52\" 42\" (106.5 cm) · 54\" 44\" (111.5 cm) · 56\" 46\" (116.5 cm) · 58\" 48\" (121.5 cm) · 60\" 50\" (126.5 cm). Sage holds the plain white 48 mm Bonadex elastic; no code for the drawstring-insert elastic yet.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Care label",
+     "Tibard printed care label set into the back rise seam, 8 cm down from the finished top edge: 65% polyester 35% cotton · 60° wash · do not bleach · tumble dry low · 2 dot iron · can be dry cleaned. Printed at Tibard on the 25 mm nylon label tape.",
+     0.05,
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Tibard tax tab",
+     "Tibard tax tab set to the side edge of the back pocket (outside leg side of the pocket), the top of the label to the base of the pocket hem stitching.",
+     1,
+     "TAXTABTIB01",
+     0.01891
+    ]
+   ],
+   "mfg": [
+    "Cut the elastic to the size (see the Elastic trim line) and double stitch to secure.",
+    "Set the buttonholes vertical for the drawstring, 1/2\" buttonhole setting. Set equally within the width of the fly placket (2 cm gap between the buttonholes), the top of the buttonhole 6.5 cm from the top overlocked edge of the band, to finish within the centre gap of the stitch lines.",
+    "5 thread join up: pocket bags to the legs, outside leg seam, front and back rises, inside leg seam.",
+    "Set the back pocket hem double turned and topstitched 1.5 cm.",
+    "Top of the finished pocket set level with the notch in the back outside leg. Pocket set centrally within the width of the back leg and parallel to the top edge.",
+    "Fold in 1 cm and edgestitch the pocket down onto the back leg.",
+    "Edgestitch the front side pocket opening. Pocket opening to finish 17 cm.",
+    "Set the zip and topstitch the fly. Fly width 4 cm, curved at the base.",
+    "Edgestitch the front rise from the base of the fly stitching.",
+    "Overlock the top edge of the trouser. Set the elastic to the waist: 4 rows of stitching on the waist, twin needle at the top and twin needle at the base.",
+    "Trouser hem double turned 1 + 1.7 cm and topstitched 1.5 cm."
+   ],
+   "fin": [
+    "Plastic oval two-hole toggle placed on the drawstring, the ends of the drawstring tied into a double knot.",
+    "Bartack horizontal across the top and bottom of the side pocket opening. Bartack vertical at the back pocket patch opening. Bartack vertical at the base of the fly.",
+    "Check and trim. Fold into quarters."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Waist relaxed, waist stretched, leg length and hips ± 2 cm",
+   "customer": "",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Stock works order CTT3082--03, the long (tall) leg version of CT3082--03 (NEW 3082 variant NEW3082LL; JH created 24/4/14 to be the exact fit of the OH Lancashire trouser waist with the style details of the previous CT3082; 1/2\" buttonhole blade setting YL 9/4/15; big sizes JH 7/2/17; cut cord lengths YL 16/6/21; Tibard Style added YL 9/10/24; processed by Gail). The same trousers as CT3082--03 with a 34\" (86.5 cm) leg in place of 32\". Sizes XS to XXL on the lettered Sage codes (CTT3082XL03, CTT3082LL03 …) and 46\" upwards on the waist-size codes (CTT30824603 …). Sheet gives no rating; 1.65 m from All Costings. The sheet is in works-orders/CTT3082-03-Stock.xlsx."
+  }
+ ],
+ "charts": {
+  "CTT3082-MEAS": [
+   [
+    "XS",
+    "22–24\"",
+    "56 cm (22\")",
+    "81 cm (32\")",
+    "86.5 cm (34\")",
+    "98 cm (38½\")"
+   ],
+   [
+    "S",
+    "26–28\"",
+    "61 cm (24\")",
+    "91 cm (35¾\")",
+    "86.5 cm (34\")",
+    "106 cm (41¾\")"
+   ],
+   [
+    "M",
+    "30–32\"",
+    "71 cm (28\")",
+    "101 cm (39¾\")",
+    "86.5 cm (34\")",
+    "114 cm (44¾\")"
+   ],
+   [
+    "L",
+    "34–36\"",
+    "79 cm (31\")",
+    "111 cm (43¾\")",
+    "86.5 cm (34\")",
+    "122 cm (48\")"
+   ],
+   [
+    "XL",
+    "38–40\"",
+    "84 cm (33\")",
+    "121 cm (47½\")",
+    "86.5 cm (34\")",
+    "130 cm (51\")"
+   ],
+   [
+    "XXL",
+    "42–44\"",
+    "89 cm (35\")",
+    "131 cm (51½\")",
+    "86.5 cm (34\")",
+    "138 cm (54¼\")"
+   ],
+   [
+    "46\"",
+    "46\" (XXL pattern)",
+    "91.5 cm",
+    "131 cm",
+    "86.5 cm (34\")",
+    "138 cm"
+   ],
+   [
+    "48\"",
+    "48\" (3XL pattern)",
+    "96.5 cm",
+    "141 cm",
+    "86.5 cm (34\")",
+    "146 cm"
+   ],
+   [
+    "50\"",
+    "50\" (3XL pattern)",
+    "101.5 cm",
+    "141 cm",
+    "86.5 cm (34\")",
+    "146 cm"
+   ],
+   [
+    "52\"",
+    "52\" (3XL pattern)",
+    "106.5 cm",
+    "141 cm",
+    "86.5 cm (34\")",
+    "146 cm"
+   ],
+   [
+    "54\"",
+    "54\" (4XL pattern)",
+    "111.5 cm",
+    "151 cm",
+    "86.5 cm (34\")",
+    "154 cm"
+   ],
+   [
+    "56\"",
+    "56\" (4XL pattern)",
+    "116.5 cm",
+    "151 cm",
+    "86.5 cm (34\")",
+    "154 cm"
+   ],
+   [
+    "58\"",
+    "58\" (5XL pattern)",
+    "121.5 cm",
+    "161 cm",
+    "86.5 cm (34\")",
+    "162 cm"
+   ],
+   [
+    "60\"",
+    "60\" (5XL pattern)",
+    "126.5 cm",
+    "161 cm",
+    "86.5 cm (34\")",
+    "162 cm"
+   ]
+  ]
+ },
+ "chartCols": {
+  "CTT3082-MEAS": [
+   "Size",
+   "To fit waist",
+   "Waist relaxed",
+   "Waist stretched",
+   "Leg length (long)",
+   "Hips 20 cm down from waist"
+  ]
+ }
+}

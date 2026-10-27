@@ -110,6 +110,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `templates-2026-10-26.json` | Those three records for the costing app. |
 | `FENAPP059914DEN-Fenwicks.xlsx` | Works order for FENAPP059914DEN, the Oliver Harvey grey denim waist apron for Fenwicks (model FOHDENIM variant 0599, from sample SR342): centre mitred retail pocket with two pen pocket stitch lines, reversed self fabric ties through 30 mm antique brass eyelets, reverse hem turning, rivets at the pocket corners, Tibard plain wash label and no OH tax tab or woven label, the Fuego by Fenwick logo in gold on the pocket before make-up (JH 2015, logo 2023). In the app as style FENAPP059914DEN, with the logo and pocket sketch from the sheet as its own branding. |
 | `FENAPP059914DEN-2026-10-26.json` | That record for the costing app. |
+| `CTT3082-03-Stock.xlsx` | Stock works order for CTT3082--03, the long (tall) leg version of CT3082--03: the Tibard black drawstring elasticated-waist chef trousers with a 34" leg (NEW 3082 variant NEW3082LL; JH 2014, big sizes 2017, cord lengths 2021). In the app as style CTT3082--03 for the lettered sizes and the 46"+ waist codes, 1.65 m from All Costings. |
+| `CTT3082-03-2026-10-27.json` | That record for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards
