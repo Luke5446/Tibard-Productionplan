@@ -112,6 +112,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `FENAPP059914DEN-2026-10-26.json` | That record for the costing app. |
 | `CTT3082-03-Stock.xlsx` | Stock works order for CTT3082--03, the long (tall) leg version of CT3082--03: the Tibard black drawstring elasticated-waist chef trousers with a 34" leg (NEW 3082 variant NEW3082LL; JH 2014, big sizes 2017, cord lengths 2021). In the app as style CTT3082--03 for the lettered sizes and the 46"+ waist codes, 1.65 m from All Costings. |
 | `CTT3082-03-2026-10-27.json` | That record for the costing app. |
+| `OHAPP059703DEN-WrightBros.xlsx` | Works order for OHAPP059703/DEN, the Oliver Harvey black denim stud halter bib apron for Wright Bros (model FOHDENIM variant 0597): two hip pockets with a pen pocket stitch line on the right, black 3110 cotton contrast neck strap and waist ties through 30 mm antique brass eyelets, antique brass capped studs and rivets, no red OH tax tab, the Wright Bros logo in white to the top centre of the bib (JH 2015, black contrast version for Wright Bros 2017). The black-tie twin of OHAPP059703/153DEN on the same chart. In the app as style OHAPP059703/DEN (alias OHAPP059703DEN), with the logo and the photo from the sheet as its own branding. |
+| `OHAPP059703DEN-2026-10-28.json` | That record for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards
