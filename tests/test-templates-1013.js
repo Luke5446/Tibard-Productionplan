@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('346 styles in the master', r.count===346, r.count);
+ ck('347 styles in the master', r.count===347, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -207,6 +207,13 @@ const path = require('path');
  ck('CTT3082XL03 -> the tall record at XL, NEW3082LL, 1.65 m from All Costings, 14-row chart, stock; the regular XL stays CT3082--03', r14.xl==='CTT3082--03|XL|NEW3082LL|PC2003ECO/1.65/All Costings|14|stock'&&r14.ll.startsWith('CTT3082--03|LL|')&&r14.n48.startsWith('CTT3082--03|48|')&&r14.reg.startsWith('CT3082--03|XL|')&&r14.white===null, r14);
  d=await printOf('CTT3082XL03',10);
  ck('CTT3082 XL print: the XL row highlighted on the long chart with the 34" leg, NEW3082LL, no regular length column', d.hit.length===1&&d.hit[0]==='XL'&&d.text.includes('NEW3082LL')&&d.text.includes('Leg length (long)')&&(d.text.match(/86\.5 cm \(34"\)/g)||[]).length>=14&&!d.text.includes('Leg length (regular)'), [d.hit,d.text.slice(0,200)]);
+
+ // ── OHAPP059703/DEN, the Wright Bros black denim bib apron with black ties (28 Oct 2026) ──
+ const r15=await p.evaluate(()=>{ const h=styleForCode('OHAPP059703/DEN'), s=h.style, u=fabricUsageFor('OHAPP059703/DEN'), a=styleForCode('OHAPP059703DEN'), k=styleForCode('OHAPP059703/153DEN');
+   return [s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source].join('/'), s.trims.map(t=>t[3]).join('+'), s.trims[0][2], garmentKind('OHAPP059703/DEN',s), (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, smIsStockStyle('OHAPP059703/DEN')?'stock':'own', (s.logoImg||'').slice(0,15), (s.placeImg||'').slice(0,15), a&&a.style.code, k&&k.style.code].join('|'); });
+ ck('OHAPP059703/DEN: CO5003DEN at C5 0.65 m and CO5003 at A4 0.17 m, All Costings agrees; black thread at the bib apron 70, labels, studs, eyelets and rings coded, rivets not; the 5-row 0597 chart; the Wright Bros logo is its own branding, so not a stock style; the alias without the slash resolves; the khaki 153 record stays its own', r15==='OHAPP059703/DEN||onesize|0597|CO5003DEN:C5:0.65+CO5003:A4:0.17|CO5003DEN/0.65/All Costings|CMP-THR-EP80-09700-03+LABELOH5771+CMP-OH-LBL-WASH-01+CMP-STD-CAP-050-929+CMP-STD-SOC-050-929+CMP-30ED-28-931+CMP-30RD-28-931+|70|APB|5|Embroidery|own|data:image/jpeg|data:image/jpeg|OHAPP059703/DEN|OHAPP059703/153DEN', r15);
+ d=await printOf('OHAPP059703/DEN',24);
+ ck('Wright Bros print: variant 0597, the stud and eyelet codes, the branding band with the white logo wording, two JPEG images, the 5-row chart, no tax tab code', d.text.includes('0597')&&d.text.includes('CMP-STD-CAP-050-929')&&d.text.includes('CMP-30ED-28-931')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('top centre of the bib in white')&&d.text.includes('96 cm (± 1.5 cm)')&&d.imgs>=2&&/CO5003DEN C5 0\.65/.test(d.text)&&/CO5003 A4 0\.17/.test(d.text)&&!d.text.includes('TAXTABOH'), [d.imgs,d.text.slice(0,300)]);
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
