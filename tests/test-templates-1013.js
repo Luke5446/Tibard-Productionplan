@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('347 styles in the master', r.count===347, r.count);
+ ck('348 styles in the master', r.count===348, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -214,6 +214,13 @@ const path = require('path');
  ck('OHAPP059703/DEN: CO5003DEN at C5 0.65 m and CO5003 at A4 0.17 m, All Costings agrees; black thread at the bib apron 70, labels, studs, eyelets and rings coded, rivets not; the 5-row 0597 chart; the Wright Bros logo is its own branding, so not a stock style; the alias without the slash resolves; the khaki 153 record stays its own', r15==='OHAPP059703/DEN||onesize|0597|CO5003DEN:C5:0.65+CO5003:A4:0.17|CO5003DEN/0.65/All Costings|CMP-THR-EP80-09700-03+LABELOH5771+CMP-OH-LBL-WASH-01+CMP-STD-CAP-050-929+CMP-STD-SOC-050-929+CMP-30ED-28-931+CMP-30RD-28-931+|70|APB|5|Embroidery|own|data:image/jpeg|data:image/jpeg|OHAPP059703/DEN|OHAPP059703/153DEN', r15);
  d=await printOf('OHAPP059703/DEN',24);
  ck('Wright Bros print: variant 0597, the stud and eyelet codes, the branding band with the white logo wording, two JPEG images, the 5-row chart, no tax tab code', d.text.includes('0597')&&d.text.includes('CMP-STD-CAP-050-929')&&d.text.includes('CMP-30ED-28-931')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('top centre of the bib in white')&&d.text.includes('96 cm (± 1.5 cm)')&&d.imgs>=2&&/CO5003DEN C5 0\.65/.test(d.text)&&/CO5003 A4 0\.17/.test(d.text)&&!d.text.includes('TAXTABOH'), [d.imgs,d.text.slice(0,300)]);
+
+ // ── OHKNAPP0630241/222HP2, the Knoops slate grey bib apron with the cocoa fabric loop (29 Oct 2026) ──
+ const r16=await p.evaluate(()=>{ const h=styleForCode('OHKNAPP0630241/222HP2'), s=h.style, u=fabricUsageFor('OHKNAPP0630241/222HP2'), a=styleForCode('OHKNAPP0630241222HP2'), b=styleForCode('OHKNAPP0630241');
+   return [s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source].join('/'), s.trims.map(t=>t[3]).join('+'), s.trims[0][2], garmentKind('OHKNAPP0630241/222HP2',s), (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, smIsStockStyle('OHKNAPP0630241/222HP2')?'stock':'own', (s.logoImg||'').slice(0,15), (s.placeImg||'').slice(0,15), a&&a.style.code, b&&b.style.code].join('|'); });
+ ck('OHKNAPP0630241/222HP2: CO5241ECO at A3 0.70 m and CO5222ECO at A4 0.01 m for the loop, the usage 0.7025 from the lay plan marker KNOOPS01; grey thread at the bib apron 70, brown thread, labels and tax tab coded, sliders and studs not; the 8-row KNOOPS chart; the Knoops logo is its own branding, so not a stock style; both aliases resolve', r16==='OHKNAPP0630241/222HP2||onesize|KNOOPS|CO5241ECO:A3:0.7+CO5222ECO:A4:0.01|CO5241ECO/0.7025/marker KNOOPS01|CMP-THR-EP80-09975-241+CMP-THR-EP80-08975-82+LABELOH5771+CMP-OH-LBL-WASH-01++TAXTABOH07/01+|70|APB|8|Embroidery|own|data:image/jpeg|data:image/jpeg|OHKNAPP0630241/222HP2|OHKNAPP0630241/222HP2', r16);
+ d=await printOf('OHKNAPP0630241/222HP2',24);
+ ck('Knoops print: variant KNOOPS, both thread codes, the tax tab code, the branding band with the logo wording, two JPEG images, the 8-row chart with the 108 cm ties, the marker usage 0.703 m against the costing 0.70', d.text.includes('KNOOPS')&&d.text.includes('CMP-THR-EP80-09975-241')&&d.text.includes('CMP-THR-EP80-08975-82')&&d.text.includes('TAXTABOH07/01')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('top centre of the bib')&&d.text.includes('108 cm (± 1.5)')&&d.imgs>=2&&/CO5241ECO A3 0\.703 m \(costing 0\.7\)/.test(d.text)&&/CO5222ECO A4 0\.01/.test(d.text), [d.imgs,d.text.slice(0,300)]);
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
