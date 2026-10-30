@@ -2437,6 +2437,16 @@ var WRITEOFF_LOCATION='HOME', WRITEOFF_REF1='Cutting', WRITEOFF_CAT='Manual Redu
 function writeOffFileName(){ var t=now(); return 'Fabric_WriteOff_'+d2s(t)+'_'+String(t.getHours()).padStart(2,'0')+String(t.getMinutes()).padStart(2,'0')+'.csv'; }
 function ukDate(iso){ return iso ? iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4) : ''; }
 function csvCell(v){ v=(v==null)?'':String(v); return /[",\r\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+// Sage's stock import routines (add stock, write-off) reject any line whose
+// reference is longer than 20 characters, spaces included - the file is taken
+// and nothing posts. Every reference written to a Sage file goes through here:
+// the first form that fits wins, so a long one loses its label before its
+// meaning ('Stock Take ADJ-7' > 'ST ADJ-7' > the note alone), and only as a last
+// resort is it cut at 20.
+var SAGE_REF_MAX=20;
+function sageRef(){ var forms=Array.prototype.slice.call(arguments).map(function(f){ return (f==null?'':String(f)).replace(/\s+/g,' ').trim(); }).filter(function(f){ return f; });
+  for(var i=0;i<forms.length;i++) if(forms[i].length<=SAGE_REF_MAX) return forms[i];
+  return (forms[forms.length-1]||'').slice(0,SAGE_REF_MAX).trim(); }   // nothing fits: cut the barest form, the meaning, not the label
 function fabricWriteOffRows(todo){
   var agg={}, order=[];
   function add(ref,date,code,m){ var key=ref+'|'+code+'|'+date; if(!agg[key]){ agg[key]={code:code, ref:ref, date:date, metres:0}; order.push(key); } agg[key].metres+=m; }
@@ -2445,7 +2455,7 @@ function fabricWriteOffRows(todo){
     (f.extras||[]).forEach(function(x){ var xm=(x.actual!=null)?x.actual:x.std; if(x.code && xm>0) add(c.ref, c.completed, x.code, xm); });
   });
   return order.map(function(k){ var a=agg[k];
-    return [a.code, WRITEOFF_LOCATION, '', Math.round(a.metres*100)/100, WRITEOFF_REF1, a.ref, ukDate(a.date), WRITEOFF_CAT]; });
+    return [a.code, WRITEOFF_LOCATION, '', Math.round(a.metres*100)/100, WRITEOFF_REF1, sageRef(a.ref), ukDate(a.date), WRITEOFF_CAT]; });
 }
 // Exports the TICKED open lines from the Fabric tab and nothing else - the PM
 // chooses what goes to Sage - and marks each one with the date and the file
@@ -3218,8 +3228,8 @@ var EMB_WRITEOFF_REF1='Embroidery', EMB_BOOKIN_LOCATION='Home';
 function embToBook(){ return embQueue().filter(function(l){ return !!l.doneAt; }); }
 function embBookFiles(l){
   var date=ukDate(d2s(now())), stamp=d2s(now());
-  var off=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat'], [l.pickCode, WRITEOFF_LOCATION, '', Math.round(l.qty), EMB_WRITEOFF_REF1, l.ref, date, WRITEOFF_CAT]];
-  var add=[['StockCode','Location','Bin','Qty','StockExported','Reference1'], [l.code, EMB_BOOKIN_LOCATION, '', Math.round(l.qty), '', EMB_WRITEOFF_REF1+' '+l.ref]];
+  var off=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat'], [l.pickCode, WRITEOFF_LOCATION, '', Math.round(l.qty), EMB_WRITEOFF_REF1, sageRef(l.ref), date, WRITEOFF_CAT]];
+  var add=[['StockCode','Location','Bin','Qty','StockExported','Reference1'], [l.code, EMB_BOOKIN_LOCATION, '', Math.round(l.qty), '', sageRef(EMB_WRITEOFF_REF1+' '+l.ref, 'EMB '+l.ref, l.ref)]];
   var csv=function(rows){ return rows.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n')+'\r\n'; };
   return [{name:'EMB_WriteOff_'+l.ref.replace(/[^A-Za-z0-9-]/g,'_')+'_'+stamp+'.csv', text:csv(off)}, {name:'EMB_BookIn_'+l.ref.replace(/[^A-Za-z0-9-]/g,'_')+'_'+stamp+'.csv', text:csv(add)}];
 }
@@ -4877,7 +4887,13 @@ var STLOG_FILE='stocktake.json';
 var stLog={entries:[], savedAt:'', sha:null, loadedAt:null, error:'', source:'', busy:false, file:STLOG_FILE};
 var ST_PER_DAY=2, ST_DAYS={1:1,2:1,3:1,4:1};            // Monday to Thursday
 var ST_INTERVAL={A:30, B:60, C:120};                    // days between counts, by class
-var ST_REF1='Stock Take', ST_ADD_LOCATION='Home';       // the write-off keeps WRITEOFF_LOCATION / WRITEOFF_CAT
+var ST_REF1='Stock Take', ST_ADD_LOCATION='Home';
+// The add-stock reference: 'Stock Take <note>' when that fits Sage's 20
+// characters, 'ST <note>' when it does not, the note alone after that.
+function stAddRef(note){ note=(note||'').trim(); return note ? sageRef(ST_REF1+' '+note, 'ST '+note, note) : ST_REF1; }
+function stRefWarn(note){ note=(note||'').trim(); if(!note) return ''; var full=(ST_REF1+' '+note).replace(/\s+/g,' ');
+  if(full.length<=SAGE_REF_MAX) return ''; if(note.length>SAGE_REF_MAX) return 'Sage allows 20 characters: the file will carry "'+sageRef(note)+'"';
+  return 'Too long with "'+ST_REF1+'" in front: the file will carry "'+stAddRef(note)+'"'; }       // the write-off keeps WRITEOFF_LOCATION / WRITEOFF_CAT
 var stSec='todo', stQ='', stTyping=false, stOpen={mon:{}, sched:false};
 try{ var _so=JSON.parse(localStorage.getItem('tibard_st_view')||'null'); if(_so){ stOpen.mon=_so.mon||{}; stOpen.sched=!!_so.sched; } }catch(e){}
 function stSavePrefs(){ try{ localStorage.setItem('tibard_st_view', JSON.stringify(stOpen)); }catch(e){} }
@@ -4988,15 +5004,16 @@ function stExport(kind){ if(!IS_EDITOR){ alert('View-only mode.'); return; } if(
   var todo=ticked.filter(function(e){ return neg ? e.diff<0 : e.diff>0; }), zero=ticked.filter(function(e){ return e.diff===0; });
   if(!todo.length){ alert(zero.length ? 'Nothing to '+(neg?'write off':'add')+' - '+zero.length+' ticked count(s) match and will be closed.' : 'Tick the counts that are right to '+(neg?'write off':'add to Sage')+' first.'); if(!zero.length) return; }
   var date=ukDate(d2s(now())), fname=stFileName(kind), rows;
-  if(neg) rows=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat']].concat(todo.map(function(e){ return [e.code, WRITEOFF_LOCATION, '', Math.round(-e.diff*100)/100, ST_REF1, e.pmNote||'', date, WRITEOFF_CAT]; }));
-  else rows=[['StockCode','Location','Bin','Qty','StockExported','Reference1']].concat(todo.map(function(e){ return [e.code, ST_ADD_LOCATION, '', Math.round(e.diff*100)/100, '', (ST_REF1+' '+(e.pmNote||'')).trim()]; }));
+  if(neg) rows=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat']].concat(todo.map(function(e){ return [e.code, WRITEOFF_LOCATION, '', Math.round(-e.diff*100)/100, ST_REF1, sageRef(e.pmNote||''), date, WRITEOFF_CAT]; }));
+  else rows=[['StockCode','Location','Bin','Qty','StockExported','Reference1']].concat(todo.map(function(e){ return [e.code, ST_ADD_LOCATION, '', Math.round(e.diff*100)/100, '', stAddRef(e.pmNote)]; }));
   var keys={}; todo.forEach(function(e){ keys[e.k]=neg?'writeoff':'addstock'; }); zero.forEach(function(e){ keys[e.k]='matched'; });
   var stamp=new Date().toISOString();
   stSave('Stock take: '+fname, function(d){ var n=0; d.entries.forEach(function(e){ if(keys[e.k] && !e.closedAt){ e.closedAt=stamp; e.closedHow=keys[e.k]; if(keys[e.k]!=='matched'){ e.exportedAt=stamp; e.exportFile=fname; } n++; } }); return n>0; },
     function(ok, err){ if(!ok){ alert('The stock take could not be saved: '+(err||'')+'\n\nNo file was made - try again in a moment.'); return; }
       if(todo.length) downloadCsv(fname, rows.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n')+'\r\n');
       stViews();
-      alert((todo.length ? todo.length+' line(s) in '+fname+' - save it to the shared folder for the Sage routine.' : 'No file made.')+(zero.length?'\n'+zero.length+' matching count(s) closed.':'')); }); }
+      var cut=todo.filter(function(e){ return stRefWarn(e.pmNote); }).map(function(e){ return e.code+': "'+(neg?sageRef(e.pmNote):stAddRef(e.pmNote))+'"'; });
+      alert((todo.length ? todo.length+' line(s) in '+fname+' - save it to the shared folder for the Sage routine.' : 'No file made.')+(zero.length?'\n'+zero.length+' matching count(s) closed.':'')+(cut.length?'\n\nReference shortened to Sage\'s 20 characters on:\n'+cut.join('\n'):'')); }); }
 // ── the audit report: every count, as an Excel workbook ──
 function stReport(){
   var head=['Counted on','Time','Fabric','Description','Supplier','Class','Reason','Listed on','Sage in stock','Sage sheet date','Cut on live works orders','Completed, not written off','Expected to hand','Counted','Difference','Cutting room comment','PM comment','PM OK','Status','Export file','Exported on','Recount note','Recount of'];
@@ -5091,7 +5108,7 @@ function stRevHtml(){
     +(IS_EDITOR?'<button class="btn btn-p" style="font-size:11px;padding:3px 9px" onclick="stExport(\'WriteOff\')" title="The ticked counts that are short: a write-off file for the Sage routine, in the fabric write-off layout">&#8681; Write-off file'+(nOff?' <span class="cnt">'+nOff+'</span>':'')+'</button> '
       +'<button class="btn btn-p" style="font-size:11px;padding:3px 9px" onclick="stExport(\'AddStock\')" title="The ticked counts that are over: an add-stock file for the Sage routine, in the TIB_Add_Stock layout">&#8679; Add-stock file'+(nAdd?' <span class="cnt">'+nAdd+'</span>':'')+'</button> '
       +'<button class="btn" style="font-size:11px;padding:3px 9px" onclick="stReport()" title="Every count ever made, with the figures it was set against, plus the count schedule - an Excel workbook for the auditors">&#128196; Audit report (.xlsx)</button>':'')+'</div>'
-    +'<div class="sub">The cutting room\'s counts against the To hand figure. The difference is what Sage needs adjusting by - not the whole gap to Sage\'s stock, because the cloth already cut will come off at completion. Put the Sage reference in the comment, tick when it is right to adjust, then the file buttons write the ticked counts out and close them. Not happy with a count? Recount sends it back to the cutting room with a note.</div>';
+    +'<div class="sub">The cutting room\'s counts against the To hand figure. The difference is what Sage needs adjusting by - not the whole gap to Sage\'s stock, because the cloth already cut will come off at completion. Put the Sage reference in the comment (20 characters at most - Sage rejects a longer one; the box warns and the file shortens it), tick when it is right to adjust, then the file buttons write the ticked counts out and close them. Not happy with a count? Recount sends it back to the cutting room with a note.</div>';
   if(!open.length) h+='<div class="sm-empty" style="padding:14px">No counts waiting.</div>';
   else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Counted</th><th>Fabric</th><th>Why</th><th style="text-align:right" title="Sage\'s stock on the sheet the count was set against">Sage</th><th style="text-align:right" title="cut on live works orders, plus completed lines not yet written off">Already cut</th><th style="text-align:right">To hand</th><th style="text-align:right">Counted</th><th style="text-align:right">Adjust Sage by</th><th>Cutting room</th><th>PM comment (Sage ref)</th><th title="right to adjust Sage">OK</th><th></th></tr></thead><tbody>'
     +open.map(function(e){ var x=e.expected||{}, why={pick:'Daily check', adhoc:'Ad hoc', recount:'Recount'}[e.why]||'';
@@ -5104,7 +5121,7 @@ function stRevHtml(){
         +'<td class="fab-num" style="font-weight:700">'+fabM(e.counted,1)+'</td>'
         +'<td class="fab-num">'+(e.diff==null?'<span class="sm-sub">no Sage figure</span>':e.diff===0?'<span class="sm-tag ok">matches</span>':e.diff<0?'<span style="color:#b91c1c;font-weight:700">write off '+fabM(-e.diff,1)+' m</span>':'<span style="color:#1d4ed8;font-weight:700">add '+fabM(e.diff,1)+' m</span>')+'</td>'
         +'<td class="sm-sub">'+esc(e.note||'')+'</td>'
-        +'<td>'+(ed?'<input type="text" value="'+esc(e.pmNote||'')+'" placeholder="Sage ref" onchange="stPmNote(\''+esc(e.k)+'\', this.value)" style="width:150px;font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px">':esc(e.pmNote||''))+'</td>'
+        +'<td>'+(ed?'<input type="text" value="'+esc(e.pmNote||'')+'" placeholder="Sage ref (20 max)" maxlength="'+SAGE_REF_MAX+'" onchange="stPmNote(\''+esc(e.k)+'\', this.value)" style="width:150px;font-size:12px;padding:3px 6px;border:1px solid '+(stRefWarn(e.pmNote)?'#f59e0b':'#c8d0df')+';border-radius:4px">':esc(e.pmNote||''))+(stRefWarn(e.pmNote)?'<div class="sm-sub" style="color:#b45309">&#9888; '+esc(stRefWarn(e.pmNote))+'</div>':'')+'</td>'
         +'<td style="text-align:center">'+(ed?'<input type="checkbox"'+(e.pmOk?' checked':'')+(e.diff==null?' disabled title="no Sage figure to adjust"':'')+' onchange="stPmOk(\''+esc(e.k)+'\', this.checked)">':(e.pmOk?'&#10003;':''))+'</td>'
         +'<td style="white-space:nowrap">'+(ed?'<button class="btn" style="font-size:10px;padding:1px 7px" onclick="stRecount(\''+esc(e.k)+'\')" title="Back to the cutting room with a note">&#8634; Recount</button>'+(e.diff===0?' <button class="btn" style="font-size:10px;padding:1px 7px" onclick="stClose(\''+esc(e.k)+'\')" title="Matches: nothing to adjust, close it">&#10003; Close</button>':''):'')+'</td></tr>'; }).join('')
     +'</tbody></table></div>';
