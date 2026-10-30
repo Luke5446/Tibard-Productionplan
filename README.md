@@ -233,6 +233,12 @@ warehouse log:
    `EMB_BookIn_<WO>_<date>.csv` books the branded code in, in the add-stock
    layout the routine reads: `StockCode,Location,Bin,Qty,StockExported,
    Reference1`, location Home, reference "Embroidery <WO>".
+   Every reference written to a Sage import file (write-off, add-stock, EMB
+   book-in, stock take) is held to Sage's limit of 20 characters, spaces
+   included - a longer one makes the routine reject the file. A long one
+   drops its label first ("Stock Take ADJ-7" becomes "ST ADJ-7", then the
+   note alone) and is cut at 20 only as a last resort; the stock take's
+   Sage ref box warns when that will happen (30 Oct 2026).
 5. The editor takes the book-in mark on its next load: the works order
    completes in the planner as at the day it was booked, with no fabric.
    The booking sits in the one Booked in history on the Warehouse tab,
