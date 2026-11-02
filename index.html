@@ -262,6 +262,8 @@ body.planner-mode .planner-wrap{display:block}
 .sm-tag.warn{background:#fee2e2;color:#991b1b}
 .fab-st.backdated{background:#fef3c7;color:#92400e}
 .sm-tag.ok{background:#d1fae5;color:#065f46}
+.sm-tag.soon{background:#fef3c7;color:#92400e}
+.sm-tag.sold{background:#991b1b;color:#fff}
 .sm-meta{font-size:11px;color:#6b7280;margin-top:2px}
 .sm-desc{font-size:12.5px;margin-top:5px}
 .sm-acts{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
@@ -4274,18 +4276,71 @@ function cutSortBy(k){ if(cutSortKey===k) cutSortDesc=!cutSortDesc; else { cutSo
 // where the running metres pass each 100 m.
 var CUT_ROLL_MIN=100, CUT_ROLL_MAX=120;
 function cutSortFabric(){ cutSortKey = cutSortKey==='fabric' ? 'printed' : 'fabric'; cutSortDesc=false; cutRender(); }
-function cutFabricGroups(lines){
-  var by={};
-  lines.forEach(function(e){ var f=(e.fabric||'').trim(); var g=by[f]=by[f]||{fabric:f, name:'', lines:[], metres:0, refs:{}}; g.lines.push(e); g.metres+=e.std||0; g.refs[e.ref]=1; if(!g.name && e.fabName) g.name=e.fabName; });
+function cutFabricGroups(lines, today){
+  var by={}, dm={}; today=today||d2s(now());
+  lines.forEach(function(e){ var f=(e.fabric||'').trim(); var g=by[f]=by[f]||{fabric:f, name:'', lines:[], metres:0, refs:{}, tier:3}; g.lines.push(e); g.metres+=e.std||0; g.refs[e.ref]=1; if(!g.name && e.fabName) g.name=e.fabName; dm[e.k]=cutDemandFor(e, today); if(dm[e.k].tier<g.tier) g.tier=dm[e.k].tier; });
   var out=Object.keys(by).map(function(f){ var g=by[f]; g.metres=Math.round(g.metres*100)/100; g.wos=Object.keys(g.refs).length;
-    g.lines.sort(function(a,b){ return (a.printedAt||'').localeCompare(b.printedAt||'') || a.ref.localeCompare(b.ref) || (a.extra?1:0)-(b.extra?1:0); });
+    // down the group: the most needed line first, then oldest printed
+    g.lines.sort(function(a,b){ return cutDemandKey(dm[a.k]).localeCompare(cutDemandKey(dm[b.k])) || (a.printedAt||'').localeCompare(b.printedAt||'') || a.ref.localeCompare(b.ref) || (a.extra?1:0)-(b.extra?1:0); });
     // the running figures live beside the line, never on it: the log entry is what gets saved
-    var run=0; g.rows=g.lines.map(function(e){ run+=e.std||0; return {e:e, run:Math.round(run*100)/100, roll:Math.max(1, Math.ceil((run-0.005)/CUT_ROLL_MIN))}; });
+    var run=0; g.rows=g.lines.map(function(e){ run+=e.std||0; return {e:e, d:dm[e.k], run:Math.round(run*100)/100, roll:Math.max(1, Math.ceil((run-0.005)/CUT_ROLL_MIN))}; });
     g.rolls = g.metres<=CUT_ROLL_MIN ? 'fits on one roll' : 'about '+(g.metres/CUT_ROLL_MAX).toFixed(1)+' to '+(g.metres/CUT_ROLL_MIN).toFixed(1)+' rolls';
     return g; });
-  // biggest run first; the lines with no fabric on file go last
-  out.sort(function(a,b){ return (a.fabric?0:1)-(b.fabric?0:1) || b.metres-a.metres || a.fabric.localeCompare(b.fabric); });
+  // the most needed fabric first (its most needed line), then the biggest run; the lines with no fabric on file go last
+  out.sort(function(a,b){ return (a.fabric?0:1)-(b.fabric?0:1) || a.tier-b.tier || b.metres-a.metres || a.fabric.localeCompare(b.fabric); });
   return out;
+}
+// Filter by demand (Luke, 2 Nov 2026): the due date is not always the
+// measure of what the cutting room needs first - a works order raised for
+// stock with a two-week date is wanted tomorrow once the shelf is empty.
+// Each line is read against the planner's figures for its code: the free
+// stock before any live works order (In stock less On SOP, plus completed
+// works orders awaiting Sage), the days that stock lasts at the sales rate,
+// the earliest sales order the works order covers (from the SOPDemand paste)
+// and the works order's own due date. That gives a "needed" date and a band:
+//   sold out  - no free stock before the works orders, or oversold
+//   this week - needed within 7 days, or under 7 days of stock
+//   2 weeks   - needed within 14 days, or under 14 days of stock
+//   later     - everything else
+// The Needed chips show one band and the ones above it (a works order is
+// in the band of its most needed line); the Needed heading sorts by it;
+// Sort by fabric puts the most needed fabric first. Nothing is written to
+// the log: the bands are read afresh from the planner's data each time.
+var CUT_DEMAND=[{k:'sold', l:'Sold out', tag:'sold out', cls:'sold'},{k:'week', l:'This week', tag:'this week', cls:'warn'},{k:'fortnight', l:'Within 2 weeks', tag:'2 weeks', cls:'soon'},{k:'later', l:'Later', tag:'', cls:''}];
+var CUT_DEMAND_WEEK=7, CUT_DEMAND_FORTNIGHT=14;
+var cutDemand='';
+function cutDemandSet(k){ cutDemand = cutDemand===k ? '' : k; cutSec='todo'; cutRender(); }
+function cutDemandTier(k){ for(var i=0;i<CUT_DEMAND.length;i++) if(CUT_DEMAND[i].k===k) return i; return 3; }
+function cutDemandFor(e, today){
+  today=today||d2s(now());
+  var wo=null; for(var i=0;i<WOs.length;i++){ if(WOs[i].ref===e.ref){ wo=WOs[i]; break; } }
+  var it=wo ? ((wo.items||[]).filter(function(x){ return x.code===e.code; })[0]||null) : null;
+  var r=rows.filter(function(x){ return x.code===e.code; })[0]||null;
+  var free=r ? (r.available!=null ? r.available : (r.inStock-r.onSOP)) : null;   // before any live works order
+  var days=(r && r.dailyUsage>0 && r.daysOfStock<999) ? r.daysOfStock : null;
+  var soDue='', so=''; if(it && it.sop && it.sop.covers) it.sop.covers.forEach(function(c){ if(c.due && (!soDue || c.due<soDue)){ soDue=c.due; so=c.so; } });
+  var woDue=(wo && wo.due) || e.due || '';
+  var by=(soDue && (!woDue || soDue<woDue)) ? soDue : woDue, bySO=!!(soDue && by===soDue);
+  var daysTo=by ? Math.round((new Date(by)-new Date(today))/864e5) : null;
+  var tier=3, why=[];
+  if(free!=null && free<=0){ tier=0; why.push(free<0 ? 'oversold by '+Math.round(-free)+' before the live works orders' : 'nothing free before the live works orders'); }
+  else {
+    if(daysTo!=null && daysTo<=CUT_DEMAND_WEEK) tier=1; else if(daysTo!=null && daysTo<=CUT_DEMAND_FORTNIGHT) tier=2;
+    if(days!=null && days<=CUT_DEMAND_WEEK) tier=Math.min(tier,1); else if(days!=null && days<=CUT_DEMAND_FORTNIGHT) tier=Math.min(tier,2);
+    if(free!=null) why.push(Math.round(free)+' free before the live works orders'+(days!=null ? ', about '+Math.round(days)+' day'+(Math.round(days)===1?'':'s')+' at the sales rate' : ''));
+  }
+  if(by) why.push('needed '+fmtD(by)+(bySO ? ' for SO '+so : ' (the works order\'s due date)'));
+  if(!r) why.push(wo && wo.sm ? 'a special make: its own order' : 'not on the planner\'s stock list');
+  return {tier:tier, band:CUT_DEMAND[tier], by:by, bySO:bySO, so:so, free:free, days:days, daysTo:daysTo, why:why.join('; ')};
+}
+function cutDemandKey(d){ return d.tier+'|'+(d.by||'9999-99-99'); }
+// a works order's band is its most needed line
+function cutDemandWO(lines, today){ var best=null; lines.forEach(function(e){ var d=cutDemandFor(e, today); if(!best || cutDemandKey(d)<cutDemandKey(best)) best=d; }); return best; }
+function cutDemandCell(d){
+  if(!d) return '<td></td>';
+  var tag=d.tier<3 ? ' <span class="sm-tag '+d.band.cls+'">'+d.band.tag+'</span>' : '';
+  var sub=d.free!=null ? '<div class="sm-sub">'+Math.round(d.free)+' free'+(d.days!=null ? ' &middot; '+Math.round(d.days)+' d' : '')+'</div>' : '';
+  return '<td class="cut-need" style="white-space:nowrap" title="'+esc(d.why)+'">'+(d.by?esc(fmtD(d.by)):'&mdash;')+(d.bySO?' <span class="sm-sub">SO</span>':'')+tag+sub+'</td>';
 }
 function cutToken(){ try{ return localStorage.getItem('tibard_cutlog_token')||''; }catch(e){ return ''; } }
 function cutCanWrite(){ return !!cutToken(); }
@@ -4755,24 +4810,34 @@ function cutRender(){
   if(cutSec==='todo'){
     var byRef={}, order=[];
     todo.filter(match).filter(function(e){ return !cutNewOnly || e.printedAt===today; }).forEach(function(e){ if(!byRef[e.ref]){ byRef[e.ref]=[]; order.push(e.ref); } byRef[e.ref].push(e); });
-    // by the date printed (the one the cutter needs most) or the due date, oldest first; the heading flips it
-    var keyOf=function(ref){ var e=byRef[ref][0]; return (cutSortKey==='due' ? (e.due||'9999') : (e.printedAt||'')); };
+    // what each line, and each works order, is needed for (see cutDemandFor); the Needed chips keep one band and the ones above it
+    var dm={}, dmOf=function(e){ return dm[e.k]||(dm[e.k]=cutDemandFor(e, today)); }, dmWO={}, dmCount=[0,0,0,0];
+    order.forEach(function(ref){ var best=null; byRef[ref].forEach(function(e){ var d=dmOf(e); if(!best || cutDemandKey(d)<cutDemandKey(best)) best=d; }); dmWO[ref]=best; dmCount[best.tier]++; });
+    var dmMax=cutDemand ? cutDemandTier(cutDemand) : 3;
+    if(cutDemand) order=order.filter(function(ref){ return dmWO[ref].tier<=dmMax; });
+    // by the date printed (the one the cutter needs most), the due date or what is needed first, oldest first; the heading flips it
+    var keyOf=function(ref){ var e=byRef[ref][0]; return cutSortKey==='demand' ? cutDemandKey(dmWO[ref]) : (cutSortKey==='due' ? (e.due||'9999') : (e.printedAt||'')); };
     order.sort(function(a,b){ var c=keyOf(a).localeCompare(keyOf(b)) || a.localeCompare(b); return cutSortDesc ? -c : c; });
     var arrow=function(k){ return cutSortKey===k ? (cutSortDesc?' &#9660;':' &#9650;') : ''; };
     if(cutNewOnly) h+='<div class="sm-note">Showing only what was printed today ('+esc(fmtD(today))+'). <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutNewOnly=false; cutRender()">Show everything waiting</button></div>';
-    var fabMode=cutSortKey==='fabric', fabGroups=fabMode?cutFabricGroups(order.reduce(function(a,r){ return a.concat(byRef[r]); },[])):[];
+    var fabMode=cutSortKey==='fabric', fabGroups=fabMode?cutFabricGroups(order.reduce(function(a,r){ return a.concat(byRef[r]); },[]), today):[];
     var canCols=can?'<th style="text-align:right">Cut m</th><th style="text-align:right" title="how many garments the cloth was cut for - a note for the PM, the works order itself is not changed">Qty cut</th><th>Comment</th><th>Cut on</th><th></th>':'<th></th>';
-    h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><button class="fab-chip'+(fabMode?' on':'')+'" id="cutFabBtn" onclick="cutSortFabric()" title="'+(fabMode?'Back to the list by works order, oldest printed first':'Group what is waiting by fabric, biggest run first, with the running metres so you can see what cuts in a row off one roll')+'">&#129525; Sort by fabric</button>'
-      +(fabMode?'<span class="sm-sub">'+fabGroups.length+' fabric'+(fabGroups.length===1?'':'s')+' &middot; biggest run first &middot; a full roll is '+CUT_ROLL_MIN+' to '+CUT_ROLL_MAX+' m; the dashed line is where the running metres pass each '+CUT_ROLL_MIN+' m</span>':'')+'</div>';
+    var needTh='<th style="cursor:pointer" title="What the works order is needed for: sold out (no free stock before the live works orders), needed this week, or within two weeks - from the free stock, the days of stock at the sales rate, the earliest sales order it covers and its due date. Click to sort, most needed first" onclick="cutSortBy(\'demand\')">Needed'+arrow('demand')+'</th>';
+    var cum=0, dmChips=CUT_DEMAND.slice(0,3).map(function(b,i){ cum+=dmCount[i]; return '<button class="fab-chip'+(cutDemand===b.k?' on':'')+'" data-cutdm="'+b.k+'" onclick="cutDemandSet(\''+b.k+'\')" title="'+esc(i===0?'Only the works orders for a code with no free stock before the live works orders (sold out or oversold)':i===1?'Sold out, and anything needed within '+CUT_DEMAND_WEEK+' days or with under '+CUT_DEMAND_WEEK+' days of stock':'Sold out, this week, and anything needed within '+CUT_DEMAND_FORTNIGHT+' days or with under '+CUT_DEMAND_FORTNIGHT+' days of stock')+'">'+b.l+'<span class="cnt">'+cum+'</span></button>'; }).join('');
+    h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><span class="sm-sub" title="Filter by demand: the free stock before the live works orders, the days of stock, the sales order due and the works order due. Pick a band, then Sort by fabric to see what cuts together of what is needed">Needed:</span>'+dmChips
+      +'<span style="width:1px;height:18px;background:#c8d0df;margin:0 4px"></span>'
+      +'<button class="fab-chip'+(fabMode?' on':'')+'" id="cutFabBtn" onclick="cutSortFabric()" title="'+(fabMode?'Back to the list by works order, oldest printed first':'Group what is waiting by fabric, the most needed fabric first then the biggest run, with the running metres so you can see what cuts in a row off one roll')+'">&#129525; Sort by fabric</button>'
+      +(fabMode?'<span class="sm-sub">'+fabGroups.length+' fabric'+(fabGroups.length===1?'':'s')+' &middot; most needed first, then the biggest run &middot; a full roll is '+CUT_ROLL_MIN+' to '+CUT_ROLL_MAX+' m; the dashed line is where the running metres pass each '+CUT_ROLL_MIN+' m</span>':'')+'</div>';
+    if(cutDemand) h+='<div class="sm-note" id="cutDmNote">Showing '+(dmMax===0?'only the works orders for a code that is <b>sold out</b> (no free stock before the live works orders)':dmMax===1?'what is <b>sold out</b> or <b>needed this week</b>':'what is <b>sold out</b> or <b>needed within two weeks</b>')+': '+order.length+' of '+Object.keys(byRef).length+' works order'+(Object.keys(byRef).length===1?'':'s')+(rows.length?'':' &middot; <b>no stock figures on this PC</b>, so only the dates count')+(sopDemand.lines&&sopDemand.lines.length?'':' &middot; no SOPDemand paste, so the sales order dates are not known')+'. <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutDemandSet(cutDemand)">Show everything waiting</button></div>';
     if(cutNewOnly) h+='<div class="sm-note">Showing only what was printed today ('+esc(fmtD(today))+'). <button class="btn" style="font-size:11px;padding:2px 8px" onclick="cutNewOnly=false; cutRender()">Show everything waiting</button></div>';
-    if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut'+(q?' matches "'+esc(q)+'"':'')+(cutNewOnly?' was printed today':'')+'.</div>'; }
+    if(!order.length){ h+='<div class="sm-empty">Nothing waiting to be cut'+(q?' matches "'+esc(q)+'"':'')+(cutNewOnly?' was printed today':'')+(cutDemand?' is '+CUT_DEMAND[dmMax].l.toLowerCase():'')+'.</div>'; }
     else if(fabMode){
-      h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl cut-byfab"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Back to sorting by the date printed" onclick="cutSortBy(\'printed\')">Printed</th><th style="cursor:pointer" title="Back to sorting by the due date" onclick="cutSortBy(\'due\')">Due</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th style="text-align:right" title="Standard metres so far down this fabric: where a full roll (100 to 120 m) runs out">Running m</th>'+canCols+'</tr></thead><tbody>'
+      h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl cut-byfab"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Back to sorting by the date printed" onclick="cutSortBy(\'printed\')">Printed</th><th style="cursor:pointer" title="Back to sorting by the due date" onclick="cutSortBy(\'due\')">Due</th>'+needTh+'<th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th><th style="text-align:right" title="Standard metres so far down this fabric: where a full roll (100 to 120 m) runs out">Running m</th>'+canCols+'</tr></thead><tbody>'
         +fabGroups.map(function(g){
-          return '<tr class="cut-fab"><td colspan="'+(can?13:9)+'"><span style="font-family:monospace;font-size:12px;font-weight:700">'+esc(g.fabric||'no fabric on file')+'</span>'+(g.name?' <span class="sm-sub">'+esc(g.name)+'</span>':'')+' &middot; '+g.wos+' works order'+(g.wos===1?'':'s')+' &middot; '+g.lines.length+' line'+(g.lines.length===1?'':'s')+' &middot; <strong>'+g.metres.toFixed(2)+' m</strong>'+(g.fabric?' &middot; <span class="sm-tag'+(g.metres>CUT_ROLL_MIN?' warn':' ok')+'" title="At '+CUT_ROLL_MIN+' to '+CUT_ROLL_MAX+' m a full roll">'+esc(g.rolls)+'</span>':'')+'</td></tr>'
+          return '<tr class="cut-fab"><td colspan="'+(can?14:10)+'"><span style="font-family:monospace;font-size:12px;font-weight:700">'+esc(g.fabric||'no fabric on file')+'</span>'+(g.name?' <span class="sm-sub">'+esc(g.name)+'</span>':'')+' &middot; '+g.wos+' works order'+(g.wos===1?'':'s')+' &middot; '+g.lines.length+' line'+(g.lines.length===1?'':'s')+' &middot; <strong>'+g.metres.toFixed(2)+' m</strong>'+(g.fabric?' &middot; <span class="sm-tag'+(g.metres>CUT_ROLL_MIN?' warn':' ok')+'" title="At '+CUT_ROLL_MIN+' to '+CUT_ROLL_MAX+' m a full roll">'+esc(g.rolls)+'</span>':'')+'</td></tr>'
             +g.rows.map(function(r,i){ var e=r.e, prev=i?g.rows[i-1]:null, newRoll=!!(prev && r.roll>prev.roll), days=e.printedAt?Math.floor((new Date(today)-new Date(e.printedAt))/864e5):null;
               return '<tr'+(newRoll?' class="cut-roll"':'')+'><td><strong>'+esc(e.ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+'</td>'
-                +'<td>'+esc(fmtD(e.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':'')+'</td><td>'+esc(fmtD(e.due))+'</td>'
+                +'<td>'+esc(fmtD(e.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':'')+'</td><td>'+esc(fmtD(e.due))+'</td>'+cutDemandCell(r.d)
                 +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
                 +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
                 +'<td style="text-align:right" class="fab-num">'+(e.std!=null?e.std.toFixed(2):'&mdash;')+'</td>'
@@ -4780,11 +4845,11 @@ function cutRender(){
                 +cutMarkCells(e, today, can)+'</tr>'; }).join(''); }).join('')
         +'</tbody></table></div>';
     }
-    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Sort by the date printed" onclick="cutSortBy(\'printed\')">Printed'+arrow('printed')+'</th><th style="cursor:pointer" title="Sort by the due date" onclick="cutSortBy(\'due\')">Due'+arrow('due')+'</th><th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th>'+(can?'<th style="text-align:right">Cut m</th><th style="text-align:right" title="how many garments the cloth was cut for - a note for the PM, the works order itself is not changed">Qty cut</th><th>Comment</th><th>Cut on</th><th></th>':'<th></th>')+'</tr></thead><tbody>'
+    else h+='<div class="sm-tblwrap"><table class="fab-stk cut-tbl"><thead><tr><th>Works order</th><th style="cursor:pointer" title="Sort by the date printed" onclick="cutSortBy(\'printed\')">Printed'+arrow('printed')+'</th><th style="cursor:pointer" title="Sort by the due date" onclick="cutSortBy(\'due\')">Due'+arrow('due')+'</th>'+needTh+'<th>Product</th><th style="text-align:right">Qty</th><th>Fabric</th><th style="text-align:right">Std m</th>'+(can?'<th style="text-align:right">Cut m</th><th style="text-align:right" title="how many garments the cloth was cut for - a note for the PM, the works order itself is not changed">Qty cut</th><th>Comment</th><th>Cut on</th><th></th>':'<th></th>')+'</tr></thead><tbody>'
       +order.map(function(ref){ var es=byRef[ref], first=es[0], days=first.printedAt?Math.floor((new Date(today)-new Date(first.printedAt))/864e5):null;
         return es.map(function(e,i){
           return '<tr'+(i===0?' class="cut-first"':'')+'><td>'+(i===0?'<strong>'+esc(ref)+'</strong>'+(e.customer?'<div class="sm-sub">'+esc(e.customer)+'</div>':'')+(function(){ var pl=cutWoPlan(es); return '<div class="sm-sub" title="'+esc(pl.lays+' lays: '+CUT_WO_MINS+' min up to '+CUT_RUN_LAYS+', +'+CUT_EXTRA_MINS+' min each further '+CUT_RUN_LAYS+(pl.hand?'; '+pl.hand+' tab(s) cut by hand with scissors at '+CUT_HAND_SECS+' s each':''))+'">'+cutPlanTxt(pl)+' &middot; '+pl.mins+' min'+(pl.unknown.length?' <span class="sm-tag warn" title="No lay plan for '+esc(pl.unknown.join(', '))+': taken as one garment per lay">no lay plan</span>'+(IS_EDITOR ? pl.unknown.map(function(c){ return ' <a href="#" onclick="layOverrideSet(\''+esc(c).replace(/'/g,"\\'")+'\');return false" title="Set the garments per ply for '+esc(c)+'">set lay</a>'; }).join('') : ''):'')+'</div>'; })()+(es.length>1&&can?'<div><button class="btn" style="font-size:10px;padding:1px 7px;margin-top:3px" onclick="cutMarkWO(\''+esc(ref)+'\')" title="Mark every line cut, on the date in the first line\'s date box">&#10003; Cut all '+es.length+'</button></div>':''):'')+'</td>'
-            +'<td>'+(i===0?esc(fmtD(first.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':''):'')+'</td><td>'+(i===0?esc(fmtD(first.due)):'')+'</td>'
+            +'<td>'+(i===0?esc(fmtD(first.printedAt))+(days!=null&&days>=CUT_LATE_DAYS?' <span class="sm-tag warn">'+days+' days</span>':''):'')+'</td><td>'+(i===0?esc(fmtD(first.due)):'')+'</td>'+cutDemandCell(dmOf(e))
             +'<td><span style="font-family:monospace;font-size:11px">'+esc(e.code)+'</span>'+(e.extra?' <span class="sm-tag">extra</span>':'')+'<div class="sm-sub">'+esc(e.desc)+'</div></td>'
             +'<td style="text-align:right">'+esc(String(e.qty))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(e.fabric||'no fabric on file')+'</span><div class="sm-sub">'+esc(e.fabName||'')+'</div></td>'
             +'<td style="text-align:right" class="fab-num">'+(e.std!=null?e.std.toFixed(2):'&mdash;')+'</td>'

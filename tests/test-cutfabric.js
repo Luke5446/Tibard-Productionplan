@@ -30,7 +30,7 @@ const path = require('path');
    document.getElementById('cutFabBtn').click();
    o.on=document.getElementById('cutFabBtn').classList.contains('on') && !!document.querySelector('#cutBody .cut-byfab');
    o.groups=rows().filter(tr=>tr.classList.contains('cut-fab')).map(tr=>tr.textContent.replace(/\s+/g,' ').trim());
-   o.lines=rows().filter(tr=>!tr.classList.contains('cut-fab')).map(tr=>[tr.children[0].querySelector('strong').textContent, tr.children[6].textContent.trim(), tr.children[7].textContent.replace(/\s+/g,' ').trim(), tr.classList.contains('cut-roll')]); o.fabCol=rows().filter(tr=>!tr.classList.contains('cut-fab')).map(tr=>tr.children[5].querySelector('span').textContent.trim());
+   o.lines=rows().filter(tr=>!tr.classList.contains('cut-fab')).map(tr=>[tr.children[0].querySelector('strong').textContent, tr.children[7].textContent.trim(), tr.children[8].textContent.replace(/\s+/g,' ').trim(), tr.classList.contains('cut-roll')]); o.fabCol=rows().filter(tr=>!tr.classList.contains('cut-fab')).map(tr=>tr.children[6].querySelector('span').textContent.trim());
    o.marks=document.querySelectorAll('#cutBody .cut-byfab input[data-cutm]').length;
    o.head=document.querySelector('#cutBody .cut-tbl thead').textContent.replace(/\s+/g,' ').trim();
    o.clean=cutLog.entries.every(e=>!('_run' in e) && !('run' in e) && !('roll' in e));

@@ -12,7 +12,25 @@ repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
   **Sort by fabric** groups the list by fabric, biggest run first, with the
   running metres down each group and a dashed line where they pass each
   100 m, a full roll being 100 to 120 m, so the cutter sees what cuts in a
-  row off one roll; Luke, 26 Oct 2026),
+  row off one roll; Luke, 26 Oct 2026).
+  **Filter by demand** (Luke, 2 Nov 2026): the due date alone is not the
+  measure of what is needed first, since a works order raised for stock
+  with a two-week date is wanted tomorrow once the shelf is empty. The
+  **Needed** column reads each line against the planner's figures for its
+  code: the free stock before any live works order (In stock less On SOP,
+  plus completed works orders awaiting Sage), the days that stock lasts at
+  the sales rate, the earliest sales order the works order covers (from the
+  SOPDemand paste) and the works order's own due date, and puts it in a
+  band: **sold out** (no free stock before the works orders, or oversold),
+  **this week** (needed within 7 days, or under 7 days of stock), **2
+  weeks** (within 14 days) or later. The Needed heading sorts by band then
+  date; the **Needed** chips (Sold out, This week, Within 2 weeks) keep one
+  band and the ones above it, a works order counting in the band of its
+  most needed line; then Sort by fabric groups just those, the most needed
+  fabric first and the biggest run next, the most needed line first down
+  each group. The hover on the cell says why. Nothing is written to the
+  log: the bands are read afresh from the published planner data each
+  time, so a cutting room PC with no stock figures sees the dates only),
   with the standard metres per line; the search box narrows the list. The
   tiles above count the works orders printed today (click it to show only those),
   the works orders with a line waiting, and the lines waiting. One printed
