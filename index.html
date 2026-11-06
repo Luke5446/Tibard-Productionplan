@@ -6746,8 +6746,11 @@ var HELD_SUP_CODES={TIA001EU:{"PC2001ECO":"X133ECO101","PC2003ECO":"X133ECO125",
 // editor renders the tab with no book for the account, then kept in state.
 var HELD_SEED={TIA001EU:{at:'2026-11-06', note:'Tiajo statement 6 Nov 2026',
   balances:{"X133ECO101":2361,"X133ECO125":14094.2,"X133ECO297":1909,"X133ECO298":5937.4,"X133ECO299":15449,"X133ECO300":1565,"X149ECO302":556.2,"X149ECO303":2659,"X149ECO305":937.2,"X149ECO306":631.3,"X149ECO307":306.4,"X149ECO308":5045,"X149ECO5":16,"X149ECO8":335},
-  moves:[{sup:'X133ECO125', qty:-1000, kind:'out', note:'Air freight to Clockwork'},{sup:'X133ECO297', qty:-1000, kind:'out', note:'Air freight to Clockwork'}]}};
-var HELD_KINDS={balance:'Statement balance', po:'Purchase order', out:'Sent elsewhere', adjust:'Adjustment'};
+  moves:[{sup:'X133ECO125', qty:-1000, kind:'out', note:'Air freight to Clockwork'},{sup:'X133ECO297', qty:-1000, kind:'out', note:'Air freight to Clockwork'}],
+  // the lots Luke asked Tiajo to put into work on 6 Nov 2026, due in eight weeks
+  work:[{sup:'X133ECO101', qty:20000},{sup:'X133ECO297', qty:2000},{sup:'X149ECO8', qty:1000},{sup:'X149ECO304', qty:500}]}};
+var HELD_KINDS={balance:'Statement balance', po:'Purchase order', out:'Sent elsewhere', adjust:'Adjustment', woven:'Woven, added to stock'};
+var HELD_WORK_DAYS=HELD_LEAD_WKS*7;
 function heldSupCodeOf(desc){ var m=/\((X\d{3})\s*-\s*AMN?\s*(\d+)\)/i.exec(desc||''); return m ? (m[1]+'ECO'+m[2]).toUpperCase() : ''; }
 // supplier code -> Sage code, from the Sage sheet first, the seed map behind it
 function heldSupMap(acc){
@@ -6768,7 +6771,57 @@ function heldBook(acc, make){
       seed.moves.forEach(function(m){ b.moves.push({at:seed.at, sup:m.sup, code:map[m.sup]||'', kind:m.kind, qty:m.qty, note:m.note}); });
     }
   }
+  // the lots in work: seeded once, on a book made before this list existed too
+  if(b && make && !b.work){ b.work=[]; var sd=HELD_SEED[acc], mp=heldSupMap(acc);
+    ((sd&&sd.work)||[]).forEach(function(w){ b.work.push({placed:sd.at, sup:w.sup, code:mp[w.sup]||'', qty:w.qty, due:heldDueFrom(sd.at), note:'', added:''}); }); }
   return b||null;
+}
+// ── in work at the supplier ─────────────────────────────────────────────
+// A lot asked for is woven and on their shelf about eight weeks on; it is
+// not held until they say so. Each lot: the day it was placed, the due day
+// (placed + 8 weeks, changeable), metres, and the day it was marked as
+// added to stock - which puts a "woven" movement on the ledger for the
+// metres they confirm, so held goes up by what really landed.
+function heldDueFrom(ds){ var d=new Date(ds+'T12:00:00'); d.setDate(d.getDate()+HELD_WORK_DAYS); return d2s(d); }
+function heldWork(acc){ var b=heldBook(acc,false); return (b&&b.work)||[]; }
+function heldWorkOpen(acc, sup){ return heldWork(acc).filter(function(w){ return !w.added && (!sup || w.sup===sup); }); }
+function heldWorkPrompt(acc){
+  if(!IS_EDITOR) return; var map=heldSupMap(acc);
+  var sup=prompt('Supplier code put into work (e.g. X133ECO101):',''); if(!sup) return; sup=sup.trim().toUpperCase();
+  var v=prompt('Metres asked for:',''); if(v===null) return; var q=heldNum(v); if(isNaN(q)||q<=0) return;
+  var pl=prompt('Day it was placed (yyyy-mm-dd):', d2s(now())); if(pl===null) return; if(!/^\d{4}-\d{2}-\d{2}$/.test(pl.trim())) pl=d2s(now());
+  var b=heldBook(acc,true); b.work=b.work||[]; if(!b.codes[sup]) b.codes[sup]={code:map[sup]||'', name:''};
+  b.work.push({placed:pl.trim(), sup:sup, code:map[sup]||'', qty:Math.round(q*100)/100, due:heldDueFrom(pl.trim()), note:'', added:''}); saveState(); fabRender();
+}
+function heldWorkDue(acc, i){ if(!IS_EDITOR) return; var w=heldWork(acc)[i]; if(!w) return; var v=prompt('Due day for '+w.sup+' '+fabM(w.qty,0)+' m (yyyy-mm-dd):', w.due); if(v===null) return; v=v.trim(); if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return; w.due=v; saveState(); fabRender(); }
+function heldWorkAdded(acc, i){
+  if(!IS_EDITOR) return; var w=heldWork(acc)[i]; if(!w||w.added) return;
+  var v=prompt('Metres '+w.sup+' now on their shelf (the lot was '+fabM(w.qty,0)+' m):', w.qty); if(v===null) return; var q=heldNum(v); if(isNaN(q)||q<0) return;
+  w.added=d2s(now()); w.addedQty=Math.round(q*100)/100;
+  if(q>0) heldAdd(acc, w.sup, w.code||'', 'woven', q, 'Lot placed '+fmtD(w.placed)+(q!==w.qty?' ('+fabM(w.qty,0)+' m asked)':''), '');
+  saveState(); fabRender();
+}
+function heldWorkUndo(acc, i){ if(!IS_EDITOR) return; var w=heldWork(acc)[i]; if(!w||!w.added) return; var b=heldBook(acc,false);
+  // take the woven movement back off with the lot: the last one for that code with the lot's note
+  for(var k=b.moves.length-1;k>=0;k--){ var m=b.moves[k]; if(m.kind==='woven' && m.sup===w.sup && m.note.indexOf('Lot placed '+fmtD(w.placed))===0){ b.moves.splice(k,1); break; } }
+  w.added=''; delete w.addedQty; saveState(); fabRender(); }
+function heldWorkDelete(acc, i){ if(!IS_EDITOR) return; var w=heldWork(acc)[i]; if(!w) return; if(w.added){ alert('Undo "added to stock" first.'); return; }
+  if(!confirm('Remove the lot '+w.sup+' '+fabM(w.qty,0)+' m placed '+fmtD(w.placed)+'?')) return; heldBook(acc,false).work.splice(i,1); saveState(); fabRender(); }
+function heldWorkHtml(acc, name){
+  var ed=IS_EDITOR, all=heldWork(acc).map(function(w,i){ return Object.assign({i:i},w); }), open=all.filter(function(w){ return !w.added; }), done=all.filter(function(w){ return w.added; }).sort(function(a,b){ return b.added<a.added?-1:1; });
+  var today=d2s(now());
+  var h='<div class="kpi-note" style="margin-top:8px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>In work at '+esc(name||acc)+'</b> <span style="color:#6b7280">&middot; lots asked for, due '+HELD_LEAD_WKS+' weeks from placing; tick when they confirm it is on their shelf and the metres join the held figure</span>'
+    +(ed?'<button class="btn" style="font-size:11px;padding:4px 9px;margin-left:auto" onclick="heldWorkPrompt(\''+esc(acc)+'\')">+ In work</button>':'')+'</div>';
+  if(!open.length && !done.length) return h+'<div class="sm-empty" style="padding:8px 0">Nothing in work.</div></div>';
+  open.sort(function(a,b){ return a.due<b.due?-1:a.due>b.due?1:a.sup.localeCompare(b.sup); });
+  if(open.length) h+='<div class="sm-tblwrap"><table class="fab-stk" style="font-size:11.5px"><thead><tr><th>Placed</th><th>Code</th><th style="text-align:right">Metres</th><th>Due</th><th></th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
+    +open.map(function(w){ var days=Math.round((new Date(w.due+'T12:00:00')-new Date(today+'T12:00:00'))/864e5);
+      var st=days<0?'<span style="color:#8a2222;font-weight:700">'+(-days)+' day'+(days===-1?'':'s')+' overdue</span>':days===0?'<b>due today</b>':days<=7?'<span style="color:#b45309;font-weight:700">'+days+' day'+(days===1?'':'s')+'</span>':'<span style="color:#6b7280">'+days+' days</span>';
+      return '<tr><td>'+esc(fmtD(w.placed))+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(w.sup)+'</span>'+(w.code?' <span style="color:#9ca3af">'+esc(w.code)+'</span>':'')+'</td><td class="fab-num">'+fabM(w.qty,0)+'</td>'
+        +'<td>'+(ed?'<a href="#" onclick="heldWorkDue(\''+esc(acc)+'\','+w.i+');return false" title="change the due day" style="color:inherit">'+esc(fmtD(w.due))+'</a>':esc(fmtD(w.due)))+'</td><td>'+st+'</td>'
+        +(ed?'<td style="white-space:nowrap"><button class="btn btn-p" style="font-size:10.5px;padding:3px 8px" onclick="heldWorkAdded(\''+esc(acc)+'\','+w.i+')">&#10003; Added to stock</button> <a href="#" onclick="heldWorkDelete(\''+esc(acc)+'\','+w.i+');return false" title="remove" style="margin-left:6px">&#10005;</a></td>':'')+'</tr>'; }).join('')+'</tbody></table></div>';
+  if(done.length) h+='<div style="margin-top:4px;color:#6b7280"><b>Added to stock</b> &middot; '+done.slice(0,8).map(function(w){ return esc(fmtD(w.added))+' '+esc(w.sup)+' '+fabM(w.addedQty!=null?w.addedQty:w.qty,0)+' m'+(ed?' <a href="#" onclick="heldWorkUndo(\''+esc(acc)+'\','+w.i+');return false" title="undo">undo</a>':''); }).join(' &middot; ')+(done.length>8?' &middot; &hellip; '+(done.length-8)+' earlier':'')+'</div>';
+  return h+'</div>';
 }
 // European figures as Tiajo write them, "14 094,20", and plain "14094.2" or "1,909.00"
 function heldNum(s){ s=String(s==null?'':s).replace(/[\s\u00a0]/g,'').replace(/m$/i,''); if(!s) return NaN;
@@ -6795,7 +6848,8 @@ function heldRows(acc){
     var code=map[s]||'', r=code?fabStock.rows[code]:null, has=b && b.moves.some(function(m){ return m.sup===s; });
     var held=has?heldQty(acc,s):null, wk=heldUsePerWeek(code), cover=(held==null)?null:(wk>0?held/wk:Infinity);
     var st=held==null?'none' : cover<HELD_LEAD_WKS+HELD_CYCLE_WKS?'work' : cover<(HELD_LEAD_WKS+HELD_CYCLE_WKS)*2?'next' : 'ok';
-    return {sup:s, code:code, name:(b&&b.codes[s]&&b.codes[s].name)||(r?r.desc:(FABRIC_NAMES[code]||'')), held:held, wk:wk, cover:cover, state:st, inSage:r?r.inStock:null};
+    var wl=heldWorkOpen(acc, s), inWork=wl.reduce(function(t,w){ return t+w.qty; },0), due=wl.length?wl.map(function(w){ return w.due; }).sort()[0]:'';
+    return {sup:s, code:code, name:(b&&b.codes[s]&&b.codes[s].name)||(r?r.desc:(FABRIC_NAMES[code]||'')), held:held, wk:wk, cover:cover, state:st, inSage:r?r.inStock:null, inWork:inWork, due:due};
   }).sort(function(a,b){ var rk={work:0,next:1,ok:2,none:3}; return rk[a.state]-rk[b.state] || ((a.cover==null?1e9:a.cover)-(b.cover==null?1e9:b.cover)) || a.sup.localeCompare(b.sup); });
 }
 function heldAdd(acc, sup, code, kind, qty, note, file){
@@ -6850,7 +6904,7 @@ function heldCsv(acc){
   poDownload(out.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n')+'\r\n', 'Held_fabric_'+acc+'_'+d2s(now())+'.csv');
 }
 function heldHtml(acc, name){
-  var ed=IS_EDITOR; if(ed && !heldBook(acc,false) && HELD_SEED[acc]){ heldBook(acc,true); saveState(); }   // the opening ledger, once
+  var ed=IS_EDITOR; if(ed && HELD_SEED[acc] && (!heldBook(acc,false) || !heldBook(acc,false).work)){ heldBook(acc,true); saveState(); }   // the opening ledger and the lots in work, once
   var b=heldBook(acc,false); if(!b && !HELD_SEED[acc]) return '';
   var rows=heldRows(acc), work=rows.filter(function(r){ return r.state==='work'; }).length, next=rows.filter(function(r){ return r.state==='next'; }).length;
   var open=fabOpen.sec.held!==false;
@@ -6863,15 +6917,16 @@ function heldHtml(acc, name){
   if(ed && fabOpen.heldPaste) h+='<div class="pbox" style="margin:8px 0"><p>Copy the lines from '+esc(name||acc)+'\'s statement - code, description, metres - and paste. "14 094,20" and "14094.2" both read. The figure replaces the held balance; the difference is logged.</p><textarea id="heldTA" style="width:100%;min-height:90px;font-family:monospace;font-size:12px" placeholder="X133ECO125&#9;TWILL 65%PES GRS 35%CO OCS | 200 GSM | BLACK - 125&#9;14 094,20"></textarea>'
     +'<div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-p" onclick="heldLoadPaste(\''+esc(acc)+'\')">&#10003; Load</button><button class="btn" onclick="heldPasteToggle()">Cancel</button></div></div>';
   var tag={work:'<span style="color:#8a2222;font-weight:700">Put into work</span>', next:'<span style="color:#b45309;font-weight:700">Next order</span>', ok:'<span style="color:#166534">OK</span>', none:'<span style="color:#9ca3af">no balance</span>'};
-  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr><th>Supplier code</th><th>Sage fabric</th><th style="text-align:right" title="metres the supplier holds for us">Held m</th><th style="text-align:right" title="completed works orders, last 13 weeks">Use / wk</th><th style="text-align:right">Cover wks</th><th>Weaving</th><th style="text-align:right" title="in stock at Home on the Sage sheet">In Sage</th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
+  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr><th>Supplier code</th><th>Sage fabric</th><th style="text-align:right" title="metres the supplier holds for us">Held m</th><th style="text-align:right" title="completed works orders, last 13 weeks">Use / wk</th><th style="text-align:right">Cover wks</th><th>Weaving</th><th style="text-align:right" title="lots asked for, not yet on their shelf">In work</th><th style="text-align:right" title="in stock at Home on the Sage sheet">In Sage</th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
     +rows.map(function(r){ return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(r.sup)+'</span>'+(r.name?'<div class="sm-sub" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(r.name)+'">'+esc(r.name)+'</div>':'')+'</td>'
       +'<td>'+(r.code?'<span style="font-family:monospace;font-size:11px">'+esc(r.code)+'</span>':(ed?'<a href="#" onclick="heldLink(\''+esc(acc)+'\',\''+esc(r.sup)+'\');return false" style="color:#8a2222">link to Sage code</a>':'<span style="color:#9ca3af">&mdash;</span>'))+'</td>'
       +'<td class="fab-num" style="'+(r.held!=null&&r.held<0?'color:#8a2222':'')+'">'+(r.held==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(r.held,1))+'</td>'
       +'<td class="fab-num">'+(r.wk>0?fabM(r.wk,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
       +'<td class="fab-num">'+(r.cover==null?'<span style="color:#9ca3af">&mdash;</span>':r.cover===Infinity?'<span style="color:#9ca3af">no use</span>':fabM(r.cover,1))+'</td>'
-      +'<td>'+tag[r.state]+'</td><td class="fab-num">'+(r.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(r.inSage,0))+'</td>'
+      +'<td>'+tag[r.state]+'</td><td class="fab-num">'+(r.inWork>0?fabM(r.inWork,0)+'<div class="sm-sub" style="font-weight:400;font-size:10.5px">due '+esc(fmtD(r.due))+'</div>':'<span style="color:#9ca3af">&mdash;</span>')+'</td><td class="fab-num">'+(r.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(r.inSage,0))+'</td>'
       +(ed?'<td><a href="#" onclick="heldMovePrompt(\''+esc(acc)+'\',\''+esc(r.sup)+'\');return false" title="add or take off metres">&#177;</a></td>':'')+'</tr>'; }).join('')
     +'</tbody></table></div>';
+  h+=heldWorkHtml(acc, name);
   var mv=(b?b.moves:[]).map(function(m,i){ return Object.assign({i:i},m); }).reverse();
   if(mv.length) h+='<div class="kpi-note" style="margin-top:6px"><b>Movements</b> &middot; newest first'+(mv.length>40?' &middot; last 40 of '+mv.length+' (the CSV has all)':'')+'<div class="sm-tblwrap"><table class="fab-stk" style="font-size:11.5px"><thead><tr><th>Date</th><th>Code</th><th>Movement</th><th style="text-align:right">Metres</th><th>Note</th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
     +mv.slice(0,40).map(function(m){ return '<tr><td>'+esc(fmtD(m.at))+(m.atTime?' '+esc(m.atTime):'')+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(m.sup)+'</span></td><td>'+esc(HELD_KINDS[m.kind]||m.kind)+'</td><td class="fab-num" style="'+(m.qty<0?'color:#8a2222':'color:#166534')+'">'+(m.qty>0?'+':'')+fabM(m.qty,1)+'</td><td>'+esc(m.note||'')+(m.file?' <span style="color:#9ca3af" title="'+esc(m.file)+'">&middot; file</span>':'')+'</td>'
