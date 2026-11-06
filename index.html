@@ -6804,10 +6804,167 @@ function exportSupplierPO(acc, name){
   var rec={acc:acc, name:name||acc, file:fname, docNo:docNo, cur:cur, priced:fromSheet?'supplier':'last', at:d2s(now()), atTime:String(now().getHours()).padStart(2,'0')+':'+String(now().getMinutes()).padStart(2,'0'),
            metres:Math.round(metres*100)/100, value:Math.round(value*100)/100, lines:lines.map(function(l){ return {code:l.code, name:l.name, qty:l.qty, price:l.price, due:l.due}; }), rows:lines.map(function(l){ return l.row; })};
   fabStock.poFiles=fabStock.poFiles||[]; fabStock.poFiles.unshift(rec);
+  var heldN=heldApplyPO(acc, rec);   // the supplier's held cloth comes down by the same metres
   saveState();
   poDownload(poCsv(rec.rows), fname);
   fabRender();
-  alert(lines.length+' line'+(lines.length===1?'':'s')+', '+fabM(metres,0)+' m'+(value?', '+curSym(cur)+fabM(value,0):'')+' for '+(name||acc)+'.\n\nSave '+fname+' into the B2B_PO_TIB folder and the Sage routine imports it as the purchase order. The metres show On PO here after the next stock paste.');
+  alert(lines.length+' line'+(lines.length===1?'':'s')+', '+fabM(metres,0)+' m'+(value?', '+curSym(cur)+fabM(value,0):'')+' for '+(name||acc)+'.'+(heldN?'\n'+heldN+' line'+(heldN===1?'':'s')+' taken off the cloth held at '+(name||acc)+'.':'')+'\n\nSave '+fname+' into the B2B_PO_TIB folder and the Sage routine imports it as the purchase order. The metres show On PO here after the next stock paste.');
+}
+// ── Fabric held at the supplier for call-off ──────────────────────────────
+// Tiajo weave to the annual call-off and hold the cloth in Portugal until a
+// purchase order calls it off. What they hold is the real cover: the 8-week
+// weaving lead starts the day they are told to put more into work, so the
+// office needs the held metres set against what the works orders take.
+// One book per supplier account (fabStock.held[acc]): the supplier's own
+// stock code for each Sage fabric, and a ledger of movements in metres -
+// a balance from the supplier's statement, a purchase order file made here
+// (negative, written the moment the file is made), cloth sent elsewhere
+// (the 1,000 m of black and navy air-freighted to Clockwork, 6 Nov 2026) and
+// any adjustment typed. Held = the sum of the movements, so the log is the
+// whole story and nothing is overwritten. Goes out with publish.
+var HELD_LEAD_WKS=8;      // Tiajo: told today, cloth ready in eight weeks
+var HELD_CYCLE_WKS=4;     // and a call-off is built about once a month, so under lead + cycle is the signal
+var HELD_USE_DAYS=91;     // usage rate: completed works orders over the last 13 weeks
+// The supplier's code from Sage's description, "(X133 - AM125)", "(X149 - AM 5)",
+// "(X149 - AMN302)" -> X133ECO125, X149ECO5, X149ECO302. The seed below is
+// the same mapping, for a viewer before any Sage sheet reaches them.
+var HELD_SUP_CODES={TIA001EU:{"PC2001ECO":"X133ECO101","PC2003ECO":"X133ECO125","PC2007ECO":"X133ECO301","PC2015ECO":"X133ECO297","PC2064ECO":"X133ECO299","PC2082ECO":"X133ECO300","PC2083ECO":"X133ECO298","CO5001ECO":"X149ECO5","CO5003ECO":"X149ECO8","CO5015ECO":"X149ECO303","CO5083ECO":"X149ECO302","CO5153ECO":"X149ECO306","CO5173ECO":"X149ECO304","CO5222ECO":"X149ECO307","CO5241ECO":"X149ECO308","CO5364ECO":"X149ECO305"}};
+// Tiajo's statement of 6 Nov 2026 (two screenshots, metres) and the two air
+// freight lots, as the opening ledger: applied once, the first time the
+// editor renders the tab with no book for the account, then kept in state.
+var HELD_SEED={TIA001EU:{at:'2026-11-06', note:'Tiajo statement 6 Nov 2026',
+  balances:{"X133ECO101":2361,"X133ECO125":14094.2,"X133ECO297":1909,"X133ECO298":5937.4,"X133ECO299":15449,"X133ECO300":1565,"X149ECO302":556.2,"X149ECO303":2659,"X149ECO305":937.2,"X149ECO306":631.3,"X149ECO307":306.4,"X149ECO308":5045,"X149ECO5":16,"X149ECO8":335},
+  moves:[{sup:'X133ECO125', qty:-1000, kind:'out', note:'Air freight to Clockwork'},{sup:'X133ECO297', qty:-1000, kind:'out', note:'Air freight to Clockwork'}]}};
+var HELD_KINDS={balance:'Statement balance', po:'Purchase order', out:'Sent elsewhere', adjust:'Adjustment'};
+function heldSupCodeOf(desc){ var m=/\((X\d{3})\s*-\s*AMN?\s*(\d+)\)/i.exec(desc||''); return m ? (m[1]+'ECO'+m[2]).toUpperCase() : ''; }
+// supplier code -> Sage code, from the Sage sheet first, the seed map behind it
+function heldSupMap(acc){
+  var out={}, seed=HELD_SUP_CODES[acc]||{};
+  Object.keys(seed).forEach(function(c){ out[seed[c]]=c; });
+  Object.keys((fabStock&&fabStock.rows)||{}).forEach(function(c){ var r=fabStock.rows[c]; if(r.supAcc!==acc) return; var s=heldSupCodeOf(r.desc); if(s) out[s]=c; });
+  var b=(fabStock.held||{})[acc]; if(b) Object.keys(b.codes||{}).forEach(function(s){ if(b.codes[s].code) out[s]=b.codes[s].code; });
+  return out;
+}
+function heldBook(acc, make){
+  fabStock.held=fabStock.held||{};
+  var b=fabStock.held[acc];
+  if(!b && make){
+    b=fabStock.held[acc]={codes:{}, moves:[]};
+    var seed=HELD_SEED[acc];
+    if(seed){ var map=heldSupMap(acc);
+      Object.keys(seed.balances).forEach(function(s){ b.codes[s]={code:map[s]||'', name:''}; b.moves.push({at:seed.at, sup:s, code:map[s]||'', kind:'balance', qty:seed.balances[s], note:seed.note}); });
+      seed.moves.forEach(function(m){ b.moves.push({at:seed.at, sup:m.sup, code:map[m.sup]||'', kind:m.kind, qty:m.qty, note:m.note}); });
+    }
+  }
+  return b||null;
+}
+// European figures as Tiajo write them, "14 094,20", and plain "14094.2" or "1,909.00"
+function heldNum(s){ s=String(s==null?'':s).replace(/[\s\u00a0]/g,'').replace(/m$/i,''); if(!s) return NaN;
+  var c=s.lastIndexOf(','), d=s.lastIndexOf('.');
+  if(c>=0 && d>=0) s = c>d ? s.replace(/\./g,'').replace(',','.') : s.replace(/,/g,'');   // whichever comes last is the decimal point
+  else if(c>=0) s = /,\d{1,2}$/.test(s) ? s.replace(',','.') : s.replace(/,/g,'');          // "14094,20" is decimal; "1,909" is thousands
+  var n=parseFloat(s); return isNaN(n) ? NaN : n; }
+function heldQty(acc, sup){ var b=heldBook(acc,false); if(!b) return 0; return Math.round(b.moves.filter(function(m){ return m.sup===sup; }).reduce(function(s,m){ return s+(m.qty||0); },0)*100)/100; }
+// metres per week of the Sage fabric from the works orders completed in the
+// last 13 weeks - the cutting room's figure where typed, else the standard
+function heldUsePerWeek(code){
+  if(!code) return 0; var from=new Date(now().getTime()); from.setDate(from.getDate()-HELD_USE_DAYS); var f=d2s(from), m=0;
+  completedWOs.forEach(function(w){ var fb=w.fabric; if(!fb || !w.completed || w.completed<f) return;
+    if((fb.code||'').toUpperCase()===code) m+=(fb.actual!=null?fb.actual:fb.std)||0;
+    (fb.extras||[]).forEach(function(x){ if((x.code||'').toUpperCase()===code) m+=x.std||0; }); });
+  return m*7/HELD_USE_DAYS;
+}
+// every supplier code the book or the Sage sheet knows, with held metres,
+// the rate and the weeks of cover against the weaving lead
+function heldRows(acc){
+  var b=heldBook(acc,false), map=heldSupMap(acc), sups={};
+  Object.keys(map).forEach(function(s){ sups[s]=1; }); if(b) Object.keys(b.codes).forEach(function(s){ sups[s]=1; });
+  return Object.keys(sups).map(function(s){
+    var code=map[s]||'', r=code?fabStock.rows[code]:null, has=b && b.moves.some(function(m){ return m.sup===s; });
+    var held=has?heldQty(acc,s):null, wk=heldUsePerWeek(code), cover=(held==null)?null:(wk>0?held/wk:Infinity);
+    var st=held==null?'none' : cover<HELD_LEAD_WKS+HELD_CYCLE_WKS?'work' : cover<(HELD_LEAD_WKS+HELD_CYCLE_WKS)*2?'next' : 'ok';
+    return {sup:s, code:code, name:(b&&b.codes[s]&&b.codes[s].name)||(r?r.desc:(FABRIC_NAMES[code]||'')), held:held, wk:wk, cover:cover, state:st, inSage:r?r.inStock:null};
+  }).sort(function(a,b){ var rk={work:0,next:1,ok:2,none:3}; return rk[a.state]-rk[b.state] || ((a.cover==null?1e9:a.cover)-(b.cover==null?1e9:b.cover)) || a.sup.localeCompare(b.sup); });
+}
+function heldAdd(acc, sup, code, kind, qty, note, file){
+  var b=heldBook(acc,true); if(!b.codes[sup]) b.codes[sup]={code:code||'', name:''}; else if(code && !b.codes[sup].code) b.codes[sup].code=code;
+  var t=now(); b.moves.push({at:d2s(t), atTime:String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0'), sup:sup, code:code||b.codes[sup].code||'', kind:kind, qty:Math.round(qty*100)/100, note:note||'', file:file||''});
+}
+// a purchase order file made for the supplier takes its metres off the held
+// figure, line by line, the moment the file is made
+function heldApplyPO(acc, rec){
+  if(!heldBook(acc,false) && !HELD_SEED[acc]) return 0;
+  var map=heldSupMap(acc), bySage={}; Object.keys(map).forEach(function(s){ bySage[map[s]]=s; }); var n=0;
+  rec.lines.forEach(function(l){ var s=bySage[l.code]; if(!s || !(l.qty>0)) return; heldAdd(acc, s, l.code, 'po', -l.qty, rec.docNo||'Purchase order', rec.file); n++; });
+  return n;
+}
+function heldPasteToggle(){ fabOpen.heldPaste=!fabOpen.heldPaste; fabRender(); if(fabOpen.heldPaste){ var t=document.getElementById('heldTA'); if(t) t.focus(); } }
+// a statement pasted from Tiajo: the supplier code first on the line, the
+// metres last, anything between is the description; the difference from the
+// held figure goes on as a balance movement so the ledger still adds up
+function heldLoadPaste(acc){
+  if(!IS_EDITOR){ alert('View-only mode.'); return; }
+  var txt=(document.getElementById('heldTA').value||'').trim(); if(!txt){ alert('Nothing pasted.'); return; }
+  var map=heldSupMap(acc), b=heldBook(acc,true), n=0, unknown=[], at=d2s(now());
+  txt.split('\n').forEach(function(line){ line=line.trim(); if(!line) return;
+    var parts, sup, qty, name;
+    if(line.indexOf('\t')>=0){ parts=line.split('\t').map(function(x){ return x.trim(); }).filter(Boolean); if(parts.length<2) return; sup=parts[0]; qty=heldNum(parts[parts.length-1]); name=parts.slice(1,-1).join(' '); }
+    else { var mm=/^(\S+)\s+(.*?)\s*(\d{1,3}(?:[\s ]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d+)?)\s*m?$/i.exec(line); if(!mm) return; sup=mm[1]; qty=heldNum(mm[3]); name=mm[2]; }
+    sup=sup.toUpperCase(); if(!/^[A-Z]\d{3}[A-Z0-9]*$/.test(sup) || isNaN(qty)) return;
+    if(!b.codes[sup]) b.codes[sup]={code:map[sup]||'', name:name}; else if(name) b.codes[sup].name=name;
+    if(!map[sup]) unknown.push(sup);
+    var diff=Math.round((qty-heldQty(acc,sup))*100)/100;
+    if(diff!==0 || !b.moves.some(function(m){ return m.sup===sup; })) b.moves.push({at:at, sup:sup, code:map[sup]||'', kind:'balance', qty:diff, note:'Statement '+fmtD(at)+': '+fabM(qty,2)+' m'});
+    n++; });
+  if(!n){ alert('No lines read.\n\nEach line: the supplier\'s code, the description, then the metres - as copied from their statement.'); return; }
+  document.getElementById('heldTA').value=''; fabOpen.heldPaste=false; saveState(); fabRender();
+  alert(n+' balance'+(n===1?'':'s')+' set.'+(unknown.length?'\n\nNot matched to a Sage fabric (purchase orders will not reduce them until linked): '+unknown.join(', '):''));
+}
+function heldMovePrompt(acc, sup){
+  if(!IS_EDITOR) return; var map=heldSupMap(acc);
+  if(!sup){ sup=prompt('Supplier code (e.g. X133ECO125):',''); if(!sup) return; sup=sup.trim().toUpperCase(); }
+  var v=prompt('Metres for '+sup+' (negative takes cloth off, positive adds it):',''); if(v===null) return; var q=heldNum(v); if(isNaN(q)||q===0) return;
+  var note=prompt('What for? (e.g. Air freight to Clockwork, Correction)', q<0?'Sent elsewhere':'Added'); if(note===null) return;
+  heldAdd(acc, sup, map[sup]||'', q<0?'out':'adjust', q, note.trim(), ''); saveState(); fabRender();
+}
+function heldLink(acc, sup){ if(!IS_EDITOR) return; var b=heldBook(acc,true), cur=(b.codes[sup]||{}).code||'';
+  var v=prompt('Sage fabric code for '+sup+' (so purchase orders reduce it):', cur); if(v===null) return; v=v.trim().toUpperCase();
+  b.codes[sup]=b.codes[sup]||{code:'',name:''}; b.codes[sup].code=v; b.moves.forEach(function(m){ if(m.sup===sup) m.code=v; }); saveState(); fabRender(); }
+function heldDelete(acc, i){ if(!IS_EDITOR) return; var b=heldBook(acc,false); if(!b||!b.moves[i]) return; var m=b.moves[i];
+  if(!confirm('Remove this movement?\n\n'+fmtD(m.at)+' '+m.sup+' '+(m.qty>0?'+':'')+fabM(m.qty,2)+' m - '+(m.note||HELD_KINDS[m.kind]))) return; b.moves.splice(i,1); saveState(); fabRender(); }
+function heldCsv(acc){
+  var b=heldBook(acc,false); if(!b) return; var run={}, out=[['Date','Time','SupplierCode','SageCode','Movement','Metres','HeldAfter','Note','File']];
+  b.moves.forEach(function(m){ run[m.sup]=Math.round(((run[m.sup]||0)+m.qty)*100)/100; out.push([m.at, m.atTime||'', m.sup, m.code||'', HELD_KINDS[m.kind]||m.kind, m.qty, run[m.sup], m.note||'', m.file||'']); });
+  poDownload(out.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n')+'\r\n', 'Held_fabric_'+acc+'_'+d2s(now())+'.csv');
+}
+function heldHtml(acc, name){
+  var ed=IS_EDITOR; if(ed && !heldBook(acc,false) && HELD_SEED[acc]){ heldBook(acc,true); saveState(); }   // the opening ledger, once
+  var b=heldBook(acc,false); if(!b && !HELD_SEED[acc]) return '';
+  var rows=heldRows(acc), work=rows.filter(function(r){ return r.state==='work'; }).length, next=rows.filter(function(r){ return r.state==='next'; }).length;
+  var open=fabOpen.sec.held!==false;
+  var h='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:10px;border-left:4px solid #0b2545"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div><h3 style="cursor:pointer" onclick="fabOpen.sec.held=!'+(open?'true':'false')+';fabSavePrefs();fabRender()">'+(open?'&#9662;':'&#9656;')+' Held at '+esc(name||acc)+' for call-off</h3>'
+    +'<div class="sub">Cloth woven to the call-off and held until a purchase order takes it. A purchase order file made here takes its metres off the moment it is made. Cover = held &divide; metres per week from the last 13 weeks of completed works orders; told today, cloth is ready in '+HELD_LEAD_WKS+' weeks, so under '+(HELD_LEAD_WKS+HELD_CYCLE_WKS)+' weeks means <b>put more into work</b>'
+    +(work?' &middot; <b style="color:#8a2222">'+work+' to put into work</b>':'')+(next?' &middot; <b style="color:#b45309">'+next+' on the next order</b>':'')+'</div></div>'
+    +'<span style="margin-left:auto;display:flex;gap:6px">'+(ed?'<button class="btn" style="font-size:11px;padding:5px 10px" onclick="heldPasteToggle()">&#9998; Paste statement</button><button class="btn" style="font-size:11px;padding:5px 10px" onclick="heldMovePrompt(\''+esc(acc)+'\',\'\')">&#177; Movement</button>':'')
+    +(b&&b.moves.length?'<button class="btn" style="font-size:11px;padding:5px 10px" onclick="heldCsv(\''+esc(acc)+'\')">&#8681; Log (CSV)</button>':'')+'</span></div>';
+  if(!open) return h+'</div>';
+  if(ed && fabOpen.heldPaste) h+='<div class="pbox" style="margin:8px 0"><p>Copy the lines from '+esc(name||acc)+'\'s statement - code, description, metres - and paste. "14 094,20" and "14094.2" both read. The figure replaces the held balance; the difference is logged.</p><textarea id="heldTA" style="width:100%;min-height:90px;font-family:monospace;font-size:12px" placeholder="X133ECO125&#9;TWILL 65%PES GRS 35%CO OCS | 200 GSM | BLACK - 125&#9;14 094,20"></textarea>'
+    +'<div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-p" onclick="heldLoadPaste(\''+esc(acc)+'\')">&#10003; Load</button><button class="btn" onclick="heldPasteToggle()">Cancel</button></div></div>';
+  var tag={work:'<span style="color:#8a2222;font-weight:700">Put into work</span>', next:'<span style="color:#b45309;font-weight:700">Next order</span>', ok:'<span style="color:#166534">OK</span>', none:'<span style="color:#9ca3af">no balance</span>'};
+  h+='<div class="sm-tblwrap" style="margin-top:8px"><table class="fab-stk"><thead><tr><th>Supplier code</th><th>Sage fabric</th><th style="text-align:right" title="metres the supplier holds for us">Held m</th><th style="text-align:right" title="completed works orders, last 13 weeks">Use / wk</th><th style="text-align:right">Cover wks</th><th>Weaving</th><th style="text-align:right" title="in stock at Home on the Sage sheet">In Sage</th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
+    +rows.map(function(r){ return '<tr><td><span style="font-family:monospace;font-size:11px">'+esc(r.sup)+'</span>'+(r.name?'<div class="sm-sub" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(r.name)+'">'+esc(r.name)+'</div>':'')+'</td>'
+      +'<td>'+(r.code?'<span style="font-family:monospace;font-size:11px">'+esc(r.code)+'</span>':(ed?'<a href="#" onclick="heldLink(\''+esc(acc)+'\',\''+esc(r.sup)+'\');return false" style="color:#8a2222">link to Sage code</a>':'<span style="color:#9ca3af">&mdash;</span>'))+'</td>'
+      +'<td class="fab-num" style="'+(r.held!=null&&r.held<0?'color:#8a2222':'')+'">'+(r.held==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(r.held,1))+'</td>'
+      +'<td class="fab-num">'+(r.wk>0?fabM(r.wk,0):'<span style="color:#9ca3af">&mdash;</span>')+'</td>'
+      +'<td class="fab-num">'+(r.cover==null?'<span style="color:#9ca3af">&mdash;</span>':r.cover===Infinity?'<span style="color:#9ca3af">no use</span>':fabM(r.cover,1))+'</td>'
+      +'<td>'+tag[r.state]+'</td><td class="fab-num">'+(r.inSage==null?'<span style="color:#9ca3af">&mdash;</span>':fabM(r.inSage,0))+'</td>'
+      +(ed?'<td><a href="#" onclick="heldMovePrompt(\''+esc(acc)+'\',\''+esc(r.sup)+'\');return false" title="add or take off metres">&#177;</a></td>':'')+'</tr>'; }).join('')
+    +'</tbody></table></div>';
+  var mv=(b?b.moves:[]).map(function(m,i){ return Object.assign({i:i},m); }).reverse();
+  if(mv.length) h+='<div class="kpi-note" style="margin-top:6px"><b>Movements</b> &middot; newest first'+(mv.length>40?' &middot; last 40 of '+mv.length+' (the CSV has all)':'')+'<div class="sm-tblwrap"><table class="fab-stk" style="font-size:11.5px"><thead><tr><th>Date</th><th>Code</th><th>Movement</th><th style="text-align:right">Metres</th><th>Note</th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
+    +mv.slice(0,40).map(function(m){ return '<tr><td>'+esc(fmtD(m.at))+(m.atTime?' '+esc(m.atTime):'')+'</td><td><span style="font-family:monospace;font-size:11px">'+esc(m.sup)+'</span></td><td>'+esc(HELD_KINDS[m.kind]||m.kind)+'</td><td class="fab-num" style="'+(m.qty<0?'color:#8a2222':'color:#166534')+'">'+(m.qty>0?'+':'')+fabM(m.qty,1)+'</td><td>'+esc(m.note||'')+(m.file?' <span style="color:#9ca3af" title="'+esc(m.file)+'">&middot; file</span>':'')+'</td>'
+      +(ed?'<td><a href="#" onclick="heldDelete(\''+esc(acc)+'\','+m.i+');return false" title="remove">&#10005;</a></td>':'')+'</tr>'; }).join('')+'</tbody></table></div></div>';
+  return h+'</div>';
 }
 function poDownloadAgain(i){ var rec=(fabStock.poFiles||[])[i]; if(!rec) return; poDownload(poCsv(rec.rows), rec.file); }
 function poHistoryHtml(acc){
@@ -6850,6 +7007,7 @@ function fabOrderHtml(acc, name){
     +'</tbody></table></div>'
     +(cur!=='GBP' ? '<div class="kpi-note">'+(fromSheet ? 'Prices in '+esc(cur)+', the supplier\'s own from the Sage sheet.' : 'Prices are Sage\'s <b>last buying price</b> as the sheet holds it; '+esc(name||acc)+' buy in <b>'+esc(cur)+'</b>. Sage keeps that price in the supplier\'s currency, so it is the right figure - paste columns A to Q of the current 60-fabric-stock.sql and the sheet says so itself.')+'</div>' : '')
     +poHistoryHtml(acc)
+    +heldHtml(acc, name)
     +(minOrder ? '<div class="kpi-note">'+(total>=minOrder ? '<b>'+fabM(total,0)+' m</b> - at or above the '+fabM(minOrder,0)+' m free-shipping minimum.' : '<b>'+fabM(minOrder-total,0)+' m short</b> of the '+fabM(minOrder,0)+' m free-shipping minimum - type more against the fabrics you want, or top up and the difference is spread by annual call-off.')+' Bold quantities were typed here; the rest are the suggestion.</div>' : '')
     +'</div>';
   return h;

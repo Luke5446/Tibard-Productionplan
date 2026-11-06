@@ -313,6 +313,32 @@ and it is valued at the BULK code's standard cost plus £1 rather than the home
 code's cost. No cloth is cut for it, so it is not sent to the cutting log and
 has no fabric record. A split or an undone completion keeps the flag.
 
+## Cloth held at Tiajo for call-off
+
+Tiajo weave to the annual call-off and hold the cloth until a purchase order
+calls it off. The Fabric tab's order panel for Tiajo (pick the supplier in the
+drop-down) has a **Held at Tiajo Comercio for call-off** table: their code,
+our Sage code, held metres, metres per week from the last 13 weeks of
+completed works orders, weeks of cover, and the flag. Told today, cloth is
+ready in 8 weeks and an order goes about monthly, so under 12 weeks cover
+says **Put into work**, under 24 **Next order**.
+
+- **A purchase order file** made on the panel takes its metres off the held
+  figure line by line, the moment the file is made (the alert says so).
+- **Paste statement** reads Tiajo's own lines, code / description / metres,
+  with their "14 094,20" figures; the difference from the held figure is
+  logged as a balance movement.
+- **± Movement** adds or takes off metres with a note, e.g. cloth air
+  freighted to Clockwork. ✕ on a movement removes it.
+- **Log (CSV)** downloads every movement with the running balance.
+
+The opening ledger is Tiajo's statement of 6 Nov 2026 with 1,000 m of black
+X133ECO125 and 1,000 m of navy X133ECO297 taken off for the Clockwork air
+freight. It seeds once in the editor and goes out with publish; the book is
+`fabStock.held[account]` = `{codes:{supplierCode:{code,name}}, moves:[{at, sup,
+code, kind, qty, note, file}]}`, held = the sum of the movements.
+Test: `tests/test-held.js` (6 Nov 2026).
+
 ## Publishing for the team
 
 **Publish for team** writes the editor's state to `data.json` in this repo,
