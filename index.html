@@ -457,10 +457,11 @@ tr.fab-done td{color:#6b7280}
             <input type="date" id="woDue" style="width:100%;padding:6px 9px;border:1px solid #c8d0df;border-radius:5px;font-size:12px;font-family:Arial,sans-serif"></div>
           </div>
           <p style="font-size:11px;color:#4b5563;margin-bottom:5px">Type or paste one SKU per line as <code>code&nbsp;quantity</code> — separated by a space, comma, or tab. E.g. <code>OHHICAPP062803DEN 50</code></p>
-          <textarea id="woTA" placeholder="Paste or type: code [tab] quantity, one per line..."></textarea>
+          <textarea id="woTA" placeholder="Paste or type: code [tab] quantity, one per line..." oninput="woFinCheck()"></textarea>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 8px;font-size:12px">
             <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="woEmbOnly" onchange="document.getElementById('woPickWrap').style.display=this.checked?'':'none'"> <strong>Embroidery only</strong> &mdash; picked from stock, not cut or made</label>
             <span id="woPickWrap" style="display:none">Pick from <input type="text" id="woPickCode" placeholder="base code, e.g. HT016003 (worked out if blank)" style="width:260px;padding:4px 8px;border:1px solid #c8d0df;border-radius:5px;font-size:12px;font-family:monospace"></span>
+            <label id="woFinWrap" style="display:none;gap:6px;align-items:center;cursor:pointer" title="The garment came in made on a Clockwork container (BULK code) and is only finished here. Valued at the BULK code's standard cost plus the finishing charge, not the home code's cost."><input type="checkbox" id="woFinishing"> <strong>Finishing only</strong> &mdash; Clockwork bulk garment finished here (bulk cost + &pound;1)</label>
           </div>
           <div style="display:flex;gap:6px">
             <button class="btn btn-p" style="font-size:12px" onclick="saveWO()">&#10003; Save works order</button>
@@ -563,6 +564,16 @@ tr.fab-done td{color:#6b7280}
   </div>
 
   <div id="kpiView" class="hidden">
+    <div class="kpi-sec" id="stdCostSec" style="margin-top:0">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">&#163; Standard costs from Sage</h3><span class="sm-sub" style="font-size:11px" id="stdCostInfo"></span>
+        <button class="btn edit-only" style="font-size:12px" onclick="stdCostShow()" title="Paste the Sage standard cost list (sage/80-standard-costs.sql)">&#128229; Paste standard costs</button></div>
+      <div class="sub">The KPI dashboard values the garments completed each month at these costs: the code's Sage standard cost, or for a <strong>finishing only</strong> works order the BULK code's cost plus &pound;1. Published with the planner.</div>
+      <div id="stdCostForm" class="hidden" style="margin-top:8px">
+        <p style="font-size:11px;color:#4b5563;margin-bottom:5px">Paste <code>code&nbsp;[tab]&nbsp;standard cost</code> lines from the Sage query (BULK codes included). The whole list is replaced.</p>
+        <textarea id="stdCostTA" placeholder="CJ0001MM01&#9;12.34&#10;BULKCJ0001MM01&#9;6.10" style="width:100%;min-height:90px;font-family:monospace;font-size:12px"></textarea>
+        <div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-p" style="font-size:12px" onclick="stdCostPaste()">&#10003; Save standard costs</button><button class="btn" style="font-size:12px" onclick="document.getElementById('stdCostForm').classList.add('hidden')">Cancel</button></div>
+      </div>
+    </div>
     <div id="kpiBody"></div>
     <div id="kpiTip" class="kpi-tip" hidden></div>
   </div>
@@ -735,6 +746,7 @@ tr.fab-done td{color:#6b7280}
         <div><label>Due date (all)</label><input type="date" id="createDue"></div>
       </div>
       <div class="proj-note"><strong id="createSum"></strong></div>
+      <label id="createFinWrap" style="display:none;gap:6px;align-items:center;cursor:pointer;font-size:12px;margin-bottom:10px" title="Only the ticked codes on the Clockwork Bulk list are marked: they came in made on a container and are only finished here, so they are valued at the BULK code's standard cost plus the finishing charge."><input type="checkbox" id="createFinishing"> <strong>Finishing only</strong> &mdash; the ticked Clockwork codes (<span id="createFinN"></span>) are bulk garments finished here, valued at bulk cost + &pound;1</label>
       <label style="display:flex;gap:6px;align-items:center;cursor:pointer;font-size:12px;margin-bottom:10px"><input type="checkbox" id="createEmbOnly"> <strong>Embroidery only</strong> &mdash; the base garment is picked from stock and embroidered, not cut or made (the base code is worked out from each code)</label>
       <div style="display:flex;gap:6px;justify-content:flex-end">
         <button class="btn" onclick="closeCreate()">Cancel</button>
@@ -953,6 +965,66 @@ function recalcPipeline(){
 // oldest order's 10 come from stock and the works order is for the next
 // one; but every open order for the code is listed on the works order.
 var sopDemand={lines:[], pastedAt:null};
+// ── Sage standard costs (Luke, 6 Nov 2026): £ per garment by stock code, pasted
+// from sage/80-standard-costs.sql and published in data.json for the KPI
+// dashboard, which values each month's completed garments at them. A finishing
+// only works order (a Clockwork bulk garment finished here) is valued at the
+// BULK code's cost plus FINISH_ADD, never at the home code's cost.
+var FINISH_ADD=1;
+var stdCosts={costs:{}, pastedAt:'', finishAdd:FINISH_ADD};
+function stdCostDefault(){ return {costs:{}, pastedAt:'', finishAdd:FINISH_ADD}; }
+function stdCostLoad(x){ stdCosts=(x && x.costs) ? {costs:x.costs, pastedAt:x.pastedAt||'', finishAdd:FINISH_ADD} : stdCostDefault(); }
+function stdCostFor(code, finishing){
+  var c=(code||'').trim().toUpperCase(), m=stdCosts.costs||{};
+  if(finishing){ var b=m['BULK'+c]; return b>0 ? b+stdCosts.finishAdd : null; }
+  return m[c]>0 ? m[c] : null;
+}
+function stdCostShow(){ if(!IS_EDITOR) return; document.getElementById('stdCostForm').classList.remove('hidden'); document.getElementById('stdCostTA').focus(); }
+function stdCostPaste(){ if(!IS_EDITOR) return;
+  var txt=(document.getElementById('stdCostTA').value||'').trim(), out={}, n=0, bad=0;
+  txt.split('\n').forEach(function(line){
+    var parts=line.trim().split(/[\t,]+|\s{2,}|\s+/).filter(function(x){ return x!==''; }); if(parts.length<2) return;
+    var code=parts[0].toUpperCase(), v=parseFloat(String(parts[parts.length-1]).replace(/[£,]/g,''));
+    if(/^CODE$/i.test(code)) return;
+    if(!(v>0)){ bad++; return; }
+    out[code]=Math.round(v*10000)/10000; n++;
+  });
+  if(!n){ alert('No code / cost lines found.\n\nPaste: code [tab] standard cost, one per line.'); return; }
+  // Sage has ~107k costed codes (6 Nov 2026), far more than the browser's storage and
+  // data.json should carry, so only the codes the planner knows are kept: the buffer
+  // rows, their BULK codes, every works order live or completed, and the style master.
+  // A code that arrives later (a new special make) is picked up by the next paste.
+  var keep=stdCostWanted(), kept={}, k=0;
+  Object.keys(out).forEach(function(c){ if(keep[c]){ kept[c]=out[c]; k++; } });
+  var missing=Object.keys(keep).filter(function(c){ return !kept[c] && !/^BULK/.test(c); }).length;
+  stdCosts={costs:kept, pastedAt:d2s(now()), finishAdd:FINISH_ADD};
+  document.getElementById('stdCostTA').value=''; document.getElementById('stdCostForm').classList.add('hidden');
+  saveState(); stdCostRender();
+  alert(k+' standard cost'+(k===1?'':'s')+' kept for the codes the planner knows, out of '+n+' pasted'+(bad?' ('+bad+' line'+(bad===1?'':'s')+' with no cost skipped)':'')+'.'+(missing?'\n\n'+missing+' planner code'+(missing===1?' has':'s have')+' no standard cost in the list.':'')+'\n\nPublish for team so the KPI dashboard picks them up.');
+}
+// the codes a cost is worth keeping for (upper case)
+function stdCostWanted(){
+  var w={}, add=function(c){ if(Array.isArray(c)){ c.forEach(add); return; } if(typeof c!=='string') return; c=c.trim().toUpperCase(); if(c) w[c]=1; };
+  rows.forEach(function(r){ add(r.code); if(r.clockwork) add('BULK'+r.code); });
+  WOs.forEach(function(x){ (x.items||[]).forEach(function(it){ add(it.code); if(x.finishing) add('BULK'+it.code); }); });
+  completedWOs.forEach(function(c){ add(c.code); if(c.finishing) add('BULK'+c.code); });
+  if(typeof STYLE_MASTER!=='undefined') (STYLE_MASTER.styles||[]).forEach(function(st){ if(st.code && st.code.indexOf('--')<0) add(st.code); if(st.alias) add(st.alias); });
+  Object.keys(w).forEach(function(c){ if(/\//.test(c)) add(c.replace(/\//g,'')); });   // OH apron codes with Sage's slash, both spellings
+  return w;
+}
+function stdCostRender(){
+  var el=document.getElementById('stdCostInfo'); if(!el) return;
+  var codes=Object.keys(stdCosts.costs||{}), bulk=codes.filter(function(c){ return /^BULK/.test(c); }).length;
+  el.textContent=codes.length ? codes.length+' codes ('+bulk+' BULK) · pasted '+fmtD(stdCosts.pastedAt) : 'none pasted yet: the dashboard shows the sheet figure';
+}
+// a code on the Clockwork Bulk list: bought in made on a container, so a works
+// order for it can only be finishing
+function isClockworkCode(code){ var c=(code||'').trim().toUpperCase(); return rows.some(function(r){ return r.clockwork && (r.code||'').toUpperCase()===c; }); }
+function woFinCheck(){
+  var ta=document.getElementById('woTA'), w=document.getElementById('woFinWrap'); if(!ta||!w) return;
+  var any=(ta.value||'').split('\n').some(function(l){ var p=l.trim().split(/[\t,]+|\s+/); return p[0] && isClockworkCode(p[0]); });
+  w.style.display=any?'flex':'none'; if(!any) document.getElementById('woFinishing').checked=false;
+}
 function demandSort(a,b){ return (a.due||'9999')<(b.due||'9999')?-1:(a.due||'9999')>(b.due||'9999')?1:(a.seq||0)-(b.seq||0); }
 function demandRecalc(){
   WOs.forEach(function(w){ w.items.forEach(function(it){ delete it.sop; }); });
@@ -1264,8 +1336,10 @@ function saveWO(){ if(!IS_EDITOR) return;
   var pickTyped=((document.getElementById('woPickCode')||{}).value||'').trim().toUpperCase();
   var nwo={ref:ref, start:start, due:due, items:items};
   if(embOnly){ nwo.embOnly=true; nwo.pickCode=pickTyped||embBaseFor(items[0].code); }
+  if(!!(document.getElementById('woFinishing')||{}).checked) nwo.finishing=true;
   WOs.push(stampWO(nwo));
   var ec=document.getElementById('woEmbOnly'); if(ec){ ec.checked=false; document.getElementById('woPickWrap').style.display='none'; document.getElementById('woPickCode').value=''; }
+  var fc=document.getElementById('woFinishing'); if(fc){ fc.checked=false; document.getElementById('woFinWrap').style.display='none'; }
   document.getElementById('woRef').value='';
   document.getElementById('woStart').value='';
   document.getElementById('woDue').value='';
@@ -1367,8 +1441,9 @@ function recordCompleted(wo, it, day, waste){
     // the works order this one was split off, so an undo puts it back as a
     // split and the cutting room is not asked for cloth cut with the parent
     splitFrom: wo.splitFrom || undefined,
-    fabric: wo.embOnly ? undefined : fabricRecordFor(it, wo),
+    fabric: (wo.embOnly || wo.finishing) ? undefined : fabricRecordFor(it, wo),   // a finishing job's garment came in made: no cloth cut here
     embOnly: wo.embOnly ? true : undefined, pickCode: wo.embOnly ? wo.pickCode : undefined,
+    finishing: wo.finishing ? true : undefined,   // valued at the BULK code's standard cost + the finishing charge
     // a line put back by Undo and completed again keeps its write-off state:
     // fabric already exported must not be exported twice
     fabricExportedAt: it.fabricExportedAt, fabricExportFile: it.fabricExportFile, fabricDismissedAt: it.fabricDismissedAt,
@@ -1600,6 +1675,7 @@ function renderWOCards(){
         ?' <span style="font-size:9px;font-weight:700;color:#065f46;background:#d1fae5;border-radius:8px;padding:1px 6px;vertical-align:middle">&#128424; Printed</span>'
         :' <span style="font-size:9px;font-weight:700;color:#fff;background:#b91c1c;border-radius:8px;padding:1px 6px;vertical-align:middle">NOT PRINTED</span>')
       +(wo.embOnly?' <span class="woc-emb" style="font-size:9px;font-weight:700;color:#fff;background:#6d28d9;border-radius:8px;padding:1px 6px;vertical-align:middle" title="Embroidery only: picked from stock'+(wo.pickCode?' ('+esc(wo.pickCode)+')':'')+', not cut or made">&#129697; EMB only</span>':'')
+      +(wo.finishing?' <span class="woc-fin" style="font-size:9px;font-weight:700;color:#fff;background:#0369a1;border-radius:8px;padding:1px 6px;vertical-align:middle" title="Finishing only: a Clockwork bulk garment finished here, valued at bulk cost + \u00a3'+FINISH_ADD+'">&#9874; Finishing</span>':'')
       +'</div>'
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
       +demandCardH(wo)
@@ -1643,6 +1719,7 @@ function openWOModal(i){
       +(IS_EDITOR?' <button class="btn" style="font-size:10px;padding:2px 8px" title="Clear this WO from the unprinted list without printing (e.g. no template set up yet)" onclick="markWOPrinted('+i+')">&#10003; Mark as printed</button>':''));
   var splitH=IS_EDITOR?' &nbsp;<button class="btn" style="font-size:10px;padding:3px 9px" title="Split this works order into two" onclick="splitWO('+i+')">&#9986; Split WO</button>':'';
   if(wo.embOnly) splitH='<br><span style="color:#6d28d9;font-weight:700">&#129697; Embroidery only</span> &mdash; pick '+(wo.pickCode?'<strong>'+esc(wo.pickCode)+'</strong>'+(embBaseKnown(wo.pickCode)?'':' <span class="sm-tag warn" title="This code is not a product in the buffer, so the warehouse cannot book the home stock off it">not a stock code</span>'):'<span class="sm-tag warn">base code not found</span>')+' from stock for the embroidery room'+(IS_EDITOR?' <a href="#" onclick="embSetPick('+i+');return false">&#9998; base code</a>':'')+'; not cut, not on the cutting log; the print is the first page only'+splitH;
+  if(wo.finishing) splitH+='<br><span style="color:#0369a1;font-weight:700">&#9874; Finishing only</span> &mdash; Clockwork bulk garment finished here, valued at the BULK code\'s standard cost + &pound;'+FINISH_ADD;
   document.getElementById('woModalMeta').innerHTML=
     dateH+' &nbsp;|&nbsp; '
     +'<strong>'+wo.items.length+'</strong> SKU(s) &nbsp;|&nbsp; <strong>'+tot.toLocaleString()+'</strong> units total'
@@ -2237,7 +2314,7 @@ function splitWO(i){ if(!IS_EDITOR) return;
   var newRef=nextWORef();
   // splitFrom: the cutting log knows the new works order came out of this
   // one, so a split made after the cloth was cut does not ask for it again
-  WOs.push(stampWO({ref:newRef, start:wo.start, due:wo.due, items:moved, splitFrom:wo.ref}, wo.createdAt));
+  WOs.push(stampWO({ref:newRef, start:wo.start, due:wo.due, items:moved, splitFrom:wo.ref, finishing:wo.finishing||undefined}, wo.createdAt));
   var newIdx=WOs.length-1;
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderCompleted(); saveState();
   alert('Split done.\n\n'+wo.ref+' keeps '+wo.items.map(function(x){return Math.round(x.qty)+' x '+x.code;}).join(', ')
@@ -2394,7 +2471,7 @@ function undoCompleted(idx){ if(!IS_EDITOR) return;
     if(it){ it.qty+=c.qty+(c.waste||0); if(c.fabricExportedAt && !it.fabricExportedAt){ it.fabricExportedAt=c.fabricExportedAt; it.fabricExportFile=c.fabricExportFile; } }
     else existing.items.push(back);
   } else {
-    WOs.push({ref:c.ref, start:c.start, due:c.due, items:[back], createdAt:c.createdAt, splitFrom:c.splitFrom||undefined});
+    WOs.push({ref:c.ref, start:c.start, due:c.due, items:[back], createdAt:c.createdAt, splitFrom:c.splitFrom||undefined, finishing:c.finishing||undefined});
   }
   completedWOs.splice(idx,1);
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState();
@@ -2831,6 +2908,9 @@ function showCreateWO(){
   document.getElementById('createSum').innerHTML='This will create <strong>'+er.length+'</strong> works order(s) — one per SKU — totalling <strong>'+tu.toLocaleString()+'</strong> units to make.';
   document.getElementById('createStart').value=d2s(now());
   document.getElementById('createDue').value='';
+  // the finishing tick is offered only when a ticked code is on the Clockwork Bulk list
+  var cw=er.filter(function(r){ return r.clockwork; }).length, fw=document.getElementById('createFinWrap');
+  if(fw){ fw.style.display=cw?'flex':'none'; document.getElementById('createFinN').textContent=cw; if(!cw) document.getElementById('createFinishing').checked=false; }
   document.getElementById('createModal').classList.add('open');
 }
 function doCreateWOs(){ if(!IS_EDITOR) return;
@@ -2840,6 +2920,7 @@ function doCreateWOs(){ if(!IS_EDITOR) return;
   var er=rows.filter(function(r){return r.included&&r.actWop>0;});
   if(!er.length){ alert('No items to create.'); return; }
   var createEmb=!!(document.getElementById('createEmbOnly')||{}).checked;
+  var createFin=!!(document.getElementById('createFinishing')||{}).checked;
   // Create one works order per SKU, auto-referenced. Reserve each ref as we go so the
   // batch can't collide with itself, and so numbers already in history are skipped.
   var reserved={};
@@ -2848,9 +2929,11 @@ function doCreateWOs(){ if(!IS_EDITOR) return;
     reserved[ref.toUpperCase()]=true;
     var nwo={ref:ref, start:start, due:due, items:[{code:r.code, qty:r.actWop}]};
     if(createEmb){ nwo.embOnly=true; nwo.pickCode=embBaseFor(r.code); }
+    if(createFin && r.clockwork) nwo.finishing=true;   // only the Clockwork codes: the rest are made here
     WOs.push(stampWO(nwo));
   });
   var cec=document.getElementById('createEmbOnly'); if(cec) cec.checked=false;
+  var cfc=document.getElementById('createFinishing'); if(cfc) cfc.checked=false;
   // Untick every row now the works orders are made — prevents accidentally creating them again
   rows.forEach(function(r){ r.included=false; });
   closeCreate();
@@ -2897,6 +2980,7 @@ function fetchShared(cb){
       // read back here, so a viewer (or an editor whose browser had been
       // cleared) had the figure and none of the orders behind it.
       sopDemand=(s.sopDemand && s.sopDemand.lines) ? s.sopDemand : {lines:[], pastedAt:null};
+      stdCostLoad(s.stdCosts); stdCostRender();
       fabFixMesh(); threadApplyStdAll(); trimFixSetsAll();
       var sa=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
       var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+sa;
@@ -2921,6 +3005,9 @@ function mergePublishedSnapshots(){
     var changed=false;
     if(s.bufSnaps && s.bufSnaps.length && absorbSnapshots(s.bufSnaps)) changed=true;
     if(absorbBranding(s.styleEdits)) changed=true;
+    // a standard cost list newer than the editor's own (one seeded into data.json, or
+    // pasted on the other editor PC) replaces it, so a later publish does not wipe it
+    if(s.stdCosts && s.stdCosts.costs && Object.keys(s.stdCosts.costs).length && (s.stdCosts.pastedAt||'')>(stdCosts.pastedAt||'')){ stdCostLoad(s.stdCosts); stdCostRender(); changed=true; }
     if(changed){ saveState();
       if(document.getElementById('tabKpi') && document.getElementById('tabKpi').classList.contains('on')) kpiRender(); }
   }).catch(function(){});
@@ -2991,7 +3078,7 @@ function pubNoToken(){
 function pubB64(s){ return btoa(unescape(encodeURIComponent(s))); }
 function publishState(){
   return JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,layOverrides:layOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,
+    smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,layOverrides:layOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,stdCosts:stdCosts,
     savedAt:new Date().toISOString()});
 }
 function publishDownload(json, why){
@@ -3479,7 +3566,7 @@ function saveState(){
   var json='', ts=new Date().toISOString();
   try{
     json=JSON.stringify({rows:rows,WOs:WOs,completedWOs:completedWOs,
-      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,layOverrides:layOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,
+      smSeen:smSeen,smNotes:smNotes,smParts:smParts,smPending:smPending,smDropped:smDropped,smMade:smMade,smDocs:smDocs,bufSnaps:bufSnaps,styleEdits:styleEdits,chartEdits:chartEdits,chartColEdits:chartColEdits,fabStock:fabStock,fabricOverrides:fabricOverrides,layOverrides:layOverrides,bufWeeks:bufWeeks,sopDemand:sopDemand,stdCosts:stdCosts,
       savedAt:ts});
   }catch(e){ console.log('Save failed:',e); saveFailed('could not serialise'); return; }
   var behind=stateBehind(); if(behind){ saveRefused(behind); return; }
@@ -3511,6 +3598,7 @@ function applyState(s){
     stateLoadedAt=s.savedAt||'';
     bufWeeks=BUF_WEEKS_CHOICES.indexOf(+s.bufWeeks)>=0 ? +s.bufWeeks : 4; renderBufWeeks();
     sopDemand=(s.sopDemand && s.sopDemand.lines) ? s.sopDemand : {lines:[], pastedAt:null};
+    stdCostLoad(s.stdCosts); stdCostRender();
     // Special makes stand alone - restore them even when no buffer data is loaded,
     // otherwise a paste of specials would be lost on the next refresh.
     smSeen=s.smSeen||{}; smNotes=s.smNotes||{}; smParts=s.smParts||{}; smReview=s.smReview||[];
@@ -3575,7 +3663,7 @@ function clearAll(){ if(!IS_EDITOR) return;
     localStorage.removeItem('tibard_production'); try{ localStorage.removeItem(AT_KEY); }catch(e){}
     try{ idbOpen(function(db){ if(!db) return; try{ db.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).delete('state'); }catch(e){} }); }catch(e){}
     rows=[];WOs=[];completedWOs=[];
-    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};fabStock={rows:{},pastedAt:''};fabricOverrides={};layOverrides={};
+    smSeen={};smNotes={};smParts={};smPending=[];smDropped=[];smMade=[];smDocs={};bufSnaps=[];styleEdits={};chartEdits={};chartColEdits={};fabStock={rows:{},pastedAt:''};fabricOverrides={};layOverrides={}; stdCosts=stdCostDefault(); stdCostRender();
     document.getElementById('dataWrap').classList.add('hidden');
     document.getElementById('uzone').classList.remove('hidden');
     document.getElementById('lastUpdated').textContent='';
@@ -3673,7 +3761,7 @@ function smShowTab(which){
   // Makes has its own paste button, so hide it rather than show two.
   var tb=document.querySelector('.toolbar'); if(tb) tb.style.display = buf ? '' : 'none';
   if(sp) smRender();
-  if(kpi) kpiRender();
+  if(kpi){ kpiRender(); stdCostRender(); }
   if(fab) fabRender();
 }
 
@@ -4264,7 +4352,7 @@ var CUT_LATE_DAYS=5;                     // printed this long ago and not cut: f
 // The log began on 29 September 2026: a works order due before that was
 // printed and cut before there was a list, and never belongs on it (Luke).
 var CUTLOG_FROM='2026-09-29';
-function cutInScope(wo){ return !!wo.printed && !wo.embOnly && (!wo.due || wo.due>=CUTLOG_FROM); }
+function cutInScope(wo){ return !!wo.printed && !wo.embOnly && !wo.finishing && (!wo.due || wo.due>=CUTLOG_FROM); }
 var cutLog={entries:[], savedAt:'', sha:null, loadedAt:null, error:'', source:'', busy:false, file:CUTLOG_FILE};
 var cutQ='', cutSec='todo', cutAsAt='', cutFrom='', cutTo='', cutDayOpen={};
 var cutSortKey='printed', cutSortDesc=false, cutNewOnly=false;   // To cut: by date printed or due, oldest first; the headers sort; the New today tile filters
@@ -4734,7 +4822,7 @@ function cutWip(asAt){
     add(e.fabric, e.fabName, cutMetres(e), cutPrice(e), false);
   });
   WOs.forEach(function(w){
-    if(w.embOnly) return;   // picked from stock: no cloth
+    if(w.embOnly || w.finishing) return;   // picked from stock, or came in made: no cloth
     var since=w.printedAt||w.createdAt||''; if(since && since>d) return;
     cutEntriesFor(w).forEach(function(e){ if(live[e.k]) return; if(e.std==null) return; add(e.fabric, e.fabName, e.std, cutPrice(e), true); });
   });
