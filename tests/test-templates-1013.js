@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('350 styles in the master', r.count===350, r.count);
+ ck('351 styles in the master', r.count===351, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -184,7 +184,8 @@ const path = require('path');
  ck('Storm grey Cumbria: OHCJSCUMBRIA38248 resolves at size 38; PC2064ECO at A5 1.55 m, All Costings agrees; grey thread at the jacket 220, OH label, wash label and red tax tab coded, studs and black neck tape not; the 34–62 chart; a stock jacket', r12.OHCJSCUMBRIA38248==='OHCJSCUMBRIA--248|38|sized|OH4SSLV|PC2064ECO:A5:1.55|PC2064ECO/1.55/All Costings|CMP-THR-EP80-09963-64++LABELOH5771+CMP-OH-LBL-WASH-01+++TAXTABOH07/01|220|CJ|15||stock|', r12.OHCJSCUMBRIA38248);
  ck('Storm grey Cumbria: the 62 (no All Costings row) falls back to the works order data; the black 40 stays the black jacket', r12.OHCJSCUMBRIA62248&&r12.OHCJSCUMBRIA62248.startsWith('OHCJSCUMBRIA--248|62|')&&r12.OHCJSCUMBRIA62248.includes('PC2064ECO/1.55/works order data')&&r12.OHCJSCUMBRIA4003.startsWith('OHCJSCUMBRIA--03|40|'), [r12.OHCJSCUMBRIA62248,r12.OHCJSCUMBRIA4003]);
  ck('CT3082: XL03 resolves at XL; PC2003ECO at B1 1.6 m, All Costings agrees; black thread at the trousers 150, zip, cord, label tape and Tibard tax tab coded, toggle and elastic not; 14-row chart; a stock trouser', r12.CT3082XL03==='CT3082--03|XL|sized|NEW3082RL|PC2003ECO:B1:1.6|PC2003ECO/1.6/All Costings|CMP-THR-EP80-09700-03+CMP-ZIP-CNC56C-150-03++CMP-CORD-PP6-03++CMP-LBL-NYL-25-01+TAXTABTIB01|150|CT|14||stock|', r12.CT3082XL03);
- ck('CT3082: the waist-size codes 46 and 60 and the ECO alias resolve; the gingham 26 and a special stay unmatched', r12.CT30824603.startsWith('CT3082--03|46|')&&r12.CT30826003.startsWith('CT3082--03|60|')&&r12.CT3082ECOXL03.startsWith('CT3082--03|XL|')&&r12.CT3082MM26===null&&r12.CT3082XL03S===null, [r12.CT30824603,r12.CT30826003,r12.CT3082ECOXL03,r12.CT3082MM26,r12.CT3082XL03S]);
+ ck('CT3082: the waist-size codes 46 and 60 and the ECO alias resolve; a special stays unmatched', r12.CT30824603.startsWith('CT3082--03|46|')&&r12.CT30826003.startsWith('CT3082--03|60|')&&r12.CT3082ECOXL03.startsWith('CT3082--03|XL|')&&r12.CT3082XL03S===null, [r12.CT30824603,r12.CT30826003,r12.CT3082ECOXL03,r12.CT3082XL03S]);
+ ck('CT3082--26 (6 Nov 2026): MM26 resolves at MM to the gingham record; PC2026 at D3 1.6 m, All Costings agrees; white thread at the trousers 150, cord, label tape and Tibard tax tab coded, zip, toggle and elastic not; the same 14-row chart; a stock trouser', r12.CT3082MM26==='CT3082--26|MM|sized|NEW3082RL|PC2026:D3:1.6|PC2026/1.6/All Costings|CMP-THR-PC075-32109-01+++CMP-CORD-PP6-03++CMP-LBL-NYL-25-01+TAXTABTIB01|150|CT|14||stock|', r12.CT3082MM26);
  d=await printOf('BEAPPCS300501',50);
  ck('Bettys print: the BETTY\'S variant, the white thread code, the branding band with the maroon logo and the artwork image, the 4-row chart with the pocket note', d.text.includes("BETTY'S")&&d.text.includes('CMP-THR-PC075-32109-01')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('maroon thread')&&d.text.includes('94 cm (± 1.5)')&&d.text.includes('33 cm (13")')&&/CO5001ECO A3 0\.5/.test(d.text)&&d.pngs===1, [d.pngs,d.text.slice(0,300)]);
  d=await printOf('OHCJSCUMBRIA42248',12);
@@ -193,6 +194,8 @@ const path = require('path');
  ck('CT3082 SS print: size S with the S row highlighted, NEW3082RL, the zip and cord codes, the elastic cut lengths, the drawstring buttonholes, no branding band', d.size==='S'&&d.hit.length===1&&d.hit[0]==='S'&&d.text.includes('NEW3082RL')&&d.text.includes('CMP-ZIP-CNC56C-150-03')&&d.text.includes('CMP-CORD-PP6-03')&&d.text.includes('S 24" (61 cm)')&&d.text.includes('buttonholes vertical for the drawstring')&&!d.text.includes('CUSTOMER BRANDING'), [d.size,d.hit]);
  d=await printOf('CT30825003',4);
  ck('CT3082 50" print: the 50" row highlighted, the 3XL pattern note and the hips column', d.hit.length===1&&d.hit[0]==='50"'&&d.text.includes('50" (3XL pattern)')&&d.text.includes('Hips 20 cm down from waist'), [d.hit]);
+ d=await printOf('CT30824826',6);
+ ck('CT3082--26 48" print: the gingham record, the 48" row highlighted, white thread code, black cord code, no zip code, no branding band', d.hit.length===1&&d.hit[0]==='48"'&&d.text.includes('PC2026')&&d.text.includes('CMP-THR-PC075-32109-01')&&d.text.includes('CMP-CORD-PP6-03')&&!d.text.includes('CMP-ZIP-CNC56C-150-03')&&!d.text.includes('CUSTOMER BRANDING'), [d.hit,d.text.slice(0,300)]);
 
  // ── the Fenwicks grey denim waist apron FENAPP059914DEN (26 Oct 2026, evening) ──
  const r13=await p.evaluate(()=>{ const h=styleForCode('FENAPP059914DEN'), s=h.style, u=fabricUsageFor('FENAPP059914DEN');
