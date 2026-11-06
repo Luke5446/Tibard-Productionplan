@@ -3005,6 +3005,9 @@ function mergePublishedSnapshots(){
     var changed=false;
     if(s.bufSnaps && s.bufSnaps.length && absorbSnapshots(s.bufSnaps)) changed=true;
     if(absorbBranding(s.styleEdits)) changed=true;
+    // a standard cost list newer than the editor's own (one seeded into data.json, or
+    // pasted on the other editor PC) replaces it, so a later publish does not wipe it
+    if(s.stdCosts && s.stdCosts.costs && Object.keys(s.stdCosts.costs).length && (s.stdCosts.pastedAt||'')>(stdCosts.pastedAt||'')){ stdCostLoad(s.stdCosts); stdCostRender(); changed=true; }
     if(changed){ saveState();
       if(document.getElementById('tabKpi') && document.getElementById('tabKpi').classList.contains('on')) kpiRender(); }
   }).catch(function(){});
