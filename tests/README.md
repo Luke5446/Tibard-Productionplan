@@ -57,3 +57,4 @@ Run against the real `index.html` in Chromium. No build step, no test runner —
 | `test-freestock.js` | The Free stock column on the buffer table, between In stock and On SOP: in stock less On SOP plus the pipeline, plus what is on a live works order - blue with a note of how many when a works order is counted, red when short, black once the works order completes into the pipeline; sortable high to low then low to high. |
 
 Set `CHROME_PATH` if your Chromium is elsewhere.
+| `test-stdcost.js` | Sage standard costs pasted on the KPI tab (header and no-cost lines skipped, codes uppercased, surviving a reload, published in data.json), the cost of a code and of a finishing job (BULK cost + £1, unpriced without a BULK code), the finishing tick offered only for Clockwork codes in the create modal and the manual form and marking only them, and the completed line carrying the flag with no fabric record |
