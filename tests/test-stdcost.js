@@ -1,6 +1,7 @@
 // Sage standard costs and finishing-only works orders (Luke, 6 Nov 2026):
 //   - the KPI tab's paste box takes code / cost lines, uppercases the codes,
-//     skips a header and a line with no cost, and the list survives a reload
+//     skips a header, a line with no cost and codes the planner does not know
+//     (Sage has ~107k costed codes), and the list survives a reload
 //     and is published in data.json
 //   - stdCostFor: the code's cost, or for a finishing job the BULK code's
 //     cost + £1 (null when the BULK code is not on the list)
@@ -25,9 +26,9 @@ let fails=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c) fails+
  ok(cw==='CT3082MM26:true,OHAPP054415:false','clockwork flag read from the paste: '+cw);
 
  // paste the cost list
- const r1=await p.evaluate(()=>{ document.getElementById('stdCostTA').value='Code\tStdCost\nct3082mm26\t9.5\nBULKCT3082MM26\t4.25\nOHAPP054415\t£3.10\nNOCOST\t';
+ const r1=await p.evaluate(()=>{ document.getElementById('stdCostTA').value='Code\tStdCost\nct3082mm26\t9.5\nBULKCT3082MM26\t4.25\nOHAPP054415\t£3.10\nNOCOST\t\nUNKNOWNCODE1\t7\nBULKOHAPP054415\t2';
    stdCostPaste(); return {n:Object.keys(stdCosts.costs).length, a:stdCostFor('CT3082MM26'), f:stdCostFor('ct3082mm26',true), o:stdCostFor('OHAPP054415'), nf:stdCostFor('OHAPP054415',true), info:document.getElementById('stdCostInfo').textContent}; });
- ok(r1.n===3,'three costs kept (header and empty cost skipped): '+r1.n);
+ ok(r1.n===3,'three costs kept (header, empty cost, a code the planner does not know and a BULK code of a made product dropped): '+r1.n);
  ok(r1.a===9.5&&r1.o===3.1,'home code costs: '+r1.a+' / '+r1.o);
  ok(r1.f===5.25,'finishing = BULK cost + 1: '+r1.f);
  ok(r1.nf===null,'finishing with no BULK code is unpriced');

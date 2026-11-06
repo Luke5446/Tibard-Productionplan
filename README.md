@@ -297,8 +297,11 @@ that PC opens the tab with a token.
 ## Standard costs and finishing-only works orders
 
 The KPI tab has a **Paste standard costs** box (6 Nov 2026): paste `code [tab]
-standard cost` lines from `sage/80-standard-costs.sql` (both companies, BULK codes
-included), Save, then Publish for team. The list goes out in `data.json` as
+standard cost` lines from `sage/80-standard-costs.sql` (Tibard's company holds the cost
+for OH codes too; BULK codes included), Save, then Publish for team. Sage has ~107k
+costed codes, so only the ones the planner knows are kept (buffer rows, their BULK
+codes, works orders live and completed, the style master): a new special make's code is
+picked up by the next paste. The list goes out in `data.json` as
 `stdCosts` (`costs`, `pastedAt`, `finishAdd`) and the Operations KPIs dashboard
 values each month's completed garments at it, from October 2026.
 

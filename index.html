@@ -990,10 +990,27 @@ function stdCostPaste(){ if(!IS_EDITOR) return;
     out[code]=Math.round(v*10000)/10000; n++;
   });
   if(!n){ alert('No code / cost lines found.\n\nPaste: code [tab] standard cost, one per line.'); return; }
-  stdCosts={costs:out, pastedAt:d2s(now()), finishAdd:FINISH_ADD};
+  // Sage has ~107k costed codes (6 Nov 2026), far more than the browser's storage and
+  // data.json should carry, so only the codes the planner knows are kept: the buffer
+  // rows, their BULK codes, every works order live or completed, and the style master.
+  // A code that arrives later (a new special make) is picked up by the next paste.
+  var keep=stdCostWanted(), kept={}, k=0;
+  Object.keys(out).forEach(function(c){ if(keep[c]){ kept[c]=out[c]; k++; } });
+  var missing=Object.keys(keep).filter(function(c){ return !kept[c] && !/^BULK/.test(c); }).length;
+  stdCosts={costs:kept, pastedAt:d2s(now()), finishAdd:FINISH_ADD};
   document.getElementById('stdCostTA').value=''; document.getElementById('stdCostForm').classList.add('hidden');
   saveState(); stdCostRender();
-  alert(n+' standard cost'+(n===1?'':'s')+' saved'+(bad?' ('+bad+' line'+(bad===1?'':'s')+' with no cost skipped)':'')+'.\n\nPublish for team so the KPI dashboard picks them up.');
+  alert(k+' standard cost'+(k===1?'':'s')+' kept for the codes the planner knows, out of '+n+' pasted'+(bad?' ('+bad+' line'+(bad===1?'':'s')+' with no cost skipped)':'')+'.'+(missing?'\n\n'+missing+' planner code'+(missing===1?' has':'s have')+' no standard cost in the list.':'')+'\n\nPublish for team so the KPI dashboard picks them up.');
+}
+// the codes a cost is worth keeping for (upper case)
+function stdCostWanted(){
+  var w={}, add=function(c){ if(Array.isArray(c)){ c.forEach(add); return; } if(typeof c!=='string') return; c=c.trim().toUpperCase(); if(c) w[c]=1; };
+  rows.forEach(function(r){ add(r.code); if(r.clockwork) add('BULK'+r.code); });
+  WOs.forEach(function(x){ (x.items||[]).forEach(function(it){ add(it.code); if(x.finishing) add('BULK'+it.code); }); });
+  completedWOs.forEach(function(c){ add(c.code); if(c.finishing) add('BULK'+c.code); });
+  if(typeof STYLE_MASTER!=='undefined') (STYLE_MASTER.styles||[]).forEach(function(st){ if(st.code && st.code.indexOf('--')<0) add(st.code); if(st.alias) add(st.alias); });
+  Object.keys(w).forEach(function(c){ if(/\//.test(c)) add(c.replace(/\//g,'')); });   // OH apron codes with Sage's slash, both spellings
+  return w;
 }
 function stdCostRender(){
   var el=document.getElementById('stdCostInfo'); if(!el) return;
