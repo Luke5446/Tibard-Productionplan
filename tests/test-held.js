@@ -48,13 +48,22 @@ const page='file://'+require('path').join(__dirname,'..','index.html');
    heldDelete('TIA001EU', n-1); const back=heldQty('TIA001EU','X133ECO297');
    return { after:after, back:back, n:n, moves:fabStock.held.TIA001EU.moves.length, linked:fabStock.held.TIA001EU.codes.X149ECO999.code, file:window.__dl[0], hdr:csv[0], last:csv[csv.length-1], rows:csv.length }; });
  console.log('move    ->', JSON.stringify(t4));
+ // the lots in work: the four placed 6 Nov 2026 seeded with a due day eight weeks on, shown against the code; marked added to stock they join the ledger as woven metres; undo takes them back; the due day changes; a new lot is added
+ const t7=await p.evaluate(()=>{ const w=heldWork('TIA001EU'), r=heldRows('TIA001EU').find(x=>x.sup==='X133ECO101'), body=()=>document.getElementById('fabBody').textContent.replace(/\s+/g,' ');
+   const seeded=w.map(x=>[x.placed,x.sup,x.code,x.qty,x.due,x.added].join('|')).join(';'), col=r.inWork+'|'+r.due, list=/In work at Tiajo Comercio/.test(body()) && (body().match(/Added to stock/g)||[]).length, days=(body().match(/01 Jan 2027\s*(\d+) days/)||[])[1];
+   const i=w.findIndex(x=>x.sup==='X133ECO297'); window.__answers=['1980']; heldWorkAdded('TIA001EU', i); const navy=heldQty('TIA001EU','X133ECO297'), mv=fabStock.held.TIA001EU.moves.slice(-1)[0], done=/Added to stock · 06 Nov 2026 X133ECO297 1,980 m undo/.test(body()), openAfter=heldWorkOpen('TIA001EU').length;
+   heldWorkUndo('TIA001EU', i); const back=heldQty('TIA001EU','X133ECO297'), undone=!w[i].added && fabStock.held.TIA001EU.moves.filter(m=>m.kind==='woven').length;
+   window.__answers=['2027-01-15']; heldWorkDue('TIA001EU', i); const due=w[i].due;
+   window.__answers=['X133ECO125','3 000','2026-11-20']; heldWorkPrompt('TIA001EU'); const nw=w.slice(-1)[0];
+   return { seeded, col, list, days, navy, mv:[mv.kind,mv.sup,mv.code,mv.qty,mv.note].join('|'), done, openAfter, back, undone, due, nw:[nw.placed,nw.sup,nw.code,nw.qty,nw.due].join('|'), n:w.length }; });
+ console.log('in work ->', JSON.stringify(t7));
  // a reload keeps the ledger; the viewer sees the table but no buttons
  await p.goto(page+'?edit'); await p.waitForTimeout(400);
- const t5=await p.evaluate(()=>{ smShowTab('fabric'); const sel=document.getElementById('fabSupSel'); sel.value='TIA001EU'; sel.dispatchEvent(new Event('change')); return { moves:fabStock.held.TIA001EU.moves.length, black:heldQty('TIA001EU','X133ECO125'), navy:heldQty('TIA001EU','X133ECO297'), held:JSON.stringify(fabStock.held) }; });
+ const t5=await p.evaluate(()=>{ smShowTab('fabric'); const sel=document.getElementById('fabSupSel'); sel.value='TIA001EU'; sel.dispatchEvent(new Event('change')); return { moves:fabStock.held.TIA001EU.moves.length, black:heldQty('TIA001EU','X133ECO125'), navy:heldQty('TIA001EU','X133ECO297'), work:heldWork('TIA001EU').length, held:JSON.stringify(fabStock.held) }; });
  // the viewer: no data.json over file://, so the published shape is set by hand
  await p.goto(page); await p.waitForTimeout(400);
  const t6=await p.evaluate(([t,h])=>{ fabStock={rows:fabParseStock(t), pastedAt:'2026-11-06', held:JSON.parse(h)}; smShowTab('fabric'); const sel=document.getElementById('fabSupSel'); if(sel){ sel.value='TIA001EU'; sel.dispatchEvent(new Event('change')); } const body=document.getElementById('fabBody').textContent.replace(/\s+/g,' ');
-   return { tbl:/Held at Tiajo Comercio for call-off/.test(body) && /X133ECO125/.test(body), btn:/Paste statement|± Movement/.test(body), del:!!document.querySelector('#fabBody a[onclick^="heldDelete"]'), csv:/Log \(CSV\)/.test(body) }; }, [sheet, t5.held]);
+   return { tbl:/Held at Tiajo Comercio for call-off/.test(body) && /X133ECO125/.test(body), btn:/Paste statement|± Movement/.test(body), del:!!document.querySelector('#fabBody a[onclick^="heldDelete"]'), csv:/Log \(CSV\)/.test(body), work:/In work at Tiajo Comercio/.test(body) && !/Added to stock<\/button>|\+ In work/.test(document.getElementById('fabBody').innerHTML) }; }, [sheet, t5.held]);
  console.log('reload  ->', JSON.stringify({moves:t5.moves,black:t5.black,navy:t5.navy}), 'viewer ->', JSON.stringify(t6));
  const pass = t1.moves===16 && t1.black===13094.2 && t1.blackCode==='PC2003ECO' && t1.blackWk===10 && t1.blackCover===1309 && t1.blackState==='ok'
    && t1.navy===909 && t1.navyWk===100 && t1.navyCover===9.1 && t1.navyState==='work' && t1.white===16 && t1.whiteState==='ok' && t1.sage===null && t1.sageState==='none'
@@ -64,6 +73,9 @@ const page='file://'+require('path').join(__dirname,'..','index.html');
    && t3.black===12500.5 && t3.navy===1909 && t3.nw===250 && t3.name==='TWILL 65%PES GRS 35%CO OCS | 200 GSM | NAVY - 297' && t3.mv==='X133ECO125|balance|506.3|Statement 06 Nov 2026: 12,500.50 m;X133ECO297|balance|1200|Statement 06 Nov 2026: 1,909.00 m;X149ECO999|balance|250|Statement 06 Nov 2026: 250.00 m'
    && /^3 balances set\. \/  \/ Not matched to a Sage fabric .*X149ECO999$/.test(t3.alert) && t3.paste && t3.link
    && t4.after===1409 && t4.back===1909 && t4.moves===t4.n-1 && t4.linked==='CO5999ECO' && t4.file==='Held_fabric_TIA001EU_2026-11-06.csv' && t4.hdr==='Date,Time,SupplierCode,SageCode,Movement,Metres,HeldAfter,Note,File' && t4.last==='2026-11-06,17:50,X133ECO297,PC2015ECO,Sent elsewhere,-500,1409,Air freight to Clockwork,' && t4.rows===23
-   && t5.moves===21 && t5.black===12500.5 && t5.navy===1909 && t6.tbl && !t6.btn && !t6.del && t6.csv;
+   && t7.seeded==='2026-11-06|X133ECO101|PC2001ECO|20000|2027-01-01|;2026-11-06|X133ECO297|PC2015ECO|2000|2027-01-01|;2026-11-06|X149ECO8|CO5003ECO|1000|2027-01-01|;2026-11-06|X149ECO304|CO5173ECO|500|2027-01-01|'
+   && t7.col==='20000|2027-01-01' && t7.list===4 && t7.days==='56' && t7.navy===1909+1980 && t7.mv==='woven|X133ECO297|PC2015ECO|1980|Lot placed 06 Nov 2026 (2,000 m asked)' && t7.done && t7.openAfter===3
+   && t7.back===1909 && t7.undone===0 && t7.due==='2027-01-15' && t7.nw==='2026-11-20|X133ECO125|PC2003ECO|3000|2027-01-15' && t7.n===5
+   && t5.moves===21 && t5.black===12500.5 && t5.navy===1909 && t5.work===5 && t6.tbl && !t6.btn && !t6.del && t6.csv && t6.work;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

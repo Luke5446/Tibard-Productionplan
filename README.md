@@ -320,6 +320,16 @@ freight. It seeds once in the editor and goes out with publish; the book is
 code, kind, qty, note, file}]}`, held = the sum of the movements.
 Test: `tests/test-held.js` (6 Nov 2026).
 
+**In work at Tiajo** (same day, later): the lots asked for, with the day
+placed and a due day eight weeks on (click the date to change it). **Added
+to stock** asks the metres they confirm and puts a "Woven, added to stock"
+movement on the ledger, so held goes up by what really landed; undo takes it
+back. **+ In work** adds a lot. The held table shows metres in work and the
+earliest due day per code. Stored as `fabStock.held[account].work[] = {placed,
+sup, code, qty, due, note, added, addedQty}`. Seeded with the four lots placed
+6 Nov 2026 (X133ECO101 20,000 m, X133ECO297 2,000 m, X149ECO8 1,000 m,
+X149ECO304 500 m, due 1 Jan 2027).
+
 ## Publishing for the team
 
 **Publish for team** writes the editor's state to `data.json` in this repo,
