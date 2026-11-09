@@ -2329,6 +2329,7 @@ function saveWOModalDates(i){ if(!IS_EDITOR) return;
   var due=document.getElementById('woModalDue').value;
   var start=document.getElementById('woModalStart').value;
   if(!due){ alert('Please choose a due date.'); return; }
+  if(wo.due!==due) dueStamp(wo,'planner');
   wo.due=due; wo.start=start;
   recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); renderCompleted(); saveState();
   openWOModal(i);   // refresh the popup with the new dates + recalculated cover
@@ -2383,6 +2384,7 @@ function saveWODate(i){ if(!IS_EDITOR) return;
       +'To make fewer on this works order, use Split WO on the works order panel: the cloth follows the split. Nothing was saved.');
     return;
   }
+  if(wo.due!==due) dueStamp(wo,'planner');
   wo.due=due; wo.start=start;
   // Save any edited quantities
   wo.items.forEach(function(it,j){
@@ -3005,12 +3007,41 @@ function mergePublishedSnapshots(){
     var changed=false;
     if(s.bufSnaps && s.bufSnaps.length && absorbSnapshots(s.bufSnaps)) changed=true;
     if(absorbBranding(s.styleEdits)) changed=true;
+    if(absorbDueDates(s.WOs)) changed=true;
     // a standard cost list newer than the editor's own (one seeded into data.json, or
     // pasted on the other editor PC) replaces it, so a later publish does not wipe it
     if(s.stdCosts && s.stdCosts.costs && Object.keys(s.stdCosts.costs).length && (s.stdCosts.pastedAt||'')>(stdCosts.pastedAt||'')){ stdCostLoad(s.stdCosts); stdCostRender(); changed=true; }
     if(changed){ saveState();
       if(document.getElementById('tabKpi') && document.getElementById('tabKpi').classList.contains('on')) kpiRender(); }
   }).catch(function(){});
+}
+// A works order due date moved from outside the editor - the order tracker's
+// Publish writes the new date into data.json with dueSetAt / dueSetBy
+// ('ordertracker'), since 9 Nov 2026. A published date stamped later than the
+// local one (the editor stamps its own due edits dueSetBy 'planner') replaces
+// it, so the sales office's change survives the next planner publish; a date
+// the editor moved since is kept. Returns how many changed.
+function dueStamp(wo, by){ wo.dueSetAt=new Date().toISOString(); wo.dueSetBy=by; }
+function absorbDueDates(pubWOs){
+  var n=0, byRef={};
+  (pubWOs||[]).forEach(function(p){ if(p && p.ref && p.dueSetAt) byRef[String(p.ref).trim().toUpperCase()]=p; });
+  if(!Object.keys(byRef).length) return 0;
+  WOs.forEach(function(l){
+    var p=byRef[String(l.ref||'').trim().toUpperCase()]; if(!p || !p.due) return;
+    if(p.dueSetAt>(l.dueSetAt||'') && p.due!==l.due){ l.due=p.due; l.dueSetAt=p.dueSetAt; l.dueSetBy=p.dueSetBy||''; n++; }
+    else if(p.dueSetAt>(l.dueSetAt||'')){ l.dueSetAt=p.dueSetAt; l.dueSetBy=p.dueSetBy||''; }
+  });
+  if(n){ recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); if(typeof renderCompleted==='function') renderCompleted(); }
+  return n;
+}
+// Before a publish: take any due date the order tracker has put into the
+// published data.json since this page loaded, so the publish does not undo it.
+function absorbPublishedDue(cb){
+  if(!/^https?:/.test(location.protocol)){ cb(); return; }
+  fetch('data.json?t='+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(s){
+    if(s && absorbDueDates(s.WOs)) saveState();
+    cb();
+  }).catch(function(){ cb(); });
 }
 // Branding spec committed to data.json (e.g. set by the office for a special)
 // fills in a works order whose local copy has none. A placement already held
@@ -3093,10 +3124,14 @@ function publishData(){
   if(pubBusy) return;
   // a page that is behind another window must not publish its older copy
   var behind=stateBehind(); if(behind){ saveRefused(behind); alert('Not published: this page is behind (the planner was saved at '+staleWhen(behind)+' in another window). Reload this page and publish again.'); return; }
-  var json=publishState(), tok=pubToken();
+  var tok=pubToken();
   if(!tok){ pubNoToken(); return; }
   var pb=document.getElementById('publishBtn'), was=pb?pb.innerHTML:'';
   pubBusy=true; if(pb) pb.innerHTML='&#8987; Publishing&hellip;';
+  absorbPublishedDue(function(){ publishGo(tok, pb, was); });
+}
+function publishGo(tok, pb, was){
+  var json=publishState();
   var done=function(ok, err){ pubBusy=false; if(pb) pb.innerHTML=was;
     if(ok){ var ind=document.getElementById('saveInd'); if(ind){ ind.textContent='\u2713 Published'; setTimeout(function(){ ind.textContent=''; },4000); }
       var lu=document.getElementById('lastUpdated'); if(lu) lu.textContent='Published: '+new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
