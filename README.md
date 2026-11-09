@@ -363,6 +363,20 @@ safe on the cutting room PC. A token that can write this repo can change the
 page itself, so it stays on the one PC that publishes. Every publish is a
 commit, so the repo's history holds every version.
 
+### Due dates moved from the order tracker
+
+Since 9 Nov 2026 the sales office can move a works order's due date from the
+order tracker (`Luke5446/SOPtracker`, `?edit`). Its Publish reads this repo's
+latest `data.json`, changes only that works order's `due`, stamps the record
+`dueSetAt` / `dueSetBy: "ordertracker"` and puts the file back. Because the
+editor's own browser copy is the truth here, the editor takes such a date in
+two places: when the page opens (`mergePublishedSnapshots`) and again just
+before its own publish (`absorbPublishedDue`), so a planner publish from a
+page opened earlier does not undo it. The editor's own due date edits are
+stamped `dueSetBy: "planner"`; whichever stamp is later wins, so a date the
+production manager moves after the sales office does is kept. Test:
+`tests/test-duedate.js`.
+
 ## Where the editor's data is kept
 
 In the browser, in two places at once: `localStorage` and IndexedDB, under the
