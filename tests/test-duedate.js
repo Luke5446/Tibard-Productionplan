@@ -28,20 +28,38 @@ const base='file://'+require('path').join(__dirname,'..','index.html');
  // before a publish the published file is read once more and a tracker date taken, so the publish carries it (served over http: on file:// nothing is read)
  const fs=require('fs'), html=fs.readFileSync(require('path').join(__dirname,'..','index.html'),'utf8');
  const h=await b.newPage(); h.on('pageerror',x=>errs.push('PAGEERROR: '+x.message));
+ let apiGets=0, apiAccept='';
  await h.route('http://planner.test/**', r=>{ const u=r.request().url();
    if(/data\.json/.test(u)) return r.fulfill({status:200, contentType:'application/json', body:JSON.stringify({rows:[],WOs:[{ref:'WO-0200',due:'2026-12-10',dueSetAt:'2026-11-09T10:00:00Z',dueSetBy:'ordertracker'}]})});
    if(/index\.html/.test(u)) return r.fulfill({status:200, contentType:'text/html', body:html}); r.fulfill({status:404, body:''}); });
  await h.route(/github\.(com|io)/, r=>r.fulfill({status:404, body:''}));
+ // the repo's own copy (API) is a step ahead of the Pages copy: the tracker moved WO-0300 a moment ago
+ await h.route('https://api.github.com/repos/Luke5446/Tibard-Productionplan/contents/data.json**', r=>{ apiGets++; apiAccept=r.request().headers()['accept']||'';
+   r.fulfill({status:200, contentType:'application/json', body:JSON.stringify({rows:[],WOs:[{ref:'WO-0200',due:'2026-12-10',dueSetAt:'2026-11-09T10:00:00Z',dueSetBy:'ordertracker'},{ref:'WO-0300',due:'2026-12-20',dueSetAt:'2026-11-11T20:26:00Z',dueSetBy:'ordertracker'}]})}); });
  await h.goto('http://planner.test/index.html?edit'); await h.waitForTimeout(400);
+ // no token: the Pages copy
  const r2=await h.evaluate(async()=>{
-   WOs=[{ref:'WO-0200',start:'2026-11-01',due:'2026-11-20',items:[{code:'A1',qty:5}]}];
+   try{ localStorage.removeItem('tibard_prod_token'); }catch(e){}
+   WOs=[{ref:'WO-0200',start:'2026-11-01',due:'2026-11-20',items:[{code:'A1',qty:5}]},{ref:'WO-0300',start:'2026-11-01',due:'2026-11-25',items:[{code:'A1',qty:5}]}];
    await new Promise(res=>absorbPublishedDue(res));
    const st=JSON.parse(publishState());
-   return {due:WOs[0].due, pubDue:st.WOs[0].due, by:st.WOs[0].dueSetBy};
+   return {due:WOs[0].due, pubDue:st.WOs[0].due, by:st.WOs[0].dueSetBy, d300:WOs[1].due};
  });
+ r2.apiGets=apiGets;
+ // a token on the PC: the repo's copy through the API, so the date the tracker wrote a moment ago is in the publish
+ const r3=await h.evaluate(async()=>{
+   try{ localStorage.setItem('tibard_prod_token','tok-prod'); }catch(e){}
+   await new Promise(res=>absorbPublishedDue(res));
+   const st=JSON.parse(publishState());
+   try{ localStorage.removeItem('tibard_prod_token'); }catch(e){}
+   return {d300:WOs[1].due, pub300:st.WOs[1].due, by:st.WOs[1].dueSetBy};
+ });
+ r3.apiGets=apiGets; r3.accept=apiAccept;
+ console.log('api read ->', JSON.stringify(r3));
  await h.close();
  console.log('pre-publish ->', JSON.stringify(r2));
  const pass = r.n===1 && r.again===0 && r.n2===0 && r.d0==='2026-12-05' && r.by0==='planner' && r.d1==='2026-11-21' && r.at1==='2026-11-09T12:00:00Z' && r.d2==='2026-11-22' && r.at2==='' && r.count===3
-   && r2.due==='2026-12-10' && r2.pubDue==='2026-12-10' && r2.by==='ordertracker';
+   && r2.due==='2026-12-10' && r2.pubDue==='2026-12-10' && r2.by==='ordertracker' && r2.d300==='2026-11-25' && r2.apiGets===0
+   && r3.d300==='2026-12-20' && r3.pub300==='2026-12-20' && r3.by==='ordertracker' && r3.apiGets===1 && /raw/.test(r3.accept);
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();

@@ -374,8 +374,12 @@ two places: when the page opens (`mergePublishedSnapshots`) and again just
 before its own publish (`absorbPublishedDue`), so a planner publish from a
 page opened earlier does not undo it. The editor's own due date edits are
 stamped `dueSetBy: "planner"`; whichever stamp is later wins, so a date the
-production manager moves after the sales office does is kept. Test:
-`tests/test-duedate.js`.
+production manager moves after the sales office does is kept. Both reads
+go through the GitHub API (the repo's own copy, current the moment the
+tracker commits it) when the PC has a token, and fall back to the Pages copy
+otherwise: Pages lags a commit by a few minutes, which is how WO-1558's new
+date was missed on 11 Nov 2026 by an editor page loaded inside that window.
+Test: `tests/test-duedate.js`.
 
 ## Where the editor's data is kept
 
