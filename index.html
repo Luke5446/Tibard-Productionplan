@@ -3000,9 +3000,25 @@ function fetchShared(cb){
 // rows from outside it - a backfill committed to data.json, or a paste done on
 // another machine. Union by date; a row the editor already has is kept as is.
 // Silent on file:// or when data.json is missing, so nothing else changes.
+// The published data.json, read for a merge. GitHub Pages serves it a few
+// minutes after each commit, so right after the order tracker writes a due
+// date the Pages copy is still the old one, and an editor that loaded or
+// published inside that window missed the change (WO-1558, 11 Nov 2026).
+// With a token on the PC the file is read straight from the repo through the
+// API, which is current the moment it is committed; without one, or if the
+// API call fails, the Pages copy is read as before. Gives null when neither
+// can be read. Nothing is sent but the token this PC already publishes with.
+function fetchPublished(cb){
+  if(!/^https?:/.test(location.protocol)){ cb(null); return; }
+  var pages=function(){ fetch('data.json?t='+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(cb).catch(function(){ cb(null); }); };
+  var tok=pubToken(); if(!tok){ pages(); return; }
+  fetch(PUB_API+'?t='+Date.now(), {headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github.raw+json'}, cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw new Error('GitHub said '+r.status); return r.json(); })
+    .then(cb).catch(pages);
+}
 function mergePublishedSnapshots(){
   if(!/^https?:/.test(location.protocol)) return;
-  fetch('data.json?t='+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(s){
+  fetchPublished(function(s){
     if(!s) return;
     var changed=false;
     if(s.bufSnaps && s.bufSnaps.length && absorbSnapshots(s.bufSnaps)) changed=true;
@@ -3013,7 +3029,7 @@ function mergePublishedSnapshots(){
     if(s.stdCosts && s.stdCosts.costs && Object.keys(s.stdCosts.costs).length && (s.stdCosts.pastedAt||'')>(stdCosts.pastedAt||'')){ stdCostLoad(s.stdCosts); stdCostRender(); changed=true; }
     if(changed){ saveState();
       if(document.getElementById('tabKpi') && document.getElementById('tabKpi').classList.contains('on')) kpiRender(); }
-  }).catch(function(){});
+  });
 }
 // A works order due date moved from outside the editor - the order tracker's
 // Publish writes the new date into data.json with dueSetAt / dueSetBy
@@ -3037,11 +3053,10 @@ function absorbDueDates(pubWOs){
 // Before a publish: take any due date the order tracker has put into the
 // published data.json since this page loaded, so the publish does not undo it.
 function absorbPublishedDue(cb){
-  if(!/^https?:/.test(location.protocol)){ cb(); return; }
-  fetch('data.json?t='+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(s){
-    if(s && absorbDueDates(s.WOs)) saveState();
+  fetchPublished(function(s){
+    try{ if(s && absorbDueDates(s.WOs)) saveState(); }catch(e){}
     cb();
-  }).catch(function(){ cb(); });
+  });
 }
 // Branding spec committed to data.json (e.g. set by the office for a special)
 // fills in a works order whose local copy has none. A placement already held
