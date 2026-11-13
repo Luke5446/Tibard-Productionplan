@@ -7,7 +7,15 @@ a mesh back) to a small shared file, `cutlog.json`, kept in its own GitHub
 repo, `Luke5446/Tibard-Cutlog`. The **Cutting** tab reads that file:
 
 - **To cut** (the chip counts works orders, like the tile): printed works
-  orders not yet marked cut, oldest printed first
+  orders not yet marked cut, oldest printed first.
+  A works order on this list **cannot be completed** in the planner, whole
+  or one line, until the cutting room marks it cut (13 Nov 2026): the cloth
+  has not been cut, so nothing can have been made. Embroidery-only and
+  finishing works orders have no cutting and are not held. A works order
+  deleted in the planner has its waiting lines **withdrawn**; if it is then
+  raised again under the same number and printed, the withdrawn line comes
+  back (WO-1757, 5 Nov 2026: printed, deleted and raised again within a
+  minute, and left off the list for a week). Test: `tests/test-cutrevive.js`.
   (click the Printed or Due heading to sort by that date, again to flip;
   **Sort by fabric** groups the list by fabric, biggest run first, with the
   running metres down each group and a dashed line where they pass each
