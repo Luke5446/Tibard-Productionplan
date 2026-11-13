@@ -1364,6 +1364,7 @@ function delWO(i){ if(!IS_EDITOR) return;
 function delWOItem(woIdx, code){ if(!IS_EDITOR) return;
   var wo=WOs[woIdx];
   if(!wo) return;
+  if(cutCompleteBlock(wo, code)) return;   // still to cut: nothing made yet
   var day=woDoneDay(document.getElementById('woModalDoneDay')); if(wo.createdAt && day<wo.createdAt) day=wo.createdAt;
   if(!confirm('Mark '+code+' as complete?\n\nIt will move to the Completed Works Orders history.'+woDoneHint(wo, day))) return;
   var it=wo.items.find(function(x){ return x.code===code; });
@@ -1404,6 +1405,7 @@ function completeWholeWO(woIdx, day, wastes){ if(!IS_EDITOR) return;
   var wo=WOs[woIdx];
   if(!wo) return;
   if(wastes===null) return;   // a waste box the PM has to fix first
+  if(cutCompleteBlock(wo)) return;   // still to cut: nothing made yet
   wastes=wastes||[];
   day=day||woDoneDay(document.getElementById('woc-done-'+woIdx)); if(wo.createdAt && day<wo.createdAt) day=wo.createdAt;
   var wasteH=wo.items.map(function(it, j){ return wastes[j] ? '\n'+it.code+': '+Math.round(it.qty-wastes[j])+' made, '+wastes[j]+' waste' : ''; }).join('');
@@ -4666,17 +4668,23 @@ function cutRevBadge(){ var el=document.getElementById('cutRevCount'); if(!el) r
 // follows the works order - quantity, metres, due date - and goes if the
 // works order no longer calls for it (a fabric changed before the cut). A
 // line the works order now calls for is added, unless that product on that
-// works order has already been cut or withdrawn.
+// works order has already been cut.
+// A withdrawn line (the works order was deleted) whose works order is printed
+// again comes back: WO-1757 was printed, deleted and raised again under the
+// same number within a minute on 5 Nov 2026, and the withdrawn line kept it
+// off the To cut list and the cut log for a week (Luke, 13 Nov 2026). The
+// line is revived in place, so the log keeps one line per key.
 function cutDiff(entries, wos){
-  var out={add:[], update:[], remove:[]};
+  var out={add:[], update:[], remove:[], revive:[]};
   var byRef={}; entries.forEach(function(e){ if(!byRef[e.ref]) byRef[e.ref]=[]; byRef[e.ref].push(e); });
   wos.forEach(function(w){
     var want={}; cutEntriesFor(w).forEach(function(e){ want[e.k]=e; });
     var have=byRef[w.ref]||[], settled={}, keys={};
-    have.forEach(function(e){ keys[e.k]=1; if(e.cutAt || e.cancelledAt) settled[e.code]=1; });
+    have.forEach(function(e){ if(e.cutAt || !e.cancelledAt) keys[e.k]=1; if(e.cutAt) settled[e.code]=1; });
     have.forEach(function(e){
-      if(e.cutAt || e.cancelledAt) return;
+      if(e.cutAt) return;
       var d=want[e.k];
+      if(e.cancelledAt){ if(d && !keys[e.k] && !settled[e.code]){ keys[e.k]=1; out.revive.push({e:e, d:d}); } return; }
       if(!d){ out.remove.push(e); return; }
       if(d.qty!==e.qty || d.std!==e.std || (d.due||'')!==(e.due||'') || (d.created||'')!==(e.created||'') || (d.desc||'')!==(e.desc||'') || (d.fabName||'')!==(e.fabName||'') || (d.customer||'')!==(e.customer||'')) out.update.push({e:e, d:d});
     });
@@ -4684,10 +4692,11 @@ function cutDiff(entries, wos){
   });
   return out;
 }
-function cutDiffEmpty(df){ return !df.add.length && !df.update.length && !df.remove.length; }
+function cutDiffEmpty(df){ return !df.add.length && !df.update.length && !df.remove.length && !(df.revive||[]).length; }
 function cutDiffApply(d, df){
   df.remove.forEach(function(e){ var i=d.entries.indexOf(e); if(i>=0) d.entries.splice(i,1); });
   df.update.forEach(function(u){ ['qty','std','due','created','desc','fabName','customer'].forEach(function(f){ u.e[f]=u.d[f]; }); });
+  (df.revive||[]).forEach(function(u){ ['qty','std','due','created','desc','fabName','customer','printedAt'].forEach(function(f){ u.e[f]=u.d[f]; }); u.e.revivedAt=u.e.cancelledAt; delete u.e.cancelledAt; });
   df.add.forEach(function(e){ d.entries.push(e); });
 }
 // Bring the log into line with the printed works orders: on print, after a
@@ -4712,8 +4721,24 @@ function cutSyncSoon(){
 // Works orders whose lines on the log do not match them yet
 function cutNotPushed(){
   var wos=WOs.filter(cutInScope), df=cutDiff(cutLog.entries, wos), refs={};
-  df.add.forEach(function(e){ refs[e.ref]=1; }); df.update.forEach(function(u){ refs[u.e.ref]=1; }); df.remove.forEach(function(e){ refs[e.ref]=1; });
+  df.add.forEach(function(e){ refs[e.ref]=1; }); df.update.forEach(function(u){ refs[u.e.ref]=1; }); df.remove.forEach(function(e){ refs[e.ref]=1; }); (df.revive||[]).forEach(function(u){ refs[u.e.ref]=1; });
   return wos.filter(function(w){ return refs[w.ref]; });
+}
+// The lines of a works order still on the cutting room's To cut list:
+// printed, on the log, and neither cut nor withdrawn. A works order with a
+// line there cannot be completed (Luke, 13 Nov 2026): the cloth has not been
+// cut, so nothing can have been made. Embroidery-only and finishing works
+// orders have no cutting and are never held; nor is one whose log the editor
+// has not read yet (no token, or GitHub down).
+function cutStillToCut(wo, code){
+  if(!wo || !cutInScope(wo) || !cutLog.loadedAt) return [];
+  var codes={}; cutLog.entries.forEach(function(e){ if(e.ref===wo.ref && !e.cutAt && !e.cancelledAt) codes[e.code]=1; });
+  return (wo.items||[]).filter(function(it){ return codes[it.code] && (!code || it.code===code); }).map(function(it){ return it.code; });
+}
+function cutCompleteBlock(wo, code){
+  var held=cutStillToCut(wo, code); if(!held.length) return false;
+  alert(wo.ref+' cannot be completed: it is still on the cutting room\'s To cut list ('+held.join(', ')+').\n\nAsk the cutting room to mark it cut on the Cutting tab first, or remove the works order if it is not being made.');
+  return true;
 }
 // A printed works order deleted in the planner: its uncut lines are
 // withdrawn from the cutting room's list rather than left asking to be cut.

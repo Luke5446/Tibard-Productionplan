@@ -40,7 +40,8 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    return new Promise(r=>setTimeout(()=>r({meta:/Embroidery only .* pick HT016003 from stock/.test(meta), rows:[...document.querySelectorAll('#whPickBody tr')].map(tr=>tr.textContent.replace(/\s+/g,' ').trim()), badge:document.getElementById('whTabCount').textContent, tabOn:document.getElementById('tabWh').classList.contains('on'), viewHidden:document.getElementById('whView').classList.contains('hidden')}),600)); });
  // 2. the warehouse PC: the old address opens the tab as a viewer; with the token it marks the pick; print from there is first page only
  await p.evaluate(()=>{ localStorage.setItem('tibard_production_booked', JSON.stringify({'S-OLD1|APP300503|2026-09-30|4':{booked:'2026-10-01T09:00:00.000Z'}})); });   // a mark this PC kept before
- await p.evaluate(()=>{ const i=WOs.findIndex(w=>w.ref==='S-AP1'); window.now=()=>new Date('2026-10-06T10:00:00'); completeWholeWO(i); completedWOs.push({ref:'S-OLD1', code:'APP300503', desc:'BLACK BIB APRON', qty:4, completed:'2026-09-30'}); saveState(); });
+ await p.evaluate(()=>{ window.now=()=>new Date('2026-10-06T10:00:00'); cutMarkWO('S-AP1'); }); await p.waitForTimeout(800);   // cut first: a works order still to cut cannot be completed (13 Nov 2026)
+ await p.evaluate(()=>{ const i=WOs.findIndex(w=>w.ref==='S-AP1'); completeWholeWO(i); completedWOs.push({ref:'S-OLD1', code:'APP300503', desc:'BLACK BIB APRON', qty:4, completed:'2026-09-30'}); saveState(); });
  await p.evaluate(()=>{ localStorage.setItem('tibard_production', localStorage.getItem('tibard_production')); });
  files['data.json']=await p.evaluate(()=>publishState());
  await p.route(URL.replace('file://','file://')+'/../data.json*', r=>r.fulfill({status:200, contentType:'application/json', body:files['data.json']})).catch(()=>{});
