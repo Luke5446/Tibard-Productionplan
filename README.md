@@ -273,6 +273,21 @@ warehouse log:
 The embroidery room's PC needs the same token as the warehouse's to mark
 the machine and done.
 
+### DTF transfer works orders
+
+Since 16 Nov 2026 a special make whose code is **TRG** + a Tibard stock code
++ **SHARP** (TRGAP300503SHARP is AP300503 with the customer's DTF logo on)
+is raised from the special makes tab like any other, and comes out as an
+embroidery-only works order flagged **DTF**: the stock code in the middle is
+the pick, nothing is cut, and it follows the same life (printed, picked, the
+Embroidery queue, booked in with the two Sage files). Because it is raised
+from the special makes tab, the customer, sales order and customer order
+number come through to the print. The print is the first page only, with a
+**DTF TRANSFER** banner and band: the DTF logo ID (always 113555), the
+application ("Top right hand corner of bib as worn") and the photo of the
+logo in position on the apron. The same code typed on the Add works order
+form is treated the same way. Test: `tests/test-dtf.js`.
+
 ## The Warehouse tab
 
 The warehouse's own address (`?warehouse`) now opens the planner on the
