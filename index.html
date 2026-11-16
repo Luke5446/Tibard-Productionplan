@@ -840,6 +840,17 @@ function embBaseFor(code){
   return best;
 }
 function embBaseKnown(code){ var c=(code||'').toUpperCase(); return !!c && rows.some(function(r){ return (r.code||'').toUpperCase()===c; }); }
+// A DTF transfer works order (Luke, 16 Nov 2026): a special make whose code
+// is TRG + the Tibard stock code + SHARP (TRGAP300503SHARP = AP300503 with the
+// customer's DTF logo on). It works exactly like an embroidery-only one - the
+// warehouse picks the stock code, nothing is cut, EMB applies the logo and
+// books it in - but it is raised from the special makes tab so the sales
+// order, customer and order number come through to the print. The print
+// carries the DTF logo ID, where it goes and the photo of it in position.
+var DTF_LOGO_ID='113555', DTF_PLACE='Top right hand corner of bib as worn';
+var DTF_IMG='data:image/jpeg;base64,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';
+function dtfPickFor(code){ var m=/^TRG(.+)SHARP$/i.exec((code||'').trim()); return m?m[1].toUpperCase():''; }
+function smMarkDtf(nwo){ var pick=dtfPickFor(nwo.items[0]&&nwo.items[0].code); if(!pick) return nwo; nwo.embOnly=true; nwo.dtf=true; nwo.pickCode=pick; return nwo; }
 function embSetPick(i){ if(!IS_EDITOR) return; var wo=WOs[i]; if(!wo) return;
   var v=prompt('The stock code to pick for '+wo.ref+' ('+(wo.items[0]?wo.items[0].code:'')+'): the plain product the embroidered one is made from.', wo.pickCode||'');
   if(v===null) return; wo.pickCode=v.trim().toUpperCase(); saveState(); refreshWOModal(); renderWOCards(); var wv=document.getElementById('whView'); if(wv && !wv.classList.contains('hidden')) whRender(); }
@@ -1336,6 +1347,7 @@ function saveWO(){ if(!IS_EDITOR) return;
   var pickTyped=((document.getElementById('woPickCode')||{}).value||'').trim().toUpperCase();
   var nwo={ref:ref, start:start, due:due, items:items};
   if(embOnly){ nwo.embOnly=true; nwo.pickCode=pickTyped||embBaseFor(items[0].code); }
+  if(dtfPickFor(items[0].code)){ nwo.embOnly=true; nwo.dtf=true; nwo.pickCode=pickTyped||dtfPickFor(items[0].code); }
   if(!!(document.getElementById('woFinishing')||{}).checked) nwo.finishing=true;
   WOs.push(stampWO(nwo));
   var ec=document.getElementById('woEmbOnly'); if(ec){ ec.checked=false; document.getElementById('woPickWrap').style.display='none'; document.getElementById('woPickCode').value=''; }
@@ -1445,6 +1457,7 @@ function recordCompleted(wo, it, day, waste){
     splitFrom: wo.splitFrom || undefined,
     fabric: (wo.embOnly || wo.finishing) ? undefined : fabricRecordFor(it, wo),   // a finishing job's garment came in made: no cloth cut here
     embOnly: wo.embOnly ? true : undefined, pickCode: wo.embOnly ? wo.pickCode : undefined,
+    dtf: wo.dtf ? true : undefined,   // a DTF transfer: picked and booked in like embroidery
     finishing: wo.finishing ? true : undefined,   // valued at the BULK code's standard cost + the finishing charge
     // a line put back by Undo and completed again keeps its write-off state:
     // fabric already exported must not be exported twice
@@ -1676,7 +1689,7 @@ function renderWOCards(){
       +(wo.printed
         ?' <span style="font-size:9px;font-weight:700;color:#065f46;background:#d1fae5;border-radius:8px;padding:1px 6px;vertical-align:middle">&#128424; Printed</span>'
         :' <span style="font-size:9px;font-weight:700;color:#fff;background:#b91c1c;border-radius:8px;padding:1px 6px;vertical-align:middle">NOT PRINTED</span>')
-      +(wo.embOnly?' <span class="woc-emb" style="font-size:9px;font-weight:700;color:#fff;background:#6d28d9;border-radius:8px;padding:1px 6px;vertical-align:middle" title="Embroidery only: picked from stock'+(wo.pickCode?' ('+esc(wo.pickCode)+')':'')+', not cut or made">&#129697; EMB only</span>':'')
+      +(wo.embOnly?' <span class="woc-emb" style="font-size:9px;font-weight:700;color:#fff;background:#6d28d9;border-radius:8px;padding:1px 6px;vertical-align:middle" title="'+(wo.dtf?'DTF transfer':'Embroidery only')+': picked from stock'+(wo.pickCode?' ('+esc(wo.pickCode)+')':'')+', not cut or made">'+(wo.dtf?'DTF':'&#129697; EMB only')+'</span>':'')
       +(wo.finishing?' <span class="woc-fin" style="font-size:9px;font-weight:700;color:#fff;background:#0369a1;border-radius:8px;padding:1px 6px;vertical-align:middle" title="Finishing only: a Clockwork bulk garment finished here, valued at bulk cost + \u00a3'+FINISH_ADD+'">&#9874; Finishing</span>':'')
       +'</div>'
       +'<div class="woc-date" id="woc-date-'+i+'">'+(wo.start?'Start: '+fmtD(wo.start)+' | ':'')+'Due: '+fmtD(wo.due)+'</div>'
@@ -1720,7 +1733,7 @@ function openWOModal(i){
     :('<span style="color:#b91c1c;font-weight:700">NOT PRINTED</span>'
       +(IS_EDITOR?' <button class="btn" style="font-size:10px;padding:2px 8px" title="Clear this WO from the unprinted list without printing (e.g. no template set up yet)" onclick="markWOPrinted('+i+')">&#10003; Mark as printed</button>':''));
   var splitH=IS_EDITOR?' &nbsp;<button class="btn" style="font-size:10px;padding:3px 9px" title="Split this works order into two" onclick="splitWO('+i+')">&#9986; Split WO</button>':'';
-  if(wo.embOnly) splitH='<br><span style="color:#6d28d9;font-weight:700">&#129697; Embroidery only</span> &mdash; pick '+(wo.pickCode?'<strong>'+esc(wo.pickCode)+'</strong>'+(embBaseKnown(wo.pickCode)?'':' <span class="sm-tag warn" title="This code is not a product in the buffer, so the warehouse cannot book the home stock off it">not a stock code</span>'):'<span class="sm-tag warn">base code not found</span>')+' from stock for the embroidery room'+(IS_EDITOR?' <a href="#" onclick="embSetPick('+i+');return false">&#9998; base code</a>':'')+'; not cut, not on the cutting log; the print is the first page only'+splitH;
+  if(wo.embOnly) splitH='<br><span style="color:#6d28d9;font-weight:700">'+(wo.dtf?'DTF transfer':'&#129697; Embroidery only')+'</span> &mdash; pick '+(wo.pickCode?'<strong>'+esc(wo.pickCode)+'</strong>'+(embBaseKnown(wo.pickCode)?'':' <span class="sm-tag warn" title="This code is not a product in the buffer, so the warehouse cannot book the home stock off it">not a stock code</span>'):'<span class="sm-tag warn">base code not found</span>')+' from stock for the '+(wo.dtf?'DTF (logo '+DTF_LOGO_ID+', '+esc(DTF_PLACE)+')':'embroidery room')+(IS_EDITOR?' <a href="#" onclick="embSetPick('+i+');return false">&#9998; base code</a>':'')+'; not cut, not on the cutting log; the print is the first page only'+splitH;
   if(wo.finishing) splitH+='<br><span style="color:#0369a1;font-weight:700">&#9874; Finishing only</span> &mdash; Clockwork bulk garment finished here, valued at the BULK code\'s standard cost + &pound;'+FINISH_ADD;
   document.getElementById('woModalMeta').innerHTML=
     dateH+' &nbsp;|&nbsp; '
@@ -2018,7 +2031,7 @@ function printWOP(ref, code, qty, due, sm, opts){
   if(!hit && opts.embOnly){
     hit=opts.pickCode ? styleForCode(opts.pickCode) : null;
     if(!hit){ var br=rows.find(function(r){ return r.code===(opts.pickCode||code); });
-      hit={style:{code:code, name:br?br.desc:code, desc:'Embroidery only: the base garment is picked from stock and embroidered. Nothing to cut or make.', lectra:'', variant:'', chart:'', fabrics:[], trims:[], mfg:[], fin:[], cutBatch:1, cutMins:0, tol:''}, size:null}; }
+      hit={style:{code:code, name:br?br.desc:code, desc:(opts.dtf?'DTF transfer: the stock garment is picked from stock and the DTF logo applied. Nothing to cut or make.':'Embroidery only: the base garment is picked from stock and embroidered. Nothing to cut or make.'), lectra:'', variant:'', chart:'', fabrics:[], trims:[], mfg:[], fin:[], cutBatch:1, cutMins:0, tol:''}, size:null}; }
   }
   if(!hit){
     alert('No works order data for "'+code+'" yet.\n\nThis product has not been added to the works order data — contact the operations manager to add the works order, and it will print from then on.');
@@ -2082,10 +2095,11 @@ function printWOP(ref, code, qty, due, sm, opts){
   h+='<div class="page">'
     +'<div class="hdr"><h1>WORKS ORDER &nbsp;&middot;&nbsp; '+e(ref)+'</h1><img src="'+TIBARD_LOGO+'" alt="Tibard" style="height:40px"></div>'
     +'<table class="kv" style="margin-top:14px">'
-    +(opts.embOnly?'<tr><th style="background:#6d28d9;color:#fff">EMBROIDERY ONLY</th><td colspan="3" style="background:#EDE9FE;font-weight:700">Pick '+qty.toLocaleString()+' x '+e(opts.pickCode||'the base garment')+' from stock for the embroidery room. Nothing to cut or make.</td></tr>':'')
+    +(opts.embOnly?'<tr><th style="background:#6d28d9;color:#fff">'+(opts.dtf?'DTF TRANSFER':'EMBROIDERY ONLY')+'</th><td colspan="3" style="background:#EDE9FE;font-weight:700">Pick '+qty.toLocaleString()+' x '+e(opts.pickCode||'the base garment')+' from stock for the '+(opts.dtf?'DTF transfer (logo '+e(DTF_LOGO_ID)+')':'embroidery room')+'. Nothing to cut or make.</td></tr>':'')
     +'<tr><th>Date issued</th><td>'+e(today)+'</td><th style="width:26%">Date required</th><td>'+e(dueTxt)+'</td></tr>'
     +'<tr><th>Product code</th><td>'+e(code)+'</td><th>Quantity</th><td>'+qty.toLocaleString()+'</td></tr>'
-    +'<tr>'+(sizeTxt==='One size'?'':'<th>Size</th><td>'+e(sizeTxt)+'</td>')+'<th>Embroidery</th><td'+(sizeTxt==='One size'?' colspan="3"':'')+'>'+(hasBrand?'Yes &mdash; see CUSTOMER BRANDING'+(emb?' and the sales order lines below':''):(emb?'<strong>Yes &mdash; from the sales order, below</strong>':'No'))+'</td></tr>'
+    +'<tr>'+(sizeTxt==='One size'?'':'<th>Size</th><td>'+e(sizeTxt)+'</td>')+(opts.dtf?'<th>DTF transfer</th><td'+(sizeTxt==='One size'?' colspan="3"':'')+'><strong>Yes &mdash; logo '+e(DTF_LOGO_ID)+', see DTF TRANSFER below</strong></td></tr>'
+      :'<th>Embroidery</th><td'+(sizeTxt==='One size'?' colspan="3"':'')+'>'+(hasBrand?'Yes &mdash; see CUSTOMER BRANDING'+(emb?' and the sales order lines below':''):(emb?'<strong>Yes &mdash; from the sales order, below</strong>':'No'))+'</td></tr>')
     /* A stock style's embroidery is whatever sales put on the order: the logo
        and text lines entered under this garment, printed right here where the
        machinist reads Embroidery: Yes. */
@@ -2104,6 +2118,15 @@ function printWOP(ref, code, qty, due, sm, opts){
     +'</table>'
     +'<div class="band" style="display:flex;justify-content:space-between"><span>GARMENT</span><span>LOCATION</span></div><table><tr><td style="font-weight:700">'+e(st.name)+'</td><td style="width:20%;text-align:center;font-weight:700;border-left:1px solid #999">'+e(stockLoc)+'</td></tr></table>'
     +'<div class="band">DESCRIPTION</div><table><tr><td>'+e(st.desc)+'</td></tr></table>'
+    /* A DTF transfer (TRG<stock code>SHARP): the logo ID, where it goes and
+       the photo of it on the apron, fixed for the customer (Luke, 16 Nov 2026) */
+    +(opts.dtf
+      ? '<div class="band">DTF TRANSFER</div><table>'
+        +'<tr><th>DTF logo ID</th><td colspan="2" style="font-size:15px;font-weight:700">'+e(DTF_LOGO_ID)+'</td></tr>'
+        +'<tr><th>Application</th><td colspan="2" style="background:#FFF8E1;font-weight:700">'+e(DTF_PLACE)+'</td></tr>'
+        +'<tr><th>Logo in position</th><td colspan="2" style="text-align:center;vertical-align:middle"><img src="'+DTF_IMG+'" alt="DTF logo in position on the apron" style="max-height:230px"></td></tr>'
+        +'</table>'
+      : '')
     /* Branding spec from the product's own works order (set in the costing app
        or edited here) - a customer-owned style. A stock style has none of this;
        its embroidery comes from the sales order's logo lines, printed under
@@ -2246,7 +2269,7 @@ function cutPushDone(ok, err){ if(!ok && err && err!=='no token') alert('The wor
 
 function printWOPTracked(i, code, qty, quiet){
   var wo=WOs[i]; if(!wo) return false;
-  var ok=printWOP(wo.ref, code, qty, wo.due||'', wo.sm||null, wo.embOnly?{embOnly:true, pickCode:wo.pickCode}:null);
+  var ok=printWOP(wo.ref, code, qty, wo.due||'', wo.sm||null, wo.embOnly?{embOnly:true, pickCode:wo.pickCode, dtf:!!wo.dtf}:null);
   if(ok!==false){
     wo.printed=true; wo.printedAt=wo.printedAt||d2s(now());
     saveState(); renderWOCards(); if(!quiet) openWOModal(i);   // refresh badge + tile visibility
@@ -3288,7 +3311,7 @@ function whPickList(){
 // Print from the Warehouse tab: the first page, then the mark on the log
 function whPrint(i, code, qty){
   var w=WOs[i]; if(!w) return;
-  var ok=printWOP(w.ref, code, qty, w.due||'', w.sm||null, {embOnly:true, pickCode:w.pickCode||''});
+  var ok=printWOP(w.ref, code, qty, w.due||'', w.sm||null, {embOnly:true, pickCode:w.pickCode||'', dtf:!!w.dtf});
   if(ok===false) return;
   if(IS_EDITOR){ w.printed=true; w.printedAt=w.printedAt||d2s(now()); saveState(); renderWOCards(); }
   if(!cutCanWrite()){ whRender(); return; }
@@ -3358,7 +3381,7 @@ function embQueueHtml(can){
   q.forEach(function(l){
     var sel='<select '+(can&&!l.doneAt?'':'disabled ')+'onchange="embSetMachine(\''+esc(l.k)+'\', this.value)" style="font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px'+(l.machine?'':';background:#fff7ed')+'"><option value="">not allocated</option>'+['1','2','3','4','5','DTF'].map(function(m){ return '<option value="'+m+'"'+(String(l.machine)===m?' selected':'')+'>'+(m==='DTF'?'DTF':'Machine '+m)+'</option>'; }).join('')+'</select>';
     h+='<tr'+(l.doneAt?' class="booked-row"':(l.machine?'':' style="background:#fff7ed"'))+'><td style="font-weight:600">'+esc(fmtD(l.pickedAt))+'</td><td>'+esc(fmtD(l.due))+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.ref)+'</td>'
-      +'<td style="font-family:monospace;font-size:11px">'+esc(l.code)+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.pickCode||'?')+'</td><td>'+esc(l.customer)+'</td><td style="text-align:right;font-weight:700">'+Math.round(l.qty).toLocaleString()+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+esc(l.code)+(l.wo&&l.wo.dtf?' <span class="sm-tag" style="background:#6d28d9;color:#fff" title="DTF transfer, logo '+DTF_LOGO_ID+'">DTF</span>':'')+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.pickCode||'?')+'</td><td>'+esc(l.customer)+'</td><td style="text-align:right;font-weight:700">'+Math.round(l.qty).toLocaleString()+'</td>'
       +'<td>'+sel+'</td><td style="text-align:center;white-space:nowrap">'+(l.doneAt?'<span class="sm-tag ok">done '+esc(fmtD(l.doneAt.slice(0,10)))+'</span> '+(can?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="embUndone(\''+esc(l.k)+'\')">&#8634; Undo</button>':''):(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#065f46;border-color:#a7d4bb" onclick="embComplete(\''+esc(l.k)+'\')"'+(l.machine?'':' title="Choose the machine first" disabled')+'>&#10003; Done</button>':''))+'</td></tr>'; });
   return h+'</tbody></table></div></div></div>';
 }
@@ -4000,11 +4023,11 @@ function smCreate(key){
   var o=smTake(key); if(!o) return;
   var part=smNextPart(smSoKey(o)), ref=smMakeRef(o,part);
   var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
-  WOs.push(stampWO({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
+  WOs.push(smMarkDtf(stampWO({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
     sm:{ lineKey:o.key, seenAt:o.seenAt||'', company:o.company, so:o.so, seq:o.seq, part:part,
          customer:o.customer, custOrder:o.custOrder||'',
          custName:o.custName||o.customer||'', desc:o.desc, maker:o.maker,
-         promised:o.promised, dateAssumed:!hasDate, notes:[] } }));
+         promised:o.promised, dateAssumed:!hasDate, notes:[] } })));
   smSeen[o.key]={what:'wo', ref:ref};
   smLog(o, ref, part);
   smAfterChange();
@@ -4092,11 +4115,11 @@ function smCreateAllShown(){
     var o=smTake(k); if(!o) return;
     var part=smNextPart(smSoKey(o)), ref=smMakeRef(o,part);
     var hasDate=/^\d{4}-\d{2}-\d{2}$/.test(o.promised);
-    WOs.push(stampWO({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
+    WOs.push(smMarkDtf(stampWO({ ref:ref, start:'', due:smDue(o), items:[{code:o.code, qty:smTake0(o)}],
       sm:{ lineKey:o.key, seenAt:o.seenAt||'', company:o.company, so:o.so, seq:o.seq, part:part,
            customer:o.customer, custOrder:o.custOrder||'',
            custName:o.custName||o.customer||'', desc:o.desc, maker:o.maker,
-           promised:o.promised, dateAssumed:!hasDate, notes:[] } }));
+           promised:o.promised, dateAssumed:!hasDate, notes:[] } })));
     smSeen[o.key]={what:'wo', ref:ref};
     smLog(o, ref, part);
   });
