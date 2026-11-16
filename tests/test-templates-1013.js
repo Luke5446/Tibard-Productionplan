@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('356 styles in the master', r.count===356, r.count);
+ ck('357 styles in the master', r.count===357, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -253,6 +253,12 @@ const path = require('path');
  ck('COB0002112: MTCGCOAT009 at 2.07 m, 2.10 m rating; chest 120', r19.COB0002112==='COB0002112||onesize|MTCGCOAT|MTCGCOAT009|2.07|PC2003ECO:B1:2.1|CMP-STD-SOC-032B-677+CMP-STD-DUO-032B-677+CMP-STD-RING-032B-677+LABELTIB4565+CMP-LBL-NYL-25-01+CMP-THR-EP80-09700-03|150||120/64.5/100|EMB|own|data:image/png', r19.COB0002112);
  d=await printOf('COB0002104',1);
  ck('COB0002104 print: variant MTCGCOAT, marker MTCGCOAT008, the stud and thread codes, the branding band with the 7 cm logo wording, one PNG image, the 112 cm chest', d.text.includes('MTCGCOAT008')&&d.text.includes('CMP-STD-SOC-032B-677')&&d.text.includes('CMP-THR-EP80-09700-03')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('MTC 7cm logo')&&d.text.includes('112')&&d.pngs===1, [d.pngs,d.text.slice(0,400)]);
+
+ const r20=await p.evaluate(()=>{ const h=styleForCode('OHEGOAPP064903'); if(!h) return null; const s=h.style, thr=s.trims.filter(t=>/^thread/i.test(t[0]))[0];
+   return [s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), s.trims.map(t=>t[3]).join('+'), thr&&thr[2], garmentKind('OHEGOAPP064903',s), (STYLE_MASTER.charts[s.chart]||[]).map(r=>r[1]).join('/'), s.brandType, smIsStockStyle('OHEGOAPP064903')?'stock':'own', s.placeImg?s.placeImg.slice(0,15):'', s.logoImg?s.logoImg.slice(0,15):'', /2.5 cm up from finished hem/.test(s.mfg.join(' '))?'pocket2.5':'', s.customer].join('|'); });
+ ck('OHEGOAPP064903 (16 Nov): one size, variant 0649; CO5003ECO at A5 0.80 m; bib apron thread at 70, labels, tax tab and studs coded; 71.5 cm long; the Ego logo on the left pocket as its own branding with the pocket photo', r20==='OHEGOAPP064903||onesize|0649|CO5003ECO:A5:0.8|CMP-THR-EP80-09700-03+LABELOH5771+CMP-OH-LBL-WASH-01+TAXTABOH07/01+CMP-STD-CAP-050-929+CMP-STD-SOC-050-929|70|APB|26.5 cm/61 cm/71.5 cm (± 1)/63 cm (± 1)/18.5 cm wide x 19.5 cm deep|Embroidery|own|data:image/jpeg|data:image/jpeg|pocket2.5|Ego Restaurants', r20);
+ d=await printOf('OHEGOAPP064903',1);
+ ck('OHEGOAPP064903 print: variant 0649, the stud and thread codes, the branding band with the left pocket wording, the 71.5 cm length', d.text.includes('0649')&&d.text.includes('CMP-STD-CAP-050-929')&&d.text.includes('CMP-THR-EP80-09700-03')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('left pocket')&&d.text.includes('71.5'), d.text.slice(0,300));
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
