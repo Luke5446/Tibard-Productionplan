@@ -26,14 +26,14 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
    const card=document.querySelector('.woc .woc-emb');
    openWOModal(WOs.indexOf(d)); const meta=document.getElementById('woModalMeta').textContent.replace(/\s+/g,' '); closeWOModal();
    return {n:WOs.length, dtf:d.dtf, emb:d.embOnly, pick:d.pickCode, so:d.sm.so, cust:d.sm.custName, plain:{dtf:!!t.dtf, emb:!!t.embOnly},
-     card:card?card.textContent.trim():'', meta:/DTF transfer .* pick AP300503 from stock for the DTF \(logo 113555, Top right hand corner of bib as worn\)/.test(meta),
+     card:card?card.textContent.trim():'', meta:/DTF transfer .* pick AP300503 from stock for the DTF \(logo 113555, Top left as worn\)/.test(meta),
      helper:[dtfPickFor('TRGAP300503SHARP'), dtfPickFor('trgap300503sharp'), dtfPickFor('GIRHT016003'), dtfPickFor('TRGSHARP')].join('|'),
      wh:whPickList().map(l=>l.wo.ref+':'+l.it.code).join(), cut:WOs.filter(cutInScope).length}; });
  // the print: one page, the DTF band with the ID, the application line, the photo and the sales order
  const s2=await p.evaluate(()=>{ let html=''; window.open=()=>({document:{open(){},write(h){html+=h;},close(){}}});
    const d=WOs.find(w=>w.items[0].code==='TRGAP300503SHARP'); printWOP(d.ref, 'TRGAP300503SHARP', 6, d.due, d.sm, {embOnly:true, pickCode:d.pickCode, dtf:true});
    return {pages:(html.match(/<div class="page">/g)||[]).length, banner:/DTF TRANSFER<\/th><td[^>]*>Pick 6 x AP300503 from stock for the DTF transfer \(logo 113555\)/.test(html),
-     band:/<div class="band">DTF TRANSFER<\/div>/.test(html), id:/DTF logo ID<\/th><td[^>]*>113555/.test(html), place:/Top right hand corner of bib as worn/.test(html),
+     band:/<div class="band">DTF TRANSFER<\/div>/.test(html), id:/DTF logo ID<\/th><td[^>]*>113555/.test(html), place:/Top left as worn/.test(html),
      img:/<img src="data:image\/jpeg;base64,[A-Za-z0-9+\/=]+" alt="DTF logo in position/.test(html), so:/Sales order<\/th><td>862331/.test(html), cust:/SHARP SOLUTIONS/.test(html),
      noMfg:!/MANUFACTURING DETAILS/.test(html), row:/<th>DTF transfer<\/th><td[^>]*><strong>Yes/.test(html)}; });
  // completing carries the flag, no fabric
