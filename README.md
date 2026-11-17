@@ -284,7 +284,7 @@ Embroidery queue, booked in with the two Sage files). Because it is raised
 from the special makes tab, the customer, sales order and customer order
 number come through to the print. The print is the first page only, with a
 **DTF TRANSFER** banner and band: the DTF logo ID (always 113555), the
-application ("Top right hand corner of bib as worn") and the photo of the
+application ("Top left as worn") and the photo of the
 logo in position on the apron. The same code typed on the Add works order
 form is treated the same way. Test: `tests/test-dtf.js`.
 
