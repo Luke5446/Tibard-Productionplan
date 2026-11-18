@@ -1373,9 +1373,18 @@ function delWO(i){ if(!IS_EDITOR) return;
 }
 
 // Delete a single SKU line from a works order (manufacturing complete)
+// An embroidery-only (or DTF) works order is never completed from the card
+// or the panel: the embroidery room marks it done on the Embroidery tab and
+// the warehouse books it in, and that book-in completes it here with the
+// two Sage files made. Completing it from here skipped both, so the job
+// vanished from the Embroidery tab with no done mark and the stock never
+// moved in Sage (the two SHARP DTF aprons, 17 Nov 2026). Luke, 18 Nov 2026.
+function embCompleteBlock(wo){ if(!wo || !wo.embOnly) return false;
+  alert((wo.dtf?'A DTF transfer':'An embroidery-only')+' works order is not completed here.\n\nThe embroidery room marks it Done on the Embroidery tab, the warehouse books it in from EMB to book in, and the works order completes itself when it is booked.'); return true; }
 function delWOItem(woIdx, code){ if(!IS_EDITOR) return;
   var wo=WOs[woIdx];
   if(!wo) return;
+  if(embCompleteBlock(wo)) return;
   if(cutCompleteBlock(wo, code)) return;   // still to cut: nothing made yet
   var day=woDoneDay(document.getElementById('woModalDoneDay')); if(wo.createdAt && day<wo.createdAt) day=wo.createdAt;
   if(!confirm('Mark '+code+' as complete?\n\nIt will move to the Completed Works Orders history.'+woDoneHint(wo, day))) return;
@@ -1417,6 +1426,7 @@ function completeWholeWO(woIdx, day, wastes){ if(!IS_EDITOR) return;
   var wo=WOs[woIdx];
   if(!wo) return;
   if(wastes===null) return;   // a waste box the PM has to fix first
+  if(embCompleteBlock(wo)) return;   // done on the Embroidery tab, booked in by the warehouse
   if(cutCompleteBlock(wo)) return;   // still to cut: nothing made yet
   wastes=wastes||[];
   day=day||woDoneDay(document.getElementById('woc-done-'+woIdx)); if(wo.createdAt && day<wo.createdAt) day=wo.createdAt;
@@ -1705,8 +1715,9 @@ function renderWOCards(){
         :(noTpl?'<div style="font-size:10px;color:#b45309;font-weight:700;margin-top:2px">no print template'+(wo.items.length>1?' for '+noTpl+' of '+wo.items.length:'')+'</div>':''))
       +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
       +(IS_EDITOR?'<button class="btn" id="woc-print-'+i+'" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#1e40af;border-color:#b6c4e8" title="'+(wo.printed?'Print the works order document again':'Print the works order document')+(wo.items.length>1?' - every line of it':'')+'" onclick="event.stopPropagation();printWOCard('+i+')">&#128424; '+(wo.printed?'Print again':'Print WOP')+'</button>':'')
-      +'<div style="display:flex;gap:4px;margin-top:4px"><input type="date" id="woc-done-'+i+'" value="'+d2s(now())+'" max="'+d2s(now())+'" min="'+esc(wo.createdAt||'')+'" title="The day it was completed: today, unless it was missed at the time - put the real day and it is booked as completed then" onclick="event.stopPropagation()" style="font-size:10px;padding:2px 3px;border:1px solid #a7d4bb;border-radius:4px;color:#065f46;width:112px">'
-      +'<button class="btn" style="font-size:10px;padding:3px 8px;flex:1;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button></div>'
+      +(wo.embOnly?'<div style="font-size:10px;color:#6d28d9;margin-top:6px;font-weight:600" title="Marked done by the embroidery room on the Embroidery tab, booked in by the warehouse; the works order completes itself when it is booked">&#129697; Done on the Embroidery tab, booked in by the warehouse</div>'
+      :'<div style="display:flex;gap:4px;margin-top:4px"><input type="date" id="woc-done-'+i+'" value="'+d2s(now())+'" max="'+d2s(now())+'" min="'+esc(wo.createdAt||'')+'" title="The day it was completed: today, unless it was missed at the time - put the real day and it is booked as completed then" onclick="event.stopPropagation()" style="font-size:10px;padding:2px 3px;border:1px solid #a7d4bb;border-radius:4px;color:#065f46;width:112px">'
+      +'<button class="btn" style="font-size:10px;padding:3px 8px;flex:1;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button></div>')
       +'</div>';
   }).join('');
 }
@@ -1762,6 +1773,7 @@ function openWOModal(i){
   // Wire the complete-all button for this WO
   var dd=document.getElementById('woModalDoneDay'); dd.value=d2s(now()); dd.max=d2s(now()); dd.min=wo.createdAt||'';
   document.getElementById('woModalCompleteAll').onclick=function(){ completeWholeWO(i, woDoneDay(dd), woModalWastes(wo)); };
+  document.getElementById('woModalCompleteAll').style.display=wo.embOnly?'none':''; dd.style.display=wo.embOnly?'none':'';
   document.getElementById('woModal').classList.add('open');
 }
 
@@ -3287,7 +3299,7 @@ function whRenderEmb(can){
   var ec=document.getElementById('whEmbCount'); if(ec) ec.textContent=list.length?'('+list.length+')':'';
   if(!list.length) eb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:1.4rem;color:#6b7280">Nothing back from embroidery to book in</td></tr>';
   else eb.innerHTML=list.map(function(l){ var known=embBaseKnown(l.pickCode);
-    return '<tr><td style="font-weight:600">'+esc(fmtD(l.doneAt.slice(0,10)))+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.ref)+'</td>'
+    return '<tr><td style="font-weight:600">'+esc(fmtD(l.doneAt.slice(0,10)))+(l.fromCard?'<div class="sm-sub" style="font-size:10px;color:#b45309" title="The production manager completed this from the works order card, so it was never marked done on the Embroidery tab and the stock has not moved in Sage">completed from the card</div>':'')+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.ref)+'</td>'
       +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:'+(known?'#b91c1c':'#b45309')+'">'+esc(l.pickCode||'?')+(known?'':' <span class="sm-tag warn" title="Not a product in the buffer: the PM sets the base code on the works order">not a stock code</span>')+'</td>'
       +'<td style="font-family:monospace;font-size:12px;font-weight:700;color:#065f46">'+esc(l.code)+'</td><td>'+esc(l.customer)+'</td><td style="text-align:right;font-weight:700">'+Math.round(l.qty).toLocaleString()+'</td>'
       +'<td style="text-align:center;white-space:nowrap">'+(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#15803d;border-color:#a7d4bb" onclick="embBookIn(\''+esc(l.k)+'\')"'+(known?'':' disabled title="Set the base code first"')+'>&#10003; Book in + files</button>':'')+'</td></tr>'; }).join('');
@@ -3327,6 +3339,8 @@ function whApplyPrintMarks(){
   WOs.forEach(function(w, i){ if(!w.embOnly) return; (w.items||[]).forEach(function(it){ var bk=whEntry(embBookKey(w.ref, it.code)); if(bk) done.push({w:w, it:it, bk:bk}); }); });
   done.forEach(function(x){ var w=x.w; recordCompleted(w, x.it); var c=completedWOs[completedWOs.length-1]; if(c && c.ref===w.ref && c.code===x.it.code){ c.completed=(x.bk.bookedAt||'').slice(0,10)||c.completed; c.embBookedAt=x.bk.bookedAt; }
     w.items=w.items.filter(function(y){ return y!==x.it; }); if(!w.items.length){ var ix=WOs.indexOf(w); if(ix>=0) WOs.splice(ix,1); } n++; });
+  // a line completed from the card and booked by the warehouse afterwards keeps the booked date (its completed day stays the PM's)
+  completedWOs.forEach(function(c){ if(!c.embOnly || c.embBookedAt) return; var bk=whEntry(embBookKey(c.ref, c.code)); if(bk){ c.embBookedAt=bk.bookedAt; n++; } });
   if(n){ recalcWOs(); recalcQtys(); updateStats(); renderTable(); renderWOCards(); refreshWOModal(); renderCompleted(); saveState(); }
   return n;
 }
@@ -3352,13 +3366,23 @@ function embKey(ref, code){ return 'emb|'+ref+'|'+code; }
 function embBookKey(ref, code){ return 'embbook|'+ref+'|'+code; }
 function whEntry(k){ var m=null; whLog.entries.forEach(function(e){ if(e.k===k && !e.cancelledAt) m=e; }); return m; }
 // Picked embroidery-only lines not yet booked in: the embroidery room's queue
+// Since 18 Nov 2026 a live embroidery-only works order is on the queue from
+// the moment it exists, picked or not (the warehouse's pick mark shows as
+// the Picked date; before it the line says "not picked yet"), so the
+// embroidery room can always put it on a machine and mark it done - before,
+// a job the warehouse had not marked picked could only be completed by the
+// PM from the card, which skipped the done mark and the Sage book-in.
 function embQueue(){
-  var out=[];
+  var out=[], seen={};
+  var push=function(pk, w, it){
+    var ref=pk?pk.ref:w.ref, code=pk?pk.code:it.code, k=embKey(ref, code); if(seen[k]) return; seen[k]=1;
+    if(whEntry(embBookKey(ref, code))) return;
+    var i=WOs.indexOf(w); var em=whEntry(k)||{};
+    out.push({i:i, wo:w, ref:ref, code:code, pickCode:(w&&w.pickCode)||(pk&&pk.pickCode)||'', qty:it?it.qty:((pk&&pk.qty)||0), customer:w&&w.sm?(w.sm.custName||w.sm.customer||''):((pk&&pk.customer)||''), due:w?(w.due||''):((pk&&pk.due)||''), pickedAt:pk?(pk.pickedAt||'').slice(0,10):'', picked:!!pk, machine:em.machine||'', allocatedAt:em.allocatedAt||'', doneAt:em.doneAt||'', k:k}); };
   whLog.entries.forEach(function(pk){ if(pk.kind!=='pick' || pk.cancelledAt) return;
-    if(whEntry(embBookKey(pk.ref, pk.code))) return;
-    var i=-1; WOs.forEach(function(w, ix){ if(w.ref===pk.ref) i=ix; }); var w=i>=0?WOs[i]:null, it=w?(w.items||[]).filter(function(x){ return x.code===pk.code; })[0]:null;
-    var em=whEntry(embKey(pk.ref, pk.code))||{};
-    out.push({i:i, wo:w, ref:pk.ref, code:pk.code, pickCode:(w&&w.pickCode)||pk.pickCode||'', qty:it?it.qty:(pk.qty||0), customer:w&&w.sm?(w.sm.custName||w.sm.customer||''):(pk.customer||''), due:w?(w.due||''):(pk.due||''), pickedAt:(pk.pickedAt||'').slice(0,10), machine:em.machine||'', allocatedAt:em.allocatedAt||'', doneAt:em.doneAt||'', k:embKey(pk.ref, pk.code)}); });
+    var w=null; WOs.forEach(function(x){ if(x.ref===pk.ref) w=x; }); var it=w?(w.items||[]).filter(function(x){ return x.code===pk.code; })[0]:null;
+    push(pk, w, it); });
+  WOs.forEach(function(w){ if(!w.embOnly) return; (w.items||[]).forEach(function(it){ push(null, w, it); }); });
   out.sort(function(a,b){ return (a.doneAt?1:0)-(b.doneAt?1:0) || (a.machine?1:0)-(b.machine?1:0) || (a.due||'').localeCompare(b.due||'') || a.ref.localeCompare(b.ref); });
   return out;
 }
@@ -3374,22 +3398,76 @@ function embUndone(k){ if(!cutCanWrite()) return; if(!confirm('Undo the done mar
   whSave('Embroidery done undone: '+k.split('|')[1], function(d){ var e=d.entries.filter(function(x){ return x.k===k && !x.cancelledAt; })[0]; if(!e || !e.doneAt) return false; delete e.doneAt; return true; }, function(){ embRender(); embBadge(); }); }
 function embQueueHtml(can){
   var q=embQueue(), open=q.filter(function(l){ return !l.doneAt; }), done=q.filter(function(l){ return !!l.doneAt; });
-  var h='<div class="wh-section" style="margin-top:8px"><div class="wh-hdr" style="background:#4c1d95"><h2>&#129697; Embroidery queue <span style="font-size:11px;opacity:.8">('+open.length+' picked'+(done.length?' &middot; '+done.length+' done, waiting to be booked in':'')+')</span></h2>'
-    +'<div style="font-size:11px;opacity:.85">Picked by the warehouse: choose the machine it goes on, then mark it done; the warehouse books it in from there</div></div>'
-    +'<div class="wh-body"><div style="overflow-x:auto"><table class="wh-tbl"><thead><tr><th>Picked</th><th>Due</th><th>WO Ref</th><th>Embroidered code</th><th>Base garment</th><th>Customer</th><th style="text-align:right">Qty</th><th>Machine</th><th class="ns" style="text-align:center">Action</th></tr></thead><tbody>';
+  var h='<div class="wh-section" style="margin-top:8px"><div class="wh-hdr" style="background:#4c1d95"><h2>&#129697; Embroidery queue <span style="font-size:11px;opacity:.8">('+open.length+' to do'+(done.length?' &middot; '+done.length+' done, waiting to be booked in':'')+')</span></h2>'
+    +'<div style="font-size:11px;opacity:.85">Every live embroidery-only and DTF works order: choose the machine it goes on, then mark it done; the warehouse books it in from there and the works order completes</div></div>'
+    +'<div class="wh-body"><div style="overflow-x:auto"><table class="wh-tbl" id="embQueueTbl"><thead><tr><th>Picked</th><th>Due</th><th>WO Ref</th><th>Embroidered code</th><th>Base garment</th><th>Customer</th><th style="text-align:right">Qty</th><th>Machine</th><th class="ns" style="text-align:center">Action</th></tr></thead><tbody>';
   if(!q.length) h+='<tr><td colspan="9" style="text-align:center;padding:1.2rem;color:#6b7280">Nothing picked for embroidery</td></tr>';
   q.forEach(function(l){
     var sel='<select '+(can&&!l.doneAt?'':'disabled ')+'onchange="embSetMachine(\''+esc(l.k)+'\', this.value)" style="font-size:12px;padding:3px 6px;border:1px solid #c8d0df;border-radius:4px'+(l.machine?'':';background:#fff7ed')+'"><option value="">not allocated</option>'+['1','2','3','4','5','DTF'].map(function(m){ return '<option value="'+m+'"'+(String(l.machine)===m?' selected':'')+'>'+(m==='DTF'?'DTF':'Machine '+m)+'</option>'; }).join('')+'</select>';
-    h+='<tr'+(l.doneAt?' class="booked-row"':(l.machine?'':' style="background:#fff7ed"'))+'><td style="font-weight:600">'+esc(fmtD(l.pickedAt))+'</td><td>'+esc(fmtD(l.due))+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.ref)+'</td>'
+    h+='<tr'+(l.doneAt?' class="booked-row"':(l.machine?'':' style="background:#fff7ed"'))+'><td style="font-weight:600">'+(l.pickedAt?esc(fmtD(l.pickedAt)):'<span class="sm-tag warn" title="The warehouse has not marked this picked yet">not picked yet</span>')+'</td><td>'+esc(fmtD(l.due))+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.ref)+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+esc(l.code)+(l.wo&&l.wo.dtf?' <span class="sm-tag" style="background:#6d28d9;color:#fff" title="DTF transfer, logo '+DTF_LOGO_ID+'">DTF</span>':'')+'</td><td style="font-family:monospace;font-size:11px">'+esc(l.pickCode||'?')+'</td><td>'+esc(l.customer)+'</td><td style="text-align:right;font-weight:700">'+Math.round(l.qty).toLocaleString()+'</td>'
       +'<td>'+sel+'</td><td style="text-align:center;white-space:nowrap">'+(l.doneAt?'<span class="sm-tag ok">done '+esc(fmtD(l.doneAt.slice(0,10)))+'</span> '+(can?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="embUndone(\''+esc(l.k)+'\')">&#8634; Undo</button>':''):(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#065f46;border-color:#a7d4bb" onclick="embComplete(\''+esc(l.k)+'\')"'+(l.machine?'':' title="Choose the machine first" disabled')+'>&#10003; Done</button>':''))+'</td></tr>'; });
+  return h+'</tbody></table></div></div></div>'+embHistoryHtml(can);
+}
+// ── Done history (Luke, 18 Nov 2026) ──────────────────────────────────────
+// Every job ever marked done, by the day it was marked, searchable like the
+// warehouse's Booked in history: the done mark on the log (kind emb, doneAt)
+// stays after the warehouse books the line in, so nothing marked done is
+// lost when it leaves the queue. A line the PM completed from the card
+// before the guard above is here too, from the completed history, flagged
+// as never marked done on this tab.
+var embHistQ='', embHistOpen={};
+function embHistory(){
+  var out=[], seen={};
+  whLog.entries.forEach(function(e){ if(e.kind!=='emb' || e.cancelledAt || !e.doneAt) return;
+    var k=embKey(e.ref, e.code); seen[k]=1; var bk=whEntry(embBookKey(e.ref, e.code)), pk=whEntry(whPickKey(e.ref, e.code))||{};
+    var w=null; WOs.forEach(function(x){ if(x.ref===e.ref) w=x; }); var c=null; completedWOs.forEach(function(x){ if(x.ref===e.ref && x.code===e.code) c=x; });
+    var it=w?(w.items||[]).filter(function(x){ return x.code===e.code; })[0]:null, r=rows.find(function(x){ return x.code===e.code; });
+    var m=null; smMade.forEach(function(x){ if(x.ref===e.ref && x.code===e.code) m=x; });
+    out.push({k:k, ref:e.ref, code:e.code, pickCode:(w&&w.pickCode)||(c&&c.pickCode)||(bk&&bk.baseCode)||pk.pickCode||'', qty:it?it.qty:(c?c.qty:((bk&&bk.qty)||pk.qty||0)), desc:r?r.desc:(c?c.desc:''), customer:w&&w.sm?(w.sm.custName||w.sm.customer||''):(m?(m.customer||''):(pk.customer||'')),
+      done:e.doneAt.slice(0,10), doneAt:e.doneAt, machine:e.machine||'', bookedAt:bk?(bk.bookedAt||''):'', dtf:!!((w&&w.dtf)||(c&&c.dtf)||e.machine==='DTF'), how:'tab'}); });
+  completedWOs.forEach(function(c){ if(!c.embOnly) return; var k=embKey(c.ref, c.code); if(seen[k]) return; seen[k]=1;
+    var bk=whEntry(embBookKey(c.ref, c.code)); var m=null; smMade.forEach(function(x){ if(x.ref===c.ref && x.code===c.code) m=x; });
+    out.push({k:k, ref:c.ref, code:c.code, pickCode:c.pickCode||(bk&&bk.baseCode)||'', qty:c.qty||0, desc:c.desc||'', customer:m?(m.customer||''):'', done:c.completed||'', doneAt:(c.completed||'')+'T00:00:00.000Z', machine:'', bookedAt:c.embBookedAt||(bk?(bk.bookedAt||''):''), dtf:!!c.dtf, how:c.embBookedAt?'booked':'pm'}); });
+  out.sort(function(a,b){ return (b.doneAt||'').localeCompare(a.doneAt||'') || a.ref.localeCompare(b.ref); });
+  return out;
+}
+function embHistToggle(mk){ embHistOpen[mk]=!embHistOpen[mk]; embRender(); }
+function embHistoryHtml(can){
+  var all=embHistory(), q=embHistQ.trim();
+  var list=all.filter(function(r){ return !q || smMatch(r.ref+' '+r.code+' '+r.pickCode+' '+r.customer+' '+r.desc+' '+r.machine+' '+(r.dtf?'DTF':''), q); });
+  var h='<div class="wh-section" style="margin-top:8px"><div class="wh-hdr" style="background:#374151"><h2>&#128193; Done history <span style="font-size:11px;opacity:.8">('+all.length+')</span></h2>'
+    +'<input type="text" id="embHistQ" value="'+esc(embHistQ)+'" placeholder="&#128269; Search done jobs: works order, code, customer, machine" oninput="embHistQ=this.value; embRender()" style="font-size:12px;padding:5px 9px;border-radius:5px;border:1px solid #c8d0df;min-width:260px;font-family:Arial,sans-serif"></div>'
+    +'<div class="wh-body"><div style="overflow-x:auto"><table class="wh-tbl"><thead><tr><th>Done</th><th>WO Ref</th><th>Embroidered code</th><th>Base garment</th><th>Customer</th><th style="text-align:right">Qty</th><th>Machine</th><th>Booked in</th></tr></thead><tbody>';
+  var row=function(r){ return '<tr class="booked-row"><td style="font-weight:600">'+esc(fmtD(r.done))+(r.how==='pm'?'<div class="sm-sub" style="font-size:10px;color:#b45309" title="Completed by the production manager from the works order card, never marked done on this tab">completed from the card</div>':'')+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+esc(r.ref)+'</td><td style="font-family:monospace;font-size:11px">'+esc(r.code)+(r.dtf?' <span class="sm-tag" style="background:#6d28d9;color:#fff">DTF</span>':'')+(r.desc?'<div class="sm-sub" style="font-size:10px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(r.desc)+'">'+esc(r.desc)+'</div>':'')+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+esc(r.pickCode||'?')+'</td><td>'+esc(r.customer)+'</td><td style="text-align:right;font-weight:700">'+Math.round(r.qty).toLocaleString()+'</td>'
+      +'<td>'+(r.machine?(r.machine==='DTF'?'DTF':'Machine '+esc(r.machine)):'<span class="sm-sub">&mdash;</span>')+'</td>'
+      +'<td>'+(r.bookedAt?'<span class="sm-tag ok">booked '+esc(fmtD(r.bookedAt.slice(0,10)))+'</span>':'<span class="sm-tag warn" title="Still on the warehouse tab under EMB to book in">not booked in yet</span>')+'</td></tr>'; };
+  if(!list.length) h+='<tr><td colspan="8" style="text-align:center;padding:1.2rem;color:#6b7280">'+(all.length?'No done job matches "'+esc(q)+'"':'Nothing marked done yet')+'</td></tr>';
+  else {
+    var today=d2s(now()), todayRows=list.filter(function(r){ return r.done===today; }), months={};
+    list.forEach(function(r){ if(r.done===today) return; var mk=monthKey(r.done); (months[mk]=months[mk]||[]).push(r); });
+    if(todayRows.length) h+='<tr style="background:#dcfce7"><td colspan="8" style="font-weight:700;color:#15803d;padding:6px 8px">&#128197; Today ('+todayRows.length+')</td></tr>'+todayRows.map(row).join('');
+    Object.keys(months).sort(function(a,b){ return b.localeCompare(a); }).forEach(function(mk){ var open=!!q || (embHistOpen[mk]===undefined ? mk===monthKey(today) : embHistOpen[mk]);   // this month open by default, the rest folded
+      h+='<tr style="background:#f0f3f8;cursor:pointer" onclick="embHistToggle(\''+mk+'\')"><td colspan="8" style="font-weight:700;color:#374151;padding:6px 8px">'+(open?'&#9660;':'&#9654;')+' &#128193; '+monthLabel(mk)+' ('+months[mk].length+')</td></tr>';
+      if(open) h+=months[mk].map(row).join(''); });
+  }
   return h+'</tbody></table></div></div></div>';
 }
 // ── EMB to book in: done in embroidery, two files for Sage, then booked ───
 // The book-in file is the add-stock layout Luke's routine reads (TIB_Add_Stock.csv, 6 Oct 2026):
 //   StockCode,Location,Bin,Qty,StockExported,Reference1  e.g.  TX456987U,Home,,50,,Stock Take
 var EMB_WRITEOFF_REF1='Embroidery', EMB_BOOKIN_LOCATION='Home';
-function embToBook(){ return embQueue().filter(function(l){ return !!l.doneAt; }); }
+function embToBook(){
+  var out=embQueue().filter(function(l){ return !!l.doneAt; }), seen={}; out.forEach(function(l){ seen[l.k]=1; });
+  // completed from the card before the guard (18 Nov 2026): no done mark and
+  // no book-in, so the stock never moved in Sage - here until the warehouse books it
+  completedWOs.forEach(function(c){ if(!c.embOnly || c.embBookedAt) return; var k=embKey(c.ref, c.code); if(seen[k] || whEntry(embBookKey(c.ref, c.code))) return; seen[k]=1;
+    var m=null; smMade.forEach(function(x){ if(x.ref===c.ref && x.code===c.code) m=x; });
+    out.push({i:-1, wo:null, ref:c.ref, code:c.code, pickCode:c.pickCode||'', qty:c.qty||0, customer:m?(m.customer||''):'', due:c.due||'', pickedAt:'', picked:false, machine:'', allocatedAt:'', doneAt:(c.completed||'')+'T00:00:00.000Z', k:k, fromCard:true}); });
+  return out;
+}
 function embBookFiles(l){
   var date=ukDate(d2s(now())), stamp=d2s(now());
   var off=[['StockCode','Location','Bin','Qty','Reference1','Reference2','ActivityDate','WriteOffCat'], [l.pickCode, WRITEOFF_LOCATION, '', Math.round(l.qty), EMB_WRITEOFF_REF1, sageRef(l.ref), date, WRITEOFF_CAT]];

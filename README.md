@@ -248,10 +248,16 @@ warehouse log:
    printing**.
 2. The warehouse prints it (printed on the tracker too), picks the base
    stock and marks it **Picked**.
-3. It appears in the **Embroidery queue** at the top of the Embroidery tab.
-   The embroidery manager chooses the machine (1 to 5, or DTF) it goes on; the tab's
-   badge counts the picked works orders not yet on a machine. When it is
-   embroidered they mark it **Done**.
+3. It is in the **Embroidery queue** at the top of the Embroidery tab from
+   the moment it exists (since 18 Nov 2026; before, only once the warehouse
+   had marked it picked). A line the warehouse has not marked picked says
+   **not picked yet**. The embroidery manager chooses the machine (1 to 5,
+   or DTF) it goes on; the tab's badge counts the works orders not yet on a
+   machine. When it is embroidered they mark it **Done**. The PM cannot
+   complete an embroidery-only or DTF works order from the card or the
+   panel (the button is gone and the function refuses, 18 Nov 2026): doing
+   so skipped the done mark and the book-in, so the job vanished from the
+   Embroidery tab and the stock never moved in Sage.
 4. It appears on the Warehouse tab under **EMB to book in**. **Book in +
    files** writes the mark and makes two CSV files for the Sage data exchange
    folder: `EMB_WriteOff_<WO>_<date>.csv` writes the base stock off HOME
@@ -272,6 +278,17 @@ warehouse log:
 
 The embroidery room's PC needs the same token as the warehouse's to mark
 the machine and done.
+
+**Done history** (18 Nov 2026) sits under the queue: every job ever marked
+done, by the day it was marked, with the machine and whether the warehouse
+has booked it in, searchable by works order, code, customer or machine and
+folded into month folders like the warehouse's Booked in history (this
+month open). The done mark on the log is kept when the line is booked in
+and leaves the queue, so nothing marked done is lost. A line the PM
+completed from the card before the guard is in the history too, flagged
+**completed from the card**, and on the Warehouse tab under **EMB to book
+in** with the same flag, so the warehouse can still make the two Sage
+files for it. Test: `tests/test-embhist.js`.
 
 ### DTF transfer works orders
 
