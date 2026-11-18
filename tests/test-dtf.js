@@ -37,11 +37,13 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
      img:/<img src="data:image\/jpeg;base64,[A-Za-z0-9+\/=]+" alt="DTF logo in position/.test(html), so:/Sales order<\/th><td>862331/.test(html), cust:/SHARP SOLUTIONS/.test(html),
      noMfg:!/MANUFACTURING DETAILS/.test(html), row:/<th>DTF transfer<\/th><td[^>]*><strong>Yes/.test(html)}; });
  // completing carries the flag, no fabric
- const s3=await p.evaluate(()=>{ const d=WOs.find(w=>w.items[0].code==='TRGAP300503SHARP'); d.printed=true; completeWholeWO(WOs.indexOf(d)); const c=completedWOs.find(c=>c.code==='TRGAP300503SHARP'); return {dtf:c.dtf, emb:c.embOnly, pick:c.pickCode, fabric:c.fabric===undefined}; });
+ // the PM cannot complete it from the card (18 Nov 2026): the embroidery room marks it done, the warehouse books it in; the completed record, when it comes, carries the DTF flags and no fabric
+ const s3=await p.evaluate(()=>{ const d=WOs.find(w=>w.items[0].code==='TRGAP300503SHARP'); d.printed=true; window.__alerts=[]; window.alert=m=>window.__alerts.push(m); completeWholeWO(WOs.indexOf(d)); const blocked=WOs.indexOf(d)>=0 && /DTF transfer works order is not completed here/.test(window.__alerts[0]||'');
+   recordCompleted(d, d.items[0]); const c=completedWOs.find(c=>c.code==='TRGAP300503SHARP'); return {blocked, dtf:c.dtf, emb:c.embOnly, pick:c.pickCode, fabric:c.fabric===undefined}; });
  console.log('create ->', JSON.stringify(s1)); console.log('print  ->', JSON.stringify(s2)); console.log('done   ->', JSON.stringify(s3));
  const pass = s1.n===2 && s1.dtf===true && s1.emb===true && s1.pick==='AP300503' && s1.so==='0000862331' && s1.cust==='SHARP SOLUTIONS' && !s1.plain.dtf && !s1.plain.emb
    && s1.card==='DTF' && s1.meta && s1.helper==='AP300503|AP300503||' && /TRGAP300503SHARP/.test(s1.wh) && s1.cut===0
    && s2.pages===1 && s2.banner && s2.band && s2.id && s2.place && s2.img && s2.so && s2.cust && s2.noMfg && s2.row
-   && s3.dtf===true && s3.emb===true && s3.pick==='AP300503' && s3.fabric;
+   && s3.blocked && s3.dtf===true && s3.emb===true && s3.pick==='AP300503' && s3.fabric;
  console.log(pass?'PASS':'FAIL'); console.log('errors:', errs.length?errs.join('\n'):'none'); await b.close();
 })();
