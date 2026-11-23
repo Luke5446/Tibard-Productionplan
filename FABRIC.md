@@ -233,6 +233,7 @@ does not bring them back:
 | CJM01936001 | PC2003ECO black | PC2001ECO white |
 | OHAP060501 | PC6001 white poly cotton | CO5001ECO white organic cotton (the works order, JW 10/9/25; 15 Oct 2026) |
 | OHAPP059703/DEN, OHAPP059668/03 (contrast strap and ties), OHSTRAP-- / OHSTRAP--SHT / OHSTRAP--WAIST black colourway | CO5003 black 3110 cotton (P and R) | CO5003ECO black sustainable cotton (Tiajo X149 - AM8), at A4 and the ECO price; the usage table already had the straps on it (23 Nov 2026) |
+| Every other product on a cloth with an ECO twin (Luke, 23 Nov 2026): the OHSTRAP colourways navy/khaki/cocoa/slate/putty/olive, the contrast ties on OHAPP059703/153DEN, OHAPP0597F03/153DEN, OHAP300531/222CTDR and /222CTLC, BEAP300601, OHHT015201, OHLCJSYORK--03, BAG00401, LD90231007S/LD90231407S | CO5015, CO5153, CO5222, CO5241, CO5364, CO5083, CO5001, PC2001, PC2003, PC2007 | the `…ECO` twin, at its Sage location and price; same in the costing app's All Costings and the WOP Editor snapshot |
 
 Not changed, worth a look: OHAPP0630478HP1 is on CO5368 amber, and
 TB0201SS51 / the KIDSBIB 07 codes are on PC2X13307, whose colour could not
