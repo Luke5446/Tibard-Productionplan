@@ -232,6 +232,7 @@ does not bring them back:
 | HTM0152SS248 | PC2055 royal blue | PC2064ECO storm grey |
 | CJM01936001 | PC2003ECO black | PC2001ECO white |
 | OHAP060501 | PC6001 white poly cotton | CO5001ECO white organic cotton (the works order, JW 10/9/25; 15 Oct 2026) |
+| OHAPP059703/DEN, OHAPP059668/03 (contrast strap and ties), OHSTRAP-- / OHSTRAP--SHT / OHSTRAP--WAIST black colourway | CO5003 black 3110 cotton (P and R) | CO5003ECO black sustainable cotton (Tiajo X149 - AM8), at A4 and the ECO price; the usage table already had the straps on it (23 Nov 2026) |
 
 Not changed, worth a look: OHAPP0630478HP1 is on CO5368 amber, and
 TB0201SS51 / the KIDSBIB 07 codes are on PC2X13307, whose colour could not
