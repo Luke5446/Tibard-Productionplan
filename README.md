@@ -329,6 +329,11 @@ this morning is in the plan straight away:
   efficiency, Luke 24 Nov 2026; 40 for the new jacket staff).
   Bank holidays and the shutdown (25 Dec to 3 Jan) are no work. Anne Marie
   is off sick and out of the plan until ticked back in.
+- **Can't sew** (Staff & hours): words from the style, such as `STRATFORD,
+  DERBYSHIRE`. The plan never gives that person those jackets on its own;
+  a pin, a drag or a share still can, and the line is flagged. Champa,
+  Jacqueline and the new jacket staff start with the Stratford and the
+  Derbyshire (Luke, 24 Nov 2026).
 - Minutes per jacket: the costing app's machining minutes for the style
   (Oxford 32, Devon 31.9, shirt-style 4007/4008 40.7), a figure typed in
   the tab's *Minutes per jacket* table, or the stand-in 32 marked `?` on the
