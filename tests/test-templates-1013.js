@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('360 styles in the master', r.count===360, r.count);
+ ck('362 styles in the master', r.count===362, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -259,6 +259,16 @@ const path = require('path');
  ck('OHEGOAPP064903 (16 Nov): one size, variant 0649; CO5003ECO at A5 0.80 m; bib apron thread at 70, labels, tax tab and studs coded; 71.5 cm long; the Ego logo on the left pocket as its own branding with the pocket photo', r20==='OHEGOAPP064903||onesize|0649|CO5003ECO:A5:0.8|CMP-THR-EP80-09700-03+LABELOH5771+CMP-OH-LBL-WASH-01+TAXTABOH07/01+CMP-STD-CAP-050-929+CMP-STD-SOC-050-929|70|APB|26.5 cm/61 cm/71.5 cm (± 1)/63 cm (± 1)/18.5 cm wide x 19.5 cm deep|Embroidery|own|data:image/jpeg|data:image/jpeg|pocket2.5|Ego Restaurants', r20);
  d=await printOf('OHEGOAPP064903',1);
  ck('OHEGOAPP064903 print: variant 0649, the stud and thread codes, the branding band with the left pocket wording, the 71.5 cm length', d.text.includes('0649')&&d.text.includes('CMP-STD-CAP-050-929')&&d.text.includes('CMP-THR-EP80-09700-03')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('left pocket')&&d.text.includes('71.5'), d.text.slice(0,300));
+
+ const r21=await p.evaluate(()=>{ const f=c=>{ const h=styleForCode(c), u=fabricUsageFor(c); if(!h) return null; const s=h.style, thr=s.trims.filter(t=>/^thread$/i.test(t[0]))[0];
+     return [s.code, h.size, s.oneSize?'onesize':'sized', s.variant, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres].join('/'), s.trims.map(t=>t[3]).join('+'), thr&&thr[2], garmentKind(c,s), (STYLE_MASTER.charts[s.chart]||[]).length, s.brandType, smIsStockStyle(c)?'stock':'own', s.logoImg?s.logoImg.slice(0,15):'', s.placeImg?s.placeImg.slice(0,15):'', s.customer||''].join('|'); };
+   const o={}; ['CT3082MM28','CT30824828','CT3082XL28S','OHAPP063103PC/DS','OHAPP063103PCDS','OHAPP063103DENDS'].forEach(c=>o[c]=f(c)); return o; });
+ ck('CT3082--28 (23 Nov 2026): MM28 and 4828 resolve to the black/white check record; PC2028 at D2 1.6 m; the same trims as the blue check; the 14-row chart; a stock trouser; a special stays unmatched', r21.CT3082MM28==='CT3082--28|MM|sized|NEW3082RL|PC2028:D2:1.6|PC2028/1.6|CMP-THR-PC075-32109-01+++CMP-CORD-PP6-03++CMP-LBL-NYL-25-01+TAXTABTIB01|150|CT|14||stock|||'&&r21.CT30824828.startsWith('CT3082--28|48|')&&r21.CT3082XL28S===null, [r21.CT3082MM28,r21.CT30824828,r21.CT3082XL28S]);
+ ck('OHAPP063103PC/DS (23 Nov 2026): one size, variant 0631, with and without the slash (All Costings knows the slash-less code at 0.39 m); PC2003ECO at B1 0.40 m; waist apron thread at 30, contrast thread, labels, eyelets, rings and tax tab coded, the strap studs not; the 1-row chart; the Waffle House logo and photo as its own branding; the denim sibling untouched', r21['OHAPP063103PC/DS']==='OHAPP063103PC/DS||onesize|0631|PC2003ECO:B1:0.4|PC2003ECO/0.4|CMP-THR-EP80-09700-03+CMP-THR-EP80-03912-05+CMP-OH-LBL-WASH-01+LABELOH5771++CMP-30ED-28-931+CMP-30RD-28-931+TAXTABOH07/01|30|APW|1|Embroidery|own|data:image/jpeg|data:image/jpeg|The Waffle House'&&r21.OHAPP063103PCDS===r21['OHAPP063103PC/DS'].replace('PC2003ECO/0.4|','PC2003ECO/0.39|')&&r21.OHAPP063103DENDS&&r21.OHAPP063103DENDS.startsWith('OHAPP063103DENDS||onesize|0631|CO5003DEN:B2:'), [r21['OHAPP063103PC/DS'],r21.OHAPP063103PCDS,r21.OHAPP063103DENDS]);
+ d=await printOf('CT30825228',6);
+ ck('CT3082--28 52" print: the black/white check record, the 52" row highlighted, PC2028 at D2, white thread and black cord codes, no branding band', d.hit.length===1&&d.hit[0]==='52"'&&/PC2028 D2/.test(d.text)&&d.text.includes('CMP-THR-PC075-32109-01')&&d.text.includes('CMP-CORD-PP6-03')&&!d.text.includes('CUSTOMER BRANDING'), [d.hit,d.text.slice(0,300)]);
+ d=await printOf('OHAPP063103PC/DS',50);
+ ck('OHAPP063103PC/DS print: variant 0631, the eyelet and thread codes, the branding band with the left pocket wording, the 70 cm skirt, the strap routing card named', d.text.includes('0631')&&d.text.includes('CMP-30ED-28-931')&&d.text.includes('CMP-THR-EP80-09700-03')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('left pocket')&&d.text.includes('70CM')&&d.text.includes('OHSTRAP--WAIST')&&!d.text.includes('rivet'), [d.pngs,d.text.slice(0,300)]);
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');

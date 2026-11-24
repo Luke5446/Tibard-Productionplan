@@ -1,0 +1,343 @@
+{
+ "styles": [
+  {
+   "code": "CT3082--28",
+   "name": "Tibard chef trousers, elasticated waist with drawstring and back pocket — regular length, black/white chef check",
+   "desc": "Chefs trousers · Full elasticated waist with drawstring · Zip fly · One patch pocket on the back · Side seam pockets · Hemmed · Regular length · Black and white chef check gingham",
+   "lectra": "NEW 3082 — variant NEW3082RL, regular length; sizes 46\" to 60\" cut on the XXL to 5XL patterns",
+   "variant": "NEW3082RL",
+   "chart": "CT3082-MEAS",
+   "fabrics": [
+    [
+     "Black and white chef check gingham 65% polyester / 35% cotton 190 gsm (Northenden) — the sheet gives no rating; 1.60 m as the black and the blue check CT3082. The sheet and Sage both put PC2028 at D2",
+     "PC2028",
+     "D2",
+     1.6,
+     2.7
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "White Coats Epic 80's. Sage carries no white Epic 80's; costed on the white Perma Core 75 as the other white trousers",
+     150,
+     "CMP-THR-PC075-32109-01",
+     0.0005055
+    ],
+    [
+     "Zip",
+     "6\" (15 cm) white lightweight nylon zip. Sage holds only the white 13 cm moulded zip; no code for the 15 cm white lightweight zip yet.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Toggle",
+     "White plastic oval two-hole spring toggle on the drawstring. Sage holds only the black spring toggle; no code for the white yet.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Cord",
+     "6 mm black cord for the waist. Cut: XXS 48\" · XS 52\" · S 56\" · M 60\" · L 64\" · XL 68\" · XXL 72\" · 46\" 74\" · 48\" 76\" · 50\" 78\" · 52\" 80\" · 54\" 82\" · 56\" 84\" · 58\" 86\" · 60\" 88\".",
+     1,
+     "CMP-CORD-PP6-03",
+     0.0898
+    ],
+    [
+     "Elastic",
+     "48 mm white elastic with the white drawstring insert. Cut, and double stitch to secure: XS 22\" (56 cm) · S 24\" (61 cm) · M 28\" (71 cm) · L 31\" (79 cm) · XL 33\" (84 cm) · XXL 35\" (89 cm) · 46\" 36\" (91.5 cm) · 48\" 38\" (96.5 cm) · 50\" 40\" (101.5 cm) · 52\" 42\" (106.5 cm) · 54\" 44\" (111.5 cm) · 56\" 46\" (116.5 cm) · 58\" 48\" (121.5 cm) · 60\" 50\" (126.5 cm). Sage holds the plain white 48 mm Bonadex elastic; no code for the drawstring-insert elastic yet.",
+     1,
+     "",
+     null
+    ],
+    [
+     "Care label",
+     "Tibard printed care label set into the back rise seam, 8 cm down from the finished top edge: 65% polyester 35% cotton · 60° wash · do not bleach · tumble dry · 2 dot iron · can be dry cleaned. Printed at Tibard on the 25 mm nylon label tape.",
+     0.05,
+     "CMP-LBL-NYL-25-01",
+     0.039067
+    ],
+    [
+     "Tibard tax tab",
+     "Tibard tax tab set to the side edge of the back pocket (outside leg side of the pocket), the top of the label to the base of the pocket hem stitching.",
+     1,
+     "TAXTABTIB01",
+     0.01891
+    ]
+   ],
+   "mfg": [
+    "Cut the elastic to the size (see the Elastic trim line) and double stitch to secure.",
+    "Set the buttonholes vertical for the drawstring, 1/2\" buttonhole setting. Set equally within the width of the fly placket (2 cm gap between the buttonholes), the top of the buttonhole 6.5 cm from the top overlocked edge of the band, to finish within the centre gap of the stitch lines.",
+    "5 thread join up: pocket bags to the legs, outside leg seam, front and back rises, inside leg seam.",
+    "Set the back pocket hem double turned and topstitched 1.5 cm.",
+    "Top of the finished pocket set level with the notch in the back outside leg. Pocket set centrally within the width of the back leg and parallel to the top edge.",
+    "Fold in 1 cm and edgestitch the pocket down onto the back leg.",
+    "Edgestitch the front side pocket opening. Pocket opening to finish 17 cm.",
+    "Set the zip and topstitch the fly. Fly width 4 cm, curved at the base.",
+    "Edgestitch the front rise from the base of the fly stitching.",
+    "Overlock the top edge of the trouser. Set the elastic to the waist: 4 rows of stitching on the waist, twin needle at the top and twin needle at the base.",
+    "Trouser hem double turned 1 + 1.7 cm and topstitched 1.5 cm."
+   ],
+   "fin": [
+    "Plastic oval two-hole toggle placed on the drawstring, the ends of the drawstring tied into a double knot.",
+    "Bartack horizontal across the top and bottom of the side pocket opening. Bartack vertical at the back pocket patch opening. Bartack vertical at the base of the fly.",
+    "Check and trim. Fold into quarters."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Waist relaxed, waist stretched, leg length and hips ± 2 cm",
+   "customer": "",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Stock works order CT3082--28, the black and white chef check colourway of CT3082--03 (NEW 3082 variant NEW3082RL, the sheet titled \"New fit\": the same NEW 3082 pattern as the black and the blue check; JH created 24/4/14 to be the exact fit of the OH Lancashire trouser waist with the style details of the previous CT3082; 1/2\" buttonhole blade setting YL 9/4/15; big sizes JH 7/2/17; cut cord lengths YL 16/6/21; Tibard Style YL 16/9/22, moved 9/10/24). Sizes XS to XXL on the lettered Sage codes (CT3082XS28, CT3082SS28 … CT3082XXL28) and 46\" to 60\" on the waist-size codes (CT30824628 … CT30826028). Sheet gives no rating; 1.60 m as the other CT3082 colourways. The sheet is in works-orders/CT3082-28-Stock.xlsx."
+  },
+  {
+   "code": "OHAPP063103PC/DS",
+   "alias": [
+    "OHAPP063103PCDS"
+   ],
+   "name": "Black poly cotton waist apron, 2 x hip pocket with detachable maroon stud-fastened strap — The Waffle House logo on the left pocket",
+   "desc": "Oliver Harvey · Waist apron with 2 x hip pocket · The Waffle House logo in white thread embroidered to the left pocket as worn, pre make-up · Contrast (maroon) fabric detachable stud-fastened waist ties · Waist tie on its own routing card OHSTRAP--WAIST · 2 x 30 mm antique brass eyelets at the top of the waist",
+   "lectra": "OHAPP0631 variant 0631",
+   "variant": "0631",
+   "chart": "OHAPP063103-MEAS",
+   "fabrics": [
+    [
+     "Black 65% recycled polyester / 35% organic cotton 200 gsm (Tiajo) — rating 0.40 m. The sheet puts PC2003ECO at B11; Sage has it at B1",
+     "PC2003ECO",
+     "B1",
+     0.4,
+     2.32
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     30,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ],
+    [
+     "Thread — contrast",
+     "Maroon Coats Epic 80's 03912 for the contrast strap, sewn on the strap routing card OHSTRAP--WAIST.",
+     0,
+     "CMP-THR-EP80-03912-05",
+     0.000714
+    ],
+    [
+     "OH care label",
+     "Oliver Harvey care label: 65% recycled polyester 35% organic cotton · 60° wash · no bleach · 2 dot iron · tumble dry · dry clean. Set 4 cm down from the finished right side seam as worn.",
+     1,
+     "CMP-OH-LBL-WASH-01",
+     0.032
+    ],
+    [
+     "OH woven label",
+     "Set the OH label 4 cm down from the right side seam as worn, on top of the care label.",
+     1,
+     "LABELOH5771",
+     0.04335
+    ],
+    [
+     "Bronze large studs",
+     "Set to the strap, 2 male and 2 female at each end, use the marker: 4 studs in all. Set on the strap routing card OHSTRAP--WAIST, not costed here.",
+     0,
+     "",
+     null
+    ],
+    [
+     "Eyelets — antique brass 30 mm",
+     "30 mm E/R AB eyelet and ring, 2 per apron. Set to the top of the waist: centre of the eyelet 3 cm from the top and 3 cm from the sides of the apron.",
+     2,
+     "CMP-30ED-28-931",
+     0.14985
+    ],
+    [
+     "Eyelet rings — antique brass 30 mm",
+     "The ring for each 30 mm eyelet: 2 per apron.",
+     2,
+     "CMP-30RD-28-931",
+     0.1321308
+    ],
+    [
+     "Red OH tax tab",
+     "OH red tax label set level with the top of the left pocket, left side of the pocket as worn.",
+     1,
+     "TAXTABOH07/01",
+     0.01678
+    ]
+   ],
+   "mfg": [
+    "Embroidery: The Waffle House logo set to the left pocket as worn pre make-up — see CUSTOMER BRANDING.",
+    "Set eyelet re-inforcement pieces.",
+    "Double turn side seams, top and hem and topstitch 12 mm. Insert the labels in the right side seam.",
+    "Set hem to pocket: double turn 1 + 2 cm and topstitch 1.8 cm.",
+    "Edgestitch pockets to the front. Pockets set 16 cm down from the finished top edge and 5 cm in from the finished side seam. Insert the red OH tab to the top of the left side of the left pocket as worn. Note: the left pocket as worn has the logo.",
+    "V tack (triangle stitch) the top of the pockets to secure."
+   ],
+   "fin": [
+    "Set eyelets: centre of the eyelet 3 cm in from the side seam and 3 cm down from the top edge.",
+    "Check, trim, press and fold.",
+    "Wrap in tissue. Set the product sticker to the bottom right hand corner."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1.5 cm",
+   "oneSize": true,
+   "customer": "The Waffle House",
+   "brandType": "Embroidery",
+   "brandPlace": "The Waffle House logo in white thread, embroidered to the left pocket as worn pre make-up: set centrally within the depth and width of the pocket (pocket hem 3 cm, 1 + 2 cm).",
+   "logoImg": "data:image/jpeg;base64,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",
+   "placeImg": "data:image/jpeg;base64,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",
+   "note": "Works order OHAPP063103PC/DS for The Waffle House (JH created 5/2/20 for SR872, bulk RCR 230 27/2/20; P/C changed to ECO with supplier and code YL 4/2/25; issued by Jane). The black poly cotton twin of the denim OHAPP063103DENDS, with no pocket rivets. The maroon contrast waist tie (C05005, 100% cotton 255 gsm, P and R, A5) is cut and sewn on its own routing card OHSTRAP--WAIST. Sheet works-orders/OHAPP063103PCDS-WaffleHouse.xlsx with the sheet's embroidery photo as the placement."
+  }
+ ],
+ "charts": {
+  "CT3082-MEAS": [
+   [
+    "XS",
+    "22–24\"",
+    "56 cm (22\")",
+    "81 cm (32\")",
+    "81 cm (32\")",
+    "98 cm (38½\")"
+   ],
+   [
+    "S",
+    "26–28\"",
+    "61 cm (24\")",
+    "91 cm (35¾\")",
+    "81 cm (32\")",
+    "106 cm (41¾\")"
+   ],
+   [
+    "M",
+    "30–32\"",
+    "71 cm (28\")",
+    "101 cm (39¾\")",
+    "81 cm (32\")",
+    "114 cm (44¾\")"
+   ],
+   [
+    "L",
+    "34–36\"",
+    "79 cm (31\")",
+    "111 cm (43¾\")",
+    "81 cm (32\")",
+    "122 cm (48\")"
+   ],
+   [
+    "XL",
+    "38–40\"",
+    "84 cm (33\")",
+    "121 cm (47½\")",
+    "81 cm (32\")",
+    "130 cm (51\")"
+   ],
+   [
+    "XXL",
+    "42–44\"",
+    "89 cm (35\")",
+    "131 cm (51½\")",
+    "81 cm (32\")",
+    "138 cm (54¼\")"
+   ],
+   [
+    "46\"",
+    "46\" (XXL pattern)",
+    "91.5 cm",
+    "131 cm",
+    "81 cm (32\")",
+    "138 cm"
+   ],
+   [
+    "48\"",
+    "48\" (3XL pattern)",
+    "96.5 cm",
+    "141 cm",
+    "81 cm (32\")",
+    "146 cm"
+   ],
+   [
+    "50\"",
+    "50\" (3XL pattern)",
+    "101.5 cm",
+    "141 cm",
+    "81 cm (32\")",
+    "146 cm"
+   ],
+   [
+    "52\"",
+    "52\" (3XL pattern)",
+    "106.5 cm",
+    "141 cm",
+    "81 cm (32\")",
+    "146 cm"
+   ],
+   [
+    "54\"",
+    "54\" (4XL pattern)",
+    "111.5 cm",
+    "151 cm",
+    "81 cm (32\")",
+    "154 cm"
+   ],
+   [
+    "56\"",
+    "56\" (4XL pattern)",
+    "116.5 cm",
+    "151 cm",
+    "81 cm (32\")",
+    "154 cm"
+   ],
+   [
+    "58\"",
+    "58\" (5XL pattern)",
+    "121.5 cm",
+    "161 cm",
+    "81 cm (32\")",
+    "162 cm"
+   ],
+   [
+    "60\"",
+    "60\" (5XL pattern)",
+    "126.5 cm",
+    "161 cm",
+    "81 cm (32\")",
+    "162 cm"
+   ]
+  ],
+  "OHAPP063103-MEAS": [
+   [
+    "70CM",
+    "18.5cm wide x 19.5cm depth",
+    "45CM",
+    "45CM",
+    ""
+   ]
+  ]
+ },
+ "chartCols": {
+  "CT3082-MEAS": [
+   "Size",
+   "To fit waist",
+   "Waist relaxed",
+   "Waist stretched",
+   "Leg length (regular)",
+   "Hips 20 cm down from waist"
+  ],
+  "OHAPP063103-MEAS": [
+   "Width of skirt",
+   "POCKET",
+   "Length from waist to hem",
+   "Length of side seam"
+  ]
+ }
+}
