@@ -325,7 +325,8 @@ this morning is in the plan straight away:
 - Hours: each person's minutes per day after breaks (450 Mon-Thu, 285 Fri;
   Champa 390; Christine Ormisher Mon-Thu only), holidays, a first day (the
   apron staff moving onto jackets) and a last day before Christmas, and an
-  efficiency (100 for the jacket machinists, 40 for the new jacket staff).
+  efficiency (85 for the jacket machinists, since 100% capacity is 85%
+  efficiency, Luke 24 Nov 2026; 40 for the new jacket staff).
   Bank holidays and the shutdown (25 Dec to 3 Jan) are no work. Anne Marie
   is off sick and out of the plan until ticked back in.
 - Minutes per jacket: the costing app's machining minutes for the style
