@@ -7832,15 +7832,28 @@ function jkRender(){
   // ── week view, with the flags
   var wkTot={}, wkCap={}, wkNeed={}, wkLate={};
   jobs.forEach(function(j){ var by=j.cust?j.need:j.due; if(!by) return; var w=jkWeek(by<t?t:by); wkNeed[w]=(wkNeed[w]||0)+j.mins; });
-  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Jackets planned by week</h3><div class="sub" style="margin-bottom:8px">Jackets counted in the week their works order line finishes. A red cell is a week where that person has work that finishes after its promised or due date; an amber cell is full (95% or more). The bottom rows set the minutes the orders need by each week against the minutes the team has.</div>'
+  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Jackets planned by week</h3><div class="sub" style="margin-bottom:8px">Jackets counted in the week their works order line finishes; click a cell for the works orders behind it. A red cell is a week where that person has work that finishes after its promised or due date; an amber cell is full (95% or more). The bottom rows set the minutes the orders need by each week against the minutes the team has.</div>'
     +'<div style="overflow-x:auto"><table class="sm-tbl" style="font-size:12px"><thead><tr><th>Machinist</th>'+weeks.map(function(w){ return '<th style="text-align:right">w/c '+jkShort(w).slice(4)+'</th>'; }).join('')+'<th style="text-align:right">Total</th></tr></thead><tbody>';
   sch.staff.forEach(function(s){
     var p=sch.st[s.id]; h+='<tr><td>'+esc(s.name)+(s.team==='new'?' <span class="sm-sub">'+(s.eff||0)+'%</span>':'')+'</td>';
     weeks.forEach(function(w){ var m=0, c=0; days.forEach(function(d,i){ if(jkWeek(d)===w){ m+=p.load[d]||0; c+=sch.caps[s.id][i]; } }); wkTot[w]=(wkTot[w]||0)+m; wkCap[w]=(wkCap[w]||0)+c;
       var jk=jkJobsInWeek(p.jobs,w), lateHere=p.jobs.some(function(j){ return j.late && j.finish && jkWeek(j.finish)===w; }), pct=c?Math.round(100*m/c):0;
       var bg=!c?'':lateHere?'#fecaca':pct>=95?'#fde68a':'';
-      h+='<td style="text-align:right'+(bg?';background:'+bg:'')+'" title="'+Math.round(m)+' of '+Math.round(c)+' min'+(lateHere?' - a line here finishes late':pct>=95?' - full':'')+'">'+(c?'<strong>'+jk+'</strong><div class="sm-sub">'+pct+'%'+(lateHere?' &#9888;':'')+'</div>':'<span class="sm-sub">off</span>')+'</td>'; });
+      var isOpen=jkDrill && jkDrill.staff===s.id && jkDrill.week===w;
+      h+='<td style="text-align:right;cursor:pointer'+(bg?';background:'+bg:'')+(isOpen?';outline:2px solid #7A1F3D;outline-offset:-2px':'')+'" title="'+Math.round(m)+' of '+Math.round(c)+' min'+(lateHere?' - a line here finishes late':pct>=95?' - full':'')+' - click for the works orders" onclick="jkDrillTo(\''+esc(s.id)+'\',\''+w+'\')">'+(c?'<strong>'+jk+'</strong><div class="sm-sub">'+pct+'%'+(lateHere?' &#9888;':'')+'</div>':'<span class="sm-sub">off</span>')+'</td>'; });
     h+='<td style="text-align:right"><strong>'+p.jobs.reduce(function(a,j){ return a+j.qty; },0)+'</strong></td></tr>';
+    // the drill-down: that person's works orders in the clicked week
+    if(jkDrill && jkDrill.staff===s.id && weeks.indexOf(jkDrill.week)>=0){
+      var w0=jkDrill.week, w1=jkISO(new Date(jkD(w0).getTime()+6*86400000));
+      var inWeek=p.jobs.filter(function(j){ return j.start && j.finish && j.start<=w1 && j.finish>=w0; });
+      h+='<tr class="jk-drill"><td colspan="'+(weeks.length+2)+'" style="background:#f9fafb;padding:8px 12px"><div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><strong>'+esc(s.name)+' - w/c '+jkShort(w0).slice(4)+'</strong><span class="sm-sub">'+inWeek.filter(function(j){ return jkWeek(j.finish)===w0; }).reduce(function(a,j){ return a+j.qty; },0)+' jackets finish this week'+(inWeek.some(function(j){ return jkWeek(j.finish)!==w0; })?', the rest carry on into the next':'')+'</span><button class="btn" style="padding:1px 7px;font-size:11px;margin-left:auto" onclick="jkDrillTo(\'\',\'\')">Close</button></div>';
+      if(!inWeek.length) h+='<div class="sm-sub">Nothing planned this week.</div>';
+      else { h+='<table class="sm-tbl" style="font-size:12px;margin-top:6px"><thead><tr><th>Works order</th><th>Code</th><th style="text-align:right">Qty</th><th>Start</th><th>Finish</th><th>Needed by</th><th>For</th><th>Status</th></tr></thead><tbody>';
+        inWeek.forEach(function(j){ var by=j.cust?j.need:j.due, carry=jkWeek(j.finish)!==w0, began=jkWeek(j.start)!==w0;
+          h+='<tr'+(j.late?' style="background:#fef2f2"':'')+'><td><strong>'+esc(j.ref)+'</strong>'+(j.part?' '+jkPill('shared','#1d4ed8'):'')+'</td><td>'+esc(j.code)+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub">of '+j.partOf+'</div>':'')+'</td><td>'+jkShort(j.start)+(began?' <span class="sm-sub">(started earlier)</span>':'')+'</td><td>'+jkShort(j.finish)+(carry?' <span class="sm-sub">(carries on)</span>':'')+'</td><td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+'</td><td>'+(j.cust?esc(j.custs.filter(Boolean).join(', ')||'customer order'):'<span class="sm-sub">stock</span>')+'</td><td>'+(j.late?jkPill('late','#dc2626'):jkPill('ok','#15803d'))+'</td></tr>'; });
+        h+='</tbody></table>'; }
+      h+='</td></tr>';
+    }
   });
   var cumN=0, cumC=0;
   h+='<tr style="font-weight:700;background:#f3f4f6"><td>Minutes planned / available</td>'+weeks.map(function(w){ var over=(wkTot[w]||0)>(wkCap[w]||0)+0.5; return '<td style="text-align:right'+(over?';color:#dc2626':'')+'">'+Math.round(wkTot[w]||0)+' / '+Math.round(wkCap[w]||0)+'</td>'; }).join('')+'<td></td></tr>';
@@ -7888,6 +7901,8 @@ function jkRender(){
   }
   el.innerHTML=h;
 }
+var jkDrill=null;
+function jkDrillTo(staff,week){ jkDrill=(staff && week && !(jkDrill && jkDrill.staff===staff && jkDrill.week===week))?{staff:staff,week:week}:null; jkRender(); }
 function jkJobsInWeek(jobs,w){ return jobs.filter(function(j){ return j.finish && jkWeek(j.finish)===w; }).reduce(function(a,j){ return a+j.qty; },0); }
 function jkRow(j,n,sch,showWho,staffId){
   var t=jkISO(jkToday()), by=j.cust?j.need:j.due;

@@ -78,6 +78,11 @@ const path = require('path');
    jkAssign('WO-S|OHCJSMSTRATFORD4601','champa'); var sj2=jkJobs(); jkSchedule(sj2); o.cantPinned=sj2.find(j=>j.ref==='WO-S').whoName==='Champa Shah' && sj2.find(j=>j.ref==='WO-S').cant; jkToggle('s:champa'); o.cantFlag=/can't sew/.test(document.querySelector('#jkBody table[data-staff="champa"]').innerHTML); jkToggle('s:champa');
    jkAssign('WO-S|OHCJSMSTRATFORD4601',''); WOs.pop(); rows.pop(); recalcWOs(); recalcQtys(); jkRender();
    (function(){ var keep=jkPlan; jkLoad({staff:[{id:'champa',name:'C',team:'jacket',eff:85},{id:'x',name:'X',team:'new',eff:40},{id:'diane',name:'D',team:'jacket',eff:85}],effVer:2}); o.cantMig=[jkPlan.staff[0].cant,jkPlan.staff[1].cant,jkPlan.staff[2].cant||'']; jkPlan=keep; })();
+   // a week cell drills down to that person's works orders in the week; clicking again closes it
+   var cj=jkJobs(); jkSchedule(cj); var cjob=cj.find(j=>j.whoName==='Champa Shah'); var cw=jkWeek(cjob.finish);
+   jkDrillTo('champa',cw); var dr=document.querySelector('#jkBody tr.jk-drill'); o.drill=dr?dr.textContent.replace(/\s+/g,' ').trim():''; o.drillHasRef=!!dr && dr.innerHTML.indexOf('<strong>'+cjob.ref+'</strong>')>=0 && new RegExp('<td style="text-align:right">'+cjob.qty+'<').test(dr.innerHTML);
+   jkDrillTo('champa',cw); o.drillClosed=!document.querySelector('#jkBody tr.jk-drill');
+   jkDrillTo('champa','2099-01-05'); o.drillOff=!document.querySelector('#jkBody tr.jk-drill'); jkDrillTo('','');
    // a minute override on the Dorset family
    const fam=jkFamily('OHCJSMDORSET3801'); jkMinsSet(fam,'mach','45'); o.fam=fam; o.ovr=jkMinsFor('OHCJSMDORSET3801');
    jkMinsSet(fam,'mach',''); o.back=jkMinsFor('OHCJSMDORSET3801').src;
@@ -137,6 +142,7 @@ const path = require('path');
  ck('a Stratford line goes to someone who sews it; Champa, Jacqueline and the new staff are off it', ['Joanne Leigh','Christine Ormisher','Diane Oakes'].indexOf(r.cantWho)>=0 && r.cantList==='champa,jacqueline,nayna,safia,christineb' && r.cantDerby, [r.cantWho,r.cantList,r.cantDerby]);
  ck('pinned on Champa anyway it is flagged', r.cantPinned && r.cantFlag);
  ck('a plan saved before gets the lists once', r.cantMig.join('|')==='STRATFORD, DERBYSHIRE|STRATFORD, DERBYSHIRE|', r.cantMig);
+ ck('a week cell opens that person\'s works orders with quantities, and closes again', r.drillHasRef && /Champa Shah - w\/c/.test(r.drill) && r.drillClosed && r.drillOff, [r.drill.slice(0,120),r.drillHasRef,r.drillClosed,r.drillOff]);
  ck('a typed figure wins, cleared goes back to assumed', r.ovr.mach===45 && r.ovr.src==='plan' && r.back==='assumed', [r.fam,r.ovr,r.back]);
  ck('a typed holiday and a person taken out', r.joanneHol===0 && r.safiaOut);
  ck('saved and published with the state', r.saved && r.saved.staff.length===9 && r.pub['WO-D|OHCJSMDORSET3801']==='champa');
