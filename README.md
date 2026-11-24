@@ -305,6 +305,42 @@ application ("Top left as worn") and the photo of the
 logo in position on the apron. The same code typed on the Add works order
 form is treated the same way. Test: `tests/test-dtf.js`.
 
+## The Jacket plan tab
+
+Who makes which jacket works order (Luke, 24 Nov 2026). Worked out afresh
+every time the tab opens, from the live works orders and the sales orders
+behind them (the SOPDemand paste), so a works order raised or a paste done
+this morning is in the plan straight away:
+
+- Every live works order line for a jacket is a job (embroidery-only and
+  finishing works orders are not sewn here and are left out). A job is a
+  **customer order** when the line covers a sales order (the pasted orders,
+  oldest promised date first, after the shelf stock) or the works order is a
+  special make; its *Needed by* is the earliest promised date it covers.
+  Anything else is a **stock** works order with its due date.
+- Customer orders come first, earliest promised date first; then the stock
+  works orders by due date. Each job goes whole to the machinist who would
+  finish it soonest; the PM can pin a job on someone (the select on the line),
+  and "auto" hands it back.
+- Hours: each person's minutes per day after breaks (450 Mon-Thu, 285 Fri;
+  Champa 390; Christine Ormisher Mon-Thu only), holidays, a first day (the
+  apron staff moving onto jackets) and a last day before Christmas, and an
+  efficiency (100 for the jacket machinists, 40 for the new jacket staff).
+  Bank holidays and the shutdown (25 Dec to 3 Jan) are no work. Anne Marie
+  is off sick and out of the plan until ticked back in.
+- Minutes per jacket: the costing app's machining minutes for the style
+  (Oxford 32, Devon 31.9, shirt-style 4007/4008 40.7), a figure typed in
+  the tab's *Minutes per jacket* table, or the stand-in 32 marked `?` on the
+  line and counted on the tile. Cutting and finishing are not in these
+  minutes.
+- *Jacket orders with no works order yet*: jacket sales order lines that
+  stock and the live works orders do not cover (Clockwork container codes
+  left out), and special makes still in the queue.
+
+Staff, holidays, pins and typed minutes are kept in `jkPlan` in the saved
+and published state; an editor absorbs a published plan saved later than
+its own (the other editor PC's). Test: `tests/test-jacketplan.js`.
+
 ## The Warehouse tab
 
 The warehouse's own address (`?warehouse`) now opens the planner on the
