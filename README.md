@@ -305,6 +305,76 @@ application ("Top left as worn") and the photo of the
 logo in position on the apron. The same code typed on the Add works order
 form is treated the same way. Test: `tests/test-dtf.js`.
 
+## The Jacket plan tab
+
+Who makes which jacket works order (Luke, 24 Nov 2026). Worked out afresh
+every time the tab opens, from the live works orders and the sales orders
+behind them (the SOPDemand paste), so a works order raised or a paste done
+this morning is in the plan straight away:
+
+- Every live works order line for a jacket is a job (embroidery-only and
+  finishing works orders are not sewn here and are left out). A job is a
+  **customer order** when the line covers a sales order (the pasted orders,
+  oldest promised date first, after the shelf stock) or the works order is a
+  special make; its *Needed by* is the earliest promised date it covers.
+  Anything else is a **stock** works order with its due date.
+- Customer orders come first, earliest promised date first; then the stock
+  works orders by due date. Each job goes whole to the machinist who would
+  finish it soonest; the PM can pin a job on someone (the select on the line),
+  and "auto" hands it back.
+- Hours: each person's minutes per day after breaks (450 Mon-Thu, 285 Fri;
+  Champa 390; Christine Ormisher Mon-Thu only), holidays, a first day (the
+  apron staff moving onto jackets) and a last day before Christmas, and an
+  efficiency (85 for the jacket machinists, since 100% capacity is 85%
+  efficiency, Luke 24 Nov 2026; 40 for the new jacket staff).
+  Bank holidays and the shutdown (25 Dec to 3 Jan) are no work. Anne Marie
+  is off sick and out of the plan until ticked back in.
+- **Can't sew** (Staff & hours): words from the style, such as `STRATFORD,
+  DERBYSHIRE`. The plan never gives that person those jackets on its own;
+  a pin, a drag or a share still can, and the line is flagged. Champa,
+  Jacqueline and the new jacket staff start with the Stratford and the
+  Derbyshire (Luke, 24 Nov 2026).
+- Minutes per jacket: the costing app's machining minutes for the style
+  (Oxford 32, Devon 31.9, shirt-style 4007/4008 40.7), a figure typed in
+  the tab's *Minutes per jacket* table, or the stand-in 32 marked `?` on the
+  line and counted on the tile. Cutting and finishing are not in these
+  minutes.
+- *Jacket orders with no works order yet*: jacket sales order lines that
+  stock and the live works orders do not cover (Clockwork container codes
+  left out), and special makes still in the queue.
+
+- The tab runs: the tiles, *Jackets planned by week* (each cell is the
+  jackets that person can make in the week from the minutes they have, so a
+  line that runs over a weekend is split between the weeks; click a cell for
+  that person's works orders, how many of each are made that week, and what
+  started earlier or carries on; a red cell where a
+  person has a line finishing after its date, amber where their week is 95%
+  or more full; a running total of the minutes the orders need by each week
+  against the team's minutes, red where the promises outrun the team; and a
+  warning naming the works orders that will not be made before the shutdown),
+  then each machinist as a closable banner, all closed to start (click the
+  name; the choice is remembered on the PC), then the priority list (closed until opened), the
+  orders with no works order, and the lines marked done.
+- **Drag to reorder** (editor): drag a line by its grip up or down a
+  person's list, or into another person's list. Every line in that list is
+  then pinned to the person and worked in that order (marked with a pen),
+  ahead of anything the plan adds after them; **Reset order** on the banner
+  hands the list back to the plan. Kept in `jkPlan.order`, published with
+  the rest.
+- **Share** (editor) splits a works order line between several machinists
+  so they work on it together: a quantity per person, the rest left for the
+  plan to place. Each part is planned on its person, marked *shared* with
+  "of N"; Done works per part; **Clear share** puts the line back whole.
+  Kept in `jkPlan.split`.
+- **Done** on a line (editor) means made and in finishing: it leaves the plan
+  and is listed under *Done - in finishing* with an **Undo**. The mark lives
+  with the plan, so it is published with the next Publish and goes when the
+  works order is completed or deleted.
+
+Staff, holidays, pins, done marks and typed minutes are kept in `jkPlan` in
+the saved and published state; an editor absorbs a published plan saved later than
+its own (the other editor PC's). Test: `tests/test-jacketplan.js`.
+
 ## The Warehouse tab
 
 The warehouse's own address (`?warehouse`) now opens the planner on the

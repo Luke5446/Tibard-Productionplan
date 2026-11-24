@@ -104,8 +104,8 @@ const URL='file://'+require('path').join(__dirname,'..','index.html')+'?edit';
  console.log(JSON.stringify(r,null,1));
  const pass = r.find.join()==='exact,pattern,3char,none'
    && r.usage.apron==='CO5241ECO/0.5475/lay plan AP0534001/'
-   && r.usage.denim==='CO5003DEN/0.6425/marker 0597001/CO5153:0.1667'
-   && r.usage.fm==='CO5003DEN/0.635/marker 0597FM002/CO5153:0.1667' && r.usage.same==='CO5224DEN/0.72/marker 0597SAME/' && r.usage.fsame==='CO5224DEN/0.72/marker 0597FSAME/'
+   && r.usage.denim==='CO5003DEN/0.6425/marker 0597001/CO5153ECO:0.1667'
+   && r.usage.fm==='CO5003DEN/0.635/marker 0597FM002/CO5153ECO:0.1667' && r.usage.same==='CO5224DEN/0.72/marker 0597SAME/' && r.usage.fsame==='CO5224DEN/0.72/marker 0597FSAME/'
    && r.usage.navy==='PC2015ECO/1.31/marker OXFORD042/MESHPW31415:0.04'
    && r.usage.sage==='CO5173ECO/1/All Costings/' && r.usage.slate==='CO5241ECO/1/All Costings/'
    && r.usage.rs==='PC2003ECO/0.805/marker 300501/' && r.usage.strat==='PC14001/1.18/marker OH7006/'
