@@ -343,8 +343,8 @@ this morning is in the plan straight away:
   or more full; a running total of the minutes the orders need by each week
   against the team's minutes, red where the promises outrun the team; and a
   warning naming the works orders that will not be made before the shutdown),
-  then each machinist as a closable banner (click the name; the choice is
-  remembered on the PC), then the priority list (closed until opened), the
+  then each machinist as a closable banner, all closed to start (click the
+  name; the choice is remembered on the PC), then the priority list (closed until opened), the
   orders with no works order, and the lines marked done.
 - **Done** on a line (editor) means made and in finishing: it leaves the plan
   and is listed under *Done - in finishing* with an **Undo**. The mark lives

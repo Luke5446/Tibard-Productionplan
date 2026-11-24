@@ -46,10 +46,10 @@ const path = require('path');
    o.tab=document.getElementById('tabJk').classList.contains('on') && !document.getElementById('jkView').classList.contains('hidden');
    o.tiles=[...document.querySelectorAll('#jkBody .kpi-tile .v')].map(e=>e.textContent);
    (function(){ var keep=jkPlan; jkLoad({staff:[{id:'a',name:'A',team:'jacket',eff:100},{id:'b',name:'B',team:'jacket',eff:100},{id:'c',name:'C',team:'jacket',eff:70}]}); o.mig=[jkPlan.staff[0].eff,jkPlan.staff[1].eff,jkPlan.staff[2].eff,jkPlan.effVer]; jkPlan=keep; })();
-   o.selects=document.querySelectorAll('#jkBody select').length;
+   jkToggle('s:joanne'); o.selects=document.querySelectorAll('#jkBody select').length; jkToggle('s:joanne');
    // pin WO-D on Champa, then it stays with her
    jkAssign('WO-D|OHCJSMDORSET3801','champa');
-   const j2=jkJobs(); jkSchedule(j2); o.pinned=j2.find(j=>j.ref==='WO-D').whoName; o.pinIcon=/📌/.test(document.getElementById('jkBody').innerHTML);
+   const j2=jkJobs(); jkSchedule(j2); o.pinned=j2.find(j=>j.ref==='WO-D').whoName; jkToggle('s:champa'); o.pinIcon=/📌/.test(document.getElementById('jkBody').innerHTML); jkToggle('s:champa');
    // a minute override on the Dorset family
    const fam=jkFamily('OHCJSMDORSET3801'); jkMinsSet(fam,'mach','45'); o.fam=fam; o.ovr=jkMinsFor('OHCJSMDORSET3801');
    jkMinsSet(fam,'mach',''); o.back=jkMinsFor('OHCJSMDORSET3801').src;
@@ -61,8 +61,8 @@ const path = require('path');
    const secs=[...document.querySelectorAll('#jkBody .kpi-sec h3')].map(e=>e.textContent.trim()); o.secs=secs;
    // banners: a name closes and opens, remembered; the priority list starts closed and opens
    o.staffRowsOpen=document.querySelectorAll('#jkBody .jk-ban table').length;
-   jkToggle('s:champa'); o.afterClose=document.querySelectorAll('#jkBody .jk-ban table').length; o.remembered=JSON.parse(localStorage.getItem('tibard_jk_sections'))['s:champa']===false;
-   jkToggle('s:champa'); o.afterOpen=document.querySelectorAll('#jkBody .jk-ban table').length;
+   jkToggle('s:champa'); o.afterOpen=document.querySelectorAll('#jkBody .jk-ban table').length; o.remembered=JSON.parse(localStorage.getItem('tibard_jk_sections'))['s:champa']===true;
+   jkToggle('s:champa'); o.afterClose=document.querySelectorAll('#jkBody .jk-ban table').length;
    o.prioClosed=!/Priority list[\s\S]*<table/.test(document.getElementById('jkBody').innerHTML.split('Priority list')[1].split('Jacket orders with')[0]);
    jkToggle('priority'); o.prioOpen=/<table/.test(document.getElementById('jkBody').innerHTML.split('Priority list')[1].split('Jacket orders with')[0]); jkToggle('priority');
    // done and undo: the line leaves the plan, is listed, is saved and published, and comes back
@@ -97,13 +97,13 @@ const path = require('path');
  ck('Christmas: 24 Dec worked, 28 Dec not, 4 Jan back', r.xmas);
  ck('orders with no works order: Stratford listed, the Clockwork code not', r.needs.join()==='OHCJSMSTRATFORD5201 1', r.needs);
  ck('tiles: 74 jackets, 34 for customers', r.tiles[0]==='74' && r.tiles[1]==='34', r.tiles);
- ck('editor has a machinist select per line', r.selects>=4, r.selects);
+ ck('editor has a machinist select per line once a banner is open', r.selects>=1, r.selects);
  ck('a pinned works order stays with Champa', r.pinned==='Champa Shah' && r.pinIcon);
  ck('a typed figure wins, cleared goes back to assumed', r.ovr.mach===45 && r.ovr.src==='plan' && r.back==='assumed', [r.fam,r.ovr,r.back]);
  ck('a typed holiday and a person taken out', r.joanneHol===0 && r.safiaOut);
  ck('saved and published with the state', r.saved && r.saved.staff.length===9 && r.pub['WO-D|OHCJSMDORSET3801']==='champa');
  ck('week table, then the staff banners, then the priority list', r.secs.indexOf('Jackets planned by week')<r.secs.indexOf('Who makes what') && r.secs.indexOf('Who makes what')<r.secs.indexOf('Priority list'), r.secs);
- ck('a staff banner closes, is remembered, and opens again', r.staffRowsOpen===4 && r.afterClose===3 && r.remembered && r.afterOpen===4, [r.staffRowsOpen,r.afterClose,r.afterOpen]);
+ ck('staff banners start closed; one opens, is remembered, and closes again', r.staffRowsOpen===0 && r.afterOpen===1 && r.remembered && r.afterClose===0, [r.staffRowsOpen,r.afterOpen,r.afterClose]);
  ck('the priority list starts closed and opens', r.prioClosed && r.prioOpen);
  ck('done takes the line out, lists it, publishes it; undo brings it back', r.doneGone && r.doneTile==='44' && r.doneListed && r.donePub && r.undone, [r.doneGone,r.doneTile,r.doneListed,r.donePub,r.undone]);
  ck('a done mark for a works order that has gone is pruned', r.pruned);
@@ -116,6 +116,7 @@ const path = require('path');
    rows=[ mkRow('OHCJSMOXFORD4201','Oxford jacket 42',0,30,0,0,0,0,0) ]; rows[0].cat='Chef Jackets';
    WOs=[ {ref:'WO-A',due:'2026-12-11',createdAt:'2026-11-10',printed:true,items:[{code:'OHCJSMOXFORD4201',qty:30}]} ]; sopDemand={lines:[],pastedAt:null};
    recalcWOs(); recalcQtys(); jkLoad(null); smShowTab('jk');
+   jkToggle('s:champa'); jkToggle('s:joanne'); jkToggle('s:jacqueline'); jkToggle('s:christineo'); jkToggle('s:diane');
    return {rows:document.querySelectorAll('#jkBody table tbody tr').length, inputs:document.querySelectorAll('#jkBody input, #jkBody select, #jkBody button').length, tiles:document.querySelectorAll('#jkBody .kpi-tile').length, who:/Champa|Joanne|Jacqueline|Christine|Diane/.test(document.getElementById('jkBody').textContent)};
  });
  ck('viewer sees the plan with no controls', v.rows>=2 && v.inputs===0 && v.who, v);

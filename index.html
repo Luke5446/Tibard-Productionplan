@@ -7837,9 +7837,9 @@ function jkRender(){
   if(notYear.length) h+='<div style="margin-top:8px;color:#dc2626;font-weight:700">&#9888; '+notYearQ+' jackets on '+notYear.length+' works order lines will not be made before the shutdown'+(yearEnd?' (last working day '+jkShort(yearEnd)+')':'')+': '+esc(notYear.slice(0,8).map(function(j){ return j.ref; }).join(', '))+(notYear.length>8?' ...':'')+'</div>';
   h+='</div>';
   // ── per machinist, each a closable banner
-  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Who makes what</h3><div class="sub" style="margin-bottom:8px">In the order each person should work. Click a name to open or close it. '+(IS_EDITOR?'Change the machinist on a line to move that works order; "auto" puts it back with whoever is free first.':'')+'</div>';
+  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Who makes what</h3><div class="sub" style="margin-bottom:8px">In the order each person should work. Click a name to open or close it (all closed to start). '+(IS_EDITOR?'Change the machinist on a line to move that works order; "auto" puts it back with whoever is free first.':'')+'</div>';
   sch.staff.forEach(function(s){
-    var p=sch.st[s.id], capTot=sch.caps[s.id].reduce(function(a,b){ return a+b; },0), open=jkSec('s:'+s.id,true), q=p.jobs.reduce(function(a,j){ return a+j.qty; },0), lt=p.jobs.filter(function(j){ return j.late; }).length;
+    var p=sch.st[s.id], capTot=sch.caps[s.id].reduce(function(a,b){ return a+b; },0), open=jkSec('s:'+s.id,false), q=p.jobs.reduce(function(a,j){ return a+j.qty; },0), lt=p.jobs.filter(function(j){ return j.late; }).length;
     h+='<div class="jk-ban" style="margin:8px 0;border:1px solid #e5e7eb;border-radius:7px"><div onclick="jkToggle(\'s:'+esc(s.id)+'\')" style="cursor:pointer;padding:8px 10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;background:#f9fafb;border-radius:7px"><span style="font-size:11px;color:#6b7280">'+(open?'&#9660;':'&#9654;')+'</span><strong style="font-size:14px">'+esc(s.name)+'</strong>'+(s.team==='new'?jkPill('new to jackets · '+(s.eff||0)+'%','#b45309'):'')+(lt?jkPill(lt+' late','#dc2626'):'')
       +'<span class="sm-sub">'+(s.from && s.from>t?'from '+jkShort(s.from)+' · ':'')+(s.last?'last day '+jkShort(s.last)+' · ':'')+((s.hols||[]).length?'off '+s.hols.map(function(x){ return jkShort(x).slice(4); }).join(', ')+' · ':'')+p.jobs.length+' lines, '+q+' jackets, '+Math.round(p.total)+' of '+Math.round(capTot)+' min'+(s.note?' · '+esc(s.note):'')+'</span></div>';
     if(open){
@@ -7889,7 +7889,7 @@ function jkRow(j,n,sch,showWho){
 // open / closed banners, remembered on this PC
 var jkSecs=null;
 function jkSec(k,def){ if(!jkSecs){ jkSecs={}; try{ jkSecs=JSON.parse(localStorage.getItem('tibard_jk_sections')||'{}')||{}; }catch(e){ jkSecs={}; } } return (k in jkSecs) ? !!jkSecs[k] : def; }
-function jkToggle(k){ var cur=jkSec(k,k==='priority'||k==='done'?false:true); jkSecs[k]=!cur; try{ localStorage.setItem('tibard_jk_sections',JSON.stringify(jkSecs)); }catch(e){} jkRender(); }
+function jkToggle(k){ var cur=jkSec(k,false); jkSecs[k]=!cur; try{ localStorage.setItem('tibard_jk_sections',JSON.stringify(jkSecs)); }catch(e){} jkRender(); }
 // done (in finishing): the line leaves the plan until its works order is completed
 function jkDone(key){ if(!IS_EDITOR) return; jkPlan.done[key]={at:new Date().toISOString(), who:'planner'}; jkSave(); }
 function jkUndo(key){ if(!IS_EDITOR) return; delete jkPlan.done[key]; jkSave(); }
