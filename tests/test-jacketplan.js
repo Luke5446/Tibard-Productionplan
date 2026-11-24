@@ -50,6 +50,17 @@ const path = require('path');
    // pin WO-D on Champa, then it stays with her
    jkAssign('WO-D|OHCJSMDORSET3801','champa');
    const j2=jkJobs(); jkSchedule(j2); o.pinned=j2.find(j=>j.ref==='WO-D').whoName; jkToggle('s:champa'); o.pinIcon=/📌/.test(document.getElementById('jkBody').innerHTML); jkToggle('s:champa');
+   // drag and drop: WO-B dragged above WO-D on Champa keeps that order and pins both; dropped into Joanne's list it moves; Reset order lets the plan choose again
+   jkAssign('WO-B|OHCJSMDORSET3801','champa'); jkToggle('s:champa');
+   var keysBefore=[...document.querySelectorAll('#jkBody table[data-staff="champa"] tbody tr[data-key]')].map(x=>x.getAttribute('data-key')); o.dragBefore=keysBefore;
+   o.grips=document.querySelectorAll('#jkBody table[data-staff="champa"] .jk-grip').length;
+   jkPlace('champa','WO-B|OHCJSMDORSET3801',0,keysBefore);
+   var keysAfter=[...document.querySelectorAll('#jkBody table[data-staff="champa"] tbody tr[data-key]')].map(x=>x.getAttribute('data-key')); o.dragAfter=keysAfter;
+   o.orderSaved=JSON.parse(publishState()).jkPlan.order.champa; o.handMark=/✍/.test(document.querySelector('#jkBody table[data-staff="champa"]').innerHTML); o.resetBtn=/Reset order/.test(document.getElementById('jkBody').innerHTML);
+   const jj=jkJobs(); jkSchedule(jj); o.bFirst=jj.find(j=>j.ref==='WO-B').start<=jj.find(j=>j.ref==='WO-D').start && jj.find(j=>j.ref==='WO-B').whoName==='Champa Shah';
+   jkPlace('joanne','WO-B|OHCJSMDORSET3801',0,[]); o.movedTo=jkPlan.assign['WO-B|OHCJSMDORSET3801']; o.leftOld=(jkPlan.order.champa||[]).indexOf('WO-B|OHCJSMDORSET3801')<0; o.joanneOrder=jkPlan.order.joanne;
+   jkOrderReset('joanne'); jkOrderReset('champa'); o.resetDone=!jkPlan.order.joanne && !jkPlan.order.champa && !jkPlan.assign['WO-B|OHCJSMDORSET3801'];
+   jkAssign('WO-D|OHCJSMDORSET3801','champa'); jkToggle('s:champa');
    // a minute override on the Dorset family
    const fam=jkFamily('OHCJSMDORSET3801'); jkMinsSet(fam,'mach','45'); o.fam=fam; o.ovr=jkMinsFor('OHCJSMDORSET3801');
    jkMinsSet(fam,'mach',''); o.back=jkMinsFor('OHCJSMDORSET3801').src;
@@ -99,6 +110,10 @@ const path = require('path');
  ck('tiles: 74 jackets, 34 for customers', r.tiles[0]==='74' && r.tiles[1]==='34', r.tiles);
  ck('editor has a machinist select per line once a banner is open', r.selects>=1, r.selects);
  ck('a pinned works order stays with Champa', r.pinned==='Champa Shah' && r.pinIcon);
+ ck('grips on every line of an open list', r.grips===2, [r.grips,r.dragBefore]);
+ ck('a line dragged to the top keeps that order, pins both, is saved and marked', r.dragAfter[0]==='WO-B|OHCJSMDORSET3801' && r.dragAfter.length===2 && r.orderSaved.join()===r.dragAfter.join() && r.handMark && r.resetBtn && r.bFirst, [r.dragAfter,r.orderSaved,r.handMark,r.resetBtn,r.bFirst]);
+ ck('dropped into another list it moves there', r.movedTo==='joanne' && r.leftOld && r.joanneOrder.join()==='WO-B|OHCJSMDORSET3801', [r.movedTo,r.leftOld,r.joanneOrder]);
+ ck('reset order forgets the hand order and the pins', r.resetDone);
  ck('a typed figure wins, cleared goes back to assumed', r.ovr.mach===45 && r.ovr.src==='plan' && r.back==='assumed', [r.fam,r.ovr,r.back]);
  ck('a typed holiday and a person taken out', r.joanneHol===0 && r.safiaOut);
  ck('saved and published with the state', r.saved && r.saved.staff.length===9 && r.pub['WO-D|OHCJSMDORSET3801']==='champa');

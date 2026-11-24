@@ -346,6 +346,12 @@ this morning is in the plan straight away:
   then each machinist as a closable banner, all closed to start (click the
   name; the choice is remembered on the PC), then the priority list (closed until opened), the
   orders with no works order, and the lines marked done.
+- **Drag to reorder** (editor): drag a line by its grip up or down a
+  person's list, or into another person's list. Every line in that list is
+  then pinned to the person and worked in that order (marked with a pen),
+  ahead of anything the plan adds after them; **Reset order** on the banner
+  hands the list back to the plan. Kept in `jkPlan.order`, published with
+  the rest.
 - **Done** on a line (editor) means made and in finishing: it leaves the plan
   and is listed under *Done - in finishing* with an **Undo**. The mark lives
   with the plan, so it is published with the next Publish and goes when the

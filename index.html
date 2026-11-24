@@ -7695,8 +7695,8 @@ function jkDefault(){ return {staff:[
   {id:'nayna',name:'Nayna Parmar',team:'new',monThu:450,fri:285,eff:40,from:'2026-11-25',last:'2026-12-16',hols:[],note:'From aprons'},
   {id:'safia',name:'Safia Begum',team:'new',monThu:450,fri:285,eff:40,from:'2026-11-25',last:'2026-12-18',hols:[],note:'From aprons'},
   {id:'christineb',name:'Christine Burgess',team:'new',monThu:450,fri:285,eff:40,from:'2026-11-25',last:'2026-12-18',hols:[],note:'From aprons'}
- ], mins:{}, assign:{}, done:{}, effVer:2, shutFrom:'2026-12-25', shutTo:'2027-01-03', savedAt:''}; }
-function jkLoad(x){ jkPlan=(x && x.staff) ? x : jkDefault(); jkPlan.mins=jkPlan.mins||{}; jkPlan.assign=jkPlan.assign||{}; jkPlan.done=jkPlan.done||{};
+ ], mins:{}, assign:{}, done:{}, order:{}, effVer:2, shutFrom:'2026-12-25', shutTo:'2027-01-03', savedAt:''}; }
+function jkLoad(x){ jkPlan=(x && x.staff) ? x : jkDefault(); jkPlan.mins=jkPlan.mins||{}; jkPlan.assign=jkPlan.assign||{}; jkPlan.done=jkPlan.done||{}; jkPlan.order=jkPlan.order||{};
   // 24 Nov 2026: a plan saved before the 85% rule still carries the jacket machinists at 100 - bring them to 85 once
   if(!jkPlan.effVer){ jkPlan.staff.forEach(function(s){ if(s.team!=='new' && +s.eff===100) s.eff=85; }); jkPlan.effVer=2; } }
 function jkAbsorb(pub){   // a published plan saved later than this PC's (the other editor PC) replaces it
@@ -7765,7 +7765,11 @@ function jkSchedule(jobs){
     while(need>0){ if(d>=days.length) return null; var av=c[d]-used; if(av<=0){ d++; used=0; continue; } var t=Math.min(av,need); if(start<0) start=d; need-=t; used+=t; if(need>0 && used>=c[d]){ d++; used=0; } }
     return {d:d,used:used,start:start<0?d:start};
   }
-  jobs.forEach(function(j){
+  // the jobs the PM put in order by hand go first on that person, in that order (jkPlan.order), then the rest by priority
+  var byKey={}; jobs.forEach(function(j){ byKey[j.key]=j; });
+  var ordered=[], seen={};
+  staff.forEach(function(s){ (jkPlan.order[s.id]||[]).forEach(function(k){ var j=byKey[k]; if(j && !seen[k] && jkPlan.assign[k]===s.id){ seen[k]=1; j.handOrder=true; ordered.push(j); } }); });
+  ordered.concat(jobs.filter(function(j){ return !seen[j.key]; })).forEach(function(j){
     var forced=jkPlan.assign[j.key], pick=null, best=null;
     staff.forEach(function(s){ if(forced && s.id!==forced) return; var r=run(s,j.mins); if(!r) return; var score=r.d+r.used/Math.max(1,caps[s.id][r.d]||450); if(!best || score<best.score || (score===best.score && st[s.id].total<st[best.s.id].total)){ best={s:s,r:r,score:score}; } });
     if(!best){ j.who=forced||''; j.start=''; j.finish=''; j.placed=false; j.late=true; return; }
@@ -7837,15 +7841,16 @@ function jkRender(){
   if(notYear.length) h+='<div style="margin-top:8px;color:#dc2626;font-weight:700">&#9888; '+notYearQ+' jackets on '+notYear.length+' works order lines will not be made before the shutdown'+(yearEnd?' (last working day '+jkShort(yearEnd)+')':'')+': '+esc(notYear.slice(0,8).map(function(j){ return j.ref; }).join(', '))+(notYear.length>8?' ...':'')+'</div>';
   h+='</div>';
   // ── per machinist, each a closable banner
-  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Who makes what</h3><div class="sub" style="margin-bottom:8px">In the order each person should work. Click a name to open or close it (all closed to start). '+(IS_EDITOR?'Change the machinist on a line to move that works order; "auto" puts it back with whoever is free first.':'')+'</div>';
+  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Who makes what</h3><div class="sub" style="margin-bottom:8px">In the order each person should work. Click a name to open or close it (all closed to start). '+(IS_EDITOR?'Drag a line by its &#8942; grip to change the order someone works in, or drop it in another person\'s list to move it; a hand-ordered line shows &#9997;. Change the machinist on a line to move that works order; "auto" puts it back with whoever is free first.':'')+'</div>';
   sch.staff.forEach(function(s){
     var p=sch.st[s.id], capTot=sch.caps[s.id].reduce(function(a,b){ return a+b; },0), open=jkSec('s:'+s.id,false), q=p.jobs.reduce(function(a,j){ return a+j.qty; },0), lt=p.jobs.filter(function(j){ return j.late; }).length;
     h+='<div class="jk-ban" style="margin:8px 0;border:1px solid #e5e7eb;border-radius:7px"><div onclick="jkToggle(\'s:'+esc(s.id)+'\')" style="cursor:pointer;padding:8px 10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;background:#f9fafb;border-radius:7px"><span style="font-size:11px;color:#6b7280">'+(open?'&#9660;':'&#9654;')+'</span><strong style="font-size:14px">'+esc(s.name)+'</strong>'+(s.team==='new'?jkPill('new to jackets · '+(s.eff||0)+'%','#b45309'):'')+(lt?jkPill(lt+' late','#dc2626'):'')
-      +'<span class="sm-sub">'+(s.from && s.from>t?'from '+jkShort(s.from)+' · ':'')+(s.last?'last day '+jkShort(s.last)+' · ':'')+((s.hols||[]).length?'off '+s.hols.map(function(x){ return jkShort(x).slice(4); }).join(', ')+' · ':'')+p.jobs.length+' lines, '+q+' jackets, '+Math.round(p.total)+' of '+Math.round(capTot)+' min'+(s.note?' · '+esc(s.note):'')+'</span></div>';
+      +'<span class="sm-sub">'+(s.from && s.from>t?'from '+jkShort(s.from)+' · ':'')+(s.last?'last day '+jkShort(s.last)+' · ':'')+((s.hols||[]).length?'off '+s.hols.map(function(x){ return jkShort(x).slice(4); }).join(', ')+' · ':'')+p.jobs.length+' lines, '+q+' jackets, '+Math.round(p.total)+' of '+Math.round(capTot)+' min'+(s.note?' · '+esc(s.note):'')+'</span>'
+      +(IS_EDITOR && (jkPlan.order[s.id]||[]).length?'<button class="btn" style="padding:2px 8px;font-size:11px;margin-left:auto" title="Forget the hand order for this person and let the plan choose again" onclick="event.stopPropagation(); jkOrderReset(\''+esc(s.id)+'\')">&#8634; Reset order</button>':'')+'</div>';
     if(open){
       if(!p.jobs.length) h+='<div class="sm-sub" style="padding:6px 10px">Nothing planned.</div>';
-      else { h+='<div style="overflow-x:auto"><table class="sm-tbl" style="width:100%;font-size:12px"><thead><tr><th>#</th><th>Works order</th><th>Code</th><th style="text-align:right">Qty</th><th style="text-align:right">Min</th><th>Start</th><th>Finish</th><th>Needed by</th><th>For</th><th>Status</th>'+(IS_EDITOR?'<th>Machinist</th><th></th>':'')+'</tr></thead><tbody>';
-        p.jobs.forEach(function(j,n){ h+=jkRow(j,n+1,sch); }); h+='</tbody></table></div>'; }
+      else { h+='<div style="overflow-x:auto"><table class="sm-tbl jk-list" data-staff="'+esc(s.id)+'" style="width:100%;font-size:12px"><thead><tr><th>#</th><th>Works order</th><th>Code</th><th style="text-align:right">Qty</th><th style="text-align:right">Min</th><th>Start</th><th>Finish</th><th>Needed by</th><th>For</th><th>Status</th>'+(IS_EDITOR?'<th>Machinist</th><th></th>':'')+'</tr></thead><tbody>';
+        p.jobs.forEach(function(j,n){ h+=jkRow(j,n+1,sch,false,s.id); }); h+='</tbody></table></div>'; }
     }
     h+='</div>';
   });
@@ -7876,14 +7881,15 @@ function jkRender(){
   el.innerHTML=h;
 }
 function jkJobsInWeek(jobs,w){ return jobs.filter(function(j){ return j.finish && jkWeek(j.finish)===w; }).reduce(function(a,j){ return a+j.qty; },0); }
-function jkRow(j,n,sch,showWho){
+function jkRow(j,n,sch,showWho,staffId){
   var t=jkISO(jkToday()), by=j.cust?j.need:j.due;
+  var drag=(IS_EDITOR && staffId)?' draggable="true" data-key="'+esc(j.key)+'" ondragstart="jkDragStart(event)" ondragover="jkDragOver(event)" ondragleave="jkDragLeave(event)" ondrop="jkDrop(event)" ondragend="jkDragEnd(event)"':'';
   var status=!j.placed ? jkPill('not placed','#dc2626') : j.late ? jkPill('late','#dc2626') : by && j.finish===by ? jkPill('on the day','#b45309') : jkPill('ok','#15803d');
   var who='';
   if(IS_EDITOR){ who='<select onchange="jkAssign(\''+esc(j.key)+'\',this.value)" style="font-size:11px"><option value="">auto</option>'+sch.staff.map(function(s){ return '<option value="'+s.id+'"'+(jkPlan.assign[j.key]===s.id?' selected':'')+'>'+esc(s.name)+'</option>'; }).join('')+'</select>'+(j.forced?' &#128204;':''); }
   else who=esc(j.whoName||'');
   var doneBtn=IS_EDITOR?'<td><button class="btn" style="padding:2px 8px;font-size:11px" title="Made - now in finishing. Takes the line out of the plan; Undo in the Done list below." onclick="jkDone(\''+esc(j.key)+'\')">&#10003; Done</button></td>':'';
-  return '<tr'+(j.late?' style="background:#fef2f2"':'')+'><td>'+n+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes for this style: 32 min assumed">?</span>':'')+'</td><td style="text-align:right">'+j.qty+'</td><td style="text-align:right" title="'+j.mach+' min each ('+j.src+')">'+Math.round(j.mins)+'</td><td>'+jkShort(j.start)+'</td><td>'+jkShort(j.finish)+'</td>'
+  return '<tr'+drag+(j.late?' style="background:#fef2f2"':'')+'><td>'+(IS_EDITOR && staffId?'<span class="jk-grip" title="Drag to reorder" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+(j.handOrder?' <span title="Put here by hand">&#9997;</span>':'')+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes for this style: 32 min assumed">?</span>':'')+'</td><td style="text-align:right">'+j.qty+'</td><td style="text-align:right" title="'+j.mach+' min each ('+j.src+')">'+Math.round(j.mins)+'</td><td>'+jkShort(j.start)+'</td><td>'+jkShort(j.finish)+'</td>'
     +'<td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+'</td><td>'+(j.cust?'<strong>'+esc(j.custs.filter(Boolean).join(', ')||'customer order')+'</strong>'+(j.covQty && j.covQty<j.qty?' <span class="sm-sub">'+j.covQty+' of '+j.qty+'</span>':''):'<span class="sm-sub">stock</span>')+'</td><td>'+status+'</td>'+(showWho||IS_EDITOR?'<td>'+(IS_EDITOR?who:esc(j.whoName||''))+'</td>':'')+doneBtn+'</tr>';
 }
 // open / closed banners, remembered on this PC
@@ -7896,8 +7902,26 @@ function jkUndo(key){ if(!IS_EDITOR) return; delete jkPlan.done[key]; jkSave(); 
 function jkDoneList(){ var out=[]; WOs.forEach(function(w){ (w.items||[]).forEach(function(it){ var k=w.ref+'|'+it.code; if(jkPlan.done[k]) out.push({key:k, ref:w.ref, code:it.code, qty:it.qty}); }); }); return out; }
 function jkPrune(){ var live={}; WOs.forEach(function(w){ (w.items||[]).forEach(function(it){ live[w.ref+'|'+it.code]=1; }); }); var ch=false;
   Object.keys(jkPlan.done).forEach(function(k){ if(!live[k]){ delete jkPlan.done[k]; ch=true; } }); Object.keys(jkPlan.assign).forEach(function(k){ if(!live[k]){ delete jkPlan.assign[k]; ch=true; } });
+  Object.keys(jkPlan.order).forEach(function(s){ var o=jkPlan.order[s].filter(function(k){ return live[k]; }); if(o.length!==jkPlan.order[s].length){ jkPlan.order[s]=o; ch=true; } if(!o.length) delete jkPlan.order[s]; });
   if(ch && IS_EDITOR){ jkPlan.savedAt=new Date().toISOString(); saveState(); } }
-function jkAssign(key,id){ if(!IS_EDITOR) return; if(id) jkPlan.assign[key]=id; else delete jkPlan.assign[key]; jkSave(); }
+// drag a line up or down a person's list, or into another person's list: the list order is kept by hand from then on
+var jkDragKey='';
+function jkDragStart(e){ var tr=e.currentTarget; jkDragKey=tr.getAttribute('data-key'); tr.style.opacity='0.5'; try{ e.dataTransfer.setData('text/plain',jkDragKey); e.dataTransfer.effectAllowed='move'; }catch(x){} }
+function jkDragEnd(e){ e.currentTarget.style.opacity=''; jkDragKey=''; }
+function jkDragOver(e){ if(!jkDragKey) return; e.preventDefault(); var tr=e.currentTarget, r=tr.getBoundingClientRect(), above=(e.clientY-r.top)<r.height/2; tr.style.borderTop=above?'3px solid #7A1F3D':''; tr.style.borderBottom=above?'':'3px solid #7A1F3D'; }
+function jkDragLeave(e){ var tr=e.currentTarget; tr.style.borderTop=''; tr.style.borderBottom=''; }
+function jkDrop(e){ e.preventDefault(); var tr=e.currentTarget, r=tr.getBoundingClientRect(), above=(e.clientY-r.top)<r.height/2; tr.style.borderTop=''; tr.style.borderBottom='';
+  var key=jkDragKey||(e.dataTransfer?e.dataTransfer.getData('text/plain'):''), tbl=tr.closest('table'); if(!key || !tbl) return;
+  var staffId=tbl.getAttribute('data-staff'), keys=[].slice.call(tbl.querySelectorAll('tbody tr[data-key]')).map(function(x){ return x.getAttribute('data-key'); });
+  var at=keys.indexOf(tr.getAttribute('data-key')); if(!above) at++;
+  jkDragKey=''; jkPlace(staffId,key,at,keys); }
+// put a line at a position in a person's list: every line in that list becomes pinned to the person and kept in this order
+function jkPlace(staffId,key,at,keys){ if(!IS_EDITOR) return;
+  keys=(keys||[]).filter(function(k){ return k!==key; }); if(at<0) at=0; if(at>keys.length) at=keys.length; keys.splice(at,0,key);
+  var from=jkPlan.assign[key]; if(from && from!==staffId && jkPlan.order[from]){ jkPlan.order[from]=jkPlan.order[from].filter(function(k){ return k!==key; }); if(!jkPlan.order[from].length) delete jkPlan.order[from]; }
+  keys.forEach(function(k){ jkPlan.assign[k]=staffId; }); jkPlan.order[staffId]=keys; jkSave(); }
+function jkOrderReset(staffId){ if(!IS_EDITOR) return; (jkPlan.order[staffId]||[]).forEach(function(k){ if(jkPlan.assign[k]===staffId) delete jkPlan.assign[k]; }); delete jkPlan.order[staffId]; jkSave(); }
+function jkAssign(key,id){ if(!IS_EDITOR) return; Object.keys(jkPlan.order).forEach(function(s){ if(s!==id){ jkPlan.order[s]=jkPlan.order[s].filter(function(k){ return k!==key; }); if(!jkPlan.order[s].length) delete jkPlan.order[s]; } }); if(id) jkPlan.assign[key]=id; else delete jkPlan.assign[key]; jkSave(); }
 function jkStaffForm(){
   var h='<div class="kpi-sec" style="background:#fffbeb"><h3 style="margin:0 0 6px">Staff &amp; hours</h3><div class="sub" style="margin-bottom:8px">Minutes per day after breaks. Normal hours: 450 Mon-Thu, 285 Fri. Efficiency 85 for a jacket machinist (100% capacity is 85% efficiency); the new jacket staff at 40. Dates as yyyy-mm-dd; holidays separated by commas. Untick "In plan" for anyone off.</div>'
     +'<div style="overflow-x:auto"><table class="sm-tbl" style="font-size:12px"><thead><tr><th>In plan</th><th>Name</th><th>Team</th><th>Mon-Thu min</th><th>Fri min</th><th>Eff %</th><th>First day</th><th>Last day</th><th>Holidays</th><th>Note</th><th></th></tr></thead><tbody>';
