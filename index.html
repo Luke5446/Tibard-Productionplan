@@ -7783,9 +7783,10 @@ function jkSchedule(jobs){
     if(!best){ j.who=forced||''; j.start=''; j.finish=''; j.placed=false; j.late=true; return; }
     pick=best.s; var r=best.r, p=st[pick.id], c=caps[pick.id];
     // book the minutes day by day for the week view
-    var d=p.d, used=p.used, need=j.mins;
-    while(need>0 && d<days.length){ var av=c[d]-used; if(av<=0){ d++; used=0; continue; } var t=Math.min(av,need); p.load[days[d]]=(p.load[days[d]]||0)+t; need-=t; used+=t; if(need>0 && used>=c[d]){ d++; used=0; } }
+    var d=p.d, used=p.used, need=j.mins; j.wkMins={};
+    while(need>0 && d<days.length){ var av=c[d]-used; if(av<=0){ d++; used=0; continue; } var t=Math.min(av,need); p.load[days[d]]=(p.load[days[d]]||0)+t; var wk=jkWeek(days[d]); j.wkMins[wk]=(j.wkMins[wk]||0)+t; need-=t; used+=t; if(need>0 && used>=c[d]){ d++; used=0; } }
     p.d=r.d; p.used=r.used; p.total+=j.mins; p.jobs.push(j);
+    j.wkQty={}; var cumM=0, cumQ=0; Object.keys(j.wkMins).sort().forEach(function(wk){ cumM+=j.wkMins[wk]; var cq=Math.round(j.qty*cumM/Math.max(1,j.mins)); j.wkQty[wk]=cq-cumQ; cumQ=cq; });
     j.who=pick.id; j.whoName=pick.name; j.forced=!!forced; j.cant=jkCant(pick,j.code); j.start=days[r.start]; j.finish=days[r.d]; j.placed=true;
     var by=j.cust?j.need:j.due; j.late=!!(by && j.finish>by);
   });
@@ -7832,7 +7833,7 @@ function jkRender(){
   // ── week view, with the flags
   var wkTot={}, wkCap={}, wkNeed={}, wkLate={};
   jobs.forEach(function(j){ var by=j.cust?j.need:j.due; if(!by) return; var w=jkWeek(by<t?t:by); wkNeed[w]=(wkNeed[w]||0)+j.mins; });
-  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Jackets planned by week</h3><div class="sub" style="margin-bottom:8px">Jackets counted in the week their works order line finishes; click a cell for the works orders behind it. A red cell is a week where that person has work that finishes after its promised or due date; an amber cell is full (95% or more). The bottom rows set the minutes the orders need by each week against the minutes the team has.</div>'
+  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Jackets planned by week</h3><div class="sub" style="margin-bottom:8px">Jackets a person can make in each week from the minutes they have, so a works order that runs over a weekend is split across the weeks; click a cell for the works orders behind it. A red cell is a week where that person has work that finishes after its promised or due date; an amber cell is full (95% or more). The bottom rows set the minutes the orders need by each week against the minutes the team has.</div>'
     +'<div style="overflow-x:auto"><table class="sm-tbl" style="font-size:12px"><thead><tr><th>Machinist</th>'+weeks.map(function(w){ return '<th style="text-align:right">w/c '+jkShort(w).slice(4)+'</th>'; }).join('')+'<th style="text-align:right">Total</th></tr></thead><tbody>';
   sch.staff.forEach(function(s){
     var p=sch.st[s.id]; h+='<tr><td>'+esc(s.name)+(s.team==='new'?' <span class="sm-sub">'+(s.eff||0)+'%</span>':'')+'</td>';
@@ -7846,11 +7847,11 @@ function jkRender(){
     if(jkDrill && jkDrill.staff===s.id && weeks.indexOf(jkDrill.week)>=0){
       var w0=jkDrill.week, w1=jkISO(new Date(jkD(w0).getTime()+6*86400000));
       var inWeek=p.jobs.filter(function(j){ return j.start && j.finish && j.start<=w1 && j.finish>=w0; });
-      h+='<tr class="jk-drill"><td colspan="'+(weeks.length+2)+'" style="background:#f9fafb;padding:8px 12px"><div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><strong>'+esc(s.name)+' - w/c '+jkShort(w0).slice(4)+'</strong><span class="sm-sub">'+inWeek.filter(function(j){ return jkWeek(j.finish)===w0; }).reduce(function(a,j){ return a+j.qty; },0)+' jackets finish this week'+(inWeek.some(function(j){ return jkWeek(j.finish)!==w0; })?', the rest carry on into the next':'')+'</span><button class="btn" style="padding:1px 7px;font-size:11px;margin-left:auto" onclick="jkDrillTo(\'\',\'\')">Close</button></div>';
+      h+='<tr class="jk-drill"><td colspan="'+(weeks.length+2)+'" style="background:#f9fafb;padding:8px 12px"><div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><strong>'+esc(s.name)+' - w/c '+jkShort(w0).slice(4)+'</strong><span class="sm-sub">'+jkJobsInWeek(inWeek,w0)+' jackets made this week'+(inWeek.some(function(j){ return jkWeek(j.finish)!==w0; })?', the rest of a line that carries on is counted in the week it is made':'')+'</span><button class="btn" style="padding:1px 7px;font-size:11px;margin-left:auto" onclick="jkDrillTo(\'\',\'\')">Close</button></div>';
       if(!inWeek.length) h+='<div class="sm-sub">Nothing planned this week.</div>';
-      else { h+='<table class="sm-tbl" style="font-size:12px;margin-top:6px"><thead><tr><th>Works order</th><th>Code</th><th style="text-align:right">Qty</th><th>Start</th><th>Finish</th><th>Needed by</th><th>For</th><th>Status</th></tr></thead><tbody>';
+      else { h+='<table class="sm-tbl" style="font-size:12px;margin-top:6px"><thead><tr><th>Works order</th><th>Code</th><th style="text-align:right">This week</th><th style="text-align:right">Line qty</th><th>Start</th><th>Finish</th><th>Needed by</th><th>For</th><th>Status</th></tr></thead><tbody>';
         inWeek.forEach(function(j){ var by=j.cust?j.need:j.due, carry=jkWeek(j.finish)!==w0, began=jkWeek(j.start)!==w0;
-          h+='<tr'+(j.late?' style="background:#fef2f2"':'')+'><td><strong>'+esc(j.ref)+'</strong>'+(j.part?' '+jkPill('shared','#1d4ed8'):'')+'</td><td>'+esc(j.code)+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub">of '+j.partOf+'</div>':'')+'</td><td>'+jkShort(j.start)+(began?' <span class="sm-sub">(started earlier)</span>':'')+'</td><td>'+jkShort(j.finish)+(carry?' <span class="sm-sub">(carries on)</span>':'')+'</td><td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+'</td><td>'+(j.cust?esc(j.custs.filter(Boolean).join(', ')||'customer order'):'<span class="sm-sub">stock</span>')+'</td><td>'+(j.late?jkPill('late','#dc2626'):jkPill('ok','#15803d'))+'</td></tr>'; });
+          h+='<tr'+(j.late?' style="background:#fef2f2"':'')+'><td><strong>'+esc(j.ref)+'</strong>'+(j.part?' '+jkPill('shared','#1d4ed8'):'')+'</td><td>'+esc(j.code)+'</td><td style="text-align:right"><strong>'+((j.wkQty||{})[w0]||0)+'</strong></td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub">of '+j.partOf+'</div>':'')+'</td><td>'+jkShort(j.start)+(began?' <span class="sm-sub">(started earlier)</span>':'')+'</td><td>'+jkShort(j.finish)+(carry?' <span class="sm-sub">(carries on)</span>':'')+'</td><td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+'</td><td>'+(j.cust?esc(j.custs.filter(Boolean).join(', ')||'customer order'):'<span class="sm-sub">stock</span>')+'</td><td>'+(j.late?jkPill('late','#dc2626'):jkPill('ok','#15803d'))+'</td></tr>'; });
         h+='</tbody></table>'; }
       h+='</td></tr>';
     }
@@ -7903,7 +7904,7 @@ function jkRender(){
 }
 var jkDrill=null;
 function jkDrillTo(staff,week){ jkDrill=(staff && week && !(jkDrill && jkDrill.staff===staff && jkDrill.week===week))?{staff:staff,week:week}:null; jkRender(); }
-function jkJobsInWeek(jobs,w){ return jobs.filter(function(j){ return j.finish && jkWeek(j.finish)===w; }).reduce(function(a,j){ return a+j.qty; },0); }
+function jkJobsInWeek(jobs,w){ return jobs.reduce(function(a,j){ return a+((j.wkQty||{})[w]||0); },0); }
 function jkRow(j,n,sch,showWho,staffId){
   var t=jkISO(jkToday()), by=j.cust?j.need:j.due;
   var drag=(IS_EDITOR && staffId)?' draggable="true" data-key="'+esc(j.key)+'" ondragstart="jkDragStart(event)" ondragover="jkDragOver(event)" ondragleave="jkDragLeave(event)" ondrop="jkDrop(event)" ondragend="jkDragEnd(event)"':'';

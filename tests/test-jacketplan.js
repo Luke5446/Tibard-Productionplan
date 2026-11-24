@@ -81,6 +81,8 @@ const path = require('path');
    // a week cell drills down to that person's works orders in the week; clicking again closes it
    var cj=jkJobs(); jkSchedule(cj); var cjob=cj.find(j=>j.whoName==='Champa Shah'); var cw=jkWeek(cjob.finish);
    jkDrillTo('champa',cw); var dr=document.querySelector('#jkBody tr.jk-drill'); o.drill=dr?dr.textContent.replace(/\s+/g,' ').trim():''; o.drillHasRef=!!dr && dr.innerHTML.indexOf('<strong>'+cjob.ref+'</strong>')>=0 && new RegExp('<td style="text-align:right">'+cjob.qty+'<').test(dr.innerHTML);
+   // the week count is what is made that week, not the whole line in the week it finishes: a line split over two weeks adds up, and the first week holds what its minutes allow
+   o.wkSplit=(function(){ var offs=jkPlan.staff.map(s=>s.off); jkPlan.staff.forEach(s=>{ if(s.id!=='champa') s.off=true; }); var all=jkJobs(); jkSchedule(all); jkPlan.staff.forEach((s,i)=>{ s.off=offs[i]; }); var cj=all; if(!all.every(j=>!j.placed || Object.keys(j.wkQty).reduce((a,w)=>a+j.wkQty[w],0)===j.qty)) return 'weeks do not add up'; var sp=cj.filter(j=>j.wkQty && Object.keys(j.wkQty).length>1); if(!sp.length) return 'no split line'; var j=sp[0]; var sum=Object.keys(j.wkQty).reduce((a,w)=>a+j.wkQty[w],0); var w1=Object.keys(j.wkQty).sort()[0]; return sum===j.qty && j.wkQty[w1]>0 && j.wkQty[w1]<j.qty && Math.abs(j.wkQty[w1]-j.qty*j.wkMins[w1]/j.mins)<1 ? 'ok' : JSON.stringify([j.ref,j.qty,j.wkQty,j.wkMins,j.mins]); })();
    jkDrillTo('champa',cw); o.drillClosed=!document.querySelector('#jkBody tr.jk-drill');
    jkDrillTo('champa','2099-01-05'); o.drillOff=!document.querySelector('#jkBody tr.jk-drill'); jkDrillTo('','');
    // a minute override on the Dorset family
@@ -142,7 +144,8 @@ const path = require('path');
  ck('a Stratford line goes to someone who sews it; Champa, Jacqueline and the new staff are off it', ['Joanne Leigh','Christine Ormisher','Diane Oakes'].indexOf(r.cantWho)>=0 && r.cantList==='champa,jacqueline,nayna,safia,christineb' && r.cantDerby, [r.cantWho,r.cantList,r.cantDerby]);
  ck('pinned on Champa anyway it is flagged', r.cantPinned && r.cantFlag);
  ck('a plan saved before gets the lists once', r.cantMig.join('|')==='STRATFORD, DERBYSHIRE|STRATFORD, DERBYSHIRE|', r.cantMig);
- ck('a week cell opens that person\'s works orders with quantities, and closes again', r.drillHasRef && /Champa Shah - w\/c/.test(r.drill) && r.drillClosed && r.drillOff, [r.drill.slice(0,120),r.drillHasRef,r.drillClosed,r.drillOff]);
+ ck('a line that runs over a weekend is counted in each week by the minutes made there', r.wkSplit==='ok', r.wkSplit);
+ck('a week cell opens that person\'s works orders with quantities, and closes again', r.drillHasRef && /Champa Shah - w\/c/.test(r.drill) && r.drillClosed && r.drillOff, [r.drill.slice(0,120),r.drillHasRef,r.drillClosed,r.drillOff]);
  ck('a typed figure wins, cleared goes back to assumed', r.ovr.mach===45 && r.ovr.src==='plan' && r.back==='assumed', [r.fam,r.ovr,r.back]);
  ck('a typed holiday and a person taken out', r.joanneHol===0 && r.safiaOut);
  ck('saved and published with the state', r.saved && r.saved.staff.length===9 && r.pub['WO-D|OHCJSMDORSET3801']==='champa');
