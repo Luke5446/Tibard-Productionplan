@@ -343,9 +343,11 @@ this morning is in the plan straight away:
   stock and the live works orders do not cover (Clockwork container codes
   left out), and special makes still in the queue.
 
-- The tab runs: the tiles, *Jackets planned by week* (click a cell for that
-  person's works orders and quantities in the week, with what started
-  earlier or carries on; a red cell where a
+- The tab runs: the tiles, *Jackets planned by week* (each cell is the
+  jackets that person can make in the week from the minutes they have, so a
+  line that runs over a weekend is split between the weeks; click a cell for
+  that person's works orders, how many of each are made that week, and what
+  started earlier or carries on; a red cell where a
   person has a line finishing after its date, amber where their week is 95%
   or more full; a running total of the minutes the orders need by each week
   against the team's minutes, red where the promises outrun the team; and a
