@@ -45,6 +45,7 @@ const path = require('path');
    o.needs=jkNeedsWO().map(x=>x.code+' '+x.qty);
    o.tab=document.getElementById('tabJk').classList.contains('on') && !document.getElementById('jkView').classList.contains('hidden');
    o.tiles=[...document.querySelectorAll('#jkBody .kpi-tile .v')].map(e=>e.textContent);
+   (function(){ var keep=jkPlan; jkLoad({staff:[{id:'a',name:'A',team:'jacket',eff:100},{id:'b',name:'B',team:'jacket',eff:100},{id:'c',name:'C',team:'jacket',eff:70}]}); o.mig=[jkPlan.staff[0].eff,jkPlan.staff[1].eff,jkPlan.staff[2].eff,jkPlan.effVer]; jkPlan=keep; })();
    o.selects=document.querySelectorAll('#jkBody select').length;
    // pin WO-D on Champa, then it stays with her
    jkAssign('WO-D|OHCJSMDORSET3801','champa');
@@ -89,7 +90,8 @@ const path = require('path');
  ck('every job placed on a machinist with dates', r.who.every(w=>/:[A-Z][a-z]+ [A-Z].*:2026-\d\d-\d\d>2026-\d\d-\d\d/.test(w)), r.who);
  ck('the overdue stock works order is late', /WO-B:.*:late/.test(r.who.join()), r.who);
  ck('Anne Marie out, eight in the plan', r.staff.length===8 && r.staff.indexOf('Anne Marie')<0, r.staff);
- ck('hours less breaks: 450 Mon-Thu, 285 Fri; Champa 390; Christine O no Friday', r.champaMon===390 && r.champaFri===285 && r.chrisFri===0);
+ ck('hours less breaks at 85%: Champa 390 -> 332 Mon-Thu, 285 -> 242 Fri; Christine O no Friday', r.champaMon===332 && r.champaFri===242 && r.chrisFri===0, [r.champaMon,r.champaFri,r.chrisFri]);
+ ck('a plan saved at 100 is brought to 85 once, a typed figure kept', r.mig.join()==='85,85,70,2', r.mig);
  ck("Diane's holiday Monday, Jacqueline after her last day", r.diane30===0 && r.jacAfter===0);
  ck('new jacket staff from 25 Nov at 40%', r.naynaToday===0 && r.nayna===180);
  ck('Christmas: 24 Dec worked, 28 Dec not, 4 Jan back', r.xmas);
