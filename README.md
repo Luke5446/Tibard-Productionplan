@@ -352,6 +352,11 @@ this morning is in the plan straight away:
   ahead of anything the plan adds after them; **Reset order** on the banner
   hands the list back to the plan. Kept in `jkPlan.order`, published with
   the rest.
+- **Share** (editor) splits a works order line between several machinists
+  so they work on it together: a quantity per person, the rest left for the
+  plan to place. Each part is planned on its person, marked *shared* with
+  "of N"; Done works per part; **Clear share** puts the line back whole.
+  Kept in `jkPlan.split`.
 - **Done** on a line (editor) means made and in finishing: it leaves the plan
   and is listed under *Done - in finishing* with an **Undo**. The mark lives
   with the plan, so it is published with the next Publish and goes when the

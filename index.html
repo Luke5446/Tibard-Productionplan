@@ -7695,8 +7695,8 @@ function jkDefault(){ return {staff:[
   {id:'nayna',name:'Nayna Parmar',team:'new',monThu:450,fri:285,eff:40,from:'2026-11-25',last:'2026-12-16',hols:[],note:'From aprons'},
   {id:'safia',name:'Safia Begum',team:'new',monThu:450,fri:285,eff:40,from:'2026-11-25',last:'2026-12-18',hols:[],note:'From aprons'},
   {id:'christineb',name:'Christine Burgess',team:'new',monThu:450,fri:285,eff:40,from:'2026-11-25',last:'2026-12-18',hols:[],note:'From aprons'}
- ], mins:{}, assign:{}, done:{}, order:{}, effVer:2, shutFrom:'2026-12-25', shutTo:'2027-01-03', savedAt:''}; }
-function jkLoad(x){ jkPlan=(x && x.staff) ? x : jkDefault(); jkPlan.mins=jkPlan.mins||{}; jkPlan.assign=jkPlan.assign||{}; jkPlan.done=jkPlan.done||{}; jkPlan.order=jkPlan.order||{};
+ ], mins:{}, assign:{}, done:{}, order:{}, split:{}, effVer:2, shutFrom:'2026-12-25', shutTo:'2027-01-03', savedAt:''}; }
+function jkLoad(x){ jkPlan=(x && x.staff) ? x : jkDefault(); jkPlan.mins=jkPlan.mins||{}; jkPlan.assign=jkPlan.assign||{}; jkPlan.done=jkPlan.done||{}; jkPlan.order=jkPlan.order||{}; jkPlan.split=jkPlan.split||{};
   // 24 Nov 2026: a plan saved before the 85% rule still carries the jacket machinists at 100 - bring them to 85 once
   if(!jkPlan.effVer){ jkPlan.staff.forEach(function(s){ if(s.team!=='new' && +s.eff===100) s.eff=85; }); jkPlan.effVer=2; } }
 function jkAbsorb(pub){   // a published plan saved later than this PC's (the other editor PC) replaces it
@@ -7744,7 +7744,11 @@ function jkJobs(){
       var m=jkMinsFor(it.code), cov=(it.sop&&it.sop.covers)||[], need='', custs=[];
       if(w.sm){ need=w.due||w.sm.promised||''; custs=[w.sm.custName||w.sm.customer||'']; }
       else if(cov.length){ cov.forEach(function(c){ if(c.due && (!need || c.due<need)) need=c.due; if(c.cust && custs.indexOf(c.cust)<0) custs.push(c.cust); }); }
-      jobs.push({key:w.ref+'|'+it.code, ref:w.ref, code:it.code, qty:it.qty, mach:m.mach, fin:m.fin, src:m.src, fam:m.fam, mins:it.qty*m.mach, cust:!!need, need:need, due:w.due||'', custs:custs, printed:!!w.printed, created:w.createdAt||'', i:i, sm:!!w.sm, covQty:cov.reduce(function(a,c){ return a+(c.qty||0); },0)});
+      var base={key:w.ref+'|'+it.code, ref:w.ref, code:it.code, qty:it.qty, mach:m.mach, fin:m.fin, src:m.src, fam:m.fam, mins:it.qty*m.mach, cust:!!need, need:need, due:w.due||'', custs:custs, printed:!!w.printed, created:w.createdAt||'', i:i, sm:!!w.sm, covQty:cov.reduce(function(a,c){ return a+(c.qty||0); },0)};
+      var sp=jkPlan.split[base.key], left=it.qty;
+      if(sp){ jkPlan.staff.forEach(function(s){ var q=Math.min(+sp[s.id]||0, left); if(q<=0 || s.off) return; left-=q; var k=base.key+'#'+s.id; if(jkPlan.done[k]) return;
+          var part=Object.assign({}, base, {key:k, parentKey:base.key, qty:q, mins:q*m.mach, part:true, partOf:it.qty, forcedStaff:s.id}); jobs.push(part); }); }
+      if(left>0){ if(sp){ base.qty=left; base.mins=left*m.mach; base.partOf=it.qty; base.part=true; } jobs.push(base); }
     });
   });
   jobs.sort(function(a,b){
@@ -7770,7 +7774,7 @@ function jkSchedule(jobs){
   var ordered=[], seen={};
   staff.forEach(function(s){ (jkPlan.order[s.id]||[]).forEach(function(k){ var j=byKey[k]; if(j && !seen[k] && jkPlan.assign[k]===s.id){ seen[k]=1; j.handOrder=true; ordered.push(j); } }); });
   ordered.concat(jobs.filter(function(j){ return !seen[j.key]; })).forEach(function(j){
-    var forced=jkPlan.assign[j.key], pick=null, best=null;
+    var forced=jkPlan.assign[j.key]||j.forcedStaff||'', pick=null, best=null;
     staff.forEach(function(s){ if(forced && s.id!==forced) return; var r=run(s,j.mins); if(!r) return; var score=r.d+r.used/Math.max(1,caps[s.id][r.d]||450); if(!best || score<best.score || (score===best.score && st[s.id].total<st[best.s.id].total)){ best={s:s,r:r,score:score}; } });
     if(!best){ j.who=forced||''; j.start=''; j.finish=''; j.placed=false; j.late=true; return; }
     pick=best.s; var r=best.r, p=st[pick.id], c=caps[pick.id];
@@ -7841,7 +7845,7 @@ function jkRender(){
   if(notYear.length) h+='<div style="margin-top:8px;color:#dc2626;font-weight:700">&#9888; '+notYearQ+' jackets on '+notYear.length+' works order lines will not be made before the shutdown'+(yearEnd?' (last working day '+jkShort(yearEnd)+')':'')+': '+esc(notYear.slice(0,8).map(function(j){ return j.ref; }).join(', '))+(notYear.length>8?' ...':'')+'</div>';
   h+='</div>';
   // ── per machinist, each a closable banner
-  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Who makes what</h3><div class="sub" style="margin-bottom:8px">In the order each person should work. Click a name to open or close it (all closed to start). '+(IS_EDITOR?'Drag a line by its &#8942; grip to change the order someone works in, or drop it in another person\'s list to move it; a hand-ordered line shows &#9997;. Change the machinist on a line to move that works order; "auto" puts it back with whoever is free first.':'')+'</div>';
+  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Who makes what</h3><div class="sub" style="margin-bottom:8px">In the order each person should work. Click a name to open or close it (all closed to start). '+(IS_EDITOR?'Drag a line by its &#8942; grip to change the order someone works in, or drop it in another person\'s list to move it; a hand-ordered line shows &#9997;. <strong>Share</strong> splits a works order between several machinists so they work on it together. Change the machinist on a line to move that works order; "auto" puts it back with whoever is free first.':'')+'</div>';
   sch.staff.forEach(function(s){
     var p=sch.st[s.id], capTot=sch.caps[s.id].reduce(function(a,b){ return a+b; },0), open=jkSec('s:'+s.id,false), q=p.jobs.reduce(function(a,j){ return a+j.qty; },0), lt=p.jobs.filter(function(j){ return j.late; }).length;
     h+='<div class="jk-ban" style="margin:8px 0;border:1px solid #e5e7eb;border-radius:7px"><div onclick="jkToggle(\'s:'+esc(s.id)+'\')" style="cursor:pointer;padding:8px 10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;background:#f9fafb;border-radius:7px"><span style="font-size:11px;color:#6b7280">'+(open?'&#9660;':'&#9654;')+'</span><strong style="font-size:14px">'+esc(s.name)+'</strong>'+(s.team==='new'?jkPill('new to jackets · '+(s.eff||0)+'%','#b45309'):'')+(lt?jkPill(lt+' late','#dc2626'):'')
@@ -7888,10 +7892,28 @@ function jkRow(j,n,sch,showWho,staffId){
   var who='';
   if(IS_EDITOR){ who='<select onchange="jkAssign(\''+esc(j.key)+'\',this.value)" style="font-size:11px"><option value="">auto</option>'+sch.staff.map(function(s){ return '<option value="'+s.id+'"'+(jkPlan.assign[j.key]===s.id?' selected':'')+'>'+esc(s.name)+'</option>'; }).join('')+'</select>'+(j.forced?' &#128204;':''); }
   else who=esc(j.whoName||'');
-  var doneBtn=IS_EDITOR?'<td><button class="btn" style="padding:2px 8px;font-size:11px" title="Made - now in finishing. Takes the line out of the plan; Undo in the Done list below." onclick="jkDone(\''+esc(j.key)+'\')">&#10003; Done</button></td>':'';
-  return '<tr'+drag+(j.late?' style="background:#fef2f2"':'')+'><td>'+(IS_EDITOR && staffId?'<span class="jk-grip" title="Drag to reorder" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+(j.handOrder?' <span title="Put here by hand">&#9997;</span>':'')+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes for this style: 32 min assumed">?</span>':'')+'</td><td style="text-align:right">'+j.qty+'</td><td style="text-align:right" title="'+j.mach+' min each ('+j.src+')">'+Math.round(j.mins)+'</td><td>'+jkShort(j.start)+'</td><td>'+jkShort(j.finish)+'</td>'
-    +'<td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+'</td><td>'+(j.cust?'<strong>'+esc(j.custs.filter(Boolean).join(', ')||'customer order')+'</strong>'+(j.covQty && j.covQty<j.qty?' <span class="sm-sub">'+j.covQty+' of '+j.qty+'</span>':''):'<span class="sm-sub">stock</span>')+'</td><td>'+status+'</td>'+(showWho||IS_EDITOR?'<td>'+(IS_EDITOR?who:esc(j.whoName||''))+'</td>':'')+doneBtn+'</tr>';
+  var baseKey=j.parentKey||j.key;
+  var doneBtn=IS_EDITOR?'<td style="white-space:nowrap"><button class="btn" style="padding:2px 8px;font-size:11px" title="Made - now in finishing. Takes the line out of the plan; Undo in the Done list below." onclick="jkDone(\''+esc(j.key)+'\')">&#10003; Done</button> <button class="btn" style="padding:2px 8px;font-size:11px" title="Share this works order between several machinists" onclick="jkSplitOpen=(jkSplitOpen===\''+esc(baseKey)+'\'?\'\':\''+esc(baseKey)+'\'); jkRender()">&#8644; Share</button></td>':'';
+  var shareRow=(IS_EDITOR && jkSplitOpen===baseKey)?jkSplitForm(j,sch,showWho||IS_EDITOR):'';
+  return '<tr'+drag+(j.late?' style="background:#fef2f2"':'')+'><td>'+(IS_EDITOR && staffId?'<span class="jk-grip" title="Drag to reorder" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+(j.handOrder?' <span title="Put here by hand">&#9997;</span>':'')+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes for this style: 32 min assumed">?</span>':'')+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub" title="Shared works order">of '+j.partOf+'</div>':'')+'</td><td style="text-align:right" title="'+j.mach+' min each ('+j.src+')">'+Math.round(j.mins)+'</td><td>'+jkShort(j.start)+'</td><td>'+jkShort(j.finish)+'</td>'
+    +'<td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+'</td><td>'+(j.cust?'<strong>'+esc(j.custs.filter(Boolean).join(', ')||'customer order')+'</strong>'+(j.covQty && j.covQty<j.qty?' <span class="sm-sub">'+j.covQty+' of '+j.qty+'</span>':''):'<span class="sm-sub">stock</span>')+'</td><td>'+status+(j.part?' '+jkPill('shared','#1d4ed8'):'')+'</td>'+(showWho||IS_EDITOR?'<td>'+(IS_EDITOR?who:esc(j.whoName||''))+'</td>':'')+doneBtn+'</tr>'+shareRow;
 }
+// the share form under a line: a quantity per machinist; what is not given out stays with the plan
+var jkSplitOpen='';
+function jkSplitForm(j,sch,wide){
+  var baseKey=j.parentKey||j.key, sp=jkPlan.split[baseKey]||{}, total=j.partOf||j.qty, cols=wide?12:11;
+  var h='<tr class="jk-share"><td colspan="'+cols+'" style="background:#eff6ff;padding:8px 10px"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><strong>Share '+esc(j.ref)+' ('+total+' jackets) between:</strong>';
+  sch.staff.forEach(function(s){ h+='<label style="font-size:12px;display:flex;gap:4px;align-items:center">'+esc(s.name.split(' ')[0])+' <input type="number" min="0" max="'+total+'" data-share="'+esc(s.id)+'" value="'+(+sp[s.id]||'')+'" style="width:52px;font-size:12px" oninput="jkSplitTotal(this)"></label>'; });
+  h+='<span class="sm-sub" id="jkShareNote">'+jkSplitNote(sp,total,sch.staff)+'</span><button class="btn" style="padding:2px 8px;font-size:11px" onclick="jkSplitApply(\''+esc(baseKey)+'\',this)">Apply</button>'+(jkPlan.split[baseKey]?'<button class="btn" style="padding:2px 8px;font-size:11px" onclick="jkSplitClear(\''+esc(baseKey)+'\')">Clear share</button>':'')+'<button class="btn" style="padding:2px 8px;font-size:11px" onclick="jkSplitOpen=\'\'; jkRender()">Close</button></div></td></tr>';
+  return h;
+}
+function jkSplitNote(sp,total,staff){ var given=0; staff.forEach(function(s){ given+=+sp[s.id]||0; }); return given>total?'<span style="color:#dc2626">'+given+' given out of '+total+' - too many</span>':given+' given out, '+(total-given)+' left for the plan to place'; }
+function jkSplitTotal(inp){ var tr=inp.closest('tr'), sp={}; [].slice.call(tr.querySelectorAll('input[data-share]')).forEach(function(x){ sp[x.getAttribute('data-share')]=+x.value||0; }); var m=/\((\d+) jackets\)/.exec(tr.textContent), total=m?+m[1]:0; var n=tr.querySelector('#jkShareNote'); if(n) n.innerHTML=jkSplitNote(sp,total,jkPlan.staff); }
+function jkSplitApply(baseKey,btn){ if(!IS_EDITOR) return; var tr=btn.closest('tr'), sp={}, given=0; [].slice.call(tr.querySelectorAll('input[data-share]')).forEach(function(x){ var q=Math.max(0,Math.floor(+x.value||0)); if(q>0){ sp[x.getAttribute('data-share')]=q; given+=q; } });
+  var m=/\((\d+) jackets\)/.exec(tr.textContent), total=m?+m[1]:0; if(given>total){ alert('That is '+given+' jackets shared out of '+total+'. Take some back first.'); return; }
+  jkSplitSet(baseKey,sp); }
+function jkSplitSet(baseKey,sp){ if(!IS_EDITOR) return; if(!sp || !Object.keys(sp).length){ jkSplitClear(baseKey); return; } jkPlan.split[baseKey]=sp; delete jkPlan.assign[baseKey]; jkSplitOpen=''; jkSave(); }
+function jkSplitClear(baseKey){ if(!IS_EDITOR) return; delete jkPlan.split[baseKey]; Object.keys(jkPlan.assign).forEach(function(k){ if(k.indexOf(baseKey+'#')===0) delete jkPlan.assign[k]; }); Object.keys(jkPlan.done).forEach(function(k){ if(k.indexOf(baseKey+'#')===0) delete jkPlan.done[k]; }); Object.keys(jkPlan.order).forEach(function(s){ jkPlan.order[s]=jkPlan.order[s].filter(function(k){ return k.indexOf(baseKey+'#')!==0; }); if(!jkPlan.order[s].length) delete jkPlan.order[s]; }); jkSplitOpen=''; jkSave(); }
 // open / closed banners, remembered on this PC
 var jkSecs=null;
 function jkSec(k,def){ if(!jkSecs){ jkSecs={}; try{ jkSecs=JSON.parse(localStorage.getItem('tibard_jk_sections')||'{}')||{}; }catch(e){ jkSecs={}; } } return (k in jkSecs) ? !!jkSecs[k] : def; }
@@ -7899,8 +7921,11 @@ function jkToggle(k){ var cur=jkSec(k,false); jkSecs[k]=!cur; try{ localStorage.
 // done (in finishing): the line leaves the plan until its works order is completed
 function jkDone(key){ if(!IS_EDITOR) return; jkPlan.done[key]={at:new Date().toISOString(), who:'planner'}; jkSave(); }
 function jkUndo(key){ if(!IS_EDITOR) return; delete jkPlan.done[key]; jkSave(); }
-function jkDoneList(){ var out=[]; WOs.forEach(function(w){ (w.items||[]).forEach(function(it){ var k=w.ref+'|'+it.code; if(jkPlan.done[k]) out.push({key:k, ref:w.ref, code:it.code, qty:it.qty}); }); }); return out; }
-function jkPrune(){ var live={}; WOs.forEach(function(w){ (w.items||[]).forEach(function(it){ live[w.ref+'|'+it.code]=1; }); }); var ch=false;
+function jkDoneList(){ var out=[]; WOs.forEach(function(w){ (w.items||[]).forEach(function(it){ var k=w.ref+'|'+it.code, sp=jkPlan.split[k], shared=0;
+  if(sp) jkPlan.staff.forEach(function(s){ var q=+sp[s.id]||0; if(q>0){ shared+=q; if(jkPlan.done[k+'#'+s.id]) out.push({key:k+'#'+s.id, ref:w.ref, code:it.code, qty:Math.min(q,it.qty), who:s.name}); } });
+  if(jkPlan.done[k]) out.push({key:k, ref:w.ref, code:it.code, qty:sp?Math.max(0,it.qty-shared):it.qty}); }); }); return out; }
+function jkPrune(){ var live={}; WOs.forEach(function(w){ (w.items||[]).forEach(function(it){ var k=w.ref+'|'+it.code; live[k]=1; jkPlan.staff.forEach(function(s){ live[k+'#'+s.id]=1; }); }); }); var ch=false;
+  Object.keys(jkPlan.split).forEach(function(k){ if(!live[k]){ delete jkPlan.split[k]; ch=true; } });
   Object.keys(jkPlan.done).forEach(function(k){ if(!live[k]){ delete jkPlan.done[k]; ch=true; } }); Object.keys(jkPlan.assign).forEach(function(k){ if(!live[k]){ delete jkPlan.assign[k]; ch=true; } });
   Object.keys(jkPlan.order).forEach(function(s){ var o=jkPlan.order[s].filter(function(k){ return live[k]; }); if(o.length!==jkPlan.order[s].length){ jkPlan.order[s]=o; ch=true; } if(!o.length) delete jkPlan.order[s]; });
   if(ch && IS_EDITOR){ jkPlan.savedAt=new Date().toISOString(); saveState(); } }

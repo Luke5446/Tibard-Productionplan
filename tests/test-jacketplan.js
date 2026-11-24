@@ -61,6 +61,16 @@ const path = require('path');
    jkPlace('joanne','WO-B|OHCJSMDORSET3801',0,[]); o.movedTo=jkPlan.assign['WO-B|OHCJSMDORSET3801']; o.leftOld=(jkPlan.order.champa||[]).indexOf('WO-B|OHCJSMDORSET3801')<0; o.joanneOrder=jkPlan.order.joanne;
    jkOrderReset('joanne'); jkOrderReset('champa'); o.resetDone=!jkPlan.order.joanne && !jkPlan.order.champa && !jkPlan.assign['WO-B|OHCJSMDORSET3801'];
    jkAssign('WO-D|OHCJSMDORSET3801','champa'); jkToggle('s:champa');
+   // share: WO-D (30) split 10 Champa / 12 Joanne, 8 left to the plan; each part on its person; done on one part; clear share
+   jkSplitSet('WO-D|OHCJSMDORSET3801',{champa:10,joanne:12});
+   var js=jkJobs(); jkSchedule(js); var parts=js.filter(j=>j.ref==='WO-D').map(j=>j.key+':'+j.qty+':'+(j.whoName||'')); o.parts=parts;
+   o.splitPub=JSON.parse(publishState()).jkPlan.split['WO-D|OHCJSMDORSET3801'];
+   jkToggle('s:champa'); o.sharePill=/shared/.test(document.querySelector('#jkBody table[data-staff="champa"]').innerHTML) && /of 30/.test(document.querySelector('#jkBody table[data-staff="champa"]').innerHTML);
+   jkSplitOpen='WO-D|OHCJSMDORSET3801'; jkRender(); o.shareForm=document.querySelectorAll('#jkBody tr.jk-share input[data-share]').length; o.shareNote=(document.getElementById('jkShareNote')||{}).textContent||'';
+   jkSplitOpen=''; jkToggle('s:champa');
+   jkDone('WO-D|OHCJSMDORSET3801#champa'); o.partDone=!jkJobs().some(j=>j.key==='WO-D|OHCJSMDORSET3801#champa') && jkJobs().some(j=>j.key==='WO-D|OHCJSMDORSET3801#joanne') && jkDoneList().some(d=>d.key==='WO-D|OHCJSMDORSET3801#champa' && d.qty===10);
+   jkSplitClear('WO-D|OHCJSMDORSET3801'); o.cleared=!jkPlan.split['WO-D|OHCJSMDORSET3801'] && jkJobs().filter(j=>j.ref==='WO-D').length===1 && jkJobs().find(j=>j.ref==='WO-D').qty===30 && !jkPlan.done['WO-D|OHCJSMDORSET3801#champa'];
+   jkAssign('WO-D|OHCJSMDORSET3801','champa');   // the pin back, for the checks below
    // a minute override on the Dorset family
    const fam=jkFamily('OHCJSMDORSET3801'); jkMinsSet(fam,'mach','45'); o.fam=fam; o.ovr=jkMinsFor('OHCJSMDORSET3801');
    jkMinsSet(fam,'mach',''); o.back=jkMinsFor('OHCJSMDORSET3801').src;
@@ -114,6 +124,9 @@ const path = require('path');
  ck('a line dragged to the top keeps that order, pins both, is saved and marked', r.dragAfter[0]==='WO-B|OHCJSMDORSET3801' && r.dragAfter.length===2 && r.orderSaved.join()===r.dragAfter.join() && r.handMark && r.resetBtn && r.bFirst, [r.dragAfter,r.orderSaved,r.handMark,r.resetBtn,r.bFirst]);
  ck('dropped into another list it moves there', r.movedTo==='joanne' && r.leftOld && r.joanneOrder.join()==='WO-B|OHCJSMDORSET3801', [r.movedTo,r.leftOld,r.joanneOrder]);
  ck('reset order forgets the hand order and the pins', r.resetDone);
+ ck('a shared works order: 10 on Champa, 12 on Joanne, 8 left to the plan, all with dates', r.parts.length===3 && r.parts.indexOf('WO-D|OHCJSMDORSET3801#champa:10:Champa Shah')>=0 && r.parts.indexOf('WO-D|OHCJSMDORSET3801#joanne:12:Joanne Leigh')>=0 && r.parts.some(x=>/^WO-D\|OHCJSMDORSET3801:8:/.test(x)), r.parts);
+ ck('the share is published, shown on the line, and the form has a box per machinist', r.splitPub && r.splitPub.champa===10 && r.sharePill && r.shareForm===8 && /22 given out, 8 left/.test(r.shareNote), [r.splitPub,r.sharePill,r.shareForm,r.shareNote]);
+ ck('done on one part leaves the other parts; clear share puts the line back whole', r.partDone && r.cleared, [r.partDone,r.cleared]);
  ck('a typed figure wins, cleared goes back to assumed', r.ovr.mach===45 && r.ovr.src==='plan' && r.back==='assumed', [r.fam,r.ovr,r.back]);
  ck('a typed holiday and a person taken out', r.joanneHol===0 && r.safiaOut);
  ck('saved and published with the state', r.saved && r.saved.staff.length===9 && r.pub['WO-D|OHCJSMDORSET3801']==='champa');
