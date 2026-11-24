@@ -71,6 +71,13 @@ const path = require('path');
    jkDone('WO-D|OHCJSMDORSET3801#champa'); o.partDone=!jkJobs().some(j=>j.key==='WO-D|OHCJSMDORSET3801#champa') && jkJobs().some(j=>j.key==='WO-D|OHCJSMDORSET3801#joanne') && jkDoneList().some(d=>d.key==='WO-D|OHCJSMDORSET3801#champa' && d.qty===10);
    jkSplitClear('WO-D|OHCJSMDORSET3801'); o.cleared=!jkPlan.split['WO-D|OHCJSMDORSET3801'] && jkJobs().filter(j=>j.ref==='WO-D').length===1 && jkJobs().find(j=>j.ref==='WO-D').qty===30 && !jkPlan.done['WO-D|OHCJSMDORSET3801#champa'];
    jkAssign('WO-D|OHCJSMDORSET3801','champa');   // the pin back, for the checks below
+   // can't sew: a Stratford line never lands on Champa, Jacqueline or the new staff by itself; pinned there it is flagged
+   WOs.push({ref:'WO-S',due:'2026-12-02',createdAt:'2026-11-24',printed:true,items:[{code:'OHCJSMSTRATFORD4601',qty:60}]}); rows.push(mkRow('OHCJSMSTRATFORD4601','Stratford jacket 46',0,0,0,0,0,0,0)); rows[rows.length-1].cat='Chef Jackets';
+   recalcWOs(); recalcQtys(); jkRender();
+   var sj=jkJobs(); jkSchedule(sj); o.cantWho=sj.find(j=>j.ref==='WO-S').whoName; o.cantList=jkPlan.staff.filter(s=>jkCant(s,'OHCJSMSTRATFORD4601')).map(s=>s.id).join(); o.cantDerby=jkCant(jkPlan.staff.find(s=>s.id==='champa'),'OHLCJSDERBYSHIRE1401') && !jkCant(jkPlan.staff.find(s=>s.id==='champa'),'OHCJSMOXFORD4201');
+   jkAssign('WO-S|OHCJSMSTRATFORD4601','champa'); var sj2=jkJobs(); jkSchedule(sj2); o.cantPinned=sj2.find(j=>j.ref==='WO-S').whoName==='Champa Shah' && sj2.find(j=>j.ref==='WO-S').cant; jkToggle('s:champa'); o.cantFlag=/can't sew/.test(document.querySelector('#jkBody table[data-staff="champa"]').innerHTML); jkToggle('s:champa');
+   jkAssign('WO-S|OHCJSMSTRATFORD4601',''); WOs.pop(); rows.pop(); recalcWOs(); recalcQtys(); jkRender();
+   (function(){ var keep=jkPlan; jkLoad({staff:[{id:'champa',name:'C',team:'jacket',eff:85},{id:'x',name:'X',team:'new',eff:40},{id:'diane',name:'D',team:'jacket',eff:85}],effVer:2}); o.cantMig=[jkPlan.staff[0].cant,jkPlan.staff[1].cant,jkPlan.staff[2].cant||'']; jkPlan=keep; })();
    // a minute override on the Dorset family
    const fam=jkFamily('OHCJSMDORSET3801'); jkMinsSet(fam,'mach','45'); o.fam=fam; o.ovr=jkMinsFor('OHCJSMDORSET3801');
    jkMinsSet(fam,'mach',''); o.back=jkMinsFor('OHCJSMDORSET3801').src;
@@ -127,6 +134,9 @@ const path = require('path');
  ck('a shared works order: 10 on Champa, 12 on Joanne, 8 left to the plan, all with dates', r.parts.length===3 && r.parts.indexOf('WO-D|OHCJSMDORSET3801#champa:10:Champa Shah')>=0 && r.parts.indexOf('WO-D|OHCJSMDORSET3801#joanne:12:Joanne Leigh')>=0 && r.parts.some(x=>/^WO-D\|OHCJSMDORSET3801:8:/.test(x)), r.parts);
  ck('the share is published, shown on the line, and the form has a box per machinist', r.splitPub && r.splitPub.champa===10 && r.sharePill && r.shareForm===8 && /22 given out, 8 left/.test(r.shareNote), [r.splitPub,r.sharePill,r.shareForm,r.shareNote]);
  ck('done on one part leaves the other parts; clear share puts the line back whole', r.partDone && r.cleared, [r.partDone,r.cleared]);
+ ck('a Stratford line goes to someone who sews it; Champa, Jacqueline and the new staff are off it', ['Joanne Leigh','Christine Ormisher','Diane Oakes'].indexOf(r.cantWho)>=0 && r.cantList==='champa,jacqueline,nayna,safia,christineb' && r.cantDerby, [r.cantWho,r.cantList,r.cantDerby]);
+ ck('pinned on Champa anyway it is flagged', r.cantPinned && r.cantFlag);
+ ck('a plan saved before gets the lists once', r.cantMig.join('|')==='STRATFORD, DERBYSHIRE|STRATFORD, DERBYSHIRE|', r.cantMig);
  ck('a typed figure wins, cleared goes back to assumed', r.ovr.mach===45 && r.ovr.src==='plan' && r.back==='assumed', [r.fam,r.ovr,r.back]);
  ck('a typed holiday and a person taken out', r.joanneHol===0 && r.safiaOut);
  ck('saved and published with the state', r.saved && r.saved.staff.length===9 && r.pub['WO-D|OHCJSMDORSET3801']==='champa');
