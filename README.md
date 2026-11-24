@@ -337,8 +337,21 @@ this morning is in the plan straight away:
   stock and the live works orders do not cover (Clockwork container codes
   left out), and special makes still in the queue.
 
-Staff, holidays, pins and typed minutes are kept in `jkPlan` in the saved
-and published state; an editor absorbs a published plan saved later than
+- The tab runs: the tiles, *Jackets planned by week* (a red cell where a
+  person has a line finishing after its date, amber where their week is 95%
+  or more full; a running total of the minutes the orders need by each week
+  against the team's minutes, red where the promises outrun the team; and a
+  warning naming the works orders that will not be made before the shutdown),
+  then each machinist as a closable banner (click the name; the choice is
+  remembered on the PC), then the priority list (closed until opened), the
+  orders with no works order, and the lines marked done.
+- **Done** on a line (editor) means made and in finishing: it leaves the plan
+  and is listed under *Done - in finishing* with an **Undo**. The mark lives
+  with the plan, so it is published with the next Publish and goes when the
+  works order is completed or deleted.
+
+Staff, holidays, pins, done marks and typed minutes are kept in `jkPlan` in
+the saved and published state; an editor absorbs a published plan saved later than
 its own (the other editor PC's). Test: `tests/test-jacketplan.js`.
 
 ## The Warehouse tab
