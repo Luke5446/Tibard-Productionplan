@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('363 styles in the master', r.count===363, r.count);
+ ck('364 styles in the master', r.count===364, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -275,6 +275,12 @@ const path = require('path');
  ck('LRGL0203 (25 Nov 2026): one size on the WCL2415 pattern; CO5003ECO at A4 0.25 m (the sheet says A6; All Costings costs the code on CO7003); black thread at the waist apron 30; a stock style with no branding; the 61 x 37 cm chart with the cut size; four making lines; ± 1 cm; Living Ventures; the WCL222203 cloth untouched', r22==='LRGL0203||onesize|WCL2415 — Black waiters cloth pattern|CO5003ECO:A4:0.25|CO7003/0.25/All Costings|CMP-THR-EP80-09700-03|30||61 cm (± 1)/37 cm (± 1)/63 cm x 39 cm (25" x 16")||stock||4|Tolerance ± 1 cm|Living Ventures|A4', r22);
  d=await printOf('LRGL0203',100);
  ck('LRGL0203 print: the 61 cm chart, the folder, CO5003ECO and the thread code, no labels, no branding band', d.text.includes('61 cm (± 1)')&&d.text.includes('using the folder')&&d.text.includes('CO5003ECO')&&d.text.includes('CMP-THR-EP80-09700-03')&&d.text.includes('No labels')&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
+
+ const r23=await p.evaluate(()=>{ const c='EGOCICJ0193MM01', h=styleForCode(c); if(!h) return null; const s=h.style;
+   return [s.code, h.size, s.brandType, s.logoImg?s.logoImg.slice(0,15):'', s.placeImg?'place':'', smIsStockStyle(c)?'stock':'own', s.customer||'', s.chart, s.fabrics[0][1]+':'+s.fabrics[0][2], s.trims[0][3], styleForCode('EGOCICJ01935401').size, styleForCode('EGOCICJ0193XS01').size, styleForCode('CICJ0193MM01').style.code, styleForCode('CICJ0193MM01').style.brandType||''].join('|'); });
+ ck('EGOCICJ0193--01 (25 Nov 2026): the Ego short sleeve jacket resolves at MM, 54 and XS with the Ego Mediterranean logo on the right sleeve as its own branding, on the CJ0193-SS chart; the stock CICJ0193--01 untouched', r23==='EGOCICJ0193--01|MM|Embroidery|data:image/jpeg||own|Ego Restaurants|CJ0193-SS|PC2001ECO:B2|CMP-THR-PC075-32109-01|54|XS|CICJ0193--01|', r23);
+ d=await printOf('EGOCICJ0193MM01',30);
+ ck('EGOCICJ0193MM01 print: the branding band with the right sleeve wording and the logo', d.text.includes('CUSTOMER BRANDING')&&d.text.includes('right sleeve'), d.text);
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
