@@ -133,6 +133,8 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `templates-2026-11-23.json` | Those two records for the costing app. |
 | `LRGL0203-ServerCloth.xlsx` | Stock works order for LRGL0203, the black 100% organic cotton server cloth for Living Ventures on the WCL2415 black waiters cloth pattern: cut 63 x 39 cm, finished 61 x 37 cm (24" x 15", ± 1 cm), double turned and topstitched 6 mm all round, black Coats Epic 80's thread, no labels, no embroidery (Yvonne 2005; fabric to 3111 black 2010; JH 25/3/25 to Tiajo organic cotton). The sheet puts the cloth at A6; Sage has it at A4. All Costings still costs the code on CO7003. In the app as style LRGL0203 on the LRGL0203-MEAS chart; 0.25 m CO5003ECO at A4. |
 | `templates-2026-11-25.json` | That record for the costing app. |
+| `EGOCICJ0193-Ego-E871000.xlsx` | Tibard embroidery form E871000 for Ego Restaurant Nuneaton (Jamie-Leih, issued 23/9/26, required 7/10/26): the Ego Mediterranean logo, 80 mm, embroidered to the right sleeve as worn in blue and yellow on the stock white short sleeve mandarin collar jacket CICJ0193 (the Sage stock list sheet is left out of the copy). In the app as style EGOCICJ0193--01, cloned from CICJ0193--01 with the logo as its own branding, so the Sage codes EGOCICJ0193XS01 to XL01 and 5201/5401 resolve to it and the embroidery-only works orders print the branding band. |
+| `templates-2026-11-25b.json` | That record for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards
