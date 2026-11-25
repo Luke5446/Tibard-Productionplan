@@ -38,7 +38,7 @@ const path = require('path');
  }, CODES);
 
  CODES.forEach(c=>ck(c+' resolves to its own one-size record', r[c].code===c&&r[c].size===null&&r[c].one&&r[c].printable, r[c]));
- ck('362 styles in the master', r.count===362, r.count);
+ ck('363 styles in the master', r.count===363, r.count);
  const cb=r.CBAPP054964PG, wcl=r.WCL222203, wag=r.WAGHTM016007, hic=r.OHHICAPP062803DEN, pl=r.OHAPP063015HP1S;
  ck('Ciao Bella: PC2064ECO at A3, 0.5 m, All Costings agrees', cb.fab==='PC2064ECO:A3:0.5'&&cb.usage[0]==='PC2064ECO'&&cb.usage[1]===0.5&&cb.usage[2]==='All Costings', [cb.fab,cb.usage]);
  ck('Ciao Bella: waist apron thread at 30, grey 09963 and the Tibard label tape coded, own logo and placement', cb.kind==='APW'&&cb.thread===30&&cb.codes==='CMP-THR-EP80-09963-64+CMP-LBL-NYL-25-01'&&cb.brand==='Embroidery'&&cb.logo==='data:image/jpeg'&&cb.place==='data:image/jpeg'&&cb.stock===false&&cb.chart===3, cb);
@@ -269,6 +269,12 @@ const path = require('path');
  ck('CT3082--28 52" print: the black/white check record, the 52" row highlighted, PC2028 at D2, white thread and black cord codes, no branding band', d.hit.length===1&&d.hit[0]==='52"'&&/PC2028 D2/.test(d.text)&&d.text.includes('CMP-THR-PC075-32109-01')&&d.text.includes('CMP-CORD-PP6-03')&&!d.text.includes('CUSTOMER BRANDING'), [d.hit,d.text.slice(0,300)]);
  d=await printOf('OHAPP063103PC/DS',50);
  ck('OHAPP063103PC/DS print: variant 0631, the eyelet and thread codes, the branding band with the left pocket wording, the 70 cm skirt, the strap routing card named', d.text.includes('0631')&&d.text.includes('CMP-30ED-28-931')&&d.text.includes('CMP-THR-EP80-09700-03')&&d.text.includes('CUSTOMER BRANDING')&&d.text.includes('left pocket')&&d.text.includes('70CM')&&d.text.includes('OHSTRAP--WAIST')&&!d.text.includes('rivet'), [d.pngs,d.text.slice(0,300)]);
+
+ const r22=await p.evaluate(()=>{ const c='LRGL0203', h=styleForCode(c), u=fabricUsageFor(c); if(!h) return null; const s=h.style, thr=s.trims.filter(t=>/^thread$/i.test(t[0]))[0];
+   return [s.code, h.size, s.oneSize?'onesize':'sized', s.lectra, s.fabrics.map(f=>f[1]+':'+f[2]+':'+f[3]).join('+'), u&&[u.code,u.metres,u.source].join('/'), s.trims.map(t=>t[3]).join('+'), thr&&thr[2], garmentKind(c,s), (STYLE_MASTER.charts[s.chart]||[]).map(r=>r[1]).join('/'), s.brandType, smIsStockStyle(c)?'stock':'own', s.logoImg?'logo':'', s.mfg.length, s.tol, s.customer||'', styleForCode('WCL222203').style.fabrics[0][2]].join('|'); });
+ ck('LRGL0203 (25 Nov 2026): one size on the WCL2415 pattern; CO5003ECO at A4 0.25 m (the sheet says A6; All Costings costs the code on CO7003); black thread at the waist apron 30; a stock style with no branding; the 61 x 37 cm chart with the cut size; four making lines; ± 1 cm; Living Ventures; the WCL222203 cloth untouched', r22==='LRGL0203||onesize|WCL2415 — Black waiters cloth pattern|CO5003ECO:A4:0.25|CO7003/0.25/All Costings|CMP-THR-EP80-09700-03|30||61 cm (± 1)/37 cm (± 1)/63 cm x 39 cm (25" x 16")||stock||4|Tolerance ± 1 cm|Living Ventures|A4', r22);
+ d=await printOf('LRGL0203',100);
+ ck('LRGL0203 print: the 61 cm chart, the folder, CO5003ECO and the thread code, no labels, no branding band', d.text.includes('61 cm (± 1)')&&d.text.includes('using the folder')&&d.text.includes('CO5003ECO')&&d.text.includes('CMP-THR-EP80-09700-03')&&d.text.includes('No labels')&&!d.text.includes('CUSTOMER BRANDING'), d.text.slice(0,300));
 
  console.log('errors:', errs.length?errs.join(' | '):'none');
  console.log(fails?('FAILED '+fails):'ALL PASSED');
