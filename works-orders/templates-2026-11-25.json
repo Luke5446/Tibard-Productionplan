@@ -1,0 +1,71 @@
+{
+ "styles": [
+  {
+   "code": "LRGL0203",
+   "name": "Black 100% organic cotton server cloth, 61 cm x 37 cm",
+   "desc": "SERVER CLOTH (napkin) · Finished 61 cm x 37 cm (24\" x 15\") · Cut 63 cm x 39 cm (25\" x 16\") · Double turned and topstitched 6 mm all round · No embroidery, no labels",
+   "lectra": "WCL2415 — Black waiters cloth pattern",
+   "variant": "",
+   "chart": "LRGL0203-MEAS",
+   "fabrics": [
+    [
+     "Black 100% organic cotton 260 gsm (Tiajo X149ECO-AM08) — rating 0.25 m. The sheet puts CO5003ECO at A6; Sage has it at A4",
+     "CO5003ECO",
+     "A4",
+     0.25,
+     2.81
+    ]
+   ],
+   "trims": [
+    [
+     "Thread",
+     "THREAD — COATS EPIC 80'S BLACK 09700 — cost per metre",
+     30,
+     "CMP-THR-EP80-09700-03",
+     0.000714
+    ]
+   ],
+   "mfg": [
+    "Cut 25\" x 16\" (63 cm x 39 cm).",
+    "Double turn the two long sides using the folder and topstitch 6 mm.",
+    "Double turn the two shorter sides by hand and topstitch 6 mm.",
+    "No labels."
+   ],
+   "fin": [
+    "Check, trim and fold."
+   ],
+   "machMins": null,
+   "finMins": null,
+   "cutBatch": 25,
+   "cutMins": 15,
+   "tol": "Tolerance ± 1 cm",
+   "oneSize": true,
+   "customer": "Living Ventures",
+   "brandType": "",
+   "brandPlace": "",
+   "note": "Stock works order LRGL0203, the black server cloth (WCL2415 black waiters cloth pattern) for Living Ventures, issued by Gail. Sheet history: Yvonne 3.10.05; fabric changed from Hunters black to 3111 black 4.3.10; JH 25/3/25 fabric changed from 3111 to Tiajo 100% organic cotton 260 gsm X149ECO-AM08 (CO5003ECO), rating 0.25 m. The sheet puts the cloth at A6; the record carries Sage's bin A4. All Costings still costs LRGL0203 on CO7003 (the old 3111 black) at the same 0.25 m. No trims beyond black Coats Epic 80's thread, costed at the waist apron standard as there is no standard for a cloth; no labels, no embroidery. The sheet's sketch is a plain rectangle with the hem stitching and is not carried. Document: works-orders/LRGL0203-ServerCloth.xlsx."
+  }
+ ],
+ "charts": {
+  "LRGL0203-MEAS": [
+   [
+    "Finished width",
+    "61 cm (± 1)"
+   ],
+   [
+    "Finished length",
+    "37 cm (± 1)"
+   ],
+   [
+    "Cut size",
+    "63 cm x 39 cm (25\" x 16\")"
+   ]
+  ]
+ },
+ "chartCols": {
+  "LRGL0203-MEAS": [
+   "Measurement",
+   "Value"
+  ]
+ }
+}
