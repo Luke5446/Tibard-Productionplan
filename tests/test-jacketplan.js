@@ -115,6 +115,10 @@ const path = require('path');
    WOs.pop(); sopDemand.lines.pop(); recalcWOs(); recalcQtys(); jkRender();
    // a later published plan replaces this one; an older one does not
    o.absorbOld=jkAbsorb({staff:[{id:'x',name:'X'}],savedAt:'2000-01-01'}); o.absorbNew=jkAbsorb({staff:[{id:'x',name:'X',monThu:450,fri:285,eff:100}],mins:{},assign:{},savedAt:'2099-01-01'}); o.afterAbsorb=jkPlan.staff.map(s=>s.name);
+   // print list: one button per person with work, the sheet names the person, their last day and their lines in order
+   o.printBtns=[...document.querySelectorAll('#jkBody button')].filter(b=>/Print list/.test(b.textContent)).length;
+   (function(){ var out='', ro=window.open, s0=jkPlan.staff[0]; window.open=function(){ return {document:{open:function(){},write:function(x){ out+=x; },close:function(){}}}; }; jkPrint(s0.id); window.open=ro;
+     o.printOk=new RegExp(s0.name).test(out) && /Last day:<\/b> /.test(out)===!!s0.last && /window\.print/.test(out) && /<th>Works order<\/th>/.test(out); })();
    return o;
  });
  ck('tab shown', r.tab);
@@ -167,6 +171,7 @@ ck('a week cell opens that person\'s works orders with quantities, and closes ag
    return {rows:document.querySelectorAll('#jkBody table tbody tr').length, inputs:document.querySelectorAll('#jkBody input, #jkBody select, #jkBody button').length, tiles:document.querySelectorAll('#jkBody .kpi-tile').length, who:/Champa|Joanne|Jacqueline|Christine|Diane/.test(document.getElementById('jkBody').textContent)};
  });
  ck('viewer sees the plan with no controls', v.rows>=2 && v.inputs===0 && v.who, v);
+ ck('print list button per person and the sheet carries name, last day and lines', r.printBtns>=1 && r.printOk, [r.printBtns,r.printOk]);
  ck('no page errors', errs.length===0, errs);
  await b.close(); console.log(fails?('\n'+fails+' FAILED'):'\nall passed'); process.exit(fails?1:0);
 })();

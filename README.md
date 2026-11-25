@@ -366,6 +366,10 @@ this morning is in the plan straight away:
   plan to place. Each part is planned on its person, marked *shared* with
   "of N"; Done works per part; **Clear share** puts the line back whole.
   Kept in `jkPlan.split`.
+- **Print list** on a person's banner (25 Nov 2026) opens a print sheet for
+  that machinist once the PM is happy with it: name, last day and days off,
+  then their lines in working order (works order, code, qty, minutes, start,
+  finish, needed by, customer) with a tick box each. Print only; nothing saved.
 - **Done** on a line (editor) means made and in finishing: it leaves the plan
   and is listed under *Done - in finishing* with an **Undo**. The mark lives
   with the plan, so it is published with the next Publish and goes when the
