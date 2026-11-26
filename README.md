@@ -370,6 +370,19 @@ this morning is in the plan straight away:
   that machinist once the PM is happy with it: name, last day and days off,
   then their lines in working order (works order, code, qty, minutes, start,
   finish, needed by, customer) with a tick box each. Print only; nothing saved.
+- **Search** (26 Nov 2026): the box in the tab header narrows every list to
+  the lines matching a works order, code, style family, customer or
+  machinist; people with no match are hidden, matching ones open.
+- **Only sew** (26 Nov 2026): a per-person box in Staff & hours (next to
+  Can't sew). While it holds a word (OXFORD), the plan gives that person
+  nothing but those styles. Karen Tuohey and Christine Burgess start on
+  OXFORD while training; clear the box when they are trained. Kept in
+  `s.only` on the staff row.
+- **A pin with no time left** (26 Nov 2026): a line pinned to someone who
+  has no minutes left before their last day used to sit unplaced and count
+  as "not made before the shutdown" even with the team free. The plan now
+  places it with whoever is free and marks it *no time: was <name>*; pick
+  a machinist to pin it elsewhere, or auto to clear the pin.
 - **Done** on a line (editor) means made and in finishing: it leaves the plan
   and is listed under *Done - in finishing* with an **Undo**. The mark lives
   with the plan, so it is published with the next Publish and goes when the
