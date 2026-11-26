@@ -139,6 +139,13 @@ const path = require('path');
      var jj=jkJobs(), a=jj[0]; var gone={id:'gone',name:'Gone Person',team:'jacket',monThu:450,fri:285,eff:85,from:'',last:'2026-11-20',hols:[]}; jkPlan.staff.push(gone); jkPlan.assign[a.key]=gone.id; var j2=jkJobs(); jkSchedule(j2); var a2=j2.filter(function(x){ return x.key===a.key; })[0];
      o.overflow=a2.placed && a2.who!==gone.id && a2.overflow===gone.name; delete jkPlan.assign[a.key]; jkPlan.staff.pop();
      jkQ=a.ref; jkRender(); o.searchRows=document.querySelectorAll('#jkBody table.jk-list tbody tr[data-key]').length; o.searchNote=/lines match/.test(document.getElementById('jkBody').innerHTML); jkQ=''; jkRender(); })();
+   // ticks: Print list prints only the ticked lines when any are ticked; ticks live on this PC and go when the line goes
+   (function(){ localStorage.removeItem('tibard_jk_ticks'); jkTicks=null; var jj=jkJobs(), sc=jkSchedule(jj); var s0=sc.staff.filter(function(x){ return sc.st[x.id].jobs.length>=2; })[0]||sc.staff.filter(function(x){ return sc.st[x.id].jobs.length; })[0];
+     var js=sc.st[s0.id].jobs; jkToggle('s:'+s0.id); o.tickBoxes=document.querySelectorAll('#jkBody table[data-staff="'+s0.id+'"] input[type=checkbox]').length===js.length;
+     jkTick(js[0].key,true); o.tickBtn=/Print 1 ticked/.test(document.getElementById('jkBody').innerHTML) && /Clear ticks/.test(document.getElementById('jkBody').innerHTML);
+     var out='', ro=window.open; window.open=function(){ return {document:{open:function(){},write:function(x){ out+=x; },close:function(){}}}; }; jkPrint(s0.id); window.open=ro;
+     o.tickPrint=(out.match(/<tr class="late">|<tr>(?!<th)/g)||[]).length===1 && /1 of \d+ lines picked/.test(out) && out.indexOf(js[0].ref)>0;
+     o.tickKept=JSON.parse(localStorage.getItem('tibard_jk_ticks'))[js[0].key]===1; jkTickClear(s0.id, js); o.tickCleared=!Object.keys(jkTicks).length && /Print list/.test(document.getElementById('jkBody').innerHTML); jkToggle('s:'+s0.id); })();
    // print list: one button per person with work, the sheet names the person, their last day and their lines in order
    o.printBtns=[...document.querySelectorAll('#jkBody button')].filter(b=>/Print list/.test(b.textContent)).length;
    (function(){ var out='', ro=window.open, s0=jkPlan.staff[0]; window.open=function(){ return {document:{open:function(){},write:function(x){ out+=x; },close:function(){}}}; }; jkPrint(s0.id); window.open=ro;
@@ -205,6 +212,7 @@ ck('a week cell opens that person\'s works orders with quantities, and closes ag
  ck('Only sew keeps other styles off a trainee', r.onlyDorset===true && r.onlyOxford===false, [r.onlyDorset,r.onlyOxford]);
  ck('a pin to someone with no time left falls through to the plan, flagged', r.overflow===true);
  ck('search narrows the lists to the matching line', r.searchRows===1 && r.searchNote, [r.searchRows,r.searchNote]);
+ ck('tick boxes: Print prints the ticked lines only, ticks kept on the PC and cleared', r.tickBoxes && r.tickBtn && r.tickPrint && r.tickKept && r.tickCleared, [r.tickBoxes,r.tickBtn,r.tickPrint,r.tickKept,r.tickCleared]);
  ck('print list button per person and the sheet carries name, last day and lines', r.printBtns>=1 && r.printOk, [r.printBtns,r.printOk]);
  ck('no page errors', errs.length===0, errs);
  await b.close(); console.log(fails?('\n'+fails+' FAILED'):'\nall passed'); process.exit(fails?1:0);

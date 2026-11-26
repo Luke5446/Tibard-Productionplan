@@ -370,6 +370,12 @@ this morning is in the plan straight away:
   that machinist once the PM is happy with it: name, last day and days off,
   then their lines in working order (works order, code, qty, minutes, start,
   finish, needed by, customer) with a tick box each. Print only; nothing saved.
+  **Ticks** (26 Nov 2026): a tick box at the start of each line; when any
+  are ticked the button reads *Print n ticked* and the sheet carries only
+  those, so the PM can hand out a few works orders at a time while the plan
+  is still moving. *Clear ticks* unticks the person. Ticks are kept on the
+  PC (`localStorage` `tibard_jk_ticks`), not published, and go when the
+  line leaves the plan.
 - **Search** (26 Nov 2026): the box in the tab header narrows every list to
   the lines matching a works order, code, style family, customer or
   machinist; people with no match are hidden, matching ones open.
