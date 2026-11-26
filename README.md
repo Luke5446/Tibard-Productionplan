@@ -389,6 +389,12 @@ this morning is in the plan straight away:
   against the earliest live order's promised date (red if it finishes after
   it, green if not) and shows "SO nnn customer" under For. Its place in the
   queue is unchanged: customer orders first, then stock by due date.
+- **Promised column** (26 Nov 2026): the newest promised date of the sales
+  orders behind the line (the orders the works order covers; for a stock
+  line, every live order on the code), with the count when there are
+  several. Click it for the list, newest promise first: order, customer,
+  quantity from this works order (or ordered), promised, ordered on. Also on
+  the print sheet.
 - **Done** on a line (editor) means made and in finishing: it leaves the plan
   and is listed under *Done - in finishing* with an **Undo**. The mark lives
   with the plan, so it is published with the next Publish and goes when the
