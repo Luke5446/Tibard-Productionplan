@@ -395,6 +395,17 @@ this morning is in the plan straight away:
   several. Click it for the list, newest promise first: order, customer,
   quantity from this works order (or ordered), promised, ordered on. Also on
   the print sheet.
+- **Needed by is the works order due date** (26 Nov 2026, Luke: WO-1998 is
+  promised for the 17th but due on the 10th because the order needs
+  embroidery after sewing). The earliest sales order promise is kept beside
+  it: a due date later than that promise shows *due after promise*; a line
+  that finishes after the promise shows *misses promise* (and *moved: after
+  promise* when the PM pinned or dragged it there). The queue sorts customer
+  orders first, then by the needed-by date.
+- **Not cut chip** (26 Nov 2026): under the works order number when the
+  cutting log has no cut line for it yet (the tab reads the log once).
+- **Layout** (26 Nov 2026): the search box sits just above the people; the
+  "Who makes what" heading and its instructions are gone.
 - 26 Nov 2026: the efficiency % is no longer shown beside a trainee's name in
   the week table or on their banner (it stays in Staff & hours).
 - **Done** on a line (editor) means made and in finishing: it leaves the plan
