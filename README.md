@@ -401,6 +401,21 @@ this morning is in the plan straight away:
   several. Click it for the list, newest promise first: order, customer,
   quantity from this works order (or ordered), promised, ordered on. Also on
   the print sheet.
+- **Nothing is auto-assigned** (26 Nov 2026, Luke: capacity was pushing
+  uncut works orders to the top of the operators' lists). A line is planned
+  on a person only once the PM has issued it: by picking a machinist in the
+  **Ready to issue** list (above the people; can't sew and no time are
+  greyed, a late finish is shown; not cut is allowed so what is coming from
+  cutting can be planned), by dragging it into a person's list, or by a
+  share. The week table and the tiles show only issued lines, with a note
+  of how many are still to issue. *Back to ready* on a line un-issues it.
+  A closed banner, **If every works order were auto-assigned**, shows the
+  what-if over all live lines (issued ones kept where they are) with its
+  own drill-down and a button to issue the unissued lines as shown. A line
+  issued to someone with no minutes left before their last day stays with
+  them flagged *no time* (the what-if moves it on). Pins, hand order,
+  shares and done marks are unchanged in `jkPlan`; scheduler
+  `jkSchedule(jobs, mode)` takes `'pm'` (default) or `'auto'`.
 - **Needed by is the works order due date** (26 Nov 2026, Luke: WO-1998 is
   promised for the 17th but due on the 10th because the order needs
   embroidery after sewing). The earliest sales order promise is kept beside

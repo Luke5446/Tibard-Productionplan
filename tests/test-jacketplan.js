@@ -34,6 +34,8 @@ const path = require('path');
    recalcWOs(); recalcQtys();
    jkLoad(null);
    smShowTab('jk');
+   // nothing is auto-assigned now: issue everything as the what-if would, so the placement checks below still apply
+   jkAdoptAuto();
    const o={};
    const jobs=jkJobs(); o.order=jobs.map(j=>j.ref); o.cust=jobs.map(j=>j.cust); o.need=jobs.map(j=>j.need||j.due);
    o.minsSrc=jobs.map(j=>j.ref+':'+j.src+':'+j.mach);
@@ -74,7 +76,7 @@ const path = require('path');
    // can't sew: a Stratford line never lands on Champa, Jacqueline or the new staff by itself; pinned there it is flagged
    WOs.push({ref:'WO-S',due:'2026-12-02',createdAt:'2026-11-24',printed:true,items:[{code:'OHCJSMSTRATFORD4601',qty:60}]}); rows.push(mkRow('OHCJSMSTRATFORD4601','Stratford jacket 46',0,0,0,0,0,0,0)); rows[rows.length-1].cat='Chef Jackets';
    recalcWOs(); recalcQtys(); jkRender();
-   var sj=jkJobs(); jkSchedule(sj); o.cantWho=sj.find(j=>j.ref==='WO-S').whoName; o.cantList=jkPlan.staff.filter(s=>jkCant(s,'OHCJSMSTRATFORD4601')).map(s=>s.id).join(); o.cantDerby=jkCant(jkPlan.staff.find(s=>s.id==='champa'),'OHLCJSDERBYSHIRE1401') && !jkCant(jkPlan.staff.find(s=>s.id==='champa'),'OHCJSMOXFORD4201');
+   jkAdoptAuto(); var sj=jkJobs(); jkSchedule(sj); o.cantWho=sj.find(j=>j.ref==='WO-S').whoName; o.cantList=jkPlan.staff.filter(s=>jkCant(s,'OHCJSMSTRATFORD4601')).map(s=>s.id).join(); o.cantDerby=jkCant(jkPlan.staff.find(s=>s.id==='champa'),'OHLCJSDERBYSHIRE1401') && !jkCant(jkPlan.staff.find(s=>s.id==='champa'),'OHCJSMOXFORD4201');
    jkAssign('WO-S|OHCJSMSTRATFORD4601','champa'); var sj2=jkJobs(); jkSchedule(sj2); o.cantPinned=sj2.find(j=>j.ref==='WO-S').whoName==='Champa Shah' && sj2.find(j=>j.ref==='WO-S').cant; jkToggle('s:champa'); o.cantFlag=/can't sew/.test(document.querySelector('#jkBody table[data-staff="champa"]').innerHTML); jkToggle('s:champa');
    jkAssign('WO-S|OHCJSMSTRATFORD4601',''); WOs.pop(); rows.pop(); recalcWOs(); recalcQtys(); jkRender();
    (function(){ var keep=jkPlan; jkLoad({staff:[{id:'champa',name:'C',team:'jacket',eff:85},{id:'x',name:'X',team:'new',eff:40},{id:'diane',name:'D',team:'jacket',eff:85}],effVer:2}); o.cantMig=[jkPlan.staff[0].cant,jkPlan.staff[1].cant,jkPlan.staff[2].cant||'']; jkPlan=keep; })();
@@ -82,7 +84,7 @@ const path = require('path');
    var cj=jkJobs(); jkSchedule(cj); var cjob=cj.find(j=>j.whoName==='Champa Shah'); var cw=jkWeek(cjob.finish);
    jkDrillTo('champa',cw); var dr=document.querySelector('#jkBody tr.jk-drill'); o.drill=dr?dr.textContent.replace(/\s+/g,' ').trim():''; o.drillHasRef=!!dr && dr.innerHTML.indexOf('<strong>'+cjob.ref+'</strong>')>=0 && new RegExp('<td style="text-align:right">'+cjob.qty+'<').test(dr.innerHTML);
    // the week count is what is made that week, not the whole line in the week it finishes: a line split over two weeks adds up, and the first week holds what its minutes allow
-   o.wkSplit=(function(){ var offs=jkPlan.staff.map(s=>s.off); jkPlan.staff.forEach(s=>{ if(s.id!=='champa') s.off=true; }); var all=jkJobs(); jkSchedule(all); jkPlan.staff.forEach((s,i)=>{ s.off=offs[i]; }); var cj=all; if(!all.every(j=>!j.placed || Object.keys(j.wkQty).reduce((a,w)=>a+j.wkQty[w],0)===j.qty)) return 'weeks do not add up'; var sp=cj.filter(j=>j.wkQty && Object.keys(j.wkQty).length>1); if(!sp.length) return 'no split line'; var j=sp[0]; var sum=Object.keys(j.wkQty).reduce((a,w)=>a+j.wkQty[w],0); var w1=Object.keys(j.wkQty).sort()[0]; return sum===j.qty && j.wkQty[w1]>0 && j.wkQty[w1]<j.qty && Math.abs(j.wkQty[w1]-j.qty*j.wkMins[w1]/j.mins)<1 ? 'ok' : JSON.stringify([j.ref,j.qty,j.wkQty,j.wkMins,j.mins]); })();
+   o.wkSplit=(function(){ var offs=jkPlan.staff.map(s=>s.off); jkPlan.staff.forEach(s=>{ if(s.id!=='champa') s.off=true; }); var all=jkJobs(); jkSchedule(all,'auto'); jkPlan.staff.forEach((s,i)=>{ s.off=offs[i]; }); var cj=all; if(!all.every(j=>!j.placed || Object.keys(j.wkQty).reduce((a,w)=>a+j.wkQty[w],0)===j.qty)) return 'weeks do not add up'; var sp=cj.filter(j=>j.wkQty && Object.keys(j.wkQty).length>1); if(!sp.length) return 'no split line'; var j=sp[0]; var sum=Object.keys(j.wkQty).reduce((a,w)=>a+j.wkQty[w],0); var w1=Object.keys(j.wkQty).sort()[0]; return sum===j.qty && j.wkQty[w1]>0 && j.wkQty[w1]<j.qty && Math.abs(j.wkQty[w1]-j.qty*j.wkMins[w1]/j.mins)<1 ? 'ok' : JSON.stringify([j.ref,j.qty,j.wkQty,j.wkMins,j.mins]); })();
    jkDrillTo('champa',cw); o.drillClosed=!document.querySelector('#jkBody tr.jk-drill');
    jkDrillTo('champa','2099-01-05'); o.drillOff=!document.querySelector('#jkBody tr.jk-drill'); jkDrillTo('','');
    // a minute override on the Dorset family
@@ -95,9 +97,9 @@ const path = require('path');
    // the order of the sections: week table, then the staff banners, then the priority list
    const secs=[...document.querySelectorAll('#jkBody .kpi-sec h3, #jkBody .kpi-sec #jkSearch')].map(e=>e.id==='jkSearch'?'Who makes what':e.textContent.trim()); o.secs=secs;
    // banners: a name closes and opens, remembered; the priority list starts closed and opens
-   o.staffRowsOpen=document.querySelectorAll('#jkBody .jk-ban table').length;
-   jkToggle('s:champa'); o.afterOpen=document.querySelectorAll('#jkBody .jk-ban table').length; o.remembered=JSON.parse(localStorage.getItem('tibard_jk_sections'))['s:champa']===true;
-   jkToggle('s:champa'); o.afterClose=document.querySelectorAll('#jkBody .jk-ban table').length;
+   o.staffRowsOpen=document.querySelectorAll('#jkBody .jk-ban table.jk-list').length;
+   jkToggle('s:champa'); o.afterOpen=document.querySelectorAll('#jkBody .jk-ban table.jk-list').length; o.remembered=JSON.parse(localStorage.getItem('tibard_jk_sections'))['s:champa']===true;
+   jkToggle('s:champa'); o.afterClose=document.querySelectorAll('#jkBody .jk-ban table.jk-list').length;
    o.prioClosed=!/Priority list[\s\S]*<table/.test(document.getElementById('jkBody').innerHTML.split('Priority list')[1].split('Jacket orders with')[0]);
    jkToggle('priority'); o.prioOpen=/<table/.test(document.getElementById('jkBody').innerHTML.split('Priority list')[1].split('Jacket orders with')[0]); jkToggle('priority');
    // done and undo: the line leaves the plan, is listed, is saved and published, and comes back
@@ -108,9 +110,9 @@ const path = require('path');
    jkPlan.done['WO-GONE|X']={at:'2026-11-24T10:00:00Z'}; jkRender(); o.pruned=!jkPlan.done['WO-GONE|X'];
    // too much promised: 2,000 jackets wanted this week by a customer shows short on the running total and not made this year
    WOs.push({ref:'WO-BIG',due:'2026-11-27',createdAt:'2026-11-24',printed:true,items:[{code:'OHCJSMOXFORD4201',qty:2000}]}); sopDemand.lines.push({k:'OH-9',co:'OLIVER HARVEY',so:'118999',code:'OHCJSMOXFORD4201',qty:2000,due:'2026-11-27',cust:'Big Hotel',seq:1});
-   recalcWOs(); recalcQtys(); jkRender();
+   recalcWOs(); recalcQtys(); jkAdoptAuto(); jkPlan.assign['WO-BIG|OHCJSMOXFORD4201']='joanne'; jkRender();
    const html=document.getElementById('jkBody').innerHTML;
-   o.short=/Short by \d+ min/.test(html); o.yearEnd=[...document.querySelectorAll('#jkBody .kpi-tile')].some(t=>/Not made before year end/.test(t.textContent) && +t.querySelector('.v').textContent>0); o.yearWarn=/will not be made before the shutdown/.test(html);
+   o.short=/Short by \d+ min/.test(html); o.yearEnd=[...document.querySelectorAll('#jkBody .kpi-tile')].some(t=>/not made before year end/i.test(t.textContent) && +t.querySelector('.v').textContent>0); o.yearWarn=/will not be made before the shutdown/.test(html);
    o.redCell=/background:#fecaca/.test(html);
    WOs.pop(); sopDemand.lines.pop(); recalcWOs(); recalcQtys(); jkRender();
    // a later published plan replaces this one; an older one does not
@@ -118,7 +120,7 @@ const path = require('path');
    // a stock works order with a live sales order on its code (covered by stock) is judged red/green against that order's promise
    (function(){ var r0=rows.find(function(r){ return r.code==='OHCJSMDORSET3801'; }); r0.inStock=50;
      sopDemand.lines.push({k:'OH-9',co:'OLIVER HARVEY',so:'118999',code:'OHCJSMDORSET3801',qty:5,due:'2026-11-25',cust:'Test Hotel',seq:1}); recalcWOs(); recalcQtys();
-     var jj=jkJobs(); jkSchedule(jj); var b=jj.filter(function(x){ return x.ref==='WO-B'; })[0];
+     jkPlan.assign['WO-B|OHCJSMDORSET3801']='christineo'; var jj=jkJobs(); jkSchedule(jj); var b=jj.filter(function(x){ return x.ref==='WO-B'; })[0]; delete jkPlan.assign['WO-B|OHCJSMDORSET3801'];
      o.soStock=b && !b.cust && b.soNeed==='2026-11-25' && b.soRef==='118999' && jkPromise(b)==='2026-11-25' && jkBy(b)==='2026-11-20' && b.missPromise===true;
      jkToggle('s:'+b.who); o.soShown=/SO 118999 Test Hotel/.test(document.getElementById('jkBody').innerHTML); jkToggle('s:'+b.who);
      sopDemand.lines.pop(); recalcWOs(); recalcQtys(); })();
@@ -136,11 +138,11 @@ const path = require('path');
      jkToggle('s:'+a.who); o.soLink=/Promised<\/th>/.test(document.getElementById('jkBody').innerHTML) && document.querySelectorAll('#jkBody tr.jk-so').length===0; jkSoToggle(a.key); o.soDrill=document.querySelectorAll('#jkBody tr.jk-so').length===1 && /Claridges Hotel Limited/.test(document.querySelector('#jkBody tr.jk-so').innerHTML); jkSoToggle(a.key); jkToggle('s:'+a.who); })();
    // Oxford-only while training: the plan keeps other styles off that person; a pin to someone out of time falls through to the plan, flagged; the search box narrows the lists
    (function(){ var k=jkPlan.staff[0]; k.only='OXFORD'; o.onlyDorset=jkCant(k,'OHCJSMDORSET3801'); o.onlyOxford=jkCant(k,'OHCJSMOXFORD4201'); delete k.only;
-     var jj=jkJobs(), a=jj[0]; var gone={id:'gone',name:'Gone Person',team:'jacket',monThu:450,fri:285,eff:85,from:'',last:'2026-11-20',hols:[]}; jkPlan.staff.push(gone); jkPlan.assign[a.key]=gone.id; var j2=jkJobs(); jkSchedule(j2); var a2=j2.filter(function(x){ return x.key===a.key; })[0];
-     o.overflow=a2.placed && a2.who!==gone.id && a2.overflow===gone.name; delete jkPlan.assign[a.key]; jkPlan.staff.pop();
-     jkQ=a.ref; jkRender(); o.searchRows=document.querySelectorAll('#jkBody table.jk-list tbody tr[data-key]').length; o.searchNote=/lines match/.test(document.getElementById('jkBody').innerHTML); jkQ=''; jkRender(); })();
+     jkAdoptAuto(); var jj=jkJobs(); jkSchedule(jj); var a=jj.filter(function(x){ return !x.ready; })[0]; var gone={id:'gone',name:'Gone Person',team:'jacket',monThu:450,fri:285,eff:85,from:'',last:'2026-11-20',hols:[]}; jkPlan.staff.push(gone); jkPlan.assign[a.key]=gone.id; var j2=jkJobs(); jkSchedule(j2); var a2=j2.filter(function(x){ return x.key===a.key; })[0];
+     o.overflow=!a2.placed && a2.noTime===true && a2.whoName===gone.name; var j2b=jkJobs(); jkSchedule(j2b,'auto'); var a2b=j2b.filter(function(x){ return x.key===a.key; })[0]; o.overflowAuto=a2b.placed && a2b.who!==gone.id && a2b.overflow===gone.name; delete jkPlan.assign[a.key]; jkPlan.staff.pop();
+     jkAdoptAuto(); jkQ=a.ref; jkRender(); o.searchRows=document.querySelectorAll('#jkBody table.jk-list tbody tr[data-key]').length; o.searchNote=/lines match/.test(document.getElementById('jkBody').innerHTML); jkQ=''; jkRender(); })();
    // ticks: Print list prints only the ticked lines when any are ticked; ticks live on this PC and go when the line goes
-   (function(){ localStorage.removeItem('tibard_jk_ticks'); jkTicks=null; var jj=jkJobs(), sc=jkSchedule(jj); var s0=sc.staff.filter(function(x){ return sc.st[x.id].jobs.length>=2; })[0]||sc.staff.filter(function(x){ return sc.st[x.id].jobs.length; })[0];
+   (function(){ localStorage.removeItem('tibard_jk_ticks'); jkTicks=null; jkAdoptAuto(); var jj=jkJobs(), sc=jkSchedule(jj); var s0=sc.staff.filter(function(x){ return sc.st[x.id].jobs.length>=2; })[0]||sc.staff.filter(function(x){ return sc.st[x.id].jobs.length; })[0];
      var js=sc.st[s0.id].jobs; jkToggle('s:'+s0.id); o.tickBoxes=document.querySelectorAll('#jkBody table[data-staff="'+s0.id+'"] input[type=checkbox]').length===js.length;
      jkTick(js[0].key,true); o.tickBtn=/Print 1 ticked/.test(document.getElementById('jkBody').innerHTML) && /Clear ticks/.test(document.getElementById('jkBody').innerHTML);
      var out='', ro=window.open; window.open=function(){ return {document:{open:function(){},write:function(x){ out+=x; },close:function(){}}}; }; jkPrint(s0.id); window.open=ro;
@@ -197,7 +199,7 @@ ck('a week cell opens that person\'s works orders with quantities, and closes ag
    window.now=()=>new Date('2026-11-24T10:00:00');
    rows=[ mkRow('OHCJSMOXFORD4201','Oxford jacket 42',0,30,0,0,0,0,0) ]; rows[0].cat='Chef Jackets';
    WOs=[ {ref:'WO-A',due:'2026-12-11',createdAt:'2026-11-10',printed:true,items:[{code:'OHCJSMOXFORD4201',qty:30}]} ]; sopDemand={lines:[],pastedAt:null};
-   recalcWOs(); recalcQtys(); jkLoad(null); smShowTab('jk');
+   recalcWOs(); recalcQtys(); jkLoad(null); (function(){ var jj=jkJobs(); jkSchedule(jj,'auto'); jj.forEach(function(j){ if(j.who) jkPlan.assign[j.key]=j.who; }); })(); smShowTab('jk');
    jkToggle('s:champa'); jkToggle('s:joanne'); jkToggle('s:jacqueline'); jkToggle('s:christineo'); jkToggle('s:diane');
    return {rows:document.querySelectorAll('#jkBody table tbody tr').length, inputs:document.querySelectorAll('#jkBody input:not(#jkSearch), #jkBody select, #jkBody button').length, tiles:document.querySelectorAll('#jkBody .kpi-tile').length, who:/Champa|Joanne|Jacqueline|Christine|Diane/.test(document.getElementById('jkBody').textContent)};
  });
@@ -210,7 +212,7 @@ ck('a week cell opens that person\'s works orders with quantities, and closes ag
  ck('search box above the people, heading and instructions gone', r.layout===true);
  ck('Promised column with a drill-down to the sales orders', r.soCol && r.soLink && r.soDrill, [r.soCol,r.soLink,r.soDrill]);
  ck('Only sew keeps other styles off a trainee', r.onlyDorset===true && r.onlyOxford===false, [r.onlyDorset,r.onlyOxford]);
- ck('a pin to someone with no time left falls through to the plan, flagged', r.overflow===true);
+ ck('a pin to someone with no time left is flagged; the what-if moves it on', r.overflow===true && r.overflowAuto===true, [r.overflow,r.overflowAuto]);
  ck('search narrows the lists to the matching line', r.searchRows===1 && r.searchNote, [r.searchRows,r.searchNote]);
  ck('tick boxes: Print prints the ticked lines only, ticks kept on the PC and cleared', r.tickBoxes && r.tickBtn && r.tickPrint && r.tickKept && r.tickCleared, [r.tickBoxes,r.tickBtn,r.tickPrint,r.tickKept,r.tickCleared]);
  ck('print list button per person and the sheet carries name, last day and lines', r.printBtns>=1 && r.printOk, [r.printBtns,r.printOk]);
