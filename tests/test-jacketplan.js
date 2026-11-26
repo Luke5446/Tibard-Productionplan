@@ -115,6 +115,13 @@ const path = require('path');
    WOs.pop(); sopDemand.lines.pop(); recalcWOs(); recalcQtys(); jkRender();
    // a later published plan replaces this one; an older one does not
    o.absorbOld=jkAbsorb({staff:[{id:'x',name:'X'}],savedAt:'2000-01-01'}); o.absorbNew=jkAbsorb({staff:[{id:'x',name:'X',monThu:450,fri:285,eff:100}],mins:{},assign:{},savedAt:'2099-01-01'}); o.afterAbsorb=jkPlan.staff.map(s=>s.name);
+   // a stock works order with a live sales order on its code (covered by stock) is judged red/green against that order's promise
+   (function(){ var r0=rows.find(function(r){ return r.code==='OHCJSMDORSET3801'; }); r0.inStock=50;
+     sopDemand.lines.push({k:'OH-9',co:'OLIVER HARVEY',so:'118999',code:'OHCJSMDORSET3801',qty:5,due:'2026-11-25',cust:'Test Hotel',seq:1}); recalcWOs(); recalcQtys();
+     var jj=jkJobs(); jkSchedule(jj); var b=jj.filter(function(x){ return x.ref==='WO-B'; })[0];
+     o.soStock=b && !b.cust && b.soNeed==='2026-11-25' && b.soRef==='118999' && jkBy(b)==='2026-11-25' && b.late===true;
+     jkToggle('s:'+b.who); o.soShown=/SO 118999 Test Hotel/.test(document.getElementById('jkBody').innerHTML); jkToggle('s:'+b.who);
+     sopDemand.lines.pop(); recalcWOs(); recalcQtys(); })();
    // Oxford-only while training: the plan keeps other styles off that person; a pin to someone out of time falls through to the plan, flagged; the search box narrows the lists
    (function(){ var k=jkPlan.staff[0]; k.only='OXFORD'; o.onlyDorset=jkCant(k,'OHCJSMDORSET3801'); o.onlyOxford=jkCant(k,'OHCJSMOXFORD4201'); delete k.only;
      var jj=jkJobs(), a=jj[0]; var gone={id:'gone',name:'Gone Person',team:'jacket',monThu:450,fri:285,eff:85,from:'',last:'2026-11-20',hols:[]}; jkPlan.staff.push(gone); jkPlan.assign[a.key]=gone.id; var j2=jkJobs(); jkSchedule(j2); var a2=j2.filter(function(x){ return x.key===a.key; })[0];
@@ -176,6 +183,7 @@ ck('a week cell opens that person\'s works orders with quantities, and closes ag
    return {rows:document.querySelectorAll('#jkBody table tbody tr').length, inputs:document.querySelectorAll('#jkBody input:not(#jkSearch), #jkBody select, #jkBody button').length, tiles:document.querySelectorAll('#jkBody .kpi-tile').length, who:/Champa|Joanne|Jacqueline|Christine|Diane/.test(document.getElementById('jkBody').textContent)};
  });
  ck('viewer sees the plan with no controls', v.rows>=2 && v.inputs===0 && v.who, v);
+ ck('a stock works order with a sales order on its code is judged against that promise', r.soStock===true && r.soShown===true, [r.soStock,r.soShown]);
  ck('Only sew keeps other styles off a trainee', r.onlyDorset===true && r.onlyOxford===false, [r.onlyDorset,r.onlyOxford]);
  ck('a pin to someone with no time left falls through to the plan, flagged', r.overflow===true);
  ck('search narrows the lists to the matching line', r.searchRows===1 && r.searchNote, [r.searchRows,r.searchNote]);

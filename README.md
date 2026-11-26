@@ -383,6 +383,12 @@ this morning is in the plan straight away:
   as "not made before the shutdown" even with the team free. The plan now
   places it with whoever is free and marks it *no time: was <name>*; pick
   a machinist to pin it elsewhere, or auto to clear the pin.
+- **Stock works orders with a sales order on the code** (26 Nov 2026): the
+  planner gives stock on the shelf to the oldest orders first, so such a
+  works order is "stock" rather than a customer order. It is still judged
+  against the earliest live order's promised date (red if it finishes after
+  it, green if not) and shows "SO nnn customer" under For. Its place in the
+  queue is unchanged: customer orders first, then stock by due date.
 - **Done** on a line (editor) means made and in finishing: it leaves the plan
   and is listed under *Done - in finishing* with an **Undo**. The mark lives
   with the plan, so it is published with the next Publish and goes when the
