@@ -93,7 +93,7 @@ const path = require('path');
    jkStaffSet(jkPlan.staff.findIndex(s=>s.id==='safia'),'off','1'); o.safiaOut=!jkSchedule(jkJobs()).staff.some(s=>s.id==='safia');
    o.saved=JSON.parse(localStorage.getItem('tibard_production')).jkPlan; o.pub=JSON.parse(publishState()).jkPlan.assign;
    // the order of the sections: week table, then the staff banners, then the priority list
-   const secs=[...document.querySelectorAll('#jkBody .kpi-sec h3')].map(e=>e.textContent.trim()); o.secs=secs;
+   const secs=[...document.querySelectorAll('#jkBody .kpi-sec h3, #jkBody .kpi-sec #jkSearch')].map(e=>e.id==='jkSearch'?'Who makes what':e.textContent.trim()); o.secs=secs;
    // banners: a name closes and opens, remembered; the priority list starts closed and opens
    o.staffRowsOpen=document.querySelectorAll('#jkBody .jk-ban table').length;
    jkToggle('s:champa'); o.afterOpen=document.querySelectorAll('#jkBody .jk-ban table').length; o.remembered=JSON.parse(localStorage.getItem('tibard_jk_sections'))['s:champa']===true;
@@ -119,9 +119,18 @@ const path = require('path');
    (function(){ var r0=rows.find(function(r){ return r.code==='OHCJSMDORSET3801'; }); r0.inStock=50;
      sopDemand.lines.push({k:'OH-9',co:'OLIVER HARVEY',so:'118999',code:'OHCJSMDORSET3801',qty:5,due:'2026-11-25',cust:'Test Hotel',seq:1}); recalcWOs(); recalcQtys();
      var jj=jkJobs(); jkSchedule(jj); var b=jj.filter(function(x){ return x.ref==='WO-B'; })[0];
-     o.soStock=b && !b.cust && b.soNeed==='2026-11-25' && b.soRef==='118999' && jkBy(b)==='2026-11-25' && b.late===true;
+     o.soStock=b && !b.cust && b.soNeed==='2026-11-25' && b.soRef==='118999' && jkPromise(b)==='2026-11-25' && jkBy(b)==='2026-11-20' && b.missPromise===true;
      jkToggle('s:'+b.who); o.soShown=/SO 118999 Test Hotel/.test(document.getElementById('jkBody').innerHTML); jkToggle('s:'+b.who);
      sopDemand.lines.pop(); recalcWOs(); recalcQtys(); })();
+   // needed by = the works order due date; due after the promise flagged; a line finishing after the promise flagged; search box above the people, no heading
+   (function(){ var jj=jkJobs(); jkSchedule(jj); var a=jj.filter(function(x){ return x.ref==='WO-A'; })[0];   // due 11 Dec, Claridges promised 15 Dec
+     o.byDue=jkBy(a)==='2026-12-11' && jkPromise(a)==='2026-12-15' && a.dueAfter===false;
+     var w=WOs.filter(function(x){ return x.ref==='WO-A'; })[0], was=w.due; w.due='2026-12-18'; var j3=jkJobs(); jkSchedule(j3); var a3=j3.filter(function(x){ return x.ref==='WO-A'; })[0];
+     o.dueAfter=a3.dueAfter===true && jkBy(a3)==='2026-12-18'; jkToggle('s:'+a3.who); var html=document.getElementById('jkBody').innerHTML; o.dueFlag=/due after promise/.test(html); jkToggle('s:'+a3.who); w.due=was;
+     var html2=document.getElementById('jkBody').innerHTML; o.layout=!/Who makes what/.test(html2) && !/In the order each person should work/.test(html2) && html2.indexOf('id="jkSearch"')>html2.indexOf('Jackets planned by week');
+     var gone={id:'slow',name:'Slow Person',team:'jacket',monThu:30,fri:30,eff:100,from:'',last:'',hols:[]}; jkPlan.staff.push(gone); jkPlan.assign[a.key]=gone.id; var j4=jkJobs(); jkSchedule(j4); var a4=j4.filter(function(x){ return x.key===a.key; })[0];
+     o.missPromise=a4.placed && a4.missPromise===true; jkToggle('s:slow'); o.missShown=/moved: after promise/.test(document.getElementById('jkBody').innerHTML); jkToggle('s:slow'); delete jkPlan.assign[a.key]; jkPlan.staff.pop();
+     cutLog.loadedAt=new Date(); cutLog.entries=[]; var j5=jkJobs(); o.notCut=j5.filter(function(x){ return x.ref==='WO-A'; })[0].notCut===true; cutLog.entries=[{k:'x',ref:'WO-A',code:'OHCJSMOXFORD4201',cutAt:'2026-11-20'}]; var j6=jkJobs(); o.cutOk=j6.filter(function(x){ return x.ref==='WO-A'; })[0].notCut===false; cutLog.entries=[]; cutLog.loadedAt=null; })();
    // Promised column: newest promise of the orders behind the line, click opens the list
    (function(){ var jj=jkJobs(); jkSchedule(jj); var a=jj.filter(function(x){ return x.ref==='WO-A'; })[0]; o.soCol=a && a.sos.length===1 && a.soNewest==='2026-12-15';
      jkToggle('s:'+a.who); o.soLink=/Promised<\/th>/.test(document.getElementById('jkBody').innerHTML) && document.querySelectorAll('#jkBody tr.jk-so').length===0; jkSoToggle(a.key); o.soDrill=document.querySelectorAll('#jkBody tr.jk-so').length===1 && /Claridges Hotel Limited/.test(document.querySelector('#jkBody tr.jk-so').innerHTML); jkSoToggle(a.key); jkToggle('s:'+a.who); })();
@@ -187,6 +196,11 @@ ck('a week cell opens that person\'s works orders with quantities, and closes ag
  });
  ck('viewer sees the plan with no controls', v.rows>=2 && v.inputs===0 && v.who, v);
  ck('a stock works order with a sales order on its code is judged against that promise', r.soStock===true && r.soShown===true, [r.soStock,r.soShown]);
+ ck('needed by is the works order due date, promise kept beside it', r.byDue===true);
+ ck('a due date after the promise is flagged', r.dueAfter===true && r.dueFlag===true, [r.dueAfter,r.dueFlag]);
+ ck('a hand-placed line finishing after the promise is flagged', r.missPromise===true && r.missShown===true, [r.missPromise,r.missShown]);
+ ck('not cut chip from the cutting log', r.notCut===true && r.cutOk===true, [r.notCut,r.cutOk]);
+ ck('search box above the people, heading and instructions gone', r.layout===true);
  ck('Promised column with a drill-down to the sales orders', r.soCol && r.soLink && r.soDrill, [r.soCol,r.soLink,r.soDrill]);
  ck('Only sew keeps other styles off a trainee', r.onlyDorset===true && r.onlyOxford===false, [r.onlyDorset,r.onlyOxford]);
  ck('a pin to someone with no time left falls through to the plan, flagged', r.overflow===true);
