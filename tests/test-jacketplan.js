@@ -16,6 +16,8 @@ const path = require('path');
  p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
  await p.route('https://api.github.com/**', r=>r.fulfill({status:404, body:'{}'}));
  await p.route('https://luke5446.github.io/**', r=>r.fulfill({status:404, body:''}));
+ // the costing app's page, with its embedded All Costings rows [code, tab, description, PW piece price]
+ await p.route('https://luke5446.github.io/costing/index.html**', r=>r.fulfill({status:200, contentType:'text/html', body:'<script>\nconst COSTDATA={"tabs":["1 - Chefs Jackets"],"fabrics":[],"rows":[["OHCJMCHESHIRE3801",0,"Cheshire 38",5.52,-1,null,null],["OHCJMCHESHIRE4001/",0,"Cheshire 40",5.52,-1,null,null],["OHLCJHAMPSHIRE0601",0,"Hampshire 6",8.28,-1,null,null]]};\n</script>'}));
  await p.goto('file://'+path.join(__dirname,'..','index.html')+'?edit'); await p.waitForTimeout(450);
  const r=await p.evaluate(()=>{
    window.now=()=>new Date('2026-11-24T10:00:00');   // a Tuesday
@@ -197,6 +199,14 @@ ck('a week cell opens that person\'s works orders with quantities, and closes ag
  ck('a done mark for a works order that has gone is pruned', r.pruned);
  ck('too much promised: short on the running total, not made before year end, red cells', r.short && r.yearEnd && r.yearWarn && r.redCell, [r.short,r.yearEnd,r.yearWarn,r.redCell]);
  ck('a later published plan replaces, an older one does not', r.absorbOld===false && r.absorbNew===true && r.afterAbsorb.join()==='X');
+ // piecework minutes: read from the costing app's page, kept on the PC, exact code then the style family, Oxford still the timed figure
+ await p.waitForTimeout(300);
+ const pw=await p.evaluate(()=>{ var a=jkMinsFor('OHCJMCHESHIRE3801'), b=jkMinsFor('OHCJMCHESHIRE4001'), c=jkMinsFor('OHCJMCHESHIRE4401'), d=jkMinsFor('OHLCJHAMPSHIRE0601'), e=jkMinsFor('OHCJSMOXFORD4201'), f=jkMinsFor('OHCJSMDORSET3801');
+   var kept=null; try{ kept=JSON.parse(localStorage.getItem('tibard_jk_pw')); }catch(x){}
+   return {a:[a.src,a.mach,a.fin,a.pw], b:[b.src,b.mach], c:[c.src,c.mach], d:[d.src,d.mach], e:[e.src,e.mach], f:[f.src,f.mach], kept:!!(kept&&kept.map&&kept.map.OHCJMCHESHIRE4001===5.52), form:/piecework/.test(jkMinsForm([{fam:'OHCJMCHESHIRE',qty:1,src:'piecework',mach:26.1,fin:6,codes:{}}]))}; });
+ ck('piecework: Cheshire GBP 5.52 -> 26.1 min + 6 finishing, Hampshire GBP 8.28 -> 39.1', pw.a.join()==='piecework,26.1,6,5.52' && pw.d.join()==='piecework,39.1', [pw.a,pw.d]);
+ ck('a code priced with a trailing slash, and a size not priced takes the family price', pw.b.join()==='piecework,26.1' && pw.c.join()==='piecework,26.1', [pw.b,pw.c]);
+ ck('the timed Oxford figure still wins; an unpriced style stays assumed; prices kept on the PC', pw.e.join()==='costing,32' && pw.f.join()==='assumed,32' && pw.kept && pw.form, [pw.e,pw.f,pw.kept,pw.form]);
  // the viewer: the tab, the plan, no controls
  await p.goto('file://'+path.join(__dirname,'..','index.html')); await p.waitForTimeout(450);
  const v=await p.evaluate(()=>{
