@@ -467,7 +467,9 @@ The warehouse's own address (`?warehouse`) now opens the planner on the
   printing**: **Print** on the warehouse PC gives the one-page sheet for the
   embroidery room and marks the works order printed on the log, which the
   editor takes on its next load, so the tracker shows it printed too.
-  **Picked** marks the line, with the last 30 days underneath and Undo. The
+  **Picked** marks the line and moves it to the **Picked history** folder
+  below (27 Nov 2026, Luke): a closed banner holding every pick, newest
+  first, with a search and an Undo that puts the line back. The
   warehouse reads the published data, so a new works order reaches it on the
   next Publish.
 - **EMB to book in**: embroidery-only works orders marked done in the

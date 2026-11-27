@@ -613,7 +613,17 @@ tr.fab-done td{color:#6b7280}
     </div>
     <div class="wh-body" id="whPickBodyWrap"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
       <table class="wh-tbl"><thead><tr><th>Printed</th><th>Due</th><th>WO Ref</th><th>Pick from stock</th><th>Embroidered code</th><th>Customer</th><th style="text-align:right">Qty</th><th class="ns" style="text-align:center">Action</th></tr></thead><tbody id="whPickBody"></tbody></table>
-    </div><div id="whPickedHist" style="margin-top:8px"></div></div>
+    </div></div>
+  </div>
+  <div class="wh-section">
+    <div class="wh-hdr collapsed-hdr" style="background:#6d28d9" onclick="whToggleSection('whPickedBodyWrap',this)">
+      <h2><span class="wh-chev">&#9660;</span> &#128193; Picked history <span id="whPickedCount" style="font-size:11px;opacity:.8"></span></h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center" onclick="event.stopPropagation()">
+        <input type="text" id="whPickedSearch" placeholder="&#128269; Search picked..." oninput="renderWarehouse()" style="font-size:12px;padding:5px 9px;border-radius:5px;border:1px solid #c8d0df;min-width:160px;font-family:Arial,sans-serif">
+        <span style="font-size:11px;opacity:.85">Every embroidery pick, newest first; Undo puts one back on the pick list</span>
+      </div>
+    </div>
+    <div class="wh-body collapsed" id="whPickedBodyWrap"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><div id="whPickedHist"></div></div></div>
   </div>
   <div class="wh-section">
     <div class="wh-hdr" style="background:#0f766e" onclick="whToggleSection('whEmbBodyWrap',this)">
@@ -3378,10 +3388,13 @@ function whRenderPick(can){
       +'<td style="text-align:center;white-space:nowrap"><button class="btn" style="font-size:10px;padding:2px 8px;color:#1e40af;border-color:#b6c4e8" title="'+(l.printedAt?'Print the sheet again':'Print the sheet for the embroidery room (first page only); this marks the works order printed')+'" onclick="whPrint('+l.i+',\''+esc(l.it.code)+'\','+l.it.qty+')">&#128424; '+(l.printedAt?'Print again':'Print')+'</button> '
       +(can?'<button class="btn" style="font-size:10px;padding:2px 8px;color:#4c1d95;border-color:#c4b5fd" onclick="whMarkPicked(\''+esc(l.k)+'\','+l.i+',\''+esc(l.it.code)+'\')">&#10003; Picked</button>':'')+'</td></tr>'; }).join('');
   var hist=document.getElementById('whPickedHist'); if(!hist) return;
-  var d30=new Date(now()); d30.setDate(d30.getDate()-30); var from=d2s(d30);
-  var picked=whLog.entries.filter(function(e){ return e.kind==='pick' && !e.cancelledAt && (e.pickedAt||'').slice(0,10)>=from; }).sort(function(a,b){ return (b.pickedAt||'').localeCompare(a.pickedAt||''); });
-  hist.innerHTML=picked.length?'<div class="sm-sub" style="font-size:11px;margin-bottom:4px">Picked in the last 30 days</div><table class="wh-tbl" style="min-width:auto"><thead><tr><th>Picked</th><th>WO Ref</th><th>Picked from</th><th>Embroidered code</th><th style="text-align:right">Qty</th><th class="ns"></th></tr></thead><tbody>'
-    +picked.map(function(e){ return '<tr class="booked-row"><td style="font-weight:600">'+esc(fmtD((e.pickedAt||'').slice(0,10)))+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.ref)+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.pickCode||'')+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.code)+'</td><td style="text-align:right;font-weight:700">'+Math.round(e.qty||0).toLocaleString()+'</td><td style="text-align:center">'+(can?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="whUnpick(\''+esc(e.k)+'\')">&#8634; Undo</button>':'')+'</td></tr>'; }).join('')+'</tbody></table>':'';
+  // 27 Nov 2026 (Luke): the picks live in their own closed Picked history folder, every pick kept, with a search
+  var q=((document.getElementById('whPickedSearch')||{}).value||'').trim().toLowerCase();
+  var all=whLog.entries.filter(function(e){ return e.kind==='pick' && !e.cancelledAt; }).sort(function(a,b){ return (b.pickedAt||'').localeCompare(a.pickedAt||''); });
+  var picked=q?all.filter(function(e){ return ((e.ref||'')+' '+(e.pickCode||'')+' '+(e.code||'')+' '+fmtD((e.pickedAt||'').slice(0,10))).toLowerCase().indexOf(q)>=0; }):all;
+  var pcnt=document.getElementById('whPickedCount'); if(pcnt) pcnt.textContent=all.length?'('+all.length+')':'';
+  hist.innerHTML=picked.length?'<table class="wh-tbl" style="min-width:auto"><thead><tr><th>Picked</th><th>WO Ref</th><th>Picked from</th><th>Embroidered code</th><th style="text-align:right">Qty</th><th class="ns"></th></tr></thead><tbody>'
+    +picked.map(function(e){ return '<tr class="booked-row"><td style="font-weight:600">'+esc(fmtD((e.pickedAt||'').slice(0,10)))+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.ref)+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.pickCode||'')+'</td><td style="font-family:monospace;font-size:11px">'+esc(e.code)+'</td><td style="text-align:right;font-weight:700">'+Math.round(e.qty||0).toLocaleString()+'</td><td style="text-align:center">'+(can?'<button class="btn" style="font-size:10px;padding:2px 7px" onclick="whUnpick(\''+esc(e.k)+'\')">&#8634; Undo</button>':'')+'</td></tr>'; }).join('')+'</tbody></table>':'<div style="text-align:center;padding:1rem;color:#6b7280">'+(q?'No picks match':'Nothing picked yet')+'</div>';
 }
 // ── Embroidery queue: picked, on a machine, done, then booked in ──────────
 function embKey(ref, code){ return 'emb|'+ref+'|'+code; }
