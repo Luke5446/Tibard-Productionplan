@@ -458,7 +458,11 @@ The warehouse's own address (`?warehouse`) now opens the planner on the
   next Publish.
 - **EMB to book in**: embroidery-only works orders marked done in the
   embroidery room, with the home stock to write off and the branded code to
-  book in; **Book in + files** (see above).
+  book in; **Book in + files** (see above). **Tick boxes + Book in ticked
+  + files** (27 Nov 2026): tick the lines (or tick all) and one write-off
+  file and one add-stock file are made covering every ticked line, a row
+  per works order with its own reference, then every line is marked booked
+  (`EMB_WriteOff_<n>lines_<date>.csv`, `EMB_BookIn_<n>lines_<date>.csv`).
 - **Production to book in** and **Booked in history**: as before, items
   completed by production to book into Sage, with Copy ticked, Export CSV
   and the marks.
