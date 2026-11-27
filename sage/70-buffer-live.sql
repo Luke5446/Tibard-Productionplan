@@ -52,7 +52,8 @@
      M SupplierName
      N ClockworkMade   Y when the code is on the Clockwork Bulk list - the
                        eve_AllLiveSOPPOPStockBULK view the old workbook read
-                       as "03 Tibard Limited Bulk". Checked 9 Oct 2026: of its
+                       as "03 Tibard Limited Bulk" - or has a BULK stock item
+                       (BULK codes retired 27 Nov 2026, see cwlist). Checked 9 Oct 2026: of its
                        615 codes 369 are in the buffer, and 343 of those are
                        the ones the typed Supplier Lead Times sheet marked
                        Clockwork (344). These are shown in the planner but
@@ -186,8 +187,17 @@ excl AS (
 ),
 /* ------------------------------------------------ the Clockwork list -- */
 cwlist AS (   -- not "bulk": BULK is a reserved word in T-SQL and the query failed on it (9 Oct 2026)
+    /* The BULK codes were retired on 27 Nov 2026 (stock written off into the home
+       codes, containers now bought in on the home codes), so the Bulk list view may
+       thin out as its items go empty. The BULK stock items still on file name the
+       same codes, so a code with a BULK item is on the list too; the planner also
+       marks any code the stock planner tracks. */
     SELECT DISTINCT LTRIM(RTRIM(Code)) AS Code
     FROM   S200_LIVE.dbo.eve_AllLiveSOPPOPStockBULK
+    UNION
+    SELECT DISTINCT SUBSTRING(LTRIM(RTRIM(si.Code)), 5, 200)
+    FROM   S200_LIVE.dbo.StockItem si
+    WHERE  si.Code LIKE 'BULK%'
 ),
 /* ------------------------------------------------- date of last sale -- */
 dols AS (
