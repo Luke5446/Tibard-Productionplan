@@ -34,10 +34,23 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
    box.value='2.5'; btn.click(); const frac=[WOs.some(w=>w.ref==='S-X'), window.__alerts[1]||''];
    box.value=''; btn.click(); const c=completedWOs.find(x=>x.ref==='S-X');
    return {over:over, frac:frac, blank:[!WOs.some(w=>w.ref==='S-X'), c.qty, c.waste===undefined, window.__alerts.length]}; });
- // the card's button books the lot; an undo puts the whole line back
+ // the card's button with no box typed books the lot; an undo puts the whole line back
  out.card=await p.evaluate(()=>{ closeWOModal(); completeWholeWO(WOs.findIndex(w=>w.ref==='S-Y')); const c=completedWOs.find(x=>x.ref==='S-Y');
    undoCompleted(completedWOs.findIndex(x=>x.ref==='S-W')); const w=WOs.find(x=>x.ref==='S-W');
    return {y:[c.qty, c.waste===undefined], back:w.items[0].qty, stillX:completedWOs.some(x=>x.ref==='S-X')}; });
+ // the card's own Waste box (27 Nov 2026): one line has it beside Complete
+ // whole WO, a two-line works order has one box per line, and the button
+ // books the waste without the popup
+ out.cardbox=await p.evaluate(()=>{ renderWOCards();
+   const i=WOs.findIndex(w=>w.ref==='S-W'), card=document.querySelector('#woc-done-'+i).closest('.woc'), box=document.getElementById('woc-waste-'+i+'-0');
+   box.value='5'; card.querySelector('#woc-done-'+i).nextElementSibling.nextElementSibling.click();
+   const c=completedWOs.find(x=>x.ref==='S-W');
+   document.getElementById('woRef').value='S-Z'; document.getElementById('woStart').value='2026-10-10'; document.getElementById('woDue').value='2026-10-20'; document.getElementById('woTA').value='APP300503\t50\nAPP300503X\t40'; saveWO();
+   const z=WOs.findIndex(w=>w.ref==='S-Z'), b0=document.getElementById('woc-waste-'+z+'-0'), b1=document.getElementById('woc-waste-'+z+'-1');
+   b1.value='4'; document.querySelector('#woc-done-'+z).nextElementSibling.click();
+   const zc=completedWOs.filter(x=>x.ref==='S-Z').map(x=>[x.code, x.qty, x.waste]);
+   undoCompleted(completedWOs.findIndex(x=>x.ref==='S-W'));   // back for the reload check below
+   return {one:[c.qty, c.waste], two:[!!b0, !!b1], zc:zc, modalOpen:document.getElementById('woModal').classList.contains('open')}; });
  // the record survives a reload, and the Fabric tab shows the waste
  await open(true);
  out.reload=await p.evaluate(()=>{ const w=WOs.find(x=>x.ref==='S-W'), i=WOs.indexOf(w); openWOModal(i); document.getElementById('woModalWaste-0').value='7'; document.getElementById('woModalCompleteAll').click(); return completedWOs.filter(x=>x.ref==='S-W').map(c=>[c.qty, c.waste]); });
@@ -53,6 +66,7 @@ const URL='file://'+require('path').join(__dirname,'..','index.html');
   out.done.box && out.done.th.indexOf('Waste')===out.done.th.indexOf('Action')-1 && out.done.gone && out.done.rec[0]===190 && out.done.rec[1]===10 && out.done.rec[3] && /190\+10 waste/.test(out.done.row) && out.done.led.join()==='190,10,'+out.done.rec[2] && out.done.alerts===0,
   out.checks.over[0] && /25 waste is more than the 20/.test(out.checks.over[1]) && out.checks.frac[0] && /whole number/.test(out.checks.frac[1]) && out.checks.blank.join()==='true,20,true,2',
   out.card.y.join()==='30,true' && out.card.back===200 && out.card.stillX,
+  out.cardbox.one.join()==='195,5' && out.cardbox.two.join()==='true,true' && JSON.stringify(out.cardbox.zc)==='[["APP300503",50,null],["APP300503X",36,4]]' && !out.cardbox.modalOpen,
   out.reload.join('|')==='193,7' && out.reload2.join()==='193,7,true',
   out.viewer.th && out.viewer.hidden===true && !out.viewer.box,
   errs.length===0 ];

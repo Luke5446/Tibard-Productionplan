@@ -495,6 +495,17 @@ otherwise: Pages lags a commit by a few minutes, which is how WO-1558's new
 date was missed on 11 Nov 2026 by an editor page loaded inside that window.
 Test: `tests/test-duedate.js`.
 
+## Waste on the works order card
+
+Since 27 Nov 2026 the works order card carries the **Waste** box (one box for
+a one-line works order, beside the completion date; one box per line above
+it for a works order with several lines), so spoiled garments go in with
+Complete whole WO without opening the contents popup. The box works exactly
+as the popup's: the rest are booked in as made, the cloth for all of them is
+still written off, a blank box is no waste. The contents popup itself no
+longer scrolls sideways: its columns wrap and the popup grows downward.
+Test: `tests/test-waste.js`.
+
 ## Where the editor's data is kept
 
 In the browser, in two places at once: `localStorage` and IndexedDB, under the

@@ -117,6 +117,18 @@ body.viewer-mode .view-only{display:block !important}
 .mclose{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0 2px;opacity:.8}
 .mclose:hover{opacity:1}
 .mbody{padding:14px 16px;overflow-y:auto}
+/* WO contents popup (Luke, 27 Nov 2026): no sideways scroll - the columns
+   wrap and the popup grows downward instead */
+#woModal table.main{min-width:0;table-layout:auto}
+#woModal table.main th{white-space:normal}
+#woModal table.main td{white-space:normal}
+#woModal td.woc-desc{max-width:none;overflow:visible;text-overflow:clip;white-space:normal;word-break:break-word}
+#woModal td.woc-fab{white-space:normal;min-width:120px}
+#woModal td.woc-fab input{display:inline-block}
+.woc-waste{display:flex;flex-wrap:wrap;gap:3px 8px;margin-top:4px;font-size:10px;color:#4b5563}
+.woc-waste label{display:flex;align-items:center;gap:3px;cursor:default}
+.woc-waste input,.woc-waste1{width:52px;text-align:right;font-size:10px;padding:2px 4px;border:1px solid #c8d0df;border-radius:4px}
+.woc-waste1{width:60px}
 .egrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
 .egrid label{display:block;font-size:11px;color:#4b5563;font-weight:600;margin-bottom:3px}
 .egrid input{width:100%;padding:6px 9px;border:1px solid #c8d0df;border-radius:5px;font-size:12px;font-family:Arial,sans-serif}
@@ -721,8 +733,8 @@ tr.fab-done td{color:#6b7280}
     <div class="mhdr"><h3 id="woModalTitle">Works Order</h3><button class="mclose" id="woModalClose">&times;</button></div>
     <div class="mbody">
       <div id="woModalMeta" style="font-size:12px;color:#4b5563;margin-bottom:10px"></div>
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #dde3ed;border-radius:7px">
-        <table class="main" style="min-width:680px"><thead><tr>
+      <div style="border:1px solid #dde3ed;border-radius:7px;overflow:hidden">
+        <table class="main"><thead><tr>
           <th style="text-align:left">SKU</th><th style="text-align:left">Description</th>
           <th style="text-align:right">In stock</th><th style="text-align:right">WO qty</th>
           <th style="text-align:right">Days cover on completion</th>
@@ -1413,10 +1425,12 @@ function woDoneHint(wo, day){ var today=d2s(now()); return day<today ? '\n\nBook
 // 2026: 200 on the works order and 10 spoiled - the 190 are booked in as
 // made, the 10 are kept on the record, and the cloth for all 200 is still
 // written off). Null when a box holds something that is not a quantity.
-function woModalWastes(wo){
-  var out=[], bad=null;
+// Since 27 Nov 2026 the works order card carries the same boxes (ids
+// woc-waste-<card>-<line>), so waste goes in without opening the popup.
+function woModalWastes(wo, prefix){
+  var out=[], bad=null; prefix=prefix||'woModalWaste-';
   (wo.items||[]).forEach(function(it, j){
-    var el=document.getElementById('woModalWaste-'+j), v=el ? el.value.trim() : '';
+    var el=document.getElementById(prefix+j), v=el ? el.value.trim() : '';
     if(v===''){ out[j]=0; return; }
     var n=parseInt(v, 10);
     if(isNaN(n) || n<0 || String(n)!==v.replace(/^0+(?=\d)/,'')) bad=it.code+': waste must be a whole number of garments.';
@@ -1720,8 +1734,11 @@ function renderWOCards(){
       +'<div style="font-size:10px;color:#7A1F3D;margin-top:4px;font-weight:600">&#128269; Click to view contents</div>'
       +(IS_EDITOR?'<button class="btn" id="woc-print-'+i+'" style="font-size:10px;padding:3px 8px;margin-top:6px;width:100%;color:#1e40af;border-color:#b6c4e8" title="'+(wo.printed?'Print the works order document again':'Print the works order document')+(wo.items.length>1?' - every line of it':'')+'" onclick="event.stopPropagation();printWOCard('+i+')">&#128424; '+(wo.printed?'Print again':'Print WOP')+'</button>':'')
       +(wo.embOnly?'<div style="font-size:10px;color:#6d28d9;margin-top:6px;font-weight:600" title="Marked done by the embroidery room on the Embroidery tab, booked in by the warehouse; the works order completes itself when it is booked">&#129697; Done on the Embroidery tab, booked in by the warehouse</div>'
-      :'<div style="display:flex;gap:4px;margin-top:4px"><input type="date" id="woc-done-'+i+'" value="'+d2s(now())+'" max="'+d2s(now())+'" min="'+esc(wo.createdAt||'')+'" title="The day it was completed: today, unless it was missed at the time - put the real day and it is booked as completed then" onclick="event.stopPropagation()" style="font-size:10px;padding:2px 3px;border:1px solid #a7d4bb;border-radius:4px;color:#065f46;width:112px">'
-      +'<button class="btn" style="font-size:10px;padding:3px 8px;flex:1;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+')">&#10003; Complete whole WO</button></div>')
+      :(IS_EDITOR && wo.items.length>1 ? '<div class="woc-waste" onclick="event.stopPropagation()" title="Garments spoiled in the making, per line: type the number before Complete whole WO. The rest are booked in as made; the cloth for all of them is still written off.">'
+          +wo.items.map(function(it, j){ return '<label>'+esc(it.code)+' waste <input type="number" min="0" max="'+Math.round(it.qty)+'" step="1" id="woc-waste-'+i+'-'+j+'" placeholder="0"></label>'; }).join('')+'</div>' : '')
+      +'<div style="display:flex;gap:4px;margin-top:4px"><input type="date" id="woc-done-'+i+'" value="'+d2s(now())+'" max="'+d2s(now())+'" min="'+esc(wo.createdAt||'')+'" title="The day it was completed: today, unless it was missed at the time - put the real day and it is booked as completed then" onclick="event.stopPropagation()" style="font-size:10px;padding:2px 3px;border:1px solid #a7d4bb;border-radius:4px;color:#065f46;width:112px">'
+      +(IS_EDITOR && wo.items.length===1 ? '<input type="number" class="woc-waste1" min="0" max="'+Math.round(wo.items[0].qty)+'" step="1" id="woc-waste-'+i+'-0" placeholder="Waste" title="Garments spoiled in the making, out of the '+Math.round(wo.items[0].qty)+': type the number before Complete whole WO. The rest are booked in as made; the cloth for all of them is still written off." onclick="event.stopPropagation()">' : '')
+      +'<button class="btn" style="font-size:10px;padding:3px 8px;flex:1;color:#065f46;border-color:#a7d4bb" onclick="event.stopPropagation();completeWholeWO('+i+', undefined, woModalWastes(WOs['+i+'], \'woc-waste-'+i+'-\'))">&#10003; Complete whole WO</button></div>')
       +'</div>';
   }).join('');
 }
@@ -1765,11 +1782,11 @@ function openWOModal(i){
     var dc=daysCover>=999?'—':daysCover.toFixed(0)+' days';
     var col=daysCover<7?'#b91c1c':daysCover<14?'#92400e':daysCover<28?'#1e40af':'#065f46';
     return '<tr><td style="font-family:monospace;font-size:11px">'+esc(it.code)+'</td>'
-      +'<td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(desc)+'">'+esc(desc)+'</td>'
+      +'<td class="woc-desc" title="'+esc(desc)+'">'+esc(desc)+'</td>'
       +'<td style="text-align:right">'+inStock.toLocaleString()+'</td>'
       +'<td style="text-align:right;font-weight:700;color:#6d28d9">'+Math.round(it.qty).toLocaleString()+'</td>'
       +'<td style="text-align:right;font-weight:700;color:'+col+'">'+dc+'</td>'
-      +'<td style="text-align:right;white-space:nowrap">'+fabricCellFor(i, it)+'</td>'
+      +'<td class="woc-fab" style="text-align:right">'+fabricCellFor(i, it)+'</td>'
       +(IS_EDITOR ? '<td class="edit-only" style="text-align:right;white-space:nowrap"><input type="number" min="0" max="'+Math.round(it.qty)+'" step="1" id="woModalWaste-'+j+'" placeholder="0" title="Garments spoiled in the making, out of the '+Math.round(it.qty)+': the rest are booked in as made" style="width:56px;text-align:right;font-size:12px;padding:3px 5px;border:1px solid #c8d0df;border-radius:4px"></td>' : '')
       +'<td style="text-align:center;white-space:nowrap"><button class="btn" style="font-size:10px;padding:2px 7px;color:#1e40af;border-color:#b6c4e8" title="Print works order document" onclick="printWOPTracked('+i+',\''+esc(it.code).replace(/'/g,"\\'")+'\','+it.qty+')">&#128424; WOP</button></td>'
       +'</tr>';
