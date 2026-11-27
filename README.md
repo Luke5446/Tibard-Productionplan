@@ -416,6 +416,20 @@ this morning is in the plan straight away:
   them flagged *no time* (the what-if moves it on). Pins, hand order,
   shares and done marks are unchanged in `jkPlan`; scheduler
   `jkSchedule(jobs, mode)` takes `'pm'` (default) or `'auto'`.
+- **Piecework sewing minutes** (27 Nov 2026, Luke): the costing app's
+  SEWING TIME is the PW piece price from the All Costings sheet divided by the
+  wage rate (GBP 12.71/hr, so 21p a minute): Cheshire 38 GBP 5.52 = 26.1 min,
+  Hampshire GBP 8.28 = 39.1 min, Stratford GBP 8.19 = 38.7 min. That sheet is
+  embedded in the costing app's page (`COSTDATA`), so the tab reads it from
+  `luke5446.github.io/costing/index.html` once a day, keeps the code to
+  piece-price map on the PC (`localStorage` `tibard_jk_pw`) and uses it,
+  with 6 min finishing, for every style with no timed costing figure. Order:
+  a figure typed in Minutes per jacket, the style's timed costing (and the
+  Oxford/Devon/4007 list), piecework, then the 32 min stand-in. A size the
+  sheet has not priced takes the middle price of its style family. Shown as
+  the *piecework* pill in Minutes per jacket; the minutes cell's tooltip
+  gives the piece price behind it. Rate constant `JK_PW_RATE` matches the
+  costing app's current setting.
 - **Clear all issued work** (27 Nov 2026) in the tab header takes every
   line off every machinist (pins, hand order and shares) so the PM can start
   afresh from Ready to issue; done marks stay. The old plan is kept on the

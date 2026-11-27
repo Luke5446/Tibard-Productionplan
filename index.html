@@ -7691,8 +7691,9 @@ document.getElementById('trimCostModal').addEventListener('click',function(e){ i
 // Customer orders first (a works order covering a sales order line, or a
 // special make), earliest promised date first; then stock works orders by due
 // date. Each job goes whole to the machinist who would finish it soonest, or
-// to the one the PM picked. Minutes per jacket come from the costing app
-// (machMins on the style), else the plan's own table, else 32 (assumed).
+// to the one the PM picked. Minutes per jacket: the plan's own table, else
+// the costing app's timed figure (machMins on the style), else the costing
+// app's piecework estimate (PW piece price / wage rate), else 32 (assumed).
 // Staff, hours, holidays, last days and minute overrides live in jkPlan and
 // are saved and published with everything else.
 var jkPlan=null, jkOpen={staff:false,mins:false}, jkSel='';
@@ -7701,6 +7702,29 @@ var JK_DEF_MACH=32, JK_DEF_FIN=6, JK_HORIZON=120;
 // Oxford (OHCJSMOXFORD5003L, OHCJMOXFORD4203 ...), the Devon special
 // OHCJ000244 and the shirt-style 4007/4008. Everything else is the stand-in.
 var JK_COSTED=[{re:/OXFORD/,mach:32,fin:6},{re:/DEVON|^OHCJ000244$/,mach:31.9,fin:10},{re:/^OHL?CJ400[78]/,mach:40.7,fin:7}];
+// 27 Nov 2026 (Luke): the costing app shows a SEWING TIME for nearly every
+// jacket code - the PW piece price from the All Costings sheet divided by the
+// wage rate (GBP 12.71/hr, NLW from Apr 2026, so GBP 0.21/min): Cheshire 38
+// GBP 5.52 -> 26.1 min, Hampshire GBP 8.28 -> 39.1 min. That sheet is embedded in
+// the costing app's page (COSTDATA), so the tab reads it from there, keeps the
+// code -> piece price map on this PC for a day (tibard_jk_pw) and uses it
+// where no timed figure exists, in place of the 32 min stand-in.
+var JK_PW_RATE=12.71, JK_PW_URL='https://luke5446.github.io/costing/index.html', jkPW=null, jkPWAsked=false;
+function jkPWKey(c){ return String(c||'').toUpperCase().replace(/^BULK/,'').replace(/\/+$/,''); }
+function jkPWLoad(){ if(!jkPW){ try{ var c=JSON.parse(localStorage.getItem('tibard_jk_pw')||'null'); if(c && c.map) jkPW=c; }catch(e){} } return jkPW; }
+function jkPWFetch(cb){
+  if(jkPWAsked) return; jkPWAsked=true; var c=jkPWLoad(); if(c && Date.now()-(+c.at||0)<86400000) return;   // today's copy is fine
+  fetch(JK_PW_URL+'?t='+Date.now(),{cache:'no-store'}).then(function(r){ if(!r.ok) throw 0; return r.text(); }).then(function(t){
+    var m=t.match(/const COSTDATA=(\{[^\n]*\});/); if(!m) throw 0; var d=JSON.parse(m[1]), map={};
+    (d.rows||[]).forEach(function(r){ if(r && +r[3]>0) map[jkPWKey(r[0])]=+r[3]; });   // row: [code, tab, description, PW piece price, ...]
+    jkPW={at:Date.now(), map:map}; try{ localStorage.setItem('tibard_jk_pw',JSON.stringify(jkPW)); }catch(e){} if(cb) cb(true);
+  }).catch(function(){ if(cb) cb(false); });
+}
+// the PW piece price for a code: the code itself, else the middle price of its style family (sizes are usually priced alike)
+function jkPWFor(code){ var pw=jkPWLoad(); if(!pw) return 0; var k=jkPWKey(code); if(pw.map[k]>0) return pw.map[k];
+  var fam=jkPWKey(jkFamily(code)).split('-')[0]; if(fam.length<6) fam=k.replace(/\d+[A-Z]{0,2}\d{0,2}$/,''); if(fam.length<6) return 0;   // the style master writes sizes as "--01"
+  var ps=[]; for(var x in pw.map) if(x.indexOf(fam)===0) ps.push(pw.map[x]);
+  if(!ps.length) return 0; ps.sort(function(a,b){ return a-b; }); return ps[Math.floor(ps.length/2)]; }
 var JK_BANK=['2026-12-25','2026-12-28','2027-01-01','2027-04-02','2027-04-05','2027-05-03','2027-05-31','2027-08-30'];
 function jkDefault(){ return {staff:[
   {id:'champa',name:'Champa Shah',team:'jacket',monThu:390,fri:285,eff:85,from:'',last:'2026-12-18',hols:[],cant:'STRATFORD, DERBYSHIRE',note:'8:00-15:30 Mon-Thu'},
@@ -7757,6 +7781,7 @@ function jkMinsFor(code){
   var st=styleForCode(code);
   if(st && st.style && +st.style.machMins>0) return {fam:fam, mach:+st.style.machMins, fin:+st.style.finMins||0, src:'costing'};
   for(var i=0;i<JK_COSTED.length;i++) if(JK_COSTED[i].re.test(fam)) return {fam:fam, mach:JK_COSTED[i].mach, fin:JK_COSTED[i].fin, src:'costing'};
+  var pw=jkPWFor(code); if(pw>0) return {fam:fam, mach:Math.round(pw/JK_PW_RATE*60*10)/10, fin:JK_DEF_FIN, src:'piecework', pw:pw};
   return {fam:fam, mach:JK_DEF_MACH, fin:JK_DEF_FIN, src:'assumed'};
 }
 // every live jacket works order line as a job, customer orders first
@@ -7783,7 +7808,7 @@ function jkJobs(){
       if(w.sm && !sos.length) sos=[{so:(w.sm.so||'').replace(/^0+/,''), co:w.sm.company||'', cust:w.sm.custName||w.sm.customer||'', qty:it.qty, ordered:it.qty, due:w.sm.promised||'', placed:''}];
       sos.sort(function(a,b){ return (a.due||'')<(b.due||'')?1:(a.due||'')>(b.due||'')?-1:0; });   // newest promise first
       var notCut=!!(cutLog.loadedAt && cutInScope(w) && !cutLineFor(w, it.code));
-      var base={notCut:notCut, sos:sos, soNewest:sos.length?sos[0].due:'', soNeed:so?so.due:'', soRef:so?so.so:'', soCust:so?(so.cust||''):'', key:w.ref+'|'+it.code, ref:w.ref, code:it.code, qty:it.qty, mach:m.mach, fin:m.fin, src:m.src, fam:m.fam, mins:it.qty*m.mach, cust:!!need, need:need, due:w.due||'', custs:custs, printed:!!w.printed, created:w.createdAt||'', i:i, sm:!!w.sm, covQty:cov.reduce(function(a,c){ return a+(c.qty||0); },0)};
+      var base={notCut:notCut, sos:sos, soNewest:sos.length?sos[0].due:'', soNeed:so?so.due:'', soRef:so?so.so:'', soCust:so?(so.cust||''):'', key:w.ref+'|'+it.code, ref:w.ref, code:it.code, qty:it.qty, mach:m.mach, fin:m.fin, src:m.src, pw:m.pw||0, fam:m.fam, mins:it.qty*m.mach, cust:!!need, need:need, due:w.due||'', custs:custs, printed:!!w.printed, created:w.createdAt||'', i:i, sm:!!w.sm, covQty:cov.reduce(function(a,c){ return a+(c.qty||0); },0)};
       var sp=jkPlan.split[base.key], left=it.qty;
       if(sp){ jkPlan.staff.forEach(function(s){ var q=Math.min(+sp[s.id]||0, left); if(q<=0 || s.off) return; left-=q; var k=base.key+'#'+s.id; if(jkPlan.done[k]) return;
           var part=Object.assign({}, base, {key:k, parentKey:base.key, qty:q, mins:q*m.mach, part:true, partOf:it.qty, forcedStaff:s.id}); jobs.push(part); }); }
@@ -7910,11 +7935,13 @@ function jkNeedsWO(){
   return out;
 }
 function jkTile(l,v,s,warn){ return '<div class="kpi-tile'+(warn?' warn':'')+'"><div class="l">'+l+'</div><div class="v"'+(warn?' style="color:#dc2626"':'')+'>'+v+'</div>'+(s?'<div class="s">'+s+'</div>':'')+'</div>'; }
+function jkMinsTitle(j){ return j.mach+' min each'+(j.src==='piecework'?' - costing app sewing time: PW piece price \u00a3'+(+j.pw).toFixed(2)+' / \u00a3'+JK_PW_RATE.toFixed(2)+'/hr':j.src==='costing'?' (the costing app\'s timed figure)':j.src==='plan'?' (typed in Minutes per jacket)':' (assumed)'); }
 function jkPill(t,c){ return '<span class="badge" style="background:'+c+';color:#fff">'+t+'</span>'; }
 function jkRender(){
   var el=document.getElementById('jkBody'); if(!el) return;
   if(!jkPlan) jkLoad(null);
   if(!cutLog.loadedAt && !cutLog.busy && !cutLog.error && !jkCutAsked){ jkCutAsked=true; cutLoad(function(ok){ if(ok) jkRender(); }); }   // for the "not cut" chips
+  jkPWFetch(function(ok){ if(ok) jkRender(); });   // the costing app's piece prices, for the sewing minutes
   jkPrune(); jkShareDrawn='';
   var jobs=jkJobs(), sch=jkSchedule(jobs), days=sch.days, t=jkISO(jkToday());
   jkTickLoad(); (function(){ var live={}; jobs.forEach(function(j){ live[j.key]=1; }); var ch=false; Object.keys(jkTicks).forEach(function(k){ if(!live[k]){ delete jkTicks[k]; ch=true; } }); if(ch) jkTickSave(); })();
@@ -8041,7 +8068,7 @@ function jkRow(j,n,sch,showWho,staffId){
   var shareRow=(IS_EDITOR && jkSplitOpen===baseKey && jkShareDrawn!==baseKey)?jkSplitForm(j,sch,showWho||IS_EDITOR):''; if(shareRow) jkShareDrawn=baseKey;
   if(jkSoOpen===j.key) shareRow=jkSoRow(j,jkCols(showWho))+shareRow;
   var tick=(IS_EDITOR && staffId)?'<input type="checkbox" '+(jkTickLoad()[j.key]?'checked ':'')+'title="Tick to put this line on the printed list" style="margin:0 4px 0 0;vertical-align:middle" onclick="event.stopPropagation()" onchange="jkTick(\''+esc(j.key)+'\', this.checked)">':'';
-  return '<tr'+drag+(j.late?' style="background:#fef2f2"':'')+'><td style="white-space:nowrap">'+tick+(IS_EDITOR && staffId?'<span class="jk-grip" title="Drag to reorder" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+(j.handOrder?' <span title="Put here by hand">&#9997;</span>':'')+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+cutChip+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes for this style: 32 min assumed">?</span>':'')+(j.cant?' <span style="color:#dc2626;font-weight:700" title="'+esc(j.whoName||'')+' does not sew this style - put here by hand">&#9888; can\'t sew</span>':'')+(j.overflow?' <span style="color:#b45309;font-weight:700" title="Pinned to '+esc(j.overflow)+', who has no time left before their last day, so the plan placed it with '+esc(j.whoName||'')+'. Pick a machinist to pin it elsewhere, or auto to clear the pin.">&#8618; no time: was '+esc(j.overflow)+'</span>':'')+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub" title="Shared works order">of '+j.partOf+'</div>':'')+'</td><td style="text-align:right" title="'+j.mach+' min each ('+j.src+')">'+Math.round(j.mins)+'</td><td>'+jkShort(j.start)+'</td><td>'+jkShort(j.finish)+'</td>'
+  return '<tr'+drag+(j.late?' style="background:#fef2f2"':'')+'><td style="white-space:nowrap">'+tick+(IS_EDITOR && staffId?'<span class="jk-grip" title="Drag to reorder" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+(j.handOrder?' <span title="Put here by hand">&#9997;</span>':'')+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+cutChip+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes and no piecework price for this style: 32 min assumed">?</span>':'')+(j.cant?' <span style="color:#dc2626;font-weight:700" title="'+esc(j.whoName||'')+' does not sew this style - put here by hand">&#9888; can\'t sew</span>':'')+(j.overflow?' <span style="color:#b45309;font-weight:700" title="Pinned to '+esc(j.overflow)+', who has no time left before their last day, so the plan placed it with '+esc(j.whoName||'')+'. Pick a machinist to pin it elsewhere, or auto to clear the pin.">&#8618; no time: was '+esc(j.overflow)+'</span>':'')+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub" title="Shared works order">of '+j.partOf+'</div>':'')+'</td><td style="text-align:right" title="'+jkMinsTitle(j)+'">'+Math.round(j.mins)+'</td><td>'+jkShort(j.start)+'</td><td>'+jkShort(j.finish)+'</td>'
     +'<td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+dueFlag+'</td><td style="white-space:nowrap">'+jkSoCell(j)+'</td><td>'+(j.cust?'<strong>'+esc(j.custs.filter(Boolean).join(', ')||'customer order')+'</strong>'+(j.covQty && j.covQty<j.qty?' <span class="sm-sub">'+j.covQty+' of '+j.qty+'</span>':''):'<span class="sm-sub">stock</span>'+(j.soNeed?'<div class="sm-sub" title="Live sales order on this code, covered by stock on the shelf; the line is judged against its promised date">SO '+esc(j.soRef)+(j.soCust?' '+esc(j.soCust):'')+'</div>':''))+'</td><td>'+status+(j.part?' '+jkPill('shared','#1d4ed8'):'')+'</td>'+(showWho||IS_EDITOR?'<td>'+(IS_EDITOR?who:esc(j.whoName||''))+'</td>':'')+doneBtn+'</tr>'+shareRow;
 }
 // a line in the Ready to issue list: draggable into a person's list, or given with the select
@@ -8052,7 +8079,7 @@ function jkReadyRow(j,n,sch){
   var dueFlag=j.dueAfter?' <span style="color:#b45309;font-weight:700;white-space:nowrap" title="The works order due date is later than the earliest promised date of the sales orders behind it">&#9888; due after promise</span>':'';
   var baseKey=j.parentKey||j.key, shareRow=(IS_EDITOR && jkSplitOpen===baseKey && jkShareDrawn!==baseKey)?jkSplitForm(j,sch,true):''; if(shareRow) jkShareDrawn=baseKey;
   if(jkSoOpen===j.key) shareRow=jkSoRow(j,IS_EDITOR?10:8)+shareRow;
-  return '<tr'+drag+'><td>'+(IS_EDITOR?'<span class="jk-grip" title="Drag into a person\'s list" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+cutChip+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes for this style: 32 min assumed">?</span>':'')+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub">of '+j.partOf+'</div>':'')+'</td><td style="text-align:right">'+Math.round(j.mins)+'</td>'
+  return '<tr'+drag+'><td>'+(IS_EDITOR?'<span class="jk-grip" title="Drag into a person\'s list" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+cutChip+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes and no piecework price for this style: 32 min assumed">?</span>':'')+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub">of '+j.partOf+'</div>':'')+'</td><td style="text-align:right">'+Math.round(j.mins)+'</td>'
     +'<td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+dueFlag+'</td><td style="white-space:nowrap">'+jkSoCell(j)+'</td><td>'+(j.cust?'<strong>'+esc(j.custs.filter(Boolean).join(', ')||'customer order')+'</strong>'+(j.covQty && j.covQty<j.qty?' <span class="sm-sub">'+j.covQty+' of '+j.qty+'</span>':''):'<span class="sm-sub">stock</span>'+(j.soNeed?'<div class="sm-sub">SO '+esc(j.soRef)+(j.soCust?' '+esc(j.soCust):'')+'</div>':''))+'</td>'
     +(IS_EDITOR?'<td>'+jkGiveSelect(j,sch)+'</td><td style="white-space:nowrap"><button class="btn" style="padding:2px 8px;font-size:11px" title="Share this works order between several machinists" onclick="jkSplitOpen=(jkSplitOpen===\''+esc(baseKey)+'\'?\'\':\''+esc(baseKey)+'\'); jkRender()">&#8644; Share</button></td>':'')+'</tr>'+shareRow;
 }
@@ -8166,10 +8193,10 @@ function jkMinsForm(jobs){
   var fams={}; jobs.forEach(function(j){ fams[j.fam]=fams[j.fam]||{fam:j.fam, qty:0, src:j.src, mach:j.mach, fin:j.fin, codes:{}}; fams[j.fam].qty+=j.qty; fams[j.fam].codes[j.code]=1; });
   Object.keys(jkPlan.mins).forEach(function(f){ if(!fams[f]) fams[f]={fam:f, qty:0, src:'plan', mach:+jkPlan.mins[f].mach, fin:+jkPlan.mins[f].fin, codes:{}}; });
   var list=Object.keys(fams).map(function(k){ return fams[k]; }).sort(function(a,b){ return b.qty-a.qty; });
-  var h='<div class="kpi-sec" style="background:#fffbeb"><h3 style="margin:0 0 6px">Minutes per jacket</h3><div class="sub" style="margin-bottom:8px">Machining minutes per garment. "costing" comes from the style\'s costing (the Garment Technologist\'s figure); "assumed" is the stand-in 32 min until a style is costed. Type a figure here to use it instead; clear it to go back.</div>'
+  var h='<div class="kpi-sec" style="background:#fffbeb"><h3 style="margin:0 0 6px">Minutes per jacket</h3><div class="sub" style="margin-bottom:8px">Machining minutes per garment. "costing" is the style\'s timed figure (the Garment Technologist\'s); "piecework" is the costing app\'s sewing time, the PW piece price &divide; &pound;'+JK_PW_RATE.toFixed(2)+'/hr, with 6 min finishing; "assumed" is the stand-in 32 min where neither exists. Type a figure here to use it instead; clear it to go back.</div>'
     +'<table class="sm-tbl" style="font-size:12px"><thead><tr><th>Style</th><th style="text-align:right">Jackets open</th><th>Source</th><th>Machining min</th><th>Finishing min</th><th>Codes</th></tr></thead><tbody>';
   list.forEach(function(f){ var ov=jkPlan.mins[f.fam]||{};
-    h+='<tr><td><strong>'+esc(f.fam)+'</strong></td><td style="text-align:right">'+f.qty+'</td><td>'+(f.src==='plan'?jkPill('this table','#1d4ed8'):f.src==='costing'?jkPill('costing','#15803d'):jkPill('assumed','#b45309'))+(f.src!=='plan'?' <span class="sm-sub">'+f.mach+' + '+f.fin+'</span>':'')+'</td>'
+    h+='<tr><td><strong>'+esc(f.fam)+'</strong></td><td style="text-align:right">'+f.qty+'</td><td>'+(f.src==='plan'?jkPill('this table','#1d4ed8'):f.src==='costing'?jkPill('costing','#15803d'):f.src==='piecework'?jkPill('piecework','#6d28d9'):jkPill('assumed','#b45309'))+(f.src!=='plan'?' <span class="sm-sub">'+f.mach+' + '+f.fin+'</span>':'')+'</td>'
       +'<td><input type="number" step="0.1" value="'+esc(ov.mach!=null?String(ov.mach):'')+'" placeholder="'+f.mach+'" style="width:70px;font-size:12px" onchange="jkMinsSet(\''+esc(f.fam)+'\',\'mach\',this.value)"></td><td><input type="number" step="0.1" value="'+esc(ov.fin!=null?String(ov.fin):'')+'" placeholder="'+f.fin+'" style="width:70px;font-size:12px" onchange="jkMinsSet(\''+esc(f.fam)+'\',\'fin\',this.value)"></td><td class="sm-sub">'+esc(Object.keys(f.codes).join(', '))+'</td></tr>'; });
   h+='</tbody></table></div>'; return h;
 }
