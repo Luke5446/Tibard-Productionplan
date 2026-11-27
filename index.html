@@ -7782,7 +7782,12 @@ function jkJobs(){
   return jobs;
 }
 // spread the jobs over the machinists: each whole job to whoever finishes it first
-function jkSchedule(jobs){
+// mode 'pm' (the default, Luke 26 Nov 2026): only the lines the PM has issued to a
+// person (pinned, dragged, or a shared part) are planned; the rest wait in the
+// Ready to issue list. mode 'auto': every line placed with whoever finishes it
+// first, as a what-if, behind a closed banner.
+function jkSchedule(jobs, mode){
+  mode=mode||'pm';
   var days=jkWorkDays(), staff=jkPlan.staff.filter(function(s){ return !s.off; });
   var st={}; staff.forEach(function(s){ st[s.id]={d:0,used:0,load:{},jobs:[],total:0}; });
   var caps={}; staff.forEach(function(s){ caps[s.id]=days.map(function(i){ return jkCap(s,i); }); });
@@ -7797,11 +7802,13 @@ function jkSchedule(jobs){
   staff.forEach(function(s){ (jkPlan.order[s.id]||[]).forEach(function(k){ var j=byKey[k]; if(j && !seen[k] && jkPlan.assign[k]===s.id){ seen[k]=1; j.handOrder=true; ordered.push(j); } }); });
   ordered.concat(jobs.filter(function(j){ return !seen[j.key]; })).forEach(function(j){
     var forced=jkPlan.assign[j.key]||j.forcedStaff||'', pick=null, best=null;
+    j.ready=false; j.overflow=''; j.noTime=false;
+    if(mode==='pm' && !forced){ j.ready=true; j.who=''; j.whoName=''; j.start=''; j.finish=''; j.placed=false; j.late=false; j.missPromise=false; j.dueAfter=!!(j.due && jkPromise(j) && j.due>jkPromise(j)); j.wkMins={}; j.wkQty={}; return; }
     staff.forEach(function(s){ if(forced && s.id!==forced) return; if(!forced && jkCant(s,j.code)) return; var r=run(s,j.mins); if(!r) return; var score=r.d+r.used/Math.max(1,caps[s.id][r.d]||450); if(!best || score<best.score || (score===best.score && st[s.id].total<st[best.s.id].total)){ best={s:s,r:r,score:score}; } });
     // pinned to someone with no time left before their last day: the plan places it with whoever is free, and says so
-    if(!best && forced){ var fs=staff.filter(function(s){ return s.id===forced; })[0]; j.overflow=fs?fs.name:forced; forced='';
+    if(!best && forced && mode==='auto'){ var fs=staff.filter(function(s){ return s.id===forced; })[0]; j.overflow=fs?fs.name:forced; forced='';
       staff.forEach(function(s){ if(jkCant(s,j.code)) return; var r=run(s,j.mins); if(!r) return; var score=r.d+r.used/Math.max(1,caps[s.id][r.d]||450); if(!best || score<best.score || (score===best.score && st[s.id].total<st[best.s.id].total)){ best={s:s,r:r,score:score}; } }); }
-    if(!best){ j.who=forced||''; j.start=''; j.finish=''; j.placed=false; j.late=true; j.missPromise=!!jkPromise(j); return; }
+    if(!best){ j.who=forced||''; var fs2=staff.filter(function(s){ return s.id===forced; })[0]; j.whoName=fs2?fs2.name:''; j.noTime=!!forced; j.start=''; j.finish=''; j.placed=false; j.late=true; j.missPromise=!!jkPromise(j); j.dueAfter=!!(j.due && jkPromise(j) && j.due>jkPromise(j)); if(fs2){ st[fs2.id].jobs.push(j); st[fs2.id].total+=j.mins; } return; }
     pick=best.s; var r=best.r, p=st[pick.id], c=caps[pick.id];
     // book the minutes day by day for the week view
     var d=p.d, used=p.used, need=j.mins; j.wkMins={};
@@ -7811,62 +7818,50 @@ function jkSchedule(jobs){
     j.who=pick.id; j.whoName=pick.name; j.forced=!!forced; j.cant=jkCant(pick,j.code); j.start=days[r.start]; j.finish=days[r.d]; j.placed=true;
     var by=jkBy(j), pr=jkPromise(j); j.late=!!(by && j.finish>by); j.missPromise=!!(pr && j.finish>pr); j.dueAfter=!!(j.due && pr && j.due>pr);
   });
-  return {days:days, staff:staff, st:st, caps:caps};
+  // where a person would finish one more line of mins minutes, without booking it: for the Give to choices
+  return {days:days, staff:staff, st:st, caps:caps, mode:mode, tryRun:function(s,mins){ return run(s,mins); }};
 }
-// sales order lines for jacket codes nothing covers yet (no works order raised)
-function jkNeedsWO(){
-  var out=[];
-  rows.forEach(function(r){ if(!jkIsJacket(r.code) || r.clockwork) return; (r.sopLines||[]).forEach(function(l){ (l.by||[]).forEach(function(b){ if(b.who==='short' && b.qty>0) out.push({code:r.code, qty:b.qty, so:l.so, co:l.co, cust:l.cust, due:l.due}); }); }); });
-  smPending.forEach(function(p){ if(jkIsJacket(p.code) || /JACKET/i.test(p.desc||'')) out.push({code:(p.code==='FREETEXT'?(p.desc||p.code):p.code), qty:p.qty, so:(p.so||'').replace(/^0+/,''), co:p.company, cust:p.custName||p.customer, due:p.promised, special:true}); });
-  out.sort(function(a,b){ return (a.due||'9999')<(b.due||'9999')?-1:1; });
-  return out;
+// the PM's choices for a ready line: each machinist with when they would finish it, can't sew and no time greyed out
+function jkGiveSelect(j,sch){
+  var by=jkBy(j), pr=jkPromise(j);
+  var h='<select onchange="if(this.value) jkAssign(\''+esc(j.key)+'\',this.value)" style="font-size:11px"><option value="">Give to...</option>';
+  sch.staff.forEach(function(s){ var cant=jkCant(s,j.code), r=cant?null:sch.tryRun(s,j.mins), fin=r?sch.days[r.d]:'', warn='';
+    if(cant) warn='can\'t sew'; else if(!r) warn='no time'; else if(by && fin>by) warn='late: '+jkShort(fin).slice(4); else if(pr && fin>pr) warn='after promise: '+jkShort(fin).slice(4); else warn='finishes '+jkShort(fin).slice(4);
+    h+='<option value="'+s.id+'"'+((cant||!r)?' disabled':'')+'>'+esc(s.name)+' - '+esc(warn)+'</option>'; });
+  return h+'</select>';
 }
-function jkTile(l,v,s,warn){ return '<div class="kpi-tile'+(warn?' warn':'')+'"><div class="l">'+l+'</div><div class="v"'+(warn?' style="color:#dc2626"':'')+'>'+v+'</div>'+(s?'<div class="s">'+s+'</div>':'')+'</div>'; }
-function jkPill(t,c){ return '<span class="badge" style="background:'+c+';color:#fff">'+t+'</span>'; }
-function jkRender(){
-  var el=document.getElementById('jkBody'); if(!el) return;
-  if(!jkPlan) jkLoad(null);
-  if(!cutLog.loadedAt && !cutLog.busy && !cutLog.error && !jkCutAsked){ jkCutAsked=true; cutLoad(function(ok){ if(ok) jkRender(); }); }   // for the "not cut" chips
-  jkPrune();
-  var jobs=jkJobs(), sch=jkSchedule(jobs), days=sch.days, t=jkISO(jkToday());
-  var weeks=[]; days.forEach(function(d){ var w=jkWeek(d); if(weeks.indexOf(w)<0) weeks.push(w); }); weeks=weeks.slice(0,8);
-  var tot=jobs.reduce(function(a,j){ return a+j.qty; },0), custQ=jobs.filter(function(j){ return j.cust; }).reduce(function(a,j){ return a+j.qty; },0);
-  var late=jobs.filter(function(j){ return j.late; }), lateQ=late.reduce(function(a,j){ return a+j.qty; },0), unpl=jobs.filter(function(j){ return !j.placed; });
-  // the last working day before the shutdown: anything finishing after it is not made this year
+// clear every operator (Luke, 27 Nov 2026: start afresh): pins, hand order and shares go back to Ready to issue;
+// done marks stay. The old plan is kept on this PC so Undo can put it back.
+function jkClearAll(){ if(!IS_EDITOR) return; var n=Object.keys(jkPlan.assign).length+Object.keys(jkPlan.split).length; if(!n){ alert('Nothing is issued.'); return; }
+  if(!confirm('Take every works order off every machinist and put them all back in Ready to issue?\n\nDone marks stay. Undo clear brings the old plan back (until you publish or reload).')) return;
+  try{ localStorage.setItem('tibard_jk_cleared',JSON.stringify({assign:jkPlan.assign, order:jkPlan.order, split:jkPlan.split, at:new Date().toISOString()})); }catch(e){}
+  jkPlan.assign={}; jkPlan.order={}; jkPlan.split={}; jkSave(); }
+function jkClearUndo(){ if(!IS_EDITOR) return; var b=null; try{ b=JSON.parse(localStorage.getItem('tibard_jk_cleared')||'null'); }catch(e){} if(!b){ alert('Nothing to undo.'); return; }
+  jkPlan.assign=b.assign||{}; jkPlan.order=b.order||{}; jkPlan.split=b.split||{}; try{ localStorage.removeItem('tibard_jk_cleared'); }catch(e){} jkSave(); }
+function jkClearBackup(){ try{ return JSON.parse(localStorage.getItem('tibard_jk_cleared')||'null'); }catch(e){ return null; } }
+// adopt the what-if plan: every unissued line pinned to the person the auto plan gave it
+function jkAdoptAuto(){ if(!IS_EDITOR) return; var jobs=jkJobs(); jkSchedule(jobs,'auto'); var n=0; jobs.forEach(function(j){ if(j.placed && j.who && !jkPlan.assign[j.key] && !j.forcedStaff){ jkPlan.assign[j.key]=j.who; n++; } }); if(n) jkSave(); else jkRender(); }
+// the week table (jackets per person per week) with its drill-down, for the PM's plan or the auto what-if
+function jkWeekSection(sch, jobs, weeks, mode){
+  var days=sch.days, t=jkISO(jkToday()), h='';
   var yearEnd=''; days.forEach(function(d){ if(d<=(jkPlan.shutFrom||'2026-12-25') && d<'2027-01-01') yearEnd=d; });
-  var notYear=jobs.filter(function(j){ return !j.placed || (yearEnd && j.finish>yearEnd); }), notYearQ=notYear.reduce(function(a,j){ return a+j.qty; },0);
-  var wk0=jkWeek(t), capWk=0; sch.staff.forEach(function(s){ days.forEach(function(d,i){ if(jkWeek(d)===wk0) capWk+=sch.caps[s.id][i]; }); });
-  var needMins=jobs.reduce(function(a,j){ return a+j.mins; },0), assumed=jobs.filter(function(j){ return j.src==='assumed'; }).length;
-  var done=jkDoneList();
-  var pa=sopDemand.pastedAt ? new Date(sopDemand.pastedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : 'never';
-  var h='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
-    +'<h3 style="margin:0">&#129509; Jacket plan</h3><span class="sm-sub" style="font-size:11px">Live from the works orders and the sales orders pasted '+esc(pa)+'. Customer orders first by promised date, then stock works orders by due date.</span>'
-    +(IS_EDITOR?'<span style="margin-left:auto;display:flex;gap:6px">':'')+(IS_EDITOR?'<button class="btn" onclick="jkOpen.staff=!jkOpen.staff; jkRender()">&#128101; Staff &amp; hours</button><button class="btn" onclick="jkOpen.mins=!jkOpen.mins; jkRender()">&#9201; Minutes per jacket</button></span>':'')+'</div>'
-    +'<div class="sub">Each works order line goes whole to the machinist who would finish it first, working their hours less breaks (450 min Mon-Thu, 285 min Fri), holidays, first and last days, and the new jacket staff at their efficiency. "Needed by" is the works order\'s due date (set earlier than the promise when the order needs embroidery after sewing), or the earliest promised date of the sales orders behind it when there is no due date; a due date later than that promise, and a line finishing after it, are flagged. a stock works order whose code has a live sales order (covered by stock on the shelf) shows the order under For. '+(IS_EDITOR?'<strong>Done</strong> on a line takes it out of the plan (it is in finishing); Undo brings it back. Publish to share pins and done marks.':'')+'</div></div>';
-  h+='<div class="kpis" style="display:flex;gap:11px;flex-wrap:wrap;margin:12px 0">'
-    +jkTile('Jackets to make',tot,jobs.length+' works order lines'+(done.length?' · '+done.reduce(function(a,j){ return a+j.qty; },0)+' done, in finishing':''))
-    +jkTile('For customer orders',custQ,(tot-custQ)+' for stock')
-    +jkTile('Late against promise / due',lateQ,late.length+' lines',lateQ>0)
-    +jkTile('Not made before year end',notYearQ,(yearEnd?'after '+jkShort(yearEnd).slice(4)+' · ':'')+notYear.length+' lines',notYearQ>0)
-    +jkTile('Machinists this week',sch.staff.filter(function(s){ return days.some(function(d,i){ return jkWeek(d)===wk0 && sch.caps[s.id][i]>0; }); }).length,Math.round(capWk)+' min &asymp; '+Math.round(capWk/JK_DEF_MACH)+' jackets')
-    +jkTile('Minutes of work open',Math.round(needMins).toLocaleString(),(assumed?assumed+' lines on assumed 32 min':'all lines costed'),assumed>0)+'</div>';
-  if(IS_EDITOR && jkOpen.staff) h+=jkStaffForm();
-  if(IS_EDITOR && jkOpen.mins) h+=jkMinsForm(jobs);
+  var planned=jobs.filter(function(j){ return !j.ready; }), ready=jobs.filter(function(j){ return j.ready; });
+  var notYear=planned.filter(function(j){ return !j.placed || (yearEnd && j.finish>yearEnd); }), notYearQ=notYear.reduce(function(a,j){ return a+j.qty; },0);
   // ── week view, with the flags
   var wkTot={}, wkCap={}, wkNeed={}, wkLate={};
   jobs.forEach(function(j){ var by=jkBy(j); if(!by) return; var w=jkWeek(by<t?t:by); wkNeed[w]=(wkNeed[w]||0)+j.mins; });
-  h+='<div class="kpi-sec"><h3 style="margin:0 0 6px">Jackets planned by week</h3><div class="sub" style="margin-bottom:8px">Jackets a person can make in each week from the minutes they have, so a works order that runs over a weekend is split across the weeks; click a cell for the works orders behind it. A red cell is a week where that person has work that finishes after its promised or due date; an amber cell is full (95% or more). The bottom rows set the minutes the orders need by each week against the minutes the team has.</div>'
+  h+='<div class="kpi-sec" style="'+(mode==='auto'?'background:#f8fafc;border:1px dashed #cbd5e1':'')+'">'+(mode==='auto'?'':'<h3 style="margin:0 0 6px">Jackets planned by week</h3>')+'<div class="sub" style="margin-bottom:8px">Jackets a person can make in each week from the minutes they have, so a works order that runs over a weekend is split across the weeks; click a cell for the works orders behind it. A red cell is a week where that person has work that finishes after its promised or due date; an amber cell is full (95% or more). The bottom rows set the minutes the orders need by each week against the minutes the team has.</div>'
     +'<div style="overflow-x:auto"><table class="sm-tbl" style="font-size:12px"><thead><tr><th>Machinist</th>'+weeks.map(function(w){ return '<th style="text-align:right">w/c '+jkShort(w).slice(4)+'</th>'; }).join('')+'<th style="text-align:right">Total</th></tr></thead><tbody>';
   sch.staff.forEach(function(s){
     var p=sch.st[s.id]; h+='<tr><td>'+esc(s.name)+'</td>';
     weeks.forEach(function(w){ var m=0, c=0; days.forEach(function(d,i){ if(jkWeek(d)===w){ m+=p.load[d]||0; c+=sch.caps[s.id][i]; } }); wkTot[w]=(wkTot[w]||0)+m; wkCap[w]=(wkCap[w]||0)+c;
       var jk=jkJobsInWeek(p.jobs,w), lateHere=p.jobs.some(function(j){ return j.late && j.finish && jkWeek(j.finish)===w; }), pct=c?Math.round(100*m/c):0;
       var bg=!c?'':lateHere?'#fecaca':pct>=95?'#fde68a':'';
-      var isOpen=jkDrill && jkDrill.staff===s.id && jkDrill.week===w;
-      h+='<td style="text-align:right;cursor:pointer'+(bg?';background:'+bg:'')+(isOpen?';outline:2px solid #7A1F3D;outline-offset:-2px':'')+'" title="'+Math.round(m)+' of '+Math.round(c)+' min'+(lateHere?' - a line here finishes late':pct>=95?' - full':'')+' - click for the works orders" onclick="jkDrillTo(\''+esc(s.id)+'\',\''+w+'\')">'+(c?'<strong>'+jk+'</strong><div class="sm-sub">'+pct+'%'+(lateHere?' &#9888;':'')+'</div>':'<span class="sm-sub">off</span>')+'</td>'; });
+      var isOpen=jkDrill && jkDrill.staff===s.id && jkDrill.week===w && (jkDrill.mode||'pm')===mode;
+      h+='<td style="text-align:right;cursor:pointer'+(bg?';background:'+bg:'')+(isOpen?';outline:2px solid #7A1F3D;outline-offset:-2px':'')+'" title="'+Math.round(m)+' of '+Math.round(c)+' min'+(lateHere?' - a line here finishes late':pct>=95?' - full':'')+' - click for the works orders" onclick="jkDrillTo(\''+esc(s.id)+'\',\''+w+'\',\''+mode+'\')">'+(c?'<strong>'+jk+'</strong><div class="sm-sub">'+pct+'%'+(lateHere?' &#9888;':'')+'</div>':'<span class="sm-sub">off</span>')+'</td>'; });
     h+='<td style="text-align:right"><strong>'+p.jobs.reduce(function(a,j){ return a+j.qty; },0)+'</strong></td></tr>';
     // the drill-down: that person's works orders in the clicked week
-    if(jkDrill && jkDrill.staff===s.id && weeks.indexOf(jkDrill.week)>=0){
+    if(jkDrill && jkDrill.staff===s.id && (jkDrill.mode||'pm')===mode && weeks.indexOf(jkDrill.week)>=0){
       var w0=jkDrill.week, w1=jkISO(new Date(jkD(w0).getTime()+6*86400000));
       var inWeek=p.jobs.filter(function(j){ return j.start && j.finish && j.start<=w1 && j.finish>=w0; });
       h+='<tr class="jk-drill"><td colspan="'+(weeks.length+2)+'" style="background:#f9fafb;padding:8px 12px"><div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><strong>'+esc(s.name)+' - w/c '+jkShort(w0).slice(4)+'</strong><span class="sm-sub">'+jkJobsInWeek(inWeek,w0)+' jackets made this week'+(inWeek.some(function(j){ return jkWeek(j.finish)!==w0; })?', the rest of a line that carries on is counted in the week it is made':'')+'</span><button class="btn" style="padding:1px 7px;font-size:11px;margin-left:auto" onclick="jkDrillTo(\'\',\'\')">Close</button></div>';
@@ -7883,18 +7878,79 @@ function jkRender(){
   h+='<tr style="background:#f3f4f6"><td>Minutes the orders need by this week (running total) / team minutes to then</td>'+weeks.map(function(w){ cumN+=wkNeed[w]||0; cumC+=wkCap[w]||0; var short=cumN>cumC+0.5; return '<td style="text-align:right'+(short?';background:#fecaca;font-weight:700':'')+'" title="'+(short?'Short by '+Math.round(cumN-cumC)+' min: more promised than the team can make by then':'Enough minutes')+'">'+Math.round(cumN)+' / '+Math.round(cumC)+(short?' &#9888;':'')+'</td>'; }).join('')+'<td></td></tr>';
   h+='</tbody></table></div>';
   if(notYear.length) h+='<div style="margin-top:8px;color:#dc2626;font-weight:700">&#9888; '+notYearQ+' jackets on '+notYear.length+' works order lines will not be made before the shutdown'+(yearEnd?' (last working day '+jkShort(yearEnd)+')':'')+': '+esc(notYear.slice(0,8).map(function(j){ return j.ref; }).join(', '))+(notYear.length>8?' ...':'')+'</div>';
+  if(mode==='pm' && ready.length) h+='<div class="sm-sub" style="margin-top:6px">'+ready.length+' lines, '+ready.reduce(function(a,j){ return a+j.qty; },0)+' jackets are still to issue (Ready to issue, below) and are not in this table.</div>';
+  var unissued=jobs.filter(function(j){ return !jkPlan.assign[j.key] && !j.forcedStaff; }).length;
+  if(mode==='auto' && IS_EDITOR && unissued) h+='<div style="margin-top:8px"><button class="btn" onclick="jkAdoptAuto()" title="Pin every unissued line to the person this what-if gives it; nothing already issued changes">&#10003; Issue the '+unissued+' unissued lines as shown here</button></div>';
+  h+='</div>';
+  return h;
+}
+// sales order lines for jacket codes nothing covers yet (no works order raised)
+function jkNeedsWO(){
+  var out=[];
+  rows.forEach(function(r){ if(!jkIsJacket(r.code) || r.clockwork) return; (r.sopLines||[]).forEach(function(l){ (l.by||[]).forEach(function(b){ if(b.who==='short' && b.qty>0) out.push({code:r.code, qty:b.qty, so:l.so, co:l.co, cust:l.cust, due:l.due}); }); }); });
+  smPending.forEach(function(p){ if(jkIsJacket(p.code) || /JACKET/i.test(p.desc||'')) out.push({code:(p.code==='FREETEXT'?(p.desc||p.code):p.code), qty:p.qty, so:(p.so||'').replace(/^0+/,''), co:p.company, cust:p.custName||p.customer, due:p.promised, special:true}); });
+  out.sort(function(a,b){ return (a.due||'9999')<(b.due||'9999')?-1:1; });
+  return out;
+}
+function jkTile(l,v,s,warn){ return '<div class="kpi-tile'+(warn?' warn':'')+'"><div class="l">'+l+'</div><div class="v"'+(warn?' style="color:#dc2626"':'')+'>'+v+'</div>'+(s?'<div class="s">'+s+'</div>':'')+'</div>'; }
+function jkPill(t,c){ return '<span class="badge" style="background:'+c+';color:#fff">'+t+'</span>'; }
+function jkRender(){
+  var el=document.getElementById('jkBody'); if(!el) return;
+  if(!jkPlan) jkLoad(null);
+  if(!cutLog.loadedAt && !cutLog.busy && !cutLog.error && !jkCutAsked){ jkCutAsked=true; cutLoad(function(ok){ if(ok) jkRender(); }); }   // for the "not cut" chips
+  jkPrune(); jkShareDrawn='';
+  var jobs=jkJobs(), sch=jkSchedule(jobs), days=sch.days, t=jkISO(jkToday());
+  jkTickLoad(); (function(){ var live={}; jobs.forEach(function(j){ live[j.key]=1; }); var ch=false; Object.keys(jkTicks).forEach(function(k){ if(!live[k]){ delete jkTicks[k]; ch=true; } }); if(ch) jkTickSave(); })();
+  var weeks=[]; days.forEach(function(d){ var w=jkWeek(d); if(weeks.indexOf(w)<0) weeks.push(w); }); weeks=weeks.slice(0,8);
+  var tot=jobs.reduce(function(a,j){ return a+j.qty; },0), custQ=jobs.filter(function(j){ return j.cust; }).reduce(function(a,j){ return a+j.qty; },0);
+  var late=jobs.filter(function(j){ return j.late; }), lateQ=late.reduce(function(a,j){ return a+j.qty; },0), unpl=jobs.filter(function(j){ return !j.placed; });
+  // the last working day before the shutdown: anything finishing after it is not made this year
+  var yearEnd=''; days.forEach(function(d){ if(d<=(jkPlan.shutFrom||'2026-12-25') && d<'2027-01-01') yearEnd=d; });
+  var ready=jobs.filter(function(j){ return j.ready; }), readyQ=ready.reduce(function(a,j){ return a+j.qty; },0);
+  var notYear=jobs.filter(function(j){ return !j.ready && (!j.placed || (yearEnd && j.finish>yearEnd)); }), notYearQ=notYear.reduce(function(a,j){ return a+j.qty; },0);
+  var wk0=jkWeek(t), capWk=0; sch.staff.forEach(function(s){ days.forEach(function(d,i){ if(jkWeek(d)===wk0) capWk+=sch.caps[s.id][i]; }); });
+  var needMins=jobs.reduce(function(a,j){ return a+j.mins; },0), assumed=jobs.filter(function(j){ return j.src==='assumed'; }).length;
+  var done=jkDoneList();
+  var pa=sopDemand.pastedAt ? new Date(sopDemand.pastedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : 'never';
+  var h='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    +'<h3 style="margin:0">&#129509; Jacket plan</h3><span class="sm-sub" style="font-size:11px">Live from the works orders and the sales orders pasted '+esc(pa)+'. Customer orders first by promised date, then stock works orders by due date.</span>'
+    +(IS_EDITOR?'<span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">':'')+(IS_EDITOR?(jkClearBackup()?'<button class="btn" style="color:#15803d;border-color:#86efac" title="Put back the plan as it was before Clear all" onclick="jkClearUndo()">&#8630; Undo clear</button>':'')+'<button class="btn" style="color:#dc2626;border-color:#fca5a5" title="Take every works order off every machinist and start afresh from Ready to issue (done marks stay; Undo clear brings it back)" onclick="jkClearAll()">&#128465; Clear all issued work</button><button class="btn" onclick="jkOpen.staff=!jkOpen.staff; jkRender()">&#128101; Staff &amp; hours</button><button class="btn" onclick="jkOpen.mins=!jkOpen.mins; jkRender()">&#9201; Minutes per jacket</button></span>':'')+'</div>'
+    +'<div class="sub">The PM gives each works order line to a machinist from the Ready to issue list (or by dragging); nothing is assigned on its own. Each person works their hours less breaks (450 min Mon-Thu, 285 min Fri), holidays, first and last days, and the new jacket staff at their efficiency. The closed banner under the week table shows where everything would land if it were all auto-assigned. "Needed by" is the works order\'s due date (set earlier than the promise when the order needs embroidery after sewing), or the earliest promised date of the sales orders behind it when there is no due date; a due date later than that promise, and a line finishing after it, are flagged. a stock works order whose code has a live sales order (covered by stock on the shelf) shows the order under For. '+(IS_EDITOR?'<strong>Done</strong> on a line takes it out of the plan (it is in finishing); Undo brings it back. Publish to share pins and done marks.':'')+'</div></div>';
+  h+='<div class="kpis" style="display:flex;gap:11px;flex-wrap:wrap;margin:12px 0">'
+    +jkTile('Jackets to make',tot,jobs.length+' works order lines'+(done.length?' · '+done.reduce(function(a,j){ return a+j.qty; },0)+' done, in finishing':''))
+    +jkTile('For customer orders',custQ,(tot-custQ)+' for stock')
+    +jkTile('Late against promise / due',lateQ,late.length+' lines',lateQ>0)
+    +jkTile('Ready to issue',readyQ,ready.length+' lines not yet given to a machinist',ready.length>0)
+    +jkTile('Issued, not made before year end',notYearQ,(yearEnd?'after '+jkShort(yearEnd).slice(4)+' · ':'')+notYear.length+' lines',notYearQ>0)
+    +jkTile('Machinists this week',sch.staff.filter(function(s){ return days.some(function(d,i){ return jkWeek(d)===wk0 && sch.caps[s.id][i]>0; }); }).length,Math.round(capWk)+' min &asymp; '+Math.round(capWk/JK_DEF_MACH)+' jackets')
+    +jkTile('Minutes of work open',Math.round(needMins).toLocaleString(),(assumed?assumed+' lines on assumed 32 min':'all lines costed'),assumed>0)+'</div>';
+  if(IS_EDITOR && jkOpen.staff) h+=jkStaffForm();
+  if(IS_EDITOR && jkOpen.mins) h+=jkMinsForm(jobs);
+  h+=jkWeekSection(sch, jobs, weeks, 'pm');
+  // ── what-if: everything auto-assigned, behind a closed banner (fresh job objects: the scheduler writes on them)
+  var ao=jkSec('auto',false);
+  h+='<div class="kpi-sec" style="padding:8px 14px"><div onclick="jkToggle(\'auto\')" style="cursor:pointer;display:flex;gap:8px;align-items:baseline"><span style="font-size:11px;color:#6b7280">'+(ao?'&#9660;':'&#9654;')+'</span><h3 style="margin:0">If every works order were auto-assigned</h3><span class="sm-sub">a what-if over all live lines, issued ones kept where they are; nothing changes unless you issue from it</span></div>';
+  if(ao){ var aJobs=jkJobs(), aSch=jkSchedule(aJobs,'auto'); h+='<div style="margin-top:8px">'+jkWeekSection(aSch, aJobs, weeks, 'auto')+'</div>'; }
   h+='</div>';
   // ── per machinist, each a closable banner
   h+='<div class="kpi-sec"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><input id="jkSearch" type="search" value="'+esc(jkQ)+'" placeholder="&#128269; Search WO, code, customer, machinist" oninput="jkSearch(this.value)" style="font-size:12px;padding:4px 8px;border:1px solid #d1d5db;border-radius:5px;min-width:260px">'+(jkQ?'<button class="btn" style="padding:2px 8px;font-size:11px" onclick="jkSearch(\'\')">&#10005; Clear</button>':'')+'</div>';
   var fjobs=jobs.filter(jkMatch);
   if(jkQ) h+='<div class="sm-sub" style="margin-bottom:6px">'+fjobs.length+' of '+jobs.length+' lines match "'+esc(jkQ)+'"'+(fjobs.length?'':' - nothing planned matches')+'</div>';
+  // ── ready to issue: the lines nobody has yet, in priority order, with a Give to choice
+  var rShow=ready.filter(jkMatch), ro=jkQ?true:jkSec('ready',true);
+  h+='<div class="jk-ban" style="margin:8px 0;border:1px solid #C2872B;border-radius:7px"><div onclick="jkToggle(\'ready\')" style="cursor:pointer;padding:8px 10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;background:#fffbeb;border-radius:7px"><span style="font-size:11px;color:#6b7280">'+(ro?'&#9660;':'&#9654;')+'</span><strong style="font-size:14px">Ready to issue</strong><span class="sm-sub">'+ready.length+' lines, '+readyQ+' jackets in priority order'+(IS_EDITOR?' - pick a machinist (can\'t sew and no time are greyed; a late finish is shown) or drag a line into a person\'s list. Not cut yet is allowed, so what is coming from cutting can be planned.':'')+'</span></div>';
+  if(ro){ if(!rShow.length) h+='<div class="sm-sub" style="padding:6px 10px">'+(jkQ?'None match the search.':'Everything is issued.')+'</div>';
+    else { h+='<div style="overflow-x:auto"><table class="sm-tbl jk-ready" style="width:100%;font-size:12px"><thead><tr><th>#</th><th>Works order</th><th>Code</th><th style="text-align:right">Qty</th><th style="text-align:right">Min</th><th>Needed by</th><th>Promised</th><th>For</th>'+(IS_EDITOR?'<th>Give to</th><th></th>':'')+'</tr></thead><tbody>';
+      rShow.forEach(function(j,n){ h+=jkReadyRow(j,n+1,sch); }); h+='</tbody></table></div>'; } }
+  h+='</div>';
   sch.staff.forEach(function(s){
     var p=sch.st[s.id], capTot=sch.caps[s.id].reduce(function(a,b){ return a+b; },0), open=jkSec('s:'+s.id,false), q=p.jobs.reduce(function(a,j){ return a+j.qty; },0), lt=p.jobs.filter(function(j){ return j.late; }).length;
     if(jkQ){ if(!p.jobs.some(jkMatch)) return; open=true; }
     h+='<div class="jk-ban" style="margin:8px 0;border:1px solid #e5e7eb;border-radius:7px"><div onclick="jkToggle(\'s:'+esc(s.id)+'\')" style="cursor:pointer;padding:8px 10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;background:#f9fafb;border-radius:7px"><span style="font-size:11px;color:#6b7280">'+(open?'&#9660;':'&#9654;')+'</span><strong style="font-size:14px">'+esc(s.name)+'</strong>'+(s.team==='new'?jkPill('new to jackets','#b45309'):'')+(s.only?jkPill('only '+esc(s.only),'#1d4ed8'):'')+(lt?jkPill(lt+' late','#dc2626'):'')
       +'<span class="sm-sub">'+(s.from && s.from>t?'from '+jkShort(s.from)+' · ':'')+(s.last?'last day '+jkShort(s.last)+' · ':'')+((s.hols||[]).length?'off '+s.hols.map(function(x){ return jkShort(x).slice(4); }).join(', ')+' · ':'')+p.jobs.length+' lines, '+q+' jackets, '+Math.round(p.total)+' of '+Math.round(capTot)+' min'+(s.note?' · '+esc(s.note):'')+'</span>'
       +'<span style="margin-left:auto;display:flex;gap:6px">'+(IS_EDITOR && (jkPlan.order[s.id]||[]).length?'<button class="btn" style="padding:2px 8px;font-size:11px" title="Forget the hand order for this person and let the plan choose again" onclick="event.stopPropagation(); jkOrderReset(\''+esc(s.id)+'\')">&#8634; Reset order</button>':'')
-      +(IS_EDITOR && p.jobs.length?'<button class="btn" style="padding:2px 8px;font-size:11px" title="Print this person\'s work list in the order they should work it" onclick="event.stopPropagation(); jkPrint(\''+esc(s.id)+'\')">&#128424; Print list</button>':'')+'</span></div>';
+      +(IS_EDITOR && p.jobs.length?(function(){ var tk=jkTicked(p.jobs).length; return (tk?'<button class="btn" style="padding:2px 8px;font-size:11px" title="Untick every line on this person" onclick="event.stopPropagation(); jkTickClear(\''+esc(s.id)+'\', jkSchedule(jkJobs()).st[\''+esc(s.id)+'\'].jobs)">&#9744; Clear ticks</button>':'')
+        +'<button class="btn" style="padding:2px 8px;font-size:11px'+(tk?';border-color:#7A1F3D;color:#7A1F3D;font-weight:700':'')+'" title="'+(tk?'Print only the '+tk+' ticked line'+(tk===1?'':'s'):'Print this person\'s whole work list; tick lines to print just those')+'" onclick="event.stopPropagation(); jkPrint(\''+esc(s.id)+'\')">&#128424; '+(tk?'Print '+tk+' ticked':'Print list')+'</button>'; })():'')+'</span></div>';
     if(open){
       if(!p.jobs.length) h+='<div class="sm-sub" style="padding:6px 10px">Nothing planned.</div>';
       else { h+='<div style="overflow-x:auto"><table class="sm-tbl jk-list" data-staff="'+esc(s.id)+'" style="width:100%;font-size:12px"><thead><tr><th>#</th><th>Works order</th><th>Code</th><th style="text-align:right">Qty</th><th style="text-align:right">Min</th><th>Start</th><th>Finish</th><th>Needed by</th><th>Promised</th><th>For</th><th>Status</th>'+(IS_EDITOR?'<th>Machinist</th><th></th>':'')+'</tr></thead><tbody>';
@@ -7905,9 +7961,9 @@ function jkRender(){
   h+='</div>';
   // ── priority list, closable
   var po=jkQ?true:jkSec('priority',false);
-  h+='<div class="kpi-sec"><div onclick="jkToggle(\'priority\')" style="cursor:pointer;display:flex;gap:8px;align-items:baseline"><span style="font-size:11px;color:#6b7280">'+(po?'&#9660;':'&#9654;')+'</span><h3 style="margin:0">Priority list</h3><span class="sm-sub">'+jobs.length+' lines in the order the plan works them</span></div>';
+  h+='<div class="kpi-sec"><div onclick="jkToggle(\'priority\')" style="cursor:pointer;display:flex;gap:8px;align-items:baseline"><span style="font-size:11px;color:#6b7280">'+(po?'&#9660;':'&#9654;')+'</span><h3 style="margin:0">Priority list</h3><span class="sm-sub">'+jobs.filter(function(j){ return !j.ready; }).length+' issued lines in the order the plan works them</span></div>';
   if(po){ h+='<div style="overflow-x:auto;margin-top:8px"><table class="sm-tbl" style="width:100%;font-size:12px"><thead><tr><th>#</th><th>Works order</th><th>Code</th><th style="text-align:right">Qty</th><th style="text-align:right">Min</th><th>Start</th><th>Finish</th><th>Needed by</th><th>Promised</th><th>For</th><th>Status</th><th>Machinist</th>'+(IS_EDITOR?'<th></th>':'')+'</tr></thead><tbody>';
-    jobs.forEach(function(j,n){ if(jkMatch(j)) h+=jkRow(j,n+1,sch,true); }); h+='</tbody></table></div>'; }
+    jobs.filter(function(j){ return !j.ready; }).forEach(function(j,n){ if(jkMatch(j)) h+=jkRow(j,n+1,sch,true); }); h+='</tbody></table></div>'; }
   h+='</div>';
   // ── needs a works order
   var nw=jkNeedsWO(); if(jkQ){ var qq=jkQ.toLowerCase().trim().split(/\s+/); nw=nw.filter(function(x){ var hay=[x.so,x.cust,x.code,x.co].join(' ').toLowerCase(); return qq.every(function(w){ return hay.indexOf(w)>=0; }); }); }
@@ -7929,6 +7985,14 @@ function jkRender(){
   el.innerHTML=h;
 }
 var jkDrill=null, jkQ='', jkSoOpen='', jkCutAsked=false;
+// ticks for the print list (PM, 26 Nov 2026): tick a few lines per person and Print list prints only those,
+// so the machinist gets a short sheet the plan can still move around. Kept on this PC, not published.
+var jkTicks=null;
+function jkTickLoad(){ if(!jkTicks){ jkTicks={}; try{ jkTicks=JSON.parse(localStorage.getItem('tibard_jk_ticks')||'{}')||{}; }catch(e){ jkTicks={}; } } return jkTicks; }
+function jkTickSave(){ try{ localStorage.setItem('tibard_jk_ticks',JSON.stringify(jkTicks)); }catch(e){} }
+function jkTick(key,on){ jkTickLoad(); if(on) jkTicks[key]=1; else delete jkTicks[key]; jkTickSave(); jkRender(); }
+function jkTickClear(staffId,jobs){ jkTickLoad(); jobs.forEach(function(j){ delete jkTicks[j.key]; }); jkTickSave(); jkRender(); }
+function jkTicked(jobs){ jkTickLoad(); return jobs.filter(function(j){ return jkTicks[j.key]; }); }
 function jkCols(wide){ return 11+(wide||IS_EDITOR?1:0)+(IS_EDITOR?1:0); }   // columns in a list row, for a row that spans them
 // Promised column (Luke, 26 Nov 2026): the newest promised date of the sales orders behind the line; click it for every order, newest first
 function jkSoCell(j){ if(!j.sos || !j.sos.length) return ''; var n=j.sos.length; return '<a href="#" onclick="event.preventDefault(); jkSoToggle(\''+esc(j.key)+'\')" title="'+n+' sales order'+(n===1?'':'s')+' - click for the list" style="color:#1d4ed8;text-decoration:underline dotted">'+jkShort(j.soNewest)+'</a>'+(n>1?' <span class="sm-sub">'+n+' SOs</span>':''); }
@@ -7947,22 +8011,36 @@ function jkRow(j,n,sch,showWho,staffId){
   var t=jkISO(jkToday()), by=jkBy(j);
   var drag=(IS_EDITOR && staffId)?' draggable="true" data-key="'+esc(j.key)+'" ondragstart="jkDragStart(event)" ondragover="jkDragOver(event)" ondragleave="jkDragLeave(event)" ondrop="jkDrop(event)" ondragend="jkDragEnd(event)"':'';
   var status=!j.placed ? jkPill('not placed','#dc2626') : j.late ? jkPill('late','#dc2626') : by && j.finish===by ? jkPill('on the day','#b45309') : jkPill('ok','#15803d');
+  if(j.noTime) status+=' <span style="color:#dc2626;font-weight:700" title="'+esc(j.whoName||'')+' has no minutes left before their last day: give this line to someone else">&#9888; no time</span>';
   if(j.placed && j.missPromise && !j.late) status+=' '+jkPill('misses promise','#dc2626');
   if(j.placed && j.missPromise && (j.handOrder || j.forced)) status+=' <span style="color:#dc2626;font-weight:700" title="Put here by hand and finishes '+esc(jkShort(j.finish))+', after the promised date '+esc(jkShort(jkPromise(j)))+'">&#9888; moved: after promise</span>';
   var cutChip=j.notCut?'<div><span class="badge" style="background:#b45309;color:#fff;font-size:10px" title="The cutting room has not logged this line as cut yet">not cut</span></div>':'';
   var dueFlag=j.dueAfter?' <span style="color:#b45309;font-weight:700;white-space:nowrap" title="The works order due date is later than the earliest promised date of the sales orders behind it ('+esc(jkShort(jkPromise(j)))+')">&#9888; due after promise</span>':'';
   var who='';
-  if(IS_EDITOR){ who='<select onchange="jkAssign(\''+esc(j.key)+'\',this.value)" style="font-size:11px"><option value="">auto</option>'+sch.staff.map(function(s){ return '<option value="'+s.id+'"'+(jkPlan.assign[j.key]===s.id?' selected':'')+'>'+esc(s.name)+'</option>'; }).join('')+'</select>'+(j.forced?' &#128204;':''); }
+  if(IS_EDITOR){ who='<select onchange="jkAssign(\''+esc(j.key)+'\',this.value)" style="font-size:11px"><option value="">&#8617; back to ready</option>'+sch.staff.map(function(s){ return '<option value="'+s.id+'"'+(jkPlan.assign[j.key]===s.id?' selected':'')+'>'+esc(s.name)+'</option>'; }).join('')+'</select>'+(j.forced?' &#128204;':''); }
   else who=esc(j.whoName||'');
   var baseKey=j.parentKey||j.key;
   var doneBtn=IS_EDITOR?'<td style="white-space:nowrap"><button class="btn" style="padding:2px 8px;font-size:11px" title="Made - now in finishing. Takes the line out of the plan; Undo in the Done list below." onclick="jkDone(\''+esc(j.key)+'\')">&#10003; Done</button> <button class="btn" style="padding:2px 8px;font-size:11px" title="Share this works order between several machinists" onclick="jkSplitOpen=(jkSplitOpen===\''+esc(baseKey)+'\'?\'\':\''+esc(baseKey)+'\'); jkRender()">&#8644; Share</button></td>':'';
-  var shareRow=(IS_EDITOR && jkSplitOpen===baseKey)?jkSplitForm(j,sch,showWho||IS_EDITOR):'';
+  var shareRow=(IS_EDITOR && jkSplitOpen===baseKey && jkShareDrawn!==baseKey)?jkSplitForm(j,sch,showWho||IS_EDITOR):''; if(shareRow) jkShareDrawn=baseKey;
   if(jkSoOpen===j.key) shareRow=jkSoRow(j,jkCols(showWho))+shareRow;
-  return '<tr'+drag+(j.late?' style="background:#fef2f2"':'')+'><td>'+(IS_EDITOR && staffId?'<span class="jk-grip" title="Drag to reorder" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+(j.handOrder?' <span title="Put here by hand">&#9997;</span>':'')+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+cutChip+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes for this style: 32 min assumed">?</span>':'')+(j.cant?' <span style="color:#dc2626;font-weight:700" title="'+esc(j.whoName||'')+' does not sew this style - put here by hand">&#9888; can\'t sew</span>':'')+(j.overflow?' <span style="color:#b45309;font-weight:700" title="Pinned to '+esc(j.overflow)+', who has no time left before their last day, so the plan placed it with '+esc(j.whoName||'')+'. Pick a machinist to pin it elsewhere, or auto to clear the pin.">&#8618; no time: was '+esc(j.overflow)+'</span>':'')+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub" title="Shared works order">of '+j.partOf+'</div>':'')+'</td><td style="text-align:right" title="'+j.mach+' min each ('+j.src+')">'+Math.round(j.mins)+'</td><td>'+jkShort(j.start)+'</td><td>'+jkShort(j.finish)+'</td>'
+  var tick=(IS_EDITOR && staffId)?'<input type="checkbox" '+(jkTickLoad()[j.key]?'checked ':'')+'title="Tick to put this line on the printed list" style="margin:0 4px 0 0;vertical-align:middle" onclick="event.stopPropagation()" onchange="jkTick(\''+esc(j.key)+'\', this.checked)">':'';
+  return '<tr'+drag+(j.late?' style="background:#fef2f2"':'')+'><td style="white-space:nowrap">'+tick+(IS_EDITOR && staffId?'<span class="jk-grip" title="Drag to reorder" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+(j.handOrder?' <span title="Put here by hand">&#9997;</span>':'')+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+cutChip+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes for this style: 32 min assumed">?</span>':'')+(j.cant?' <span style="color:#dc2626;font-weight:700" title="'+esc(j.whoName||'')+' does not sew this style - put here by hand">&#9888; can\'t sew</span>':'')+(j.overflow?' <span style="color:#b45309;font-weight:700" title="Pinned to '+esc(j.overflow)+', who has no time left before their last day, so the plan placed it with '+esc(j.whoName||'')+'. Pick a machinist to pin it elsewhere, or auto to clear the pin.">&#8618; no time: was '+esc(j.overflow)+'</span>':'')+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub" title="Shared works order">of '+j.partOf+'</div>':'')+'</td><td style="text-align:right" title="'+j.mach+' min each ('+j.src+')">'+Math.round(j.mins)+'</td><td>'+jkShort(j.start)+'</td><td>'+jkShort(j.finish)+'</td>'
     +'<td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+dueFlag+'</td><td style="white-space:nowrap">'+jkSoCell(j)+'</td><td>'+(j.cust?'<strong>'+esc(j.custs.filter(Boolean).join(', ')||'customer order')+'</strong>'+(j.covQty && j.covQty<j.qty?' <span class="sm-sub">'+j.covQty+' of '+j.qty+'</span>':''):'<span class="sm-sub">stock</span>'+(j.soNeed?'<div class="sm-sub" title="Live sales order on this code, covered by stock on the shelf; the line is judged against its promised date">SO '+esc(j.soRef)+(j.soCust?' '+esc(j.soCust):'')+'</div>':''))+'</td><td>'+status+(j.part?' '+jkPill('shared','#1d4ed8'):'')+'</td>'+(showWho||IS_EDITOR?'<td>'+(IS_EDITOR?who:esc(j.whoName||''))+'</td>':'')+doneBtn+'</tr>'+shareRow;
 }
+// a line in the Ready to issue list: draggable into a person's list, or given with the select
+function jkReadyRow(j,n,sch){
+  var t=jkISO(jkToday()), by=jkBy(j);
+  var drag=IS_EDITOR?' draggable="true" data-key="'+esc(j.key)+'" ondragstart="jkDragStart(event)" ondragend="jkDragEnd(event)"':'';
+  var cutChip=j.notCut?' <span class="badge" style="background:#b45309;color:#fff;font-size:10px" title="The cutting room has not logged this line as cut yet">not cut</span>':'';
+  var dueFlag=j.dueAfter?' <span style="color:#b45309;font-weight:700;white-space:nowrap" title="The works order due date is later than the earliest promised date of the sales orders behind it">&#9888; due after promise</span>':'';
+  var baseKey=j.parentKey||j.key, shareRow=(IS_EDITOR && jkSplitOpen===baseKey && jkShareDrawn!==baseKey)?jkSplitForm(j,sch,true):''; if(shareRow) jkShareDrawn=baseKey;
+  if(jkSoOpen===j.key) shareRow=jkSoRow(j,IS_EDITOR?10:8)+shareRow;
+  return '<tr'+drag+'><td>'+(IS_EDITOR?'<span class="jk-grip" title="Drag into a person\'s list" style="cursor:grab;color:#9ca3af;margin-right:4px">&#8942;</span>':'')+n+'</td><td><strong>'+esc(j.ref)+'</strong>'+(j.sm?' '+jkPill('SM','#7A1F3D'):'')+(j.printed?'':' <span class="sm-sub">not printed</span>')+cutChip+'</td><td>'+esc(j.code)+(j.src==='assumed'?' <span class="sm-sub" title="No costing minutes for this style: 32 min assumed">?</span>':'')+'</td><td style="text-align:right">'+j.qty+(j.part?'<div class="sm-sub">of '+j.partOf+'</div>':'')+'</td><td style="text-align:right">'+Math.round(j.mins)+'</td>'
+    +'<td'+(by && by<t?' style="color:#dc2626;font-weight:700"':'')+'>'+jkShort(by)+dueFlag+'</td><td style="white-space:nowrap">'+jkSoCell(j)+'</td><td>'+(j.cust?'<strong>'+esc(j.custs.filter(Boolean).join(', ')||'customer order')+'</strong>'+(j.covQty && j.covQty<j.qty?' <span class="sm-sub">'+j.covQty+' of '+j.qty+'</span>':''):'<span class="sm-sub">stock</span>'+(j.soNeed?'<div class="sm-sub">SO '+esc(j.soRef)+(j.soCust?' '+esc(j.soCust):'')+'</div>':''))+'</td>'
+    +(IS_EDITOR?'<td>'+jkGiveSelect(j,sch)+'</td><td style="white-space:nowrap"><button class="btn" style="padding:2px 8px;font-size:11px" title="Share this works order between several machinists" onclick="jkSplitOpen=(jkSplitOpen===\''+esc(baseKey)+'\'?\'\':\''+esc(baseKey)+'\'); jkRender()">&#8644; Share</button></td>':'')+'</tr>'+shareRow;
+}
 // the share form under a line: a quantity per machinist; what is not given out stays with the plan
-var jkSplitOpen='';
+var jkSplitOpen='', jkShareDrawn='';
 function jkSplitForm(j,sch,wide){
   var baseKey=j.parentKey||j.key, sp=jkPlan.split[baseKey]||{}, total=j.partOf||j.qty, cols=jkCols(wide);
   var h='<tr class="jk-share"><td colspan="'+cols+'" style="background:#eff6ff;padding:8px 10px"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><strong>Share '+esc(j.ref)+' ('+total+' jackets) between:</strong>';
@@ -7970,7 +8048,7 @@ function jkSplitForm(j,sch,wide){
   h+='<span class="sm-sub" id="jkShareNote">'+jkSplitNote(sp,total,sch.staff)+'</span><button class="btn" style="padding:2px 8px;font-size:11px" onclick="jkSplitApply(\''+esc(baseKey)+'\',this)">Apply</button>'+(jkPlan.split[baseKey]?'<button class="btn" style="padding:2px 8px;font-size:11px" onclick="jkSplitClear(\''+esc(baseKey)+'\')">Clear share</button>':'')+'<button class="btn" style="padding:2px 8px;font-size:11px" onclick="jkSplitOpen=\'\'; jkRender()">Close</button></div></td></tr>';
   return h;
 }
-function jkSplitNote(sp,total,staff){ var given=0; staff.forEach(function(s){ given+=+sp[s.id]||0; }); return given>total?'<span style="color:#dc2626">'+given+' given out of '+total+' - too many</span>':given+' given out, '+(total-given)+' left for the plan to place'; }
+function jkSplitNote(sp,total,staff){ var given=0; staff.forEach(function(s){ given+=+sp[s.id]||0; }); return given>total?'<span style="color:#dc2626">'+given+' given out of '+total+' - too many</span>':given+' given out, '+(total-given)+' left in Ready to issue'; }
 function jkSplitTotal(inp){ var tr=inp.closest('tr'), sp={}; [].slice.call(tr.querySelectorAll('input[data-share]')).forEach(function(x){ sp[x.getAttribute('data-share')]=+x.value||0; }); var m=/\((\d+) jackets\)/.exec(tr.textContent), total=m?+m[1]:0; var n=tr.querySelector('#jkShareNote'); if(n) n.innerHTML=jkSplitNote(sp,total,jkPlan.staff); }
 function jkSplitApply(baseKey,btn){ if(!IS_EDITOR) return; var tr=btn.closest('tr'), sp={}, given=0; [].slice.call(tr.querySelectorAll('input[data-share]')).forEach(function(x){ var q=Math.max(0,Math.floor(+x.value||0)); if(q>0){ sp[x.getAttribute('data-share')]=q; given+=q; } });
   var m=/\((\d+) jackets\)/.exec(tr.textContent), total=m?+m[1]:0; if(given>total){ alert('That is '+given+' jackets shared out of '+total+'. Take some back first.'); return; }
@@ -8015,7 +8093,8 @@ function jkOrderReset(staffId){ if(!IS_EDITOR) return; (jkPlan.order[staffId]||[
 function jkPrint(staffId){
   var jobs=jkJobs(), sch=jkSchedule(jobs), s=sch.staff.filter(function(x){ return x.id===staffId; })[0];
   if(!s){ alert('That person is not in the plan.'); return false; }
-  var p=sch.st[s.id], t=jkISO(jkToday()), e=esc, q=p.jobs.reduce(function(a,j){ return a+j.qty; },0);
+  var p=sch.st[s.id], t=jkISO(jkToday()), e=esc, allJobs=p.jobs, ticked=jkTicked(allJobs), lines=ticked.length?ticked:allJobs;
+  p={jobs:lines, total:lines.reduce(function(a,j){ return a+j.mins; },0)}; var q=p.jobs.reduce(function(a,j){ return a+j.qty; },0);
   var capTot=sch.caps[s.id].reduce(function(a,b){ return a+b; },0);
   var when=new Date().toLocaleString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Jacket list - '+e(s.name)+'</title><style>'
@@ -8029,7 +8108,7 @@ function jkPrint(staffId){
     +'.late-t{color:#dc2626;font-weight:700}.sub{color:#7A6E70;font-size:10.5px}.tot td{font-weight:700;background:#F6EFD2 !important}'
     +'.foot{margin-top:12px;color:#7A6E70;font-size:10px;border-top:1px solid #C2872B;padding-top:6px}'
     +'thead{display:table-header-group}tr{page-break-inside:avoid}</style></head><body>'
-    +'<div class="hdr"><h1>'+e(s.name)+'<small>Jacket work list &middot; in the order to work &middot; printed '+e(when)+'</small></h1><img src="'+TIBARD_LOGO+'" alt="Tibard" style="height:40px"></div>'
+    +'<div class="hdr"><h1>'+e(s.name)+'<small>Jacket work list &middot; in the order to work'+(ticked.length?' &middot; '+ticked.length+' of '+allJobs.length+' lines picked by the planner':'')+' &middot; printed '+e(when)+'</small></h1><img src="'+TIBARD_LOGO+'" alt="Tibard" style="height:40px"></div>'
     +'<div class="who">'+(s.last?'<span><b>Last day:</b> '+e(jkShort(s.last))+'</span>':'')+(s.from && s.from>t?'<span><b>From:</b> '+e(jkShort(s.from))+'</span>':'')
     +((s.hols||[]).length?'<span><b>Days off:</b> '+e(s.hols.map(function(x){ return jkShort(x).slice(4); }).join(', '))+'</span>':'')
     +'<span><b>Work:</b> '+p.jobs.length+' lines, '+q+' jackets, '+Math.round(p.total)+' of '+Math.round(capTot)+' min</span>'+(s.note?'<span><b>Note:</b> '+e(s.note)+'</span>':'')+'</div>'

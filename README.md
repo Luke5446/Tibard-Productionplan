@@ -370,6 +370,12 @@ this morning is in the plan straight away:
   that machinist once the PM is happy with it: name, last day and days off,
   then their lines in working order (works order, code, qty, minutes, start,
   finish, needed by, customer) with a tick box each. Print only; nothing saved.
+  **Ticks** (26 Nov 2026): a tick box at the start of each line; when any
+  are ticked the button reads *Print n ticked* and the sheet carries only
+  those, so the PM can hand out a few works orders at a time while the plan
+  is still moving. *Clear ticks* unticks the person. Ticks are kept on the
+  PC (`localStorage` `tibard_jk_ticks`), not published, and go when the
+  line leaves the plan.
 - **Search** (26 Nov 2026): the box in the tab header narrows every list to
   the lines matching a works order, code, style family, customer or
   machinist; people with no match are hidden, matching ones open.
@@ -395,6 +401,25 @@ this morning is in the plan straight away:
   several. Click it for the list, newest promise first: order, customer,
   quantity from this works order (or ordered), promised, ordered on. Also on
   the print sheet.
+- **Nothing is auto-assigned** (26 Nov 2026, Luke: capacity was pushing
+  uncut works orders to the top of the operators' lists). A line is planned
+  on a person only once the PM has issued it: by picking a machinist in the
+  **Ready to issue** list (above the people; can't sew and no time are
+  greyed, a late finish is shown; not cut is allowed so what is coming from
+  cutting can be planned), by dragging it into a person's list, or by a
+  share. The week table and the tiles show only issued lines, with a note
+  of how many are still to issue. *Back to ready* on a line un-issues it.
+  A closed banner, **If every works order were auto-assigned**, shows the
+  what-if over all live lines (issued ones kept where they are) with its
+  own drill-down and a button to issue the unissued lines as shown. A line
+  issued to someone with no minutes left before their last day stays with
+  them flagged *no time* (the what-if moves it on). Pins, hand order,
+  shares and done marks are unchanged in `jkPlan`; scheduler
+  `jkSchedule(jobs, mode)` takes `'pm'` (default) or `'auto'`.
+- **Clear all issued work** (27 Nov 2026) in the tab header takes every
+  line off every machinist (pins, hand order and shares) so the PM can start
+  afresh from Ready to issue; done marks stay. The old plan is kept on the
+  PC (`localStorage` `tibard_jk_cleared`) and **Undo clear** puts it back.
 - **Needed by is the works order due date** (26 Nov 2026, Luke: WO-1998 is
   promised for the 17th but due on the 10th because the order needs
   embroidery after sewing). The earliest sales order promise is kept beside
