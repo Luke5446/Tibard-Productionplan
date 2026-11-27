@@ -189,6 +189,13 @@ every live sales order line for a stock-held code.
   and the due dates are there without going back to Sage. A code on SOP
   with no SOPDemand paste says to paste the sheet.
 
+Since 27 Nov 2026 the BULK codes are retired (stock written off into the home
+codes; containers bought in on the home codes), so Sage's Bulk list view may
+thin out. `70-buffer-live.sql` now also lists any code with a BULK stock item,
+and the planner marks a buffer row Clockwork when the stock planner's
+`data.json` tracks its code (the Clockwork code master), on load and after each
+paste. The fabric purchase order file never BULK-prefixes a line now.
+
 ## Make for 4 weeks or 12 weeks
 
 The buffer toolbar's **Make for** toggle sets how many weeks' sales WOP REC
@@ -479,19 +486,21 @@ that PC opens the tab with a token.
 
 The KPI tab has a **Paste standard costs** box (6 Nov 2026): paste `code [tab]
 standard cost` lines from `sage/80-standard-costs.sql` (Tibard's company holds the cost
-for OH codes too; BULK codes included), Save, then Publish for team. Sage has ~107k
-costed codes, so only the ones the planner knows are kept (buffer rows, their BULK
-codes, works orders live and completed, the style master): a new special make's code is
-picked up by the next paste. The list goes out in `data.json` as
+for OH codes too), Save, then Publish for team. Sage has ~107k
+costed codes, so only the ones the planner knows are kept (buffer rows, works orders
+live and completed, the style master, and any BULK codes still on file): a new special
+make's code is picked up by the next paste. The list goes out in `data.json` as
 `stdCosts` (`costs`, `pastedAt`, `finishAdd`) and the Operations KPIs dashboard
 values each month's completed garments at it, from October 2026.
 
-A works order for a code on the Clockwork Bulk list can be ticked **Finishing
+A works order for a Clockwork code can be ticked **Finishing
 only** (in the Create Works Orders box, offered only when a ticked code is a
 Clockwork code and marking only those; and on the manual form once such a code
 is typed). The works order carries `finishing: true`, so does its completed line,
-and it is valued at the BULK code's standard cost plus £1 rather than the home
-code's cost. No cloth is cut for it, so it is not sent to the cutting log and
+and it is valued at the code's standard cost plus £1. Until 27 Nov 2026 that was
+the BULK code's cost; the BULK codes were retired that day and the home code now
+carries the bought-in cost, so the home code's cost is used, with a BULK cost
+still on the list standing in for a code with no home code's cost. No cloth is cut for it, so it is not sent to the cutting log and
 has no fabric record. A split or an undone completion keeps the flag.
 
 ## Cloth held at Tiajo for call-off

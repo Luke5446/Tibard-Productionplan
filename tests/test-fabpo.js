@@ -11,7 +11,7 @@
 //     the reference typed as the supplier document number, line type 1, the
 //     code (also as StockItem), the Home warehouse, metres, Sage's cost per
 //     metre, the analysis code names, OrderOriginator Import; nil lines out;
-//     a Clockwork line would go BULK-prefixed to the Bulk warehouse
+//     a Clockwork line goes on its home code to Home too (BULK codes retired 27 Nov 2026)
 //   - Tiajo buy in euros: a paste of A to N (no currency column) takes
 //     Sage's last buying price and asks first; a paste of A to Q takes the
 //     euro price without asking, shows it per metre with the list price
@@ -85,7 +85,7 @@ const sheet16=[
    && t2.csv[0]==='OrderType,OrderNumber,SuppAccRef,OrderDate,OrderRequestedDate,SupplierDocumentNumber,OrderWarehouse,ExchangeRate,LineType,ProductCode,ProductDescription,Warehouse,Quantity,UnitPrice,TaxCode,StockItem,TaxAmount,DiscountPercent,DiscountValue,NominalCode,CostCentre,Department,ShowOnSuppDocs,ProjectCode,ProjectItem,LineRequestedDate,AnalysisCodeName2,AnalysisCodeValue2,AnalysisCodeName3,AnalysisCodeValue3,AnalysisCodeName4,AnalysisCodeValue4,LineAnalysisCode1,LineAnalysisCode2,PartRef,OrderOriginator,OrderTakenBy,LandedCostType,LandedCostValue'
    && t2.csv[1]==='1,,TIA001EU,21/09/2026,09/10/2026,Tiajo proforma 4471,,,1,CO5014DEN,,Home,50,6.71,,CO5014DEN,,,,,,,,,,09/10/2026,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,' && t2.csv.length===2
    && t2.fridays==='2026-10-16,2026-10-16,2026-10-23,2026-10-23,2026-10-16'
-   && t2.promptDefault==='Fabric order 21/09/2026' && t2.bulk==='1,,CLO003,21/09/2026,21/10/2026,Container 128,,,1,BULKCJ0193MM01,,Bulk,400,4.16,,BULKCJ0193MM01,,,,,,,,,,21/10/2026,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,'
+   && t2.promptDefault==='Fabric order 21/09/2026' && t2.bulk==='1,,CLO003,21/09/2026,21/10/2026,Container 128,,,1,CJ0193MM01,,Home,400,4.16,,CJ0193MM01,,,,,,,,,,21/10/2026,Despatch Number,,B2B Export Status,N/A,Intercompany Despatch Line ID,,,,,Import,,,'
    && /^1 line, 50 m, €336 for Tiajo Comercio\./.test(t2.alert) && t2.rec==='TIA001EU|B2B_PO_TIB_TIA001EU_2026-09-21_1007.csv|2026-09-21|10:07|1|50|335.5'
    && t2.kept==='CO5014DEN:50,PC2015ECO:0' && /Purchase order files · 21 Sept 2026 10:07 · Tiajo proforma 4471 · 1 line · 50 m · €336 · download again/.test(t2.hist)
    && t3.asked===1 && t3.rows===2 && t3.total>=4000 && t3.files===2 && t3.minOK

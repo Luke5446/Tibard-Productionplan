@@ -11,8 +11,9 @@
    Publish for team. The planner keeps only the codes it knows (buffer rows, their BULK
    codes, works orders live and completed), so paste the whole list: ~100k rows is fine.
 
-   A finishing-only works order is valued at the BULK code's cost + £1, so keep the BULK
-   codes in. Codes with a zero standard cost are left out: the dashboard lists them as
+   A finishing-only works order is valued at the code's cost + £1: since the BULK codes
+   were retired (27 Nov 2026) the home code carries the bought-in cost. BULK codes still
+   on file come through too and stand in for a code with no home cost. Codes with a zero standard cost are left out: the dashboard lists them as
    unpriced rather than counting them at £0.
 
    Confirmed 6 Nov 2026: StockItem.StandardCost is the column (106,983 rows with a cost). */
