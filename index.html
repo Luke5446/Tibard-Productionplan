@@ -7830,6 +7830,15 @@ function jkGiveSelect(j,sch){
     h+='<option value="'+s.id+'"'+((cant||!r)?' disabled':'')+'>'+esc(s.name)+' - '+esc(warn)+'</option>'; });
   return h+'</select>';
 }
+// clear every operator (Luke, 27 Nov 2026: start afresh): pins, hand order and shares go back to Ready to issue;
+// done marks stay. The old plan is kept on this PC so Undo can put it back.
+function jkClearAll(){ if(!IS_EDITOR) return; var n=Object.keys(jkPlan.assign).length+Object.keys(jkPlan.split).length; if(!n){ alert('Nothing is issued.'); return; }
+  if(!confirm('Take every works order off every machinist and put them all back in Ready to issue?\n\nDone marks stay. Undo clear brings the old plan back (until you publish or reload).')) return;
+  try{ localStorage.setItem('tibard_jk_cleared',JSON.stringify({assign:jkPlan.assign, order:jkPlan.order, split:jkPlan.split, at:new Date().toISOString()})); }catch(e){}
+  jkPlan.assign={}; jkPlan.order={}; jkPlan.split={}; jkSave(); }
+function jkClearUndo(){ if(!IS_EDITOR) return; var b=null; try{ b=JSON.parse(localStorage.getItem('tibard_jk_cleared')||'null'); }catch(e){} if(!b){ alert('Nothing to undo.'); return; }
+  jkPlan.assign=b.assign||{}; jkPlan.order=b.order||{}; jkPlan.split=b.split||{}; try{ localStorage.removeItem('tibard_jk_cleared'); }catch(e){} jkSave(); }
+function jkClearBackup(){ try{ return JSON.parse(localStorage.getItem('tibard_jk_cleared')||'null'); }catch(e){ return null; } }
 // adopt the what-if plan: every unissued line pinned to the person the auto plan gave it
 function jkAdoptAuto(){ if(!IS_EDITOR) return; var jobs=jkJobs(); jkSchedule(jobs,'auto'); var n=0; jobs.forEach(function(j){ if(j.placed && j.who && !jkPlan.assign[j.key] && !j.forcedStaff){ jkPlan.assign[j.key]=j.who; n++; } }); if(n) jkSave(); else jkRender(); }
 // the week table (jackets per person per week) with its drill-down, for the PM's plan or the auto what-if
@@ -7905,7 +7914,7 @@ function jkRender(){
   var pa=sopDemand.pastedAt ? new Date(sopDemand.pastedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : 'never';
   var h='<div class="kpi-sec" style="padding:12px 14px 8px;margin-top:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
     +'<h3 style="margin:0">&#129509; Jacket plan</h3><span class="sm-sub" style="font-size:11px">Live from the works orders and the sales orders pasted '+esc(pa)+'. Customer orders first by promised date, then stock works orders by due date.</span>'
-    +(IS_EDITOR?'<span style="margin-left:auto;display:flex;gap:6px">':'')+(IS_EDITOR?'<button class="btn" onclick="jkOpen.staff=!jkOpen.staff; jkRender()">&#128101; Staff &amp; hours</button><button class="btn" onclick="jkOpen.mins=!jkOpen.mins; jkRender()">&#9201; Minutes per jacket</button></span>':'')+'</div>'
+    +(IS_EDITOR?'<span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">':'')+(IS_EDITOR?(jkClearBackup()?'<button class="btn" style="color:#15803d;border-color:#86efac" title="Put back the plan as it was before Clear all" onclick="jkClearUndo()">&#8630; Undo clear</button>':'')+'<button class="btn" style="color:#dc2626;border-color:#fca5a5" title="Take every works order off every machinist and start afresh from Ready to issue (done marks stay; Undo clear brings it back)" onclick="jkClearAll()">&#128465; Clear all issued work</button><button class="btn" onclick="jkOpen.staff=!jkOpen.staff; jkRender()">&#128101; Staff &amp; hours</button><button class="btn" onclick="jkOpen.mins=!jkOpen.mins; jkRender()">&#9201; Minutes per jacket</button></span>':'')+'</div>'
     +'<div class="sub">The PM gives each works order line to a machinist from the Ready to issue list (or by dragging); nothing is assigned on its own. Each person works their hours less breaks (450 min Mon-Thu, 285 min Fri), holidays, first and last days, and the new jacket staff at their efficiency. The closed banner under the week table shows where everything would land if it were all auto-assigned. "Needed by" is the works order\'s due date (set earlier than the promise when the order needs embroidery after sewing), or the earliest promised date of the sales orders behind it when there is no due date; a due date later than that promise, and a line finishing after it, are flagged. a stock works order whose code has a live sales order (covered by stock on the shelf) shows the order under For. '+(IS_EDITOR?'<strong>Done</strong> on a line takes it out of the plan (it is in finishing); Undo brings it back. Publish to share pins and done marks.':'')+'</div></div>';
   h+='<div class="kpis" style="display:flex;gap:11px;flex-wrap:wrap;margin:12px 0">'
     +jkTile('Jackets to make',tot,jobs.length+' works order lines'+(done.length?' · '+done.reduce(function(a,j){ return a+j.qty; },0)+' done, in finishing':''))

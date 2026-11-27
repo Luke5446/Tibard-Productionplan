@@ -416,6 +416,10 @@ this morning is in the plan straight away:
   them flagged *no time* (the what-if moves it on). Pins, hand order,
   shares and done marks are unchanged in `jkPlan`; scheduler
   `jkSchedule(jobs, mode)` takes `'pm'` (default) or `'auto'`.
+- **Clear all issued work** (27 Nov 2026) in the tab header takes every
+  line off every machinist (pins, hand order and shares) so the PM can start
+  afresh from Ready to issue; done marks stay. The old plan is kept on the
+  PC (`localStorage` `tibard_jk_cleared`) and **Undo clear** puts it back.
 - **Needed by is the works order due date** (26 Nov 2026, Luke: WO-1998 is
   promised for the 17th but due on the 10th because the order needs
   embroidery after sewing). The earliest sales order promise is kept beside

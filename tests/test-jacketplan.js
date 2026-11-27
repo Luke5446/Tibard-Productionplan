@@ -148,6 +148,10 @@ const path = require('path');
      var out='', ro=window.open; window.open=function(){ return {document:{open:function(){},write:function(x){ out+=x; },close:function(){}}}; }; jkPrint(s0.id); window.open=ro;
      o.tickPrint=(out.match(/<tr class="late">|<tr>(?!<th)/g)||[]).length===1 && /1 of \d+ lines picked/.test(out) && out.indexOf(js[0].ref)>0;
      o.tickKept=JSON.parse(localStorage.getItem('tibard_jk_ticks'))[js[0].key]===1; jkTickClear(s0.id, js); o.tickCleared=!Object.keys(jkTicks).length && /Print list/.test(document.getElementById('jkBody').innerHTML); jkToggle('s:'+s0.id); })();
+   // clear all issued work, then undo: everything back to Ready to issue, done marks kept, the old plan restored
+   (function(){ jkAdoptAuto(); var before=JSON.stringify(jkPlan.assign); jkPlan.done['KEEP|X']={at:'2026-11-24T10:00:00Z'}; var okd=window.confirm; window.confirm=function(){ return true; }; jkClearAll(); window.confirm=okd;
+     o.cleared=!Object.keys(jkPlan.assign).length && !Object.keys(jkPlan.split).length && jkJobs().length>0 && (function(){ var jj=jkJobs(); jkSchedule(jj); return jj.every(function(j){ return j.ready; }); })() && /jkClearUndo\(\)/.test(document.getElementById('jkBody').innerHTML);
+     jkClearUndo(); o.unclear=JSON.stringify(jkPlan.assign)===before && !/jkClearUndo\(\)/.test(document.getElementById('jkBody').innerHTML); })();
    // print list: one button per person with work, the sheet names the person, their last day and their lines in order
    o.printBtns=[...document.querySelectorAll('#jkBody button')].filter(b=>/Print list/.test(b.textContent)).length;
    (function(){ var out='', ro=window.open, s0=jkPlan.staff[0]; window.open=function(){ return {document:{open:function(){},write:function(x){ out+=x; },close:function(){}}}; }; jkPrint(s0.id); window.open=ro;
@@ -215,6 +219,7 @@ ck('a week cell opens that person\'s works orders with quantities, and closes ag
  ck('a pin to someone with no time left is flagged; the what-if moves it on', r.overflow===true && r.overflowAuto===true, [r.overflow,r.overflowAuto]);
  ck('search narrows the lists to the matching line', r.searchRows===1 && r.searchNote, [r.searchRows,r.searchNote]);
  ck('tick boxes: Print prints the ticked lines only, ticks kept on the PC and cleared', r.tickBoxes && r.tickBtn && r.tickPrint && r.tickKept && r.tickCleared, [r.tickBoxes,r.tickBtn,r.tickPrint,r.tickKept,r.tickCleared]);
+ ck('Clear all issued work empties the operators and Undo clear restores', r.cleared===true && r.unclear===true, [r.cleared,r.unclear]);
  ck('print list button per person and the sheet carries name, last day and lines', r.printBtns>=1 && r.printOk, [r.printBtns,r.printOk]);
  ck('no page errors', errs.length===0, errs);
  await b.close(); console.log(fails?('\n'+fails+' FAILED'):'\nall passed'); process.exit(fails?1:0);
