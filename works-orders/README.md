@@ -135,6 +135,9 @@ data editor and travels to the team inside `data.json` on the next Publish.
 | `templates-2026-11-25.json` | That record for the costing app. |
 | `EGOCICJ0193-Ego-E871000.xlsx` | Tibard embroidery form E871000 for Ego Restaurant Nuneaton (Jamie-Leih, issued 23/9/26, required 7/10/26): the Ego Mediterranean logo, 80 mm, embroidered to the right sleeve as worn in blue and yellow on the stock white short sleeve mandarin collar jacket CICJ0193 (the Sage stock list sheet is left out of the copy). In the app as style EGOCICJ0193--01, cloned from CICJ0193--01 with the logo as its own branding, so the Sage codes EGOCICJ0193XS01 to XL01 and 5201/5401 resolve to it and the embroidery-only works orders print the branding band. |
 | `templates-2026-11-25b.json` | That record for the costing app. |
+| `SLCICJ0193-SlugLettuce-E861486.xlsx` | Tibard embroidery form E861486 for Slug and Lettuce Solihull (Jamie-Leigh, issued 27/5/26, required 8/6/26): the S&L logo, 80 mm, embroidered in white to the left chest as worn on the stock black short sleeve mandarin collar jacket CICJ0193 (the Sage stock list sheet is left out of the copy). In the app as style SLCICJ0193--03, cloned from CICJ0193--03 with the logo as its own branding, so the Sage codes SLCICJ0193XS03 to XL03 and 5203/5403/5603 resolve to it and the embroidery-only works orders (WO-2032 first) print the branding band with the logo photo and the design details. |
+| `SLCICJ0193-SlugLettuce-design-sheet.png` | The Wilcom design sheet for that logo: "Slug (SL June 19) - 8cm", 80.4 x 35.8 mm, 4524 stitches, 2 colour changes, both Madeira Polyneon 40 1801 white. |
+| `templates-2026-11-27.json` | That record for the costing app. |
 | `thread-standards-2026-09-28.json` | The thread standards (chef jacket 220 m, chef trousers 150 m, bib apron 70 m, waist apron 30 m) and every baked-in record with its main thread row set to them, for the costing app. |
 
 ## Thread standards
